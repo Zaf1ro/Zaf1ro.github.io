@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="C++11 (Part 1)">
+
+
+
+
+  <meta name="keywords" content="C++,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/743493317.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/743493317.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/743493317.html">
+
+
+<meta name="description" content="1. __cpluscplus在C++11中, __cpluscplus该宏定义的值不同于之前的值. 2. lvalue, rvalue, xvalue 左值(lvalue): 可取地址, 有名字的对象 右值(rvalue): C98中定义为临时变量值 纯右值(pvalue): C++11引入的新语义, 包括字面值和不具名的临时对象(例如: 1, false, ++i, a+b, a==b等) 将">
+<meta name="keywords" content="C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++11 (Part 1)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/743493317.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. __cpluscplus在C++11中, __cpluscplus该宏定义的值不同于之前的值. 2. lvalue, rvalue, xvalue 左值(lvalue): 可取地址, 有名字的对象 右值(rvalue): C98中定义为临时变量值 纯右值(pvalue): C++11引入的新语义, 包括字面值和不具名的临时对象(例如: 1, false, ++i, a+b, a==b等) 将">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2020-07-22T00:31:43.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++11 (Part 1)">
+<meta name="twitter:description" content="1. __cpluscplus在C++11中, __cpluscplus该宏定义的值不同于之前的值. 2. lvalue, rvalue, xvalue 左值(lvalue): 可取地址, 有名字的对象 右值(rvalue): C98中定义为临时变量值 纯右值(pvalue): C++11引入的新语义, 包括字面值和不具名的临时对象(例如: 1, false, ++i, a+b, a==b等) 将">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+C++11 (Part 1) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-cpluscplus"><span class="toc-text">1. __cpluscplus</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-lvalue-rvalue-xvalue"><span class="toc-text">2. lvalue, rvalue, xvalue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-decltype"><span class="toc-text">3. decltype</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-auto"><span class="toc-text">4. auto</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-auto与decltype的不同之处"><span class="toc-text">4.1 auto与decltype的不同之处</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-auto的主要用途"><span class="toc-text">4.2 auto的主要用途</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Control-of-member-function"><span class="toc-text">5. Control of member function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Uniform-initialization"><span class="toc-text">6. Uniform initialization</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-诞生原因"><span class="toc-text">6.1 诞生原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-存在的问题"><span class="toc-text">6.2 存在的问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Initializer-lists"><span class="toc-text">7. Initializer lists</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-诞生原因"><span class="toc-text">7.1 诞生原因</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-long-long-int"><span class="toc-text">8. long long int</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-constexpr"><span class="toc-text">9. constexpr</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-constexpr-varible的条件"><span class="toc-text">9.1 constexpr varible的条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-constexpr-function的条件"><span class="toc-text">9.2 constexpr function的条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-constexpr-constructor"><span class="toc-text">9.3 constexpr constructor</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-nullptr"><span class="toc-text">10. nullptr</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-诞生原因"><span class="toc-text">10.1 诞生原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-nullptr的属性"><span class="toc-text">10.2 nullptr的属性</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          C++11 (Part 1)
+        
+      </h1>
+      <time class="post-time">
+          07/01/18
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-cpluscplus"><a href="#1-cpluscplus" class="headerlink" title="1. __cpluscplus"></a>1. __cpluscplus</h2><p>在C++11中, __cpluscplus该宏定义的值不同于之前的值.</p>
+<h2 id="2-lvalue-rvalue-xvalue"><a href="#2-lvalue-rvalue-xvalue" class="headerlink" title="2. lvalue, rvalue, xvalue"></a>2. lvalue, rvalue, xvalue</h2><ol>
+<li>左值(lvalue): 可取地址, 有名字的对象</li>
+<li>右值(rvalue): C98中定义为临时变量值</li>
+<li>纯右值(pvalue): C++11引入的新语义, 包括字面值和不具名的临时对象(例如: 1, false, ++i, a+b, a==b等)</li>
+<li>将亡值(xvalue): C++11随引入右值引用而引入的新语义, 一个生命周期即将结束的对象都可以称为将亡值</li>
+</ol>
+<p>C++11之前有引用(reference), C++11将引用拆分为两种:</p>
+<ol>
+<li>左值引用(lvalue reference): 与之前的引用定义相同, 为具名变量值的别名(alias)</li>
+<li>右值引用(rvalue reference): 右值的引用, 右值不存在名称, 所以只能通过其引用查找(匿名变量值的别名)</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> a1 = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">int</span>&amp; b1 = a1;     <span class="comment">// lvalue reference</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span>&amp; c = <span class="number">2</span>;   <span class="comment">// rvalue reference, 必须为const</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> a2 = <span class="number">2</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span>&amp; b2 = a2; <span class="comment">// lvalue reference, 必须为const</span></span><br></pre></td></tr></table></figure>
+
+<p>左值不能直接绑定到右值引用上, 必须使用std::move()将左值转换为右值</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">int</span>&amp;&amp; b = <span class="built_in">std</span>::move(a); <span class="comment">// rvalue reference, 不需要const, 因为是左值转换的右值</span></span><br><span class="line">b = <span class="number">2</span>; <span class="comment">// 将a的值改为2</span></span><br></pre></td></tr></table></figure>
+
+<p>以下是引用绑定的规则:</p>
+<table>
+<thead>
+<tr>
+<th>reference type</th>
+<th>non-const lvalue</th>
+<th>const lvalue</th>
+<th>non-const rvalue</th>
+<th>const rvalue</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>non-const lvalue reference</td>
+<td>Y</td>
+<td>N</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>const lvalue reference</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>non-const rvalue reference</td>
+<td>N</td>
+<td>N</td>
+<td>Y</td>
+<td>N</td>
+</tr>
+<tr>
+<td>const rvalue reference</td>
+<td>N</td>
+<td>N</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+</tbody></table>
+<h2 id="3-decltype"><a href="#3-decltype" class="headerlink" title="3. decltype"></a>3. decltype</h2><p>用于查看实例或表达式的类型, decltype不会计算表达式的结果, 只会返回表达式结果的类型. </p>
+<ol>
+<li><p>如果e是一个没有括号的标记符表达式(id-expression)或类成员访问式(class member access expression), 则decltype(e)就是e所命名的的类型(id-expression: 除去关键字和字面量等编译器所需的标记外, 程序员定义的标记)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">int</span> arr[<span class="number">5</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line"><span class="keyword">int</span>* p = arr;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">S</span>&#123;</span><span class="keyword">double</span> d;&#125;s;</span><br><span class="line"></span><br><span class="line"><span class="keyword">decltype</span>(p) x;    <span class="comment">// x的类型为int*</span></span><br><span class="line"><span class="keyword">decltype</span>(a) y;    <span class="comment">// y的类型为int</span></span><br><span class="line"><span class="keyword">decltype</span>(arr) z;  <span class="comment">// z的类型为int</span></span><br><span class="line"><span class="keyword">decltype</span>(s.d) m;  <span class="comment">// m的类型为double</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>否则, 假设e的类型为T, 若e为将亡值, 则decltype(e)为T&amp;&amp;</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span>&amp;&amp; <span class="title">Func</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">decltype</span>(Func()) x = <span class="number">1</span>; <span class="comment">// x的类型为rvalue reference(int&amp;&amp;)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>否则, 假设e的类型为T, 若e为左值, 则decltype(e)为T&amp;</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">decltype</span>((a)) x = a; <span class="comment">// x的类型为non-const lvalue reference(int&amp;)</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>否则, 假设e的类型为T, 则decltype(e)为T</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">1</span>;</span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">Func</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">decltype</span>(<span class="number">1</span>) x = <span class="number">1</span>; <span class="comment">// 1为pvalue, 所以x的类型为int</span></span><br><span class="line"><span class="keyword">decltype</span>(i++) y = <span class="number">1</span>; <span class="comment">// i++为pvalue, 所以y的类型为int</span></span><br><span class="line"><span class="keyword">decltype</span>(Func()) z = <span class="literal">true</span>; <span class="comment">// Func()为pvalue, 所以z的类型为bool</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h2 id="4-auto"><a href="#4-auto" class="headerlink" title="4. auto"></a>4. auto</h2><p>功能上与decltype相同, 通过表达式来推断数据类型.</p>
+<h3 id="4-1-auto与decltype的不同之处"><a href="#4-1-auto与decltype的不同之处" class="headerlink" title="4.1 auto与decltype的不同之处"></a>4.1 auto与decltype的不同之处</h3><ol>
+<li><p>基本类型</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">1</span>, &amp;l = i;</span><br><span class="line"><span class="keyword">auto</span> x = <span class="number">1</span>;   <span class="comment">// x的类型为int</span></span><br><span class="line"><span class="keyword">auto</span> y = i;   <span class="comment">// y的类型为int</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>const, volatile和reference都不能自动推导, 必须显式声明</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">1</span>, &amp;l = i;</span><br><span class="line"><span class="keyword">auto</span> t1 = l;    <span class="comment">// t1的类型为int</span></span><br><span class="line"><span class="keyword">auto</span>&amp; t2 = i;   <span class="comment">// t2的类型为i的lvalue reference</span></span><br><span class="line"><span class="keyword">auto</span> p1 = &amp;i;   <span class="comment">// p1的类型为int</span></span><br><span class="line"><span class="keyword">auto</span>* p2 = &amp;i;  <span class="comment">// p2的类型为pointer to i</span></span><br><span class="line"><span class="keyword">auto</span>&amp;&amp; r1 = i;  <span class="comment">// r1的类型为i的lvalue reference</span></span><br><span class="line"><span class="keyword">auto</span>&amp;&amp; r2 = <span class="built_in">std</span>::move(i);  <span class="comment">// r2为i的rvalue reference</span></span><br><span class="line"><span class="comment">// auto m = 1, n = 2.0;    // error, m和n类型不同</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>顶层const和底层const</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> i = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">auto</span> a = i;       <span class="comment">// a的类型为int, 摘除了顶端const</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">auto</span> b = i; <span class="comment">// b的类型为const int, 需要指出顶层const</span></span><br><span class="line"><span class="keyword">auto</span>* c = &amp;i;     <span class="comment">// c的类型为const int*, 顶层const不被摘除</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数组会自动推导为指针</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i[<span class="number">10</span>];</span><br><span class="line"><span class="keyword">auto</span> p1 = i;  <span class="comment">// p1的类型为int*</span></span><br><span class="line"><span class="keyword">auto</span>&amp; p2 = i; <span class="comment">// p2的类型为int[10]</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h3 id="4-2-auto的主要用途"><a href="#4-2-auto的主要用途" class="headerlink" title="4.2 auto的主要用途"></a>4.2 auto的主要用途</h3><ol>
+<li><p>用于代替冗长复杂的变量声明</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; vs;</span><br><span class="line"><span class="comment">// 使用auto代替std::vector&lt;std::string&gt;::iterator</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span> i = vs.begin(); i != vs.end(); i++)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">//..</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>定义模板函数时，用于声明依赖模板参数的变量类型</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T1, <span class="keyword">typename</span> T2&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Multiply</span><span class="params">(T1 x, T2 y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> v = x * y; <span class="comment">// 如果不用auto, 很难定义v的类型</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>模板函数依赖于模板参数的返回值</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// auto在这里只是一个占位符, 真正的返回值类型定义在decltype</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T1, <span class="keyword">typename</span> T2&gt;</span><br><span class="line">auto multiply(T1 x, T2 y) -&gt; decltype(x * y)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> x * y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 之所以不定义为: </span></span><br><span class="line"><span class="comment"> * template &lt;typename T1, typename T2&gt;</span></span><br><span class="line"><span class="comment"> * decltype(x * y) multiply(T1 x, T2 y)</span></span><br><span class="line"><span class="comment"> * &#123;</span></span><br><span class="line"><span class="comment"> *   return x * y;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> * 是因为decltype中的x和y还没定义, 会报编译错误</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h2 id="5-Control-of-member-function"><a href="#5-Control-of-member-function" class="headerlink" title="5. Control of member function"></a>5. Control of member function</h2><p>C++有四种特殊的成员函数(member function):</p>
+<ol>
+<li>default constructor(默认构造函数)</li>
+<li>copy constructor(拷贝构造函数)</li>
+<li>copy assignment operator(拷贝赋值运算符)</li>
+<li>destructor(析构函数)</li>
+</ol>
+<p>如果没有显式声明这些函数, 编译器会生成默认的对应成员函数. C++11通过添加两个specifier来控制这四个成员函数:</p>
+<ol>
+<li>=default</li>
+<li>=delete</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">Handle</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  T* p;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  Handle(T* pp): p(pp) &#123;&#125;</span><br><span class="line">  ~Handle() = <span class="keyword">default</span>;  <span class="comment">// default destructor semantics</span></span><br><span class="line"></span><br><span class="line">  Handle(<span class="keyword">const</span> Handle&amp; h) = <span class="keyword">delete</span>; <span class="comment">// disable copying</span></span><br><span class="line">  Handle(Handle&amp;&amp; h): p(h.p) &#123;  <span class="comment">// allow moving    </span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"move constructor"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    h.p = <span class="literal">nullptr</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Handle&amp; <span class="keyword">operator</span>=(Handle&amp;) = <span class="keyword">delete</span>;  <span class="comment">// disable copying</span></span><br><span class="line">  Handle&amp; <span class="keyword">operator</span>=(Handle&amp;&amp; h) &#123;  <span class="comment">// allow moving</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"move assignment"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">delete</span> p;</span><br><span class="line">    p = h.p;</span><br><span class="line">    h.p = <span class="literal">nullptr</span>;</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span>* p1 = <span class="keyword">new</span> <span class="keyword">int</span>(<span class="number">1</span>);</span><br><span class="line">  Handle&lt;<span class="keyword">int</span>&gt; h1(p1);</span><br><span class="line">  Handle&lt;<span class="keyword">int</span>&gt; h2(<span class="built_in">std</span>::move(h1));  <span class="comment">// move constructor</span></span><br><span class="line">  <span class="comment">// Handle&lt;int&gt; h3(h1);  // error, no default copy constructor</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">int</span>* p2 = <span class="keyword">new</span> <span class="keyword">int</span>(<span class="number">2</span>);</span><br><span class="line">  Handle&lt;<span class="keyword">int</span>&gt; h4(p2);</span><br><span class="line">  h4 = <span class="built_in">std</span>::move(h1);  <span class="comment">// move assignment</span></span><br><span class="line">  <span class="comment">// Handle&lt;int&gt; h5 = h1; // error, no default copy assignment   </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-Uniform-initialization"><a href="#6-Uniform-initialization" class="headerlink" title="6. Uniform initialization"></a>6. Uniform initialization</h2><h3 id="6-1-诞生原因"><a href="#6-1-诞生原因" class="headerlink" title="6.1 诞生原因"></a>6.1 诞生原因</h3><ol>
+<li><p>在C++03中, 只有类成员变量才能用Member initializer lists(成员初始化列表)进行初始化, C++11扩大了初始化列表的适用范围, 并支持列表初始化方法:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> v1 = <span class="number">0</span>;   </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">v2</span><span class="params">(<span class="number">1</span>)</span></span>;    <span class="comment">// ()和=本质上没有区别</span></span><br><span class="line"><span class="keyword">int</span> v3&#123;<span class="number">3</span>&#125;;    <span class="comment">// list initializer, 列表初始化</span></span><br><span class="line"><span class="keyword">int</span> v4 = &#123;<span class="number">4</span>&#125;; <span class="comment">// 同上</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>对于某些特殊类型, 不能使用某种方式来初始化</p>
+<ol>
+<li><p>C++11引进了atomic原子类型, 这种类型的变量无法使用=来初始化</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">std</span>::atomic&lt;<span class="keyword">int</span>&gt; v1&#123;<span class="number">1</span>&#125;;</span><br><span class="line"><span class="built_in">std</span>::atomic&lt;<span class="keyword">double</span>&gt; v2(<span class="number">2.0</span>);</span><br><span class="line"><span class="comment">// std::atomic&lt;float&gt; v3 = 3.0f;  // error</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>对于类中的非静态成员变量, 设置默认值不能使用()</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C1</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> v1 = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">int</span> v2&#123;<span class="number">2</span>&#125;;</span><br><span class="line">  <span class="comment">// int v3(3);  // error</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>调用自定义类的无参数构造函数时, 会被编译器解释为函数声明</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">C1 <span class="title">c1</span><span class="params">()</span></span>;   <span class="comment">// empty parentheses interpreted as a function declaration</span></span><br><span class="line"><span class="comment">// c1.v = 2; // error: expression is not assignable</span></span><br><span class="line">C1 c2&#123;&#125;;</span><br><span class="line">c2.v = <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>初始化容器时会产生歧义</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v1&#123;<span class="number">10</span>&#125;;  <span class="comment">// the size of v1 is 1</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v2(<span class="number">10</span>);  <span class="comment">// the size of v2 is 10</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果存在类型收窄的情况, 则编译器不会报错. 而列表初始化可以避免这个问题</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">double</span> d = <span class="number">3.1415926</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">i1</span><span class="params">(d)</span></span>;      <span class="comment">// i1为3</span></span><br><span class="line"><span class="keyword">int</span> i2 = d;     <span class="comment">// i2为3</span></span><br><span class="line"><span class="comment">// int i3&#123;d&#125;;   // error, type 'double' cannot be narrowed to 'int'</span></span><br><span class="line"><span class="comment">// int i4 = &#123;d&#125;;// error, type 'double' cannot be narrowed to 'int'</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+</li>
+</ol>
+<p>由此可见, 列表初始化<strong>{}</strong>成为适用面最广的初始化方法, 并且在某些方面优于=和(), 从而被称为统一初始化(Uniform initialization)</p>
+<h3 id="6-2-存在的问题"><a href="#6-2-存在的问题" class="headerlink" title="6.2 存在的问题"></a>6.2 存在的问题</h3><p>列表初始化在绝大多数情况下都能很好的运行, 但当遇到initializer_list时会产生很多问题: 当使用{}调用构造函数时, 会优先调用initializer_list为参数类型的构造函数(无参数构造函数除外)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  C1();</span><br><span class="line">  C1(<span class="keyword">bool</span>, <span class="keyword">int</span>);</span><br><span class="line">  C1(<span class="built_in">std</span>::<span class="built_in">initializer_list</span>&lt;<span class="keyword">bool</span>&gt;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">C1 c1&#123;&#125;;            <span class="comment">// call C1()</span></span><br><span class="line">C1 c2&#123;<span class="literal">true</span>, <span class="number">1</span>&#125;;     <span class="comment">// call C1(std::initializer_list&lt;bool&gt;), convert 1 to true</span></span><br><span class="line">C1 c3&#123;<span class="literal">true</span>, <span class="number">0</span>&#125;;     <span class="comment">// call C1(std::initializer_list&lt;bool&gt;), convert 0 to false</span></span><br><span class="line"><span class="comment">// C1 c4&#123;true, 2&#125;;  // error, call C1(std::initializer_list&lt;bool&gt;), cannot narrow 2 to bool</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="7-Initializer-lists"><a href="#7-Initializer-lists" class="headerlink" title="7. Initializer lists"></a>7. Initializer lists</h2><h3 id="7-1-诞生原因"><a href="#7-1-诞生原因" class="headerlink" title="7.1 诞生原因"></a>7.1 诞生原因</h3><p>C++03继承了C语言的initializer-list特性, 只含有POD(Plain Old Data)的class和struct都可以通过initializer-list来初始化</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">float</span> f;</span><br><span class="line">  <span class="keyword">int</span> i;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  C1(<span class="keyword">float</span> f, <span class="keyword">int</span> i)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">this</span>-&gt;i = i;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">S1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="keyword">float</span> f;</span><br><span class="line">  <span class="keyword">int</span> i;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">C1 c1 = &#123;<span class="number">1.0</span>, <span class="number">2</span>&#125;;</span><br><span class="line">S1 s1 = &#123;<span class="number">1.0</span>, <span class="number">2</span>&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>C++11扩大了initializer-list的适用范围: 所有class都可以使用initializer-list初始化(包括standard container)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; v1&#123;<span class="string">"123"</span>, <span class="string">"456"</span>&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v2 = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; v3(&#123;<span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">3.0</span>&#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-long-long-int"><a href="#8-long-long-int" class="headerlink" title="8. long long int"></a>8. long long int</h2><p>在C++03中最大的整型为<strong>long int</strong>, long int的长度范围为[32, 64], 所以每个编译器的实现都不同. C++11中引入了<strong>long long int</strong>, 其长度不会低于64位.</p>
+<h2 id="9-constexpr"><a href="#9-constexpr" class="headerlink" title="9. constexpr"></a>9. constexpr</h2><p>C++一直就有常量的概念, 例如const. 但const的意义在于不可修改, 而没有强调常量的另一个特点: 可在编译期计算并获得结果. C++11引入了constexpr来描述一个可在编译期评估的variable, function和constructor</p>
+<h3 id="9-1-constexpr-varible的条件"><a href="#9-1-constexpr-varible的条件" class="headerlink" title="9.1 constexpr varible的条件"></a>9.1 constexpr varible的条件</h3><ol>
+<li>数据类型必须为LiteralType</li>
+<li>必须被立即初始化</li>
+<li>初始化表达式(initialization expression)必须为常量表达式(constant expression)</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> v1 = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">double</span> v2&#123;<span class="number">1.0</span>&#125;;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> v3;         <span class="comment">// error, not initialized</span></span><br><span class="line"><span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> v4 = i + <span class="number">1</span>; <span class="comment">// error, i isn't a constant expression</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-constexpr-function的条件"><a href="#9-2-constexpr-function的条件" class="headerlink" title="9.2 constexpr function的条件"></a>9.2 constexpr function的条件</h3><ol>
+<li>return type和parameter type必须是LiteralType</li>
+<li>只包含一个return语句(非error, warning)</li>
+<li>function body可以包含其他的语句，但是这些语句不能在运行期起作用</li>
+<li>function body不能包含一些语句, 例如: goto, try-catch, asm之类的语句</li>
+<li>可以是内部递归调用(recursive)</li>
+<li>不能为virtual function</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// constexpr function默认为inline function</span></span><br><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> x)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> x == <span class="number">1</span> ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-3-constexpr-constructor"><a href="#9-3-constexpr-constructor" class="headerlink" title="9.3 constexpr constructor"></a>9.3 constexpr constructor</h3><ol>
+<li>constructor的参数类型为LiteralType</li>
+<li>class不能有虚基类(virtual base class)</li>
+<li>constructor不能含有try-block</li>
+<li>constructor可包含以下语句: 空语句, static_assert, typedef, using</li>
+<li>对于constructor所在的class, 其对象必须初始化</li>
+</ol>
+<h2 id="10-nullptr"><a href="#10-nullptr" class="headerlink" title="10. nullptr"></a>10. nullptr</h2><h3 id="10-1-诞生原因"><a href="#10-1-诞生原因" class="headerlink" title="10.1 诞生原因"></a>10.1 诞生原因</h3><p>首先我们必须知道, C和C++中的NULL并不相同:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> NULL</span></span><br><span class="line">  <span class="meta">#<span class="meta-keyword">ifdef</span> __cplusplus</span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> NULL  0</span></span><br><span class="line">  <span class="meta">#<span class="meta-keyword">else</span>  <span class="comment">/* __cplusplus */</span></span></span><br><span class="line">    <span class="meta">#<span class="meta-keyword">define</span> NULL  ((void *)0)</span></span><br><span class="line">  <span class="meta">#<span class="meta-keyword">endif</span>  <span class="comment">/* __cplusplus */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span>  <span class="comment">/* NULL */</span></span></span><br></pre></td></tr></table></figure>
+
+<p>C中将NULL定义为((void<em>)0), 而C++将NULL定义为0. C++之所以将NULL修改为0, 是因为void</em>的隐式转换属性: 既可以指向任意类型指针, 又可转换为int类型</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f1</span><span class="params">(<span class="keyword">int</span> *p)</span></span>&#123;&#125;;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f2</span><span class="params">(<span class="keyword">int</span> i)</span></span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line">f1(<span class="literal">NULL</span>); <span class="comment">// void*可指向任何类型的指针</span></span><br><span class="line">f2(<span class="literal">NULL</span>); <span class="comment">// void*也可转换为int类型</span></span><br></pre></td></tr></table></figure>
+
+<p>C++支持函数重载, 而void*会导致歧义, 所以就改用了0来表示NULL. 但由于NULL仍然没有类型, 所以还是会导致很多问题:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">char</span> *)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">f(<span class="literal">NULL</span>); <span class="comment">// 可能编译失败, 也可能调用f(int)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-nullptr的属性"><a href="#10-2-nullptr的属性" class="headerlink" title="10.2 nullptr的属性"></a>10.2 nullptr的属性</h3><p>C++11正式引入nullptr, 并为nullptr赋予了一个独有的类型: nullptr_t. 其可以转换为其他指针类型和bool类型(为了兼容指针作为if判断的条件)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> *p1 = <span class="literal">nullptr</span>;</span><br><span class="line"><span class="keyword">char</span> *p2 = <span class="literal">nullptr</span>;</span><br><span class="line"><span class="keyword">bool</span> b = <span class="literal">nullptr</span>; <span class="comment">// 会转换为false</span></span><br><span class="line"><span class="keyword">int</span> i = <span class="literal">nullptr</span>;  <span class="comment">// error, cannot convert nullptr_t to int</span></span><br></pre></td></tr></table></figure>
+
+<p>正因为有了类型, 空指针也可以用来捕获异常</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstddef&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">try</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="literal">nullptr</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">catch</span> (<span class="built_in">std</span>::<span class="keyword">nullptr_t</span> p)</span><br><span class="line">  &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/C/">C++</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/510045255.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">C++11 (Part 2)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2833581777.html">
+        <span class="next-text nav-default">Java Concurrency (Part 2)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/743493317.html';
+  var disqus_title = "C++11 (Part 1)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

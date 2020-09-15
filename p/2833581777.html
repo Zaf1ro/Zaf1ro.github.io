@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Java Concurrency (Part 2)">
+
+
+
+
+  <meta name="keywords" content="Concurrency,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/2833581777.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/2833581777.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/2833581777.html">
+
+
+<meta name="description" content="1. 饥饿如果一个线程因为被其他线程抢走锁而导致长时间无法执行, 则处于”饥饿”状态. 解决饥饿的方法被称为”公平性” 1.1 导致饥饿的原因 高优先级线程吞噬低优先级线程的CPU时间: 优先级越高的线程获得的CPU时间越多, 而优先级低的进程饥饿的概率就越大 线程因死锁而无法获得CPU时间: Java的同步代码区也是一个导致饥饿的因素. 只要线程中有同步区, 则线程就有可能因无法进入同步区而饥饿">
+<meta name="keywords" content="Concurrency">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java Concurrency (Part 2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/2833581777.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. 饥饿如果一个线程因为被其他线程抢走锁而导致长时间无法执行, 则处于”饥饿”状态. 解决饥饿的方法被称为”公平性” 1.1 导致饥饿的原因 高优先级线程吞噬低优先级线程的CPU时间: 优先级越高的线程获得的CPU时间越多, 而优先级低的进程饥饿的概率就越大 线程因死锁而无法获得CPU时间: Java的同步代码区也是一个导致饥饿的因素. 只要线程中有同步区, 则线程就有可能因无法进入同步区而饥饿">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2019-11-07T21:18:53.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java Concurrency (Part 2)">
+<meta name="twitter:description" content="1. 饥饿如果一个线程因为被其他线程抢走锁而导致长时间无法执行, 则处于”饥饿”状态. 解决饥饿的方法被称为”公平性” 1.1 导致饥饿的原因 高优先级线程吞噬低优先级线程的CPU时间: 优先级越高的线程获得的CPU时间越多, 而优先级低的进程饥饿的概率就越大 线程因死锁而无法获得CPU时间: Java的同步代码区也是一个导致饥饿的因素. 只要线程中有同步区, 则线程就有可能因无法进入同步区而饥饿">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Java Concurrency (Part 2) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-饥饿"><span class="toc-text">1. 饥饿</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-导致饥饿的原因"><span class="toc-text">1.1 导致饥饿的原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-实现公平性"><span class="toc-text">1.2 实现公平性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Nested-Monitor-Lockout-嵌套管程锁死"><span class="toc-text">2. Nested Monitor Lockout(嵌套管程锁死)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-可能导致的情况"><span class="toc-text">2.1 可能导致的情况</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Nested-Monitor-Lockout-VS-Deadlock"><span class="toc-text">2.2 Nested Monitor Lockout VS Deadlock</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Slipped-Conditions-丢失的条件"><span class="toc-text">3. Slipped Conditions(丢失的条件)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Java中的Lock"><span class="toc-text">4. Java中的Lock</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-Lock和Synchronized-Block的区别"><span class="toc-text">4.1 Lock和Synchronized Block的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-使用Java锁"><span class="toc-text">4.2 使用Java锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-锁的可重入性"><span class="toc-text">4.3 锁的可重入性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-finally中调用unlock"><span class="toc-text">4.4 finally中调用unlock()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-读写锁"><span class="toc-text">5. 读写锁</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-读写锁的简单实现"><span class="toc-text">5.1 读写锁的简单实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-读锁的重入"><span class="toc-text">5.2 读锁的重入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-写锁的重入性"><span class="toc-text">5.3 写锁的重入性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-读锁升级到写锁"><span class="toc-text">5.4 读锁升级到写锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-写锁降级为读锁"><span class="toc-text">5.5 写锁降级为读锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-在finally中调用unlock"><span class="toc-text">5.6 在finally中调用unlock()</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java Concurrency (Part 2)
+        
+      </h1>
+      <time class="post-time">
+          03/15/18
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-饥饿"><a href="#1-饥饿" class="headerlink" title="1. 饥饿"></a>1. 饥饿</h2><p>如果一个线程因为被其他线程抢走锁而导致长时间无法执行, 则处于”饥饿”状态. 解决饥饿的方法被称为”公平性”</p>
+<h3 id="1-1-导致饥饿的原因"><a href="#1-1-导致饥饿的原因" class="headerlink" title="1.1 导致饥饿的原因"></a>1.1 导致饥饿的原因</h3><ol>
+<li>高优先级线程吞噬低优先级线程的CPU时间: 优先级越高的线程获得的CPU时间越多, 而优先级低的进程饥饿的概率就越大</li>
+<li>线程因死锁而无法获得CPU时间: Java的同步代码区也是一个导致饥饿的因素. 只要线程中有同步区, 则线程就有可能因无法进入同步区而饥饿</li>
+<li>等待状态的线程: 如果多个线程处于等待状态, notify()又不能保证哪一个线程会被唤醒, 则任何线程都有可能因无法被唤醒而导致饥饿</li>
+</ol>
+<h3 id="1-2-实现公平性"><a href="#1-2-实现公平性" class="headerlink" title="1.2 实现公平性"></a>1.2 实现公平性</h3><ol>
+<li><p>使用锁方式替代同步块<br>使用同步块时, 若有多个线程被阻塞, 则下一个解除阻塞的线程是无法保证的. 所以需要用锁替换同步块</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Lock</span></span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">boolean</span> isLocked = <span class="keyword">false</span>;</span><br><span class="line">  <span class="keyword">private</span> Thread lockingThread = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 锁的实现依然靠同步块 */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(isLocked)&#123;</span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line">    isLocked = <span class="keyword">true</span>;</span><br><span class="line">    lockingThread = Thread.currentThread();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">this</span>.lockingThread != Thread.currentThread())&#123;   <span class="comment">/* 不同锁不可互相使用 */</span></span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> IllegalMonitorStateException(<span class="string">"Calling thread has not locked this lock"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    isLocked = <span class="keyword">false</span>;</span><br><span class="line">    lockingThread = <span class="keyword">null</span>;</span><br><span class="line">    notify();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Synchronizer</span></span>&#123;</span><br><span class="line">  Lock lock = <span class="keyword">new</span> Lock();</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSynchronized</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.lock.lock();</span><br><span class="line">    <span class="comment">/* critical section, do a lot of work which takes a long time */</span></span><br><span class="line">    <span class="keyword">this</span>.lock.unlock();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>公平锁<br>将上面Lock类转变为公平锁FairLock, 主要修改了wait()和notify()部分</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* QueueObject作为一个Semaphore</span></span><br><span class="line"><span class="comment"> * 每个线程独占一个QueueObject对象, 用于有序的加锁</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">QueueObject</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">boolean</span> isNotified = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">doWait</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (!isNotified)&#123;</span><br><span class="line">      <span class="keyword">this</span>.wait();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>.isNotified = <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">doNotify</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.isNotified = <span class="keyword">true</span>;</span><br><span class="line">    <span class="keyword">this</span>.notify();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span> == obj;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FairLock</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> isLocked = <span class="keyword">false</span>;       <span class="comment">/* 该锁是否使用 */</span></span><br><span class="line">    <span class="keyword">private</span> Thread lockingThread = <span class="keyword">null</span>;    <span class="comment">/* 正在使用锁的线程 */</span></span><br><span class="line">    <span class="comment">/* 通过队列依次加锁, 这样线程可依次争夺锁, 做到公平性 */</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;QueueObject&gt; waitingThreads = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123;</span><br><span class="line">    QueueObject queueObject = <span class="keyword">new</span> QueueObject();</span><br><span class="line">    <span class="keyword">boolean</span> isLockedForThisThread = <span class="keyword">true</span>;   <span class="comment">/* 是否需要加锁 */</span></span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">      waitingThreads.add(queueObject);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (isLockedForThisThread) &#123;   <span class="comment">/* 是否需要加锁 */</span></span><br><span class="line">      <span class="keyword">synchronized</span>(<span class="keyword">this</span>)&#123;</span><br><span class="line">        isLockedForThisThread = <span class="comment">/* 该lock是否已使用 或 是否轮到该线程加锁 */</span></span><br><span class="line">          isLocked || waitingThreads.get(<span class="number">0</span>) != queueObject;</span><br><span class="line">        <span class="keyword">if</span> (!isLockedForThisThread) &#123; <span class="comment">/* 切换到不需要加锁, 因为即将要加锁 */</span></span><br><span class="line">          isLocked = <span class="keyword">true</span>;    </span><br><span class="line">          waitingThreads.remove(queueObject);     <span class="comment">/* 从等待加锁的队列中移出 */</span></span><br><span class="line">          lockingThread = Thread.currentThread();</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        queueObject.doWait();   <span class="comment">/* 等待加锁 */</span></span><br><span class="line">      &#125; <span class="keyword">catch</span>(InterruptedException e) &#123; </span><br><span class="line">        <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123; </span><br><span class="line">          waitingThreads.remove(queueObject); </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> e;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.lockingThread != Thread.currentThread()) &#123;   <span class="comment">/* 不匹配的lock */</span></span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> IllegalMonitorStateException(<span class="string">"Calling thread has not locked this lock"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    isLocked = <span class="keyword">false</span>;</span><br><span class="line">    lockingThread = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (waitingThreads.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      waitingThreads.get(<span class="number">0</span>).doNotify();   <span class="comment">/* 仅有一个线程被唤醒 */</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h2 id="2-Nested-Monitor-Lockout-嵌套管程锁死"><a href="#2-Nested-Monitor-Lockout-嵌套管程锁死" class="headerlink" title="2. Nested Monitor Lockout(嵌套管程锁死)"></a>2. Nested Monitor Lockout(嵌套管程锁死)</h2><h3 id="2-1-可能导致的情况"><a href="#2-1-可能导致的情况" class="headerlink" title="2.1 可能导致的情况"></a>2.1 可能导致的情况</h3><p>当我们使用两个嵌套的同步块时应小心Nested Monitor Lockout, 下面是一个可能发生的情况:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Implementation of Lock */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Lock</span> </span>&#123;</span><br><span class="line">  <span class="keyword">protected</span> MonitorObject monitorObject = <span class="keyword">new</span> MonitorObject();</span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">boolean</span> isLocked = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">      <span class="keyword">while</span>(isLocked) &#123;</span><br><span class="line">        <span class="keyword">synchronized</span>(<span class="keyword">this</span>.monitorObject) &#123;</span><br><span class="line">          <span class="keyword">this</span>.monitorObject.wait();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      isLocked = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">      <span class="keyword">this</span>.isLocked = <span class="keyword">false</span>;</span><br><span class="line">      <span class="keyword">synchronized</span>(<span class="keyword">this</span>.monitorObject) &#123;</span><br><span class="line">        <span class="keyword">this</span>.monitorObject.notify();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当线程A获得this的锁, 想要获得monitorObject的锁, 但线程B拥有monitorObject的锁, 所以需要等待线程B释放monitorObject; 线程B想要释放monitorObject, 但需要先获得线程A拥有的this的锁. 从而陷入锁死</p>
+<h3 id="2-2-Nested-Monitor-Lockout-VS-Deadlock"><a href="#2-2-Nested-Monitor-Lockout-VS-Deadlock" class="headerlink" title="2.2 Nested Monitor Lockout VS Deadlock"></a>2.2 Nested Monitor Lockout VS Deadlock</h3><ol>
+<li>共同点: 线程都进入一直阻塞的状态</li>
+<li>不同点: 死锁是由于多线程获取锁的顺序不同导致; 嵌套管程锁死获取锁的顺序一致, 但由于一个线程等待唤醒, 而另一个等待锁释放, 所以导致锁死</li>
+</ol>
+<h2 id="3-Slipped-Conditions-丢失的条件"><a href="#3-Slipped-Conditions-丢失的条件" class="headerlink" title="3. Slipped Conditions(丢失的条件)"></a>3. Slipped Conditions(丢失的条件)</h2><p>Slipped conditions的意思是, 当一个线程从检查某一特定条件到该线程执行该条件下的语句时, 该条件已经被其他线程修改, 导致线程进行错误操作, 以下是一个例子:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Lock</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">boolean</span> isLocked = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;   <span class="comment">/* (1) */</span></span><br><span class="line">      <span class="keyword">while</span>(isLocked) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="keyword">this</span>.wait();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">          <span class="comment">//do nothing, keep waiting</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;   <span class="comment">/* (2) */</span></span><br><span class="line">      isLocked = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    isLocked = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.notify();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述lock()的实现中有两个同步块, 分别名为同步块1和同步块2. 线程A首先进入同步块1中, 由于isLocked此时为false, 所以线程A无需进入等待状态. 在线程A进入同步块2之前, 线程B抢先拿到了this锁, 进入同步块1. 由于线程A还未修改isLocked参数, 所以线程B也未进入等待状态, 这样导致Lock的互斥功能失效, 发生了Slipped conditions.<br>修改方法很简单, 只需要将两个同步块合并为一个即可, 这样就杜绝了条件修改前有其他线程获得锁:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Lock</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">boolean</span> isLocked = <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">      <span class="keyword">while</span>(isLocked) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="keyword">this</span>.wait();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">          <span class="comment">//do nothing, keep waiting</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      isLocked = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    isLocked = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.notify();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-Java中的Lock"><a href="#4-Java中的Lock" class="headerlink" title="4. Java中的Lock"></a>4. Java中的Lock</h2><p>锁与synchronized同步块作用相同, 都是一种线程同步机制. 从Java 5后, <strong>java.util.concurrent.locks</strong>包中包含了很多锁的实现, 所以不必再使用synchronized同步块来实现自己的锁</p>
+<h2 id="4-1-Lock和Synchronized-Block的区别"><a href="#4-1-Lock和Synchronized-Block的区别" class="headerlink" title="4.1 Lock和Synchronized Block的区别"></a>4.1 Lock和Synchronized Block的区别</h2><ol>
+<li>同步块必须以函数的形式包裹代码; Lock调用lock()和unlock()来包裹代码</li>
+<li>同步块不支持公平性, 无法确定下一个进入同步块的线程是哪一个; 但Lock包含很多提供公平性的属性, 可通过设置这些属性来达到公平性</li>
+<li>当线程无法进入同步块时会被阻塞; Lock提供了一个非阻塞的函数tryLock(), 可使用该函数询问锁当前是否可用: 如果可用则返回true, 不可用则返回false. 这样减少了许多阻塞时间</li>
+<li>当线程处于等待进入同步块的阻塞状态时无法被中断; Lock提供了lockInterruptibly()来中断阻塞</li>
+<li>同步块在任何异常的情况下都会解除monitor上的锁; Lock在发生异常时不会自动调用unlock(), 需手动调用</li>
+</ol>
+<h3 id="4-2-使用Java锁"><a href="#4-2-使用Java锁" class="headerlink" title="4.2 使用Java锁"></a>4.2 使用Java锁</h3><p>以下为同步块和lock实现线程同步的代码:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Synchronized Block */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Counter</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">inc</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> ++count;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Lock */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Counter</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> Lock lock = <span class="keyword">new</span> Lock();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">inc</span><span class="params">()</span></span>&#123;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="keyword">int</span> newCount = ++count;</span><br><span class="line">    lock.unlock();</span><br><span class="line">    <span class="keyword">return</span> newCount;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-锁的可重入性"><a href="#4-3-锁的可重入性" class="headerlink" title="4.3 锁的可重入性"></a>4.3 锁的可重入性</h3><p>Java的同步块时可重入的. 重入性: 当一个线程进入同步块后, 可以再次进入由同一monitor同步的另一个同步块中. 例如:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Reentrant</span></span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">f1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    f2();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">f2</span><span class="params">()</span> </span>&#123; </span><br><span class="line">    <span class="comment">/* do something */</span> </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>f1()和f2()都由this的monitor同步, 当某线程进入f1()后, 说明该线程获得了this的monitor上的锁, 则进入f2()时不被阻塞</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Reentrant2</span></span>&#123;</span><br><span class="line">  Lock lock = <span class="keyword">new</span> Lock();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">f1</span><span class="params">()</span></span>&#123;</span><br><span class="line">    lock.lock();</span><br><span class="line">    f2();</span><br><span class="line">    lock.unlock();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">f2</span><span class="params">()</span></span>&#123;</span><br><span class="line">    lock.lock();</span><br><span class="line">    <span class="comment">//do something</span></span><br><span class="line">    lock.unlock();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果是简单的Lock实现, 则上述代码会被阻塞. 因为在f1()函数中lock()会将lock.isLocked设置为true, f2()的lock()则会阻塞. 为了实现可重入性, 需要对Lock实现进行一些改动:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Lock</span></span>&#123;</span><br><span class="line">  <span class="keyword">boolean</span> isLocked = <span class="keyword">false</span>;</span><br><span class="line">  Thread  lockedBy = <span class="keyword">null</span>;    <span class="comment">/* 记录锁的持有者, 实现可重入性的关键 */</span></span><br><span class="line">  <span class="keyword">int</span> lockedCount = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123;</span><br><span class="line">    Thread callingThread = Thread.currentThread();</span><br><span class="line">    <span class="keyword">while</span> (isLocked &amp;&amp; lockedBy != callingThread) &#123;   <span class="comment">/* 可重入性检测 */</span></span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line">    isLocked = <span class="keyword">true</span>;</span><br><span class="line">    lockedCount++;</span><br><span class="line">    lockedBy = callingThread;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (Thread.currentThread() == <span class="keyword">this</span>.lockedBy) &#123;</span><br><span class="line">      lockedCount--;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span>(lockedCount == <span class="number">0</span>)&#123;</span><br><span class="line">        isLocked = <span class="keyword">false</span>;</span><br><span class="line">        notify();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-finally中调用unlock"><a href="#4-4-finally中调用unlock" class="headerlink" title="4.4 finally中调用unlock()"></a>4.4 finally中调用unlock()</h3><p>如果Lock保护的临界区可能抛出异常, 那么必须在finally中调用unlock(), 否则该Lock对象永远无法解锁</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">lock.lock();</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="comment">//do critical section code which may throw exception</span></span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">  lock.unlock();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-读写锁"><a href="#5-读写锁" class="headerlink" title="5. 读写锁"></a>5. 读写锁</h2><p>Java的Lock虽然能实现多线程的同步, 但有时写操作没有读操作那么频繁, 所以需要多个线程同时读取资源, 但写操作不能和其他操作同时进行. 因此需要引入读写锁</p>
+<h3 id="5-1-读写锁的简单实现"><a href="#5-1-读写锁的简单实现" class="headerlink" title="5.1 读写锁的简单实现"></a>5.1 读写锁的简单实现</h3><p>读写锁的访问资源有两个方面:</p>
+<ul>
+<li>读取: 当前没有写操作进行, 且没有写操作的请求</li>
+<li>写入: 没有线程进行读写操作</li>
+</ul>
+<p>由于读操作较为频繁, 所以需要提高写操作的优先级. 一旦出现写操作的锁申请, 则不能给读操作分配锁</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReadWriteLock</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> readers = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> writers = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> writeRequests = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 无写操作和写操作请求时可申请读操作锁 */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">lockRead</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(writers &gt; <span class="number">0</span> || writeRequests &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line">    readers++;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlockRead</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    readers--;</span><br><span class="line">    notifyAll();  <span class="comment">/* 唤醒所有线程, 这样能使得所有读操作立即获得读锁 */</span></span><br><span class="line">  &#125;</span><br><span class="line">    </span><br><span class="line">  <span class="comment">/* 无其他读写操作时可申请写操作锁, 否则增加一个写操作申请 */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">lockWrite</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    writeRequests++;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(readers &gt; <span class="number">0</span> || writers &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line">    writeRequests--;</span><br><span class="line">    writers++;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlockWrite</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    writers--;</span><br><span class="line">    notifyAll();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-读锁的重入"><a href="#5-2-读锁的重入" class="headerlink" title="5.2 读锁的重入"></a>5.2 读锁的重入</h3><p>上述的读写锁并不是可重入的, 对于一个已经持有写锁的线程来说, 如果该线程再次申请写锁时会被阻塞. 而且读写锁的重入性可能导致锁死, 如下:</p>
+<ol>
+<li>线程A持有读锁</li>
+<li>线程B请求写锁, 但由于线程A持有读锁, 所以写锁被阻塞</li>
+<li>线程A再次请求读锁, 但由于线程B的写锁请求, 导致读锁重入失败, 被阻塞</li>
+</ol>
+<p>解决这种锁死的思路很简单: 提高重入性的优先级. 在上一节中, 写锁的申请优先级高于读锁的优先级, 在引入重入性后, 写锁和重入的优先级比较没有确定. 为了打破死锁, 需要让读锁的申请规则改变, 让读锁重入性的优先级高于写锁的优先级:</p>
+<ol>
+<li>若没有写锁或没有写锁的申请, 则分配读锁</li>
+<li>若已有读锁, 则无视写请求, 直接分配读锁</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 利用map记录该线程是否持有锁和获取锁的次数</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReadWriteLock</span></span>&#123;</span><br><span class="line">  <span class="keyword">private</span> Map&lt;Thread, Integer&gt; readingThreads = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> writers = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> writeRequests = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">lockRead</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123;</span><br><span class="line">    Thread callingThread = Thread.currentThread();</span><br><span class="line">    <span class="comment">/* 检测获取读锁的条件是否符合 */</span></span><br><span class="line">    <span class="keyword">while</span> (!canGrantReadAccess(callingThread)) &#123;  </span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    readingThreads.put(callingThread, </span><br><span class="line">      (readingThreads.getOrDefault(callingThread, <span class="number">0</span>) + <span class="number">1</span>));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlockRead</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Thread callingThread = Thread.currentThread();</span><br><span class="line">    <span class="keyword">int</span> accessCount = readingThreads.getOrDefault(callingThread, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (accessCount == <span class="number">1</span>) &#123;</span><br><span class="line">      readingThreads.remove(callingThread);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      readingThreads.put(callingThread, accessCount - <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    notifyAll();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">canGrantReadAccess</span><span class="params">(Thread callingThread)</span></span>&#123;</span><br><span class="line">    <span class="comment">/* 无写入操作 - 基本条件 */</span></span><br><span class="line">    <span class="keyword">if</span> (writers &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 重入检测 - 高优先级防死锁 */</span></span><br><span class="line">    <span class="keyword">if</span> (readingThreads.get(callingThread) != <span class="keyword">null</span>) </span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 非重入时 - 先让给写操作 */</span></span><br><span class="line">    <span class="keyword">return</span> !(writeRequests &gt; <span class="number">0</span>);                </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-写锁的重入性"><a href="#5-3-写锁的重入性" class="headerlink" title="5.3 写锁的重入性"></a>5.3 写锁的重入性</h3><p>写锁的重入性实现比较简单, 因为重入写锁时并没有阻塞, 只需要记录写锁和当前线程的关系即可</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReadWriteLock</span></span>&#123;</span><br><span class="line">  <span class="keyword">private</span> Map&lt;Thread, Integer&gt; readingThreads = <span class="keyword">new</span> HashMap&lt;Thread, Integer&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> writeAccesses = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> writeRequests = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> Thread writingThread = <span class="keyword">null</span>;    <span class="comment">/* 写锁和当前线程的关系 */</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">lockWrite</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123;</span><br><span class="line">    writeRequests++;</span><br><span class="line">    Thread callingThread = Thread.currentThread();</span><br><span class="line">    <span class="keyword">while</span>(!canGrantWriteAccess(callingThread))&#123; <span class="comment">/* 判断是否可获取写锁 */</span></span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line">    writeRequests--;</span><br><span class="line">    writeAccesses++;</span><br><span class="line">    writingThread = callingThread;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlockWrite</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException</span>&#123;</span><br><span class="line">    writeAccesses--;</span><br><span class="line">    <span class="keyword">if</span>(writeAccesses == <span class="number">0</span>)&#123;</span><br><span class="line">      writingThread = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    notifyAll();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">canGrantWriteAccess</span><span class="params">(Thread callingThread)</span></span>&#123;</span><br><span class="line">    <span class="comment">/* 无读锁存在 - 基本条件 */</span></span><br><span class="line">    <span class="keyword">if</span>(readingThreads.size() &gt; <span class="number">0</span>) </span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 无读锁也没写锁 */</span></span><br><span class="line">    <span class="keyword">if</span>(writingThread == <span class="keyword">null</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 实现重写性 */</span></span><br><span class="line">    <span class="keyword">return</span> writingThread == callingThread;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-读锁升级到写锁"><a href="#5-4-读锁升级到写锁" class="headerlink" title="5.4 读锁升级到写锁"></a>5.4 读锁升级到写锁</h3><p>读锁升级为写锁的唯一条件: 该线程是唯一一个拥有读锁的线程. 因为此时:</p>
+<ol>
+<li>没有线程拥有写锁, 因为有读锁存在, 可升级写锁</li>
+<li>该线程的读锁升级完写锁后, 不存在其他读锁, 实现写锁的排他性</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReadWriteLock</span></span>&#123;</span><br><span class="line">  <span class="keyword">private</span> Map&lt;Thread, Integer&gt; readingThreads = <span class="keyword">new</span> HashMap&lt;Thread, Integer&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> writeAccesses    = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">int</span> writeRequests    = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">private</span> Thread writingThread = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">lockWrite</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    writeRequests++;</span><br><span class="line">    Thread callingThread = Thread.currentThread();</span><br><span class="line">    <span class="keyword">while</span> (!canGrantWriteAccess(callingThread)) &#123;</span><br><span class="line">      wait();</span><br><span class="line">    &#125;</span><br><span class="line">    writeRequests--;</span><br><span class="line">    writeAccesses++;</span><br><span class="line">    writingThread = callingThread;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">unlockWrite</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    writeAccesses--;</span><br><span class="line">    <span class="keyword">if</span> (writeAccesses == <span class="number">0</span>) &#123;</span><br><span class="line">      writingThread = <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    notifyAll();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">canGrantWriteAccess</span><span class="params">(Thread callingThread)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (isOnlyReader(callingThread)) <span class="keyword">return</span> <span class="keyword">true</span>;    <span class="comment">/* 读锁升级为写锁 */</span></span><br><span class="line">    <span class="keyword">if</span> (readingThreads.size() &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">false</span>;     <span class="comment">/* 读锁数量大于等于1 */</span></span><br><span class="line">    <span class="keyword">if</span> (writingThread == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="keyword">true</span>;          <span class="comment">/* 无读锁的情况下申请写锁 */</span></span><br><span class="line">    <span class="keyword">return</span> writingThread == callingThread;          <span class="comment">/* 重入性 */</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isOnlyReader</span><span class="params">(Thread callingThread)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> readingThreads.size() == <span class="number">1</span> &amp;&amp; readingThreads.get(callingThread) != <span class="keyword">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-5-写锁降级为读锁"><a href="#5-5-写锁降级为读锁" class="headerlink" title="5.5 写锁降级为读锁"></a>5.5 写锁降级为读锁</h3><p>写锁降为读锁没有任何风险, 只要修改一下判断条件即可</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReadWriteLock</span></span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">canGrantReadAccess</span><span class="params">(Thread callingThread)</span> </span>&#123;</span><br><span class="line">    <span class="comment">/* 写锁降级为读锁 */</span></span><br><span class="line">    <span class="keyword">if</span> (writingThread == callingThread) </span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 已有写锁 */</span></span><br><span class="line">    <span class="keyword">if</span> (writingThread != <span class="keyword">null</span>) </span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* 重入性 */</span>  </span><br><span class="line">    <span class="keyword">if</span> (isReader(callingThread))</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 写锁请求 */</span></span><br><span class="line">    <span class="keyword">return</span> writeRequests == <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-6-在finally中调用unlock"><a href="#5-6-在finally中调用unlock" class="headerlink" title="5.6 在finally中调用unlock()"></a>5.6 在finally中调用unlock()</h3><p>由于临界区可能发生异常导致没有解锁, 所以需要在finally中调用unlock()</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">lock.lockWrite();</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="comment">//do critical section code, which may throw exception</span></span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">  lock.unlockWrite();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Concurrency/">Concurrency</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/743493317.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">C++11 (Part 1)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2597545043.html">
+        <span class="next-text nav-default">Java Concurrency (Part 1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/2833581777.html';
+  var disqus_title = "Java Concurrency (Part 2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

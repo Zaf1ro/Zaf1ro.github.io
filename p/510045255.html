@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="C++11 (Part 2)">
+
+
+
+
+  <meta name="keywords" content="C++,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/510045255.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/510045255.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/510045255.html">
+
+
+<meta name="description" content="1. Delegating constructors1.1 诞生原因C++一直没有提供构造函数的委托机制(delegating constructor), 这导致不提供使用缺省参数, 也使得程序员必须维护多个构造函数, 且构造函数之间的代码大量冗余. class X&amp;#123;private:  int i_;public:  X()  &amp;#123;    // dosomethingelse">
+<meta name="keywords" content="C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++11 (Part 2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/510045255.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. Delegating constructors1.1 诞生原因C++一直没有提供构造函数的委托机制(delegating constructor), 这导致不提供使用缺省参数, 也使得程序员必须维护多个构造函数, 且构造函数之间的代码大量冗余. class X&amp;#123;private:  int i_;public:  X()  &amp;#123;    // dosomethingelse">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2020-07-22T00:31:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++11 (Part 2)">
+<meta name="twitter:description" content="1. Delegating constructors1.1 诞生原因C++一直没有提供构造函数的委托机制(delegating constructor), 这导致不提供使用缺省参数, 也使得程序员必须维护多个构造函数, 且构造函数之间的代码大量冗余. class X&amp;#123;private:  int i_;public:  X()  &amp;#123;    // dosomethingelse">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+C++11 (Part 2) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Delegating-constructors"><span class="toc-text">1. Delegating constructors</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-诞生原因"><span class="toc-text">1.1 诞生原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-delegating-constructors"><span class="toc-text">1.2 delegating constructors</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-需要注意的问题"><span class="toc-text">1.3 需要注意的问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Explicit-virtual-overrides"><span class="toc-text">2. Explicit virtual overrides</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-诞生原因"><span class="toc-text">2.1 诞生原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-override关键字"><span class="toc-text">2.2 override关键字</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Final-specifier"><span class="toc-text">3. Final specifier</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-诞生原因"><span class="toc-text">3.1 诞生原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-final关键字"><span class="toc-text">3.2 final关键字</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-extern-template"><span class="toc-text">4. extern template</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-分离式编译"><span class="toc-text">4.1 分离式编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-模板分离式编译导致的问题"><span class="toc-text">4.2 模板分离式编译导致的问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Range-based-for-loop"><span class="toc-text">5. Range-based for loop</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Lambda-functions-and-expressions"><span class="toc-text">6. Lambda functions and expressions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Strongly-typed-enumerations"><span class="toc-text">7. Strongly typed enumerations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-诞生原因"><span class="toc-text">7.1 诞生原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-强类型枚举"><span class="toc-text">7.2 强类型枚举</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Unrestricted-unions"><span class="toc-text">8. Unrestricted unions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Template-aliases"><span class="toc-text">9. Template aliases</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-New-string-literals"><span class="toc-text">10. New string literals</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          C++11 (Part 2)
+        
+      </h1>
+      <time class="post-time">
+          07/10/18
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Delegating-constructors"><a href="#1-Delegating-constructors" class="headerlink" title="1. Delegating constructors"></a>1. Delegating constructors</h2><h3 id="1-1-诞生原因"><a href="#1-1-诞生原因" class="headerlink" title="1.1 诞生原因"></a>1.1 诞生原因</h3><p>C++一直没有提供构造函数的委托机制(delegating constructor), 这导致不提供使用缺省参数, 也使得程序员必须维护多个构造函数, 且构造函数之间的代码大量冗余.</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">X</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> i_;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  X()</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// dosomethingelse</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  X(<span class="keyword">int</span> i) : i_(i) <span class="comment">// 编译不报错, 为undefined behavior</span></span><br><span class="line">  &#123;</span><br><span class="line">    X();</span><br><span class="line">  &#125; </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-delegating-constructors"><a href="#1-2-delegating-constructors" class="headerlink" title="1.2 delegating constructors"></a>1.2 delegating constructors</h3><p>C++11引入委托构造函数, 这样类内的其中一个构造函数(称为委托构造函数, delegating constructor)能在初始化列表(initializer list)中调用另一个构造函数(称为目标构造函数, target constructor). 当然, 委托构造函数也可被其他构造函数调用.</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">X</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> i_;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  X(<span class="keyword">int</span> i): i_(i) &#123;&#125;  <span class="comment">// target constructor</span></span><br><span class="line">  X(): X(<span class="number">42</span>) &#123;&#125;       <span class="comment">// delegating constructor</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-需要注意的问题"><a href="#1-3-需要注意的问题" class="headerlink" title="1.3 需要注意的问题"></a>1.3 需要注意的问题</h3><ol>
+<li><p>delegating constructor最多只能调用一个target constructor, 且不能在调用target constructor时进行成员初始化</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">X</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> i_;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  X(<span class="keyword">int</span> i) : X(), i_(i) &#123;&#125; <span class="comment">// error, an initializer for a delegating constructor must appear alone</span></span><br><span class="line">  X() &#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>delegating constructor的递归调用是undefined behavior</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">X</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  X(<span class="keyword">int</span> i): X() &#123;&#125; <span class="comment">// 可能报错, 也可能不报错</span></span><br><span class="line">  X(): X(<span class="number">42</span>) &#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>target constructor中的语句执行完才会执行delegating constructor中的语句; target constructor中的临时变量不会作用到delegating constructor中</p>
+</li>
+<li><p>C++03中一个object声明周期开始的标志为constructor执行完毕, C++11修改了这一规定: object生命周期开始的标志为其中一个constructor执行完毕. 因为C++03中并没有委托机制, 所以整个初始化只有一个constructor在执行; 而C++11中引入了委托机制, 所以初始化过程中不止一个constructor执行. 这样保证一旦初始化抛出异常, 会自动调用析构函数.</p>
+</li>
+<li><p>template delegating constructor的类型推导不变</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">X</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">  X(T begin, T end) : l_(begin, end) &#123;&#125;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">list</span>&lt;<span class="keyword">int</span>&gt; l_;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  X(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">char</span>&gt; &amp;);</span><br><span class="line">  X(<span class="built_in">std</span>::<span class="built_in">deque</span>&lt;<span class="keyword">int</span>&gt; &amp;);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">X::X(<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">char</span>&gt; &amp;v): X(v.begin(), v.end()) &#123;&#125;</span><br><span class="line">X::X(<span class="built_in">std</span>::<span class="built_in">deque</span>&lt;<span class="keyword">int</span>&gt; &amp;d): X(d.begin(), d.end()) &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">char</span>&gt; v&#123;<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>&#125;;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">deque</span>&lt;<span class="keyword">int</span>&gt; d&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">  X x1&#123;v&#125;;</span><br><span class="line">  X x2&#123;d&#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h2 id="2-Explicit-virtual-overrides"><a href="#2-Explicit-virtual-overrides" class="headerlink" title="2. Explicit virtual overrides"></a>2. Explicit virtual overrides</h2><h3 id="2-1-诞生原因"><a href="#2-1-诞生原因" class="headerlink" title="2.1 诞生原因"></a>2.1 诞生原因</h3><p>C++中的重写存在两个问题:</p>
+<ol>
+<li><p>C++中重写(override, 子类重写父类相同函数名和参数的virtual function)和重定义(redefine, 子类重定义父类相同函数名的non-virtual function)比较相似, 且编译器不会提醒你是否在重写/重定义.</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">(<span class="keyword">int</span>)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Derived</span>:</span> <span class="keyword">public</span> Base</span><br><span class="line">&#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> <span class="comment">// 本想重写, 结果变成了重定义</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>当修改base class的virtual function的函数名或参数时, 程序员可能忘记修改derived class中的override function</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">func</span><span class="params">(<span class="keyword">double</span>)</span> <span class="comment">// func(int) -&gt; func(double)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Derived</span>:</span> <span class="keyword">public</span> Base</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">(<span class="keyword">int</span>)</span> <span class="comment">// 忘记修改子类中func的参数类型</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h3 id="2-2-override关键字"><a href="#2-2-override关键字" class="headerlink" title="2.2 override关键字"></a>2.2 override关键字</h3><p>C++11引入override关键字保证derived class中函数能够成功地重写base class中拥有相同签名的虚函数(相同的函数名和参数列表), 否则编译错误.</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">func</span><span class="params">()</span> <span class="keyword">const</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Derived</span>:</span> <span class="keyword">public</span> Base</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span> override <span class="comment">// error, doesn't override any member functions</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">func</span><span class="params">()</span> <span class="keyword">const</span> override</span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-Final-specifier"><a href="#3-Final-specifier" class="headerlink" title="3. Final specifier"></a>3. Final specifier</h2><h3 id="3-1-诞生原因"><a href="#3-1-诞生原因" class="headerlink" title="3.1 诞生原因"></a>3.1 诞生原因</h3><p>override关键字解决了明确表示函数重写的问题, 但这也诞生了一个新的问题: 如何避免子类重写父类的函数</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AbstractLibrary</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">func</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Library</span>:</span> <span class="keyword">public</span> AbstractLibrary</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">func</span><span class="params">()</span> override <span class="comment">// Library不想让用户重写该函数</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>:</span> <span class="keyword">public</span> Library</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">func</span><span class="params">()</span> override <span class="comment">// User成功重写了Library中的函数</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-final关键字"><a href="#3-2-final关键字" class="headerlink" title="3.2 final关键字"></a>3.2 final关键字</h3><p>C++11引入final关键字来让防止父类的函数被子类重写</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AbstractLibrary</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">func</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Library</span>:</span> <span class="keyword">public</span> AbstractLibrary</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">func</span><span class="params">()</span> override final</span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span>:</span> <span class="keyword">public</span> Library</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">func</span><span class="params">()</span> override <span class="comment">// error, cannot overrides a 'final' function</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-extern-template"><a href="#4-extern-template" class="headerlink" title="4. extern template"></a>4. extern template</h2><h3 id="4-1-分离式编译"><a href="#4-1-分离式编译" class="headerlink" title="4.1 分离式编译"></a>4.1 分离式编译</h3><p>C++支持分离式编译(分别编译项目中的各个源文件, 生成目标文件, 最后链接成可执行文件, 这种编译方式更适合模块化开发, 且编译速度更快). 但分离式编译并不适用于template, 原因如下:</p>
+<ol>
+<li><p>分离式编译之所以能实现, 是因为每个编译单元(translation unit)中的非模板类和函数在编译阶段都会生成二进制码</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/********** test.cpp **********/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/********** main.cpp **********/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">f</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> i = f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>一个template要想具现成二进制码, 不仅需要template的声明, 更需要其中函数定义的实现. 所以C++不支持通过template声明来隐式实例化一个template</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/********** test.cpp **********/</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">  <span class="function">T <span class="title">f</span><span class="params">(T)</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/********** test.cpp **********/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"test.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">T C&lt;T&gt;::f(T x)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> x;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/********** main.cpp **********/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"test.h"</span> <span class="comment">// test.h中没有template中函数的实现</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  C&lt;<span class="keyword">int</span>&gt; *pc = <span class="keyword">new</span> C&lt;<span class="keyword">int</span>&gt;(); <span class="comment">// 编译器无法具现一个类型为int的template, 链接时报错</span></span><br><span class="line">  <span class="keyword">int</span> i = pc-&gt;f(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>有两种解决方法: 将template的声明和实现放在一起, 或<strong>显示实例化</strong>(explicit instantation)一个类型为int的template, 这样编译器才会具现化其二进制码.</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/********** test.cpp **********/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"test.h"</span> <span class="comment">// test.h中的内容不变</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">T C&lt;T&gt;::f(T x)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> x;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> <span class="class"><span class="keyword">class</span> <span class="title">C</span>&lt;int&gt;;</span> <span class="comment">// explicit instantation</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/********** main.cpp **********/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"test.h"</span> <span class="comment">// test.h所链接的test.cpp已经有一个类型为int的template实例</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  C&lt;<span class="keyword">int</span>&gt; *pc = <span class="keyword">new</span> C&lt;<span class="keyword">int</span>&gt;();</span><br><span class="line">  <span class="keyword">int</span> i = pc-&gt;f(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-模板分离式编译导致的问题"><a href="#4-2-模板分离式编译导致的问题" class="headerlink" title="4.2 模板分离式编译导致的问题"></a>4.2 模板分离式编译导致的问题</h3><p>当多个源文件使用同一个类型的同一template时, 编译时会隐式实例化每个源文件中的template, 并生成该类型template的二进制码, 而在链接时又会移除多余的实例化二进制码. 因此C++11引进了extern template来防止编译器生成冗余的二进制码, 从而加快编译和链接速度</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/********** test.cpp **********/</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function">T <span class="title">f</span><span class="params">(T x)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/********** use1.cpp **********/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"test.cpp"</span></span></span><br><span class="line">C&lt;<span class="keyword">int</span>&gt; *p1 = <span class="keyword">new</span> C&lt;<span class="keyword">int</span>&gt;(); <span class="comment">// 隐式实例化, 生成一个可用的template实例</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/********** use2.cpp **********/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"test.cpp"</span></span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">template</span> <span class="class"><span class="keyword">class</span> <span class="title">C</span>&lt;int&gt;;</span> <span class="comment">// 其他源文件已经生成了int类型的template实例, 告诉编译器不需要实例化</span></span><br><span class="line">C&lt;<span class="keyword">int</span>&gt; *p2 = <span class="keyword">new</span> C&lt;<span class="keyword">int</span>&gt;();</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-Range-based-for-loop"><a href="#5-Range-based-for-loop" class="headerlink" title="5. Range-based for loop"></a>5. Range-based for loop</h2><p>C++11对for语句进行了扩展， 使得程序员能更简单的遍历list和container</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> arr[<span class="number">5</span>] = &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span> &#125;;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">auto</span>&amp; x: arr) &#123;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; x &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>C风格的array， initializer list和STL中的container都可以使用range-based for来遍历元素. 其他还有begin()和end()的类型也可以使用range-based for.</p>
+<h2 id="6-Lambda-functions-and-expressions"><a href="#6-Lambda-functions-and-expressions" class="headerlink" title="6. Lambda functions and expressions"></a>6. Lambda functions and expressions</h2><p>C++11提供了匿名函数的创建方法， 也称为lambda funtion(或lambda expression)</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[Capture Clause](Parameter List) mutable throw() -&gt; return_type &#123; Function Body &#125;</span><br></pre></td></tr></table></figure>
+
+<p>lambda expression有以下几个部分组成:</p>
+<ol>
+<li><p>Capture Clause<br>Lambda支持使用cpture clause从当前范围内导入变量, 引入的方式可使用值传递和引用传递</p>
+<ol>
+<li>[]: Capture nothing</li>
+<li>[&amp;]: Capture any referenced variable by reference</li>
+<li>[=]: Capture any referenced variable by value</li>
+<li>[=, &amp;foo]: Capture any referenced variable by value except <strong>foo</strong></li>
+<li>[bar]: Capture bar by value and don’t caputure anyone</li>
+<li>[this]: Capture the pointer of the enclosing class</li>
+</ol>
+</li>
+<li><p>Parameter List<br>除了从外部引入变量, 还可以接受输入的参数. 参数也可使用值传递和引用传递</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> total = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; vec = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line"><span class="built_in">std</span>::for_each(<span class="built_in">std</span>::begin(vec), <span class="built_in">std</span>::end(vec), [&amp;total](<span class="keyword">int</span>&amp; x) &#123;</span><br><span class="line">  total += x;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>mutable关键字<br>当lambda使用值传递时, 默认会有const限制. 可用mutable取消限制</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">auto</span> f1 = [i]() &#123; <span class="keyword">return</span> ++i; &#125;; <span class="comment">// error, **total** is read-only variable</span></span><br><span class="line"><span class="keyword">auto</span> f2 = [i]() <span class="keyword">mutable</span> &#123; <span class="keyword">return</span> ++i; &#125;; <span class="comment">// it works</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Throw<br>Lambda支持异常处理</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">[]()<span class="keyword">throw</span> () &#123; <span class="comment">/* code that you don't expect to throw an exception*/</span> &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Return Value</p>
+<ol>
+<li><p>若无返回值, 则默认返回类型为void</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">[]&#123; <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Hello, World"</span>; &#125;; <span class="comment">// 返回类型为void</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>若有返回值, 编译器会通过return statement的类型推到返回类型; 但如果编译器无法推导出返回类型, 则会默认返回类型为void</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">auto</span> f1 = [](<span class="keyword">int</span> x, <span class="keyword">int</span> y) &#123; <span class="keyword">return</span> x + y; &#125;; <span class="comment">// 返回类型为int</span></span><br><span class="line"><span class="comment">// auto f2 = []() &#123; return &#123; 1, 2 &#125;; &#125;; // error, deduce return type from braced-list is not valid</span></span><br><span class="line"><span class="keyword">auto</span> f3 = []() -&gt; <span class="built_in">std</span>::<span class="built_in">initializer_list</span>&lt;<span class="keyword">int</span>&gt; &#123; <span class="keyword">return</span> &#123; <span class="number">1</span>, <span class="number">2</span> &#125;; &#125;;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="7-Strongly-typed-enumerations"><a href="#7-Strongly-typed-enumerations" class="headerlink" title="7. Strongly typed enumerations"></a>7. Strongly typed enumerations</h2><h3 id="7-1-诞生原因"><a href="#7-1-诞生原因" class="headerlink" title="7.1 诞生原因"></a>7.1 诞生原因</h3><p>C语言已经存在枚举类型(enum), C++为了兼容C自然也引入了枚举. 枚举提供了一种生成多个#define常量的功能, 并且相对于#define来说作用域更小.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Right 1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Left 2</span></span><br><span class="line"><span class="comment">/* equal to */</span></span><br><span class="line"><span class="keyword">enum</span> E1</span><br><span class="line">&#123;</span><br><span class="line">  Right = <span class="number">1</span>,</span><br><span class="line">  Left</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>但枚举存在以下问题:</p>
+<ol>
+<li><p>enum中枚举量(enumerator)暴露在外层作用域中, 因此一个作用域下的不同枚举不能有相同的枚举量</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">enum</span> E1</span><br><span class="line">&#123;</span><br><span class="line">  Right = <span class="number">-1</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> E2</span><br><span class="line">&#123;</span><br><span class="line">  Right = <span class="number">1</span> <span class="comment">// error, redefinition of enumerator 'Right'</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>无法确定enum的大小, 虽然C++允许编译器使用任意整型类型来表示枚举量, 且没有规定是否有符号(signedness)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">enum</span> Selection</span><br><span class="line">&#123;</span><br><span class="line">  Multiple = <span class="number">0xFFFF0000</span>U <span class="comment">// 根据编译器不同得出不同结果</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>enum中的枚举量为整型常量, 所以可以进行各种隐式转换(implicit conversion):</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">enum</span> E1</span><br><span class="line">&#123;</span><br><span class="line">  Right = <span class="number">1</span>,</span><br><span class="line">  Left</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> E2</span><br><span class="line">&#123;</span><br><span class="line">  Right_ = <span class="number">1</span>,</span><br><span class="line">  Left_</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (Right); <span class="comment">// 隐式转换为boolean</span></span><br><span class="line"><span class="keyword">double</span> i = Right; <span class="comment">// 隐式转换为double</span></span><br><span class="line"><span class="keyword">if</span> (E1::Right == E2::Right_); <span class="comment">// 与其他enum的枚举量对比</span></span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h3 id="7-2-强类型枚举"><a href="#7-2-强类型枚举" class="headerlink" title="7.2 强类型枚举"></a>7.2 强类型枚举</h3><p>Strongly-typed enumeration含有以下属性:</p>
+<ol>
+<li><p>若不声明类型, 则默认为int类型; 也可声明类型, 但必须为整形类型(bool, char, short, int, long), 且不限有无符号(signed, unsigned)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">E1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Right = <span class="number">-1</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">size_t</span> size1 = <span class="keyword">sizeof</span>(E1); <span class="comment">// E1的大小为4</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">E2</span> :</span> <span class="keyword">long</span> <span class="keyword">long</span> <span class="keyword">int</span></span><br><span class="line">&#123;</span><br><span class="line">  Right = <span class="number">-1</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">size_t</span> size2 = <span class="keyword">sizeof</span>(E1); <span class="comment">// E2的大小为8</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>enum中的枚举量必须在其命名空间(namespace)内使用, 不可直接作用于外部作用域</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">E1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Right</span><br><span class="line">&#125;;</span><br><span class="line">E1 r1 = Right; <span class="comment">// error, undeclared identifier</span></span><br><span class="line">E1 r2 = E1::Right;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>enum中的枚举量不能隐式转换为POD(Plain Old Data), 但可以使用static_cast或强制转换为POD. 也不能与其他enum中的枚举量对比</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">E1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Right</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> <span class="class"><span class="keyword">class</span> <span class="title">E2</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Right</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> r1 = E1::Right; <span class="comment">// error, E1 cannot be converted to int</span></span><br><span class="line"><span class="keyword">int</span> r2 = <span class="keyword">static_cast</span>&lt;<span class="keyword">int</span>&gt;(E1::Right);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (E1::Right == E2::Right); <span class="comment">// error</span></span><br><span class="line"><span class="keyword">if</span> ((<span class="keyword">int</span>)E1::Right == (<span class="keyword">int</span>)E2::Right);</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h2 id="8-Unrestricted-unions"><a href="#8-Unrestricted-unions" class="headerlink" title="8. Unrestricted unions"></a>8. Unrestricted unions</h2><p>C++03允许union中包含non-static类对象, 但其class中不能有自定义的non-trivial special emmeber functions(包括constructor, destructor, copy constructor, copy-assignment operator)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> _x;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">  C1() = <span class="keyword">default</span>;</span><br><span class="line">  C1(<span class="keyword">const</span> C1 &amp;c) = <span class="keyword">default</span>;</span><br><span class="line">  C1 &amp;<span class="keyword">operator</span>=(<span class="keyword">const</span> C1 &amp;) = <span class="keyword">default</span>;</span><br><span class="line">  ~C1() = <span class="keyword">default</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">union</span> U1 &#123;</span><br><span class="line">  C1 c; <span class="comment">// it works</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>C++11中移除了这个限制, 但依然不允许union中包含类对象的引用</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> _x;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">  C1()</span><br><span class="line">  &#123;</span><br><span class="line">    _x = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">union</span> U1 &#123;</span><br><span class="line">  C1 c; <span class="comment">// it works</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">union</span> U2 &#123;</span><br><span class="line">  C1 &amp;c; <span class="comment">// error, union memeber has reference type</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-Template-aliases"><a href="#9-Template-aliases" class="headerlink" title="9. Template aliases"></a>9. Template aliases</h2><p>C++可以用typedef关键字来为类型和函数定义别名(alias), 但并不支持为template起别名. C++11中支持了template alias(模板别名)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C1</span> &#123;</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> C2 = C1&lt;<span class="keyword">int</span>&gt; *; <span class="comment">// C2为C1&lt;int&gt;*类型的别名</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  C2 p = <span class="keyword">new</span> C1&lt;<span class="keyword">int</span>&gt;();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="10-New-string-literals"><a href="#10-New-string-literals" class="headerlink" title="10. New string literals"></a>10. New string literals</h2><p>C++03中提供了两种string literal(字符串字面量)来表示宽字符: <strong>wchar_t</strong>和<strong>L</strong></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">wchar_t</span> c = L'a'; <span class="comment">// wchar_t为2字节长度</span></span><br></pre></td></tr></table></figure>
+
+<p>C++11中引入了两种字符类型来表示16位和32位长度的字符: <strong>char16_t</strong>和<strong>char32_t</strong>, 还引入了三种字符串前缀标志来表示UTF-8, UTF-16和UTF-32: <strong>u8</strong>, <strong>u</strong>, <strong>U</strong></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *s1 = <span class="string">u8"abc"</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char16_t</span> *s2 = <span class="string">u"abc"</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char32_t</span> *s3 = <span class="string">U"abc"</span>;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/C/">C++</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/577071864.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Nested List Weight Sum</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/743493317.html">
+        <span class="next-text nav-default">C++11 (Part 1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/510045255.html';
+  var disqus_title = "C++11 (Part 2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

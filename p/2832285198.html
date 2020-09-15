@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="PyIntObject">
+
+
+
+
+  <meta name="keywords" content="Python,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/2832285198.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/2832285198.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/2832285198.html">
+
+
+<meta name="description" content="1. PyIntObject对象的基本认知Python的对象可以分为两种:可变对象和不可变对象, PyIntObject属于不可变对象. 也就是说, PyIntObject的值在创建后就无法修改.python中的整数使用十分频繁, 如果每个整数对象都要申请内存创建并在结束后释放内存, 那么运行效率将会大大降低. Python为了解决这个问题, 使用了整数对象池.下面是整数对象的定义: typede">
+<meta name="keywords" content="Python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PyIntObject">
+<meta property="og:url" content="https://zaf1ro.github.io/p/2832285198.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. PyIntObject对象的基本认知Python的对象可以分为两种:可变对象和不可变对象, PyIntObject属于不可变对象. 也就是说, PyIntObject的值在创建后就无法修改.python中的整数使用十分频繁, 如果每个整数对象都要申请内存创建并在结束后释放内存, 那么运行效率将会大大降低. Python为了解决这个问题, 使用了整数对象池.下面是整数对象的定义: typede">
+<meta property="og:locale" content="zh">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/PyIntObject-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/PyIntObject-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/PyIntObject-3.png">
+<meta property="og:updated_time" content="2019-11-07T20:17:13.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PyIntObject">
+<meta name="twitter:description" content="1. PyIntObject对象的基本认知Python的对象可以分为两种:可变对象和不可变对象, PyIntObject属于不可变对象. 也就是说, PyIntObject的值在创建后就无法修改.python中的整数使用十分频繁, 如果每个整数对象都要申请内存创建并在结束后释放内存, 那么运行效率将会大大降低. Python为了解决这个问题, 使用了整数对象池.下面是整数对象的定义: typede">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Python/PyIntObject-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+PyIntObject - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-PyIntObject对象的基本认知"><span class="toc-text">1. PyIntObject对象的基本认知</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-PyIntObject对象创建的3种途径"><span class="toc-text">2. PyIntObject对象创建的3种途径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-小整数对象"><span class="toc-text">3. 小整数对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-大整数对象"><span class="toc-text">4. 大整数对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-添加和删除"><span class="toc-text">5. 添加和删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-小整数对象池的初始化"><span class="toc-text">6. 小整数对象池的初始化</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          PyIntObject
+        
+      </h1>
+      <time class="post-time">
+          02/26/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-PyIntObject对象的基本认知"><a href="#1-PyIntObject对象的基本认知" class="headerlink" title="1. PyIntObject对象的基本认知"></a>1. PyIntObject对象的基本认知</h2><p>Python的对象可以分为两种:可变对象和不可变对象, PyIntObject属于不可变对象. 也就是说, PyIntObject的值在创建后就无法修改.<br>python中的整数使用十分频繁, 如果每个整数对象都要申请内存创建并在结束后释放内存, 那么运行效率将会大大降低. Python为了解决这个问题, 使用了整数对象池.<br>下面是整数对象的定义:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  PyObject_HEAD;</span><br><span class="line">  <span class="keyword">long</span> ob_ival;</span><br><span class="line">&#125; PyIntObject;</span><br></pre></td></tr></table></figure>
+
+<p>PyIntObject实际上是C中原生类型long的包装. Python中的对象的元信息都是保存在对象的类型对象中, PyIntObject的类型对象是PyInt_Type:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">PyTypeObject PyInt_Type = &#123;</span><br><span class="line">  PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line">  <span class="number">0</span>,</span><br><span class="line">  <span class="string">"int"</span>,</span><br><span class="line">  <span class="keyword">sizeof</span>(PyIntObject),</span><br><span class="line">  <span class="number">0</span>,</span><br><span class="line">  (destructor)int_dealloc,  <span class="comment">/* tp_dealloc */</span></span><br><span class="line">  (printfunc)int_print,     <span class="comment">/* tp_print */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_getattr */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_setattr */</span></span><br><span class="line">  (cmpfunc)int_compare,     <span class="comment">/* tp_compare */</span></span><br><span class="line">  (reprfunc)int_repr,       <span class="comment">/* tp_repr */</span></span><br><span class="line">  &amp;int_as_number,           <span class="comment">/* tp_as_number */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_as_sequence */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_as_mapping */</span></span><br><span class="line">  (hashfunc)int_hash,       <span class="comment">/* tp_hash */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_call */</span></span><br><span class="line">  (reprfunc)int_repr,       <span class="comment">/* tp_str */</span></span><br><span class="line">  PyObject_GenericGetAttr,  <span class="comment">/* tp_getattro */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_setattro */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_as_buffer */</span></span><br><span class="line">  Py_TPFLAGS_DEFAULT |      <span class="comment">/* tp_flags */</span></span><br><span class="line">  Py_TPFLAGS_CHECKTYPES |</span><br><span class="line">  Py_TPFLAGS_BASETYPE,		</span><br><span class="line">  int_doc,                  <span class="comment">/* tp_doc */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_traverse */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_clear */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_richcompare */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_weaklistoffset */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_iter */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_iternext */</span></span><br><span class="line">  int_methods,              <span class="comment">/* tp_methods */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_members */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_getset */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_base */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_dict */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_descr_get */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_descr_set */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_dictoffset */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_init */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_alloc */</span></span><br><span class="line">  int_new,                  <span class="comment">/* tp_new */</span></span><br><span class="line">  (freefunc)int_free,       <span class="comment">/* tp_free */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>下面是PyIntObject所支持的操作:</p>
+<table>
+<thead>
+<tr>
+<th align="center">函数</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">int_dealloc</td>
+<td align="center">PyIntObject对象的析构操作</td>
+</tr>
+<tr>
+<td align="center">int_free</td>
+<td align="center">PyIntObject对象的释放操作</td>
+</tr>
+<tr>
+<td align="center">int_repr</td>
+<td align="center">转化为PyStringObject对象</td>
+</tr>
+<tr>
+<td align="center">int_hash</td>
+<td align="center">获得HASH值</td>
+</tr>
+<tr>
+<td align="center">int_print</td>
+<td align="center">打印PyIntObject对象</td>
+</tr>
+<tr>
+<td align="center">int_compare</td>
+<td align="center">比较操作</td>
+</tr>
+<tr>
+<td align="center">int_as_number</td>
+<td align="center">数值操作集合</td>
+</tr>
+<tr>
+<td align="center">int_methods</td>
+<td align="center">成员函数集合</td>
+</tr>
+</tbody></table>
+<p>下面可以看到两个整数对象如何对比大小:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">int_compare</span><span class="params">(PyIntObject* v, PyIntObject* w)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">register</span> <span class="keyword">long</span> i = v-&gt;ob_ival;</span><br><span class="line">  <span class="keyword">register</span> <span class="keyword">long</span> j = w-&gt;ob_ival;</span><br><span class="line">  <span class="keyword">return</span> (i &lt; j) ? <span class="number">-1</span> : (i &gt; j) ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面是int_as_number:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">stati PyNumberMethods int_as_number = (</span><br><span class="line">  (binaryfunc)int_add,  <span class="comment">/*nb_add*/</span></span><br><span class="line">  (binaryfunc)int_sub,  <span class="comment">/*nb_subtract*/</span></span><br><span class="line">  ......</span><br><span class="line">  (binaryfunc)int_div,  <span class="comment">/*nb_floor_divide*/</span></span><br><span class="line">  int_true_divide,      <span class="comment">/*nb_true_divide*/</span></span><br><span class="line">  <span class="number">0</span>,                    <span class="comment">/*nb_inplace_floor_divide*/</span></span><br><span class="line">  <span class="number">0</span>,                    <span class="comment">/*nb_inplace_true_divide*/</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>PyNumberMethods中一共有39个函数指针, 但并非所有操作都要实现, 有很多操作是没法实现的. 作为一个数值操作的例子, 下面是PyIntObject的加法操作:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PyInt_AS_LONG(op) (((PyIntObject*)(op))-&gt;ob_ival)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CONVERT_TO_LONG(obj, lng) \</span></span><br><span class="line">  <span class="keyword">if</span> (PyInt_Check(obj)) &#123;         \</span><br><span class="line">    lng = PyInt_AS_LONG(obj);     \</span><br><span class="line">  &#125;                               \</span><br><span class="line">  <span class="keyword">else</span> &#123;                          \</span><br><span class="line">    Py_INCREF(Py_NotImplemented); \</span><br><span class="line">    <span class="keyword">return</span> Py_NotImplemented;     \</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> PyObject* <span class="title">int_add</span><span class="params">(PyIntObject *v, PyIntObject *w)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">register</span> <span class="keyword">long</span> a, b, x;</span><br><span class="line">  CONVERT_TO_LONG(v, a);</span><br><span class="line">  CONVERT_TO_LONG(w, b);</span><br><span class="line">  x = a + b;</span><br><span class="line">  <span class="keyword">if</span> ((x^a) &gt;= <span class="number">0</span> || (x^b) &gt;= <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> PyInt_FromLong(x);</span><br><span class="line">  <span class="keyword">return</span> PyLong_Type.tp_as_number-&gt;nb_add((PyObject *)v, (PyObject *)w);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码中PyInt_AS_LONG是一个宏, 所以节省了一次函数调用, 提高代码运行效率. 但该宏并没有检查类型, 牺牲了类型安全. 并且PyIntObject的add操作并没有改变任何一个对象, 而且生成了一个全新的PyIntObject对象. 如果加法溢出, 则返回一个PyLongObject对象</p>
+<h2 id="2-PyIntObject对象创建的3种途径"><a href="#2-PyIntObject对象创建的3种途径" class="headerlink" title="2. PyIntObject对象创建的3种途径"></a>2. PyIntObject对象创建的3种途径</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">PyObject* <span class="title">PyInt_FromLong</span><span class="params">(<span class="keyword">long</span> ival)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">PyObject* <span class="title">PyInt_FromString</span><span class="params">(<span class="keyword">char</span>* s, <span class="keyword">char</span>** pend, <span class="keyword">int</span> base)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="meta">#<span class="meta-keyword">ifdef</span> Py_USING_UNICODE</span></span></span><br><span class="line"><span class="function">  PyObject* <span class="title">PyInt_FromUnicode</span><span class="params">(Py_UNICODE* s, <span class="keyword">int</span> length, <span class="keyword">int</span> base)</span></span></span><br><span class="line"><span class="function"><span class="meta">#<span class="meta-keyword">endif</span></span></span></span><br></pre></td></tr></table></figure>
+
+<p>PyInt_FromLong是从long值生成PyIntObject对象, PyInt_FromString和PyInt_FromUnicode都是从string和Py_UNICODE生成浮点数, 然后再调用PyInt_FromFloat</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">PyObject* <span class="title">PyInt_FromString</span><span class="params">(<span class="keyword">char</span> *s, <span class="keyword">char</span> **pend, <span class="keyword">int</span> base)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> *end;</span><br><span class="line">  <span class="keyword">long</span> x;</span><br><span class="line">  Py_ssize_t slen;</span><br><span class="line">  PyObject *sobj, *srepr;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((base != <span class="number">0</span> &amp;&amp; base &lt; <span class="number">2</span>) || base &gt; <span class="number">36</span>) &#123;</span><br><span class="line">    PyErr_SetString(PyExc_ValueError,</span><br><span class="line">      <span class="string">"int() base must be &gt;= 2 and &lt;= 36"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (*s &amp;&amp; <span class="built_in">isspace</span>(Py_CHARMASK(*s)))</span><br><span class="line">    s++;</span><br><span class="line">  errno = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> (base == <span class="number">0</span> &amp;&amp; s[<span class="number">0</span>] == <span class="string">'0'</span>) &#123;</span><br><span class="line">    x = (<span class="keyword">long</span>) PyOS_strtoul(s, &amp;end, base);</span><br><span class="line">    <span class="keyword">if</span> (x &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span> PyLong_FromString(s, pend, base);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    x = PyOS_strtol(s, &amp;end, base);</span><br><span class="line">  <span class="keyword">if</span> (end == s || !<span class="built_in">isalnum</span>(Py_CHARMASK(end[<span class="number">-1</span>])))</span><br><span class="line">    <span class="keyword">goto</span> bad;</span><br><span class="line">  <span class="keyword">while</span> (*end &amp;&amp; <span class="built_in">isspace</span>(Py_CHARMASK(*end)))</span><br><span class="line">    end++;</span><br><span class="line">  <span class="keyword">if</span> (*end != <span class="string">'\0'</span>) &#123;</span><br><span class="line">  bad:</span><br><span class="line">    slen = <span class="built_in">strlen</span>(s) &lt; <span class="number">200</span> ? <span class="built_in">strlen</span>(s) : <span class="number">200</span>;</span><br><span class="line">    sobj = PyString_FromStringAndSize(s, slen);</span><br><span class="line">    <span class="keyword">if</span> (sobj == <span class="literal">NULL</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    srepr = PyObject_Repr(sobj);</span><br><span class="line">    Py_DECREF(sobj);</span><br><span class="line">    <span class="keyword">if</span> (srepr == <span class="literal">NULL</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    PyErr_Format(PyExc_ValueError,</span><br><span class="line">           <span class="string">"invalid literal for int() with base %d: %s"</span>,</span><br><span class="line">           base, PyString_AS_STRING(srepr));</span><br><span class="line">    Py_DECREF(srepr);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (errno != <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> PyLong_FromString(s, pend, base);</span><br><span class="line">  <span class="keyword">if</span> (pend)</span><br><span class="line">    *pend = end;</span><br><span class="line">  <span class="keyword">return</span> PyInt_FromLong(x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-小整数对象"><a href="#3-小整数对象" class="headerlink" title="3. 小整数对象"></a>3. 小整数对象</h2><p>实际编程中, 数值较小的整数会被程序频繁使用. 如果所有对象都存储在系统堆中, 那么将会频繁地申请释放小整数对象, 这将降低运行效率.<br>Python对小整数对象使用对象池技术, 小整数池的范围如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> NSMALLPOSINTS</span></span><br><span class="line">  <span class="meta">#<span class="meta-keyword">define</span> NSMALLPOSINTS   257</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> NSMALLNEGINTS</span></span><br><span class="line">  <span class="meta">#<span class="meta-keyword">define</span> NSMALLNEGINTS   5</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>Python2.5的小整数池范围是[-5,256], 你也可以修改来实现程序运行速度的提升. 小整数对象池完全缓存PyIntObject对象, 对于其他整数, Python会提供一块内存空间, 由这些大整数轮流使用.</p>
+<h2 id="4-大整数对象"><a href="#4-大整数对象" class="headerlink" title="4. 大整数对象"></a>4. 大整数对象</h2><p>Python中有一个PyIntBlock结构来实现一个单向列表</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BLOCK_SIZE  1000  <span class="comment">/* 1K less typical malloc overhead */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BHEAD_SIZE  8     <span class="comment">/* Enough for a 64-bit pointer */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> N_INTOBJECTS ((BLOCK_SIZE - BHEAD_SIZE) / sizeof(PyIntObject))</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">intblock</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">intblock</span> *<span class="title">next</span>;</span></span><br><span class="line">  PyIntObject objects[N_INTOBJECTS];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">intblock</span> <span class="title">PyIntBlock</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> PyIntBlock *block_list = <span class="literal">NULL</span>;</span><br><span class="line"><span class="keyword">static</span> PyIntObject *free_list = <span class="literal">NULL</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-添加和删除"><a href="#5-添加和删除" class="headerlink" title="5. 添加和删除"></a>5. 添加和删除</h2><p>下面是PyInt_FromLong创建PyIntObject的流程:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">PyObject* <span class="title">PyInt_FromLong</span><span class="params">(<span class="keyword">long</span> ival)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">register</span> PyIntObject *v;</span><br><span class="line">  <span class="comment">// 尝试使用小整数池</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> NSMALLNEGINTS + NSMALLPOSINTS &gt; 0</span></span><br><span class="line">  <span class="keyword">if</span> (-NSMALLNEGINTS &lt;= ival &amp;&amp; ival &lt; NSMALLPOSINTS) &#123;</span><br><span class="line">    v = small_ints[ival + NSMALLNEGINTS];</span><br><span class="line">    Py_INCREF(v);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> COUNT_ALLOCS</span></span><br><span class="line">    <span class="keyword">if</span> (ival &gt;= <span class="number">0</span>)</span><br><span class="line">      quick_int_allocs++;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      quick_neg_int_allocs++;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">return</span> (PyObject *) v;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">  <span class="comment">// 如果不能用小整数对象池, 使用通用对象池</span></span><br><span class="line">  <span class="keyword">if</span> (free_list == <span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> ((free_list = fill_free_list()) == <span class="literal">NULL</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/* Inline PyObject_New */</span></span><br><span class="line">  v = free_list;</span><br><span class="line">  free_list = (PyIntObject *)v-&gt;ob_type;</span><br><span class="line">  PyObject_INIT(v, &amp;PyInt_Type);</span><br><span class="line">  v-&gt;ob_ival = ival;</span><br><span class="line">  <span class="keyword">return</span> (PyObject *) v;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当首次调用PyInt_FromLong时, free_list必为NULL, 这时会调用fill_free_list来创建新的block</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> PyIntObject* <span class="title">fill_free_list</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  PyIntObject *p, *q;</span><br><span class="line">  <span class="comment">// 申请大小为sizeof(PyIntObject)的空间, 并链接到已有的block list中</span></span><br><span class="line">  p = (PyIntObject *) PyMem_MALLOC(<span class="keyword">sizeof</span>(PyIntBlock));</span><br><span class="line">  <span class="keyword">if</span> (p == <span class="literal">NULL</span>)</span><br><span class="line">    <span class="keyword">return</span> (PyIntObject *) PyErr_NoMemory();</span><br><span class="line">  ((PyIntBlock *)p)-&gt;next = block_list;</span><br><span class="line">  block_list = (PyIntBlock *)p;</span><br><span class="line">  <span class="comment">// 将PyIntBlock中的PyIntObject数组--objects--转变成单向链表</span></span><br><span class="line">  p = &amp;((PyIntBlock *)p)-&gt;objects[<span class="number">0</span>];</span><br><span class="line">  q = p + N_INTOBJECTS;</span><br><span class="line">  <span class="keyword">while</span> (--q &gt; p)</span><br><span class="line">    q-&gt;ob_type = (struct _typeobject *)(q<span class="number">-1</span>);</span><br><span class="line">  q-&gt;ob_type = <span class="literal">NULL</span>;</span><br><span class="line">  <span class="keyword">return</span> p + N_INTOBJECTS - <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>objects被转换成单向链表, 其中next指针使用ob_type, 这样也因此牺牲了类型安全. 以下为程序运行后的结果<br><img src="/images/Python/PyIntObject-1.png" alt="单次fill_free_list运行结果"><br>当block中的内存都被占满时, fill_free_list会再次申请新的空间, 如下图:<br><img src="/images/Python/PyIntObject-2.png" alt="多次fill_free_list运行结果"><br>当fill_free_list分配完空间后, Python会从free_list中划出一块并创建PyIntObject对象. 同时还会对PyIntObject对象完成初始化工作.<br>多次fill_free_list后, 每个PyIntBlock中的PyIntObject的objects是分离的. 例如现在有两个PyIntBlock, PyIntBlock1的objects已经完全填满, PyIntBlock2的objects还未填满, 那么free_list会指向PyIntBlock2中objects的空闲内存块. 当PyIntBlock1中的某个PyIntObject被删除了, 那么下次PyInt_FromLong时应加新的对象添加到PyIntBlock1的空闲位置中, 否则会产生内存泄漏. Python通过销毁PyIntObject时调整free_list来避免内存泄漏.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">int_dealloc</span><span class="params">(PyIntObject *v)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (PyInt_CheckExact(v)) &#123;</span><br><span class="line">    v-&gt;ob_type = (struct _typeobject *)free_list;</span><br><span class="line">    free_list = v;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    v-&gt;ob_type-&gt;tp_free((PyObject *)v);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>int_dealloc完成的只是指针维护. 如果删除的对象是一个整数的派生类对象, 需要调用tp_free来彻底销毁对象<br><img src="/images/Python/PyIntObject-3.png" alt="int_dealloc运行结果"><br>我们可以发现, int_dealloc没有向系统返回一块内存, 只是将被释放的对象所占的内存重新加入到内存链表中. 所以理论上来说, 整数对象可以将系统的内存用光, 但1GB能容乃89478486个整数对象, 所以还是很安全的.</p>
+<h2 id="6-小整数对象池的初始化"><a href="#6-小整数对象池的初始化" class="headerlink" title="6. 小整数对象池的初始化"></a>6. 小整数对象池的初始化</h2><p>small_ints中维护的只是PyIntObject的指针, 那么小整数对象在什么时候被创建和初始化呢, 答案就是_PyInt_Init</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> _PyInt_Init(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  PyIntObject *v;</span><br><span class="line">  <span class="keyword">int</span> ival;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> NSMALLNEGINTS + NSMALLPOSINTS &gt; 0</span></span><br><span class="line">  <span class="keyword">for</span> (ival = -NSMALLNEGINTS; ival &lt; NSMALLPOSINTS; ival++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!free_list &amp;&amp; (free_list = fill_free_list()) == <span class="literal">NULL</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="comment">/* PyObject_New is inlined */</span></span><br><span class="line">    v = free_list;</span><br><span class="line">    free_list = (PyIntObject *)v-&gt;ob_type;</span><br><span class="line">    PyObject_INIT(v, &amp;PyInt_Type);</span><br><span class="line">    v-&gt;ob_ival = ival;</span><br><span class="line">    small_ints[ival + NSMALLNEGINTS] = v;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看出, 小整数对象也是生存在block_list, 在Python初始化时, _PyInt_Init被调用, 内存被申请, 小整数对象也就被创建.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Python/">Python</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/1493221498.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">PyStringObject</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/1463268910.html">
+        <span class="next-text nav-default">PyObject</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/2832285198.html';
+  var disqus_title = "PyIntObject";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

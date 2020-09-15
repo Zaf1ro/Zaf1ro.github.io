@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Greatest Common Divisor and Least Common Multiple">
+
+
+
+
+  <meta name="keywords" content="Algorithm,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/663676570.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/663676570.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/663676570.html">
+
+
+<meta name="description" content="1. Greatest Common Divisor两个或多个整数共有约数中最大的一个. a, b的GCD记为(a，b) 1.1 Euclidean algorithm(欧几里得算法)欧几里得算法, 又名辗转相除法, 可求最大公约数. 原理: 两个整数的最大公约数等于其中较小的数和两数的差的最大公约数.证明: 有a, b两个数, 求a和b的最大公约数. a可表示为kb + r, r为a mod b">
+<meta name="keywords" content="Algorithm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Greatest Common Divisor and Least Common Multiple">
+<meta property="og:url" content="https://zaf1ro.github.io/p/663676570.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. Greatest Common Divisor两个或多个整数共有约数中最大的一个. a, b的GCD记为(a，b) 1.1 Euclidean algorithm(欧几里得算法)欧几里得算法, 又名辗转相除法, 可求最大公约数. 原理: 两个整数的最大公约数等于其中较小的数和两数的差的最大公约数.证明: 有a, b两个数, 求a和b的最大公约数. a可表示为kb + r, r为a mod b">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2019-11-11T19:24:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Greatest Common Divisor and Least Common Multiple">
+<meta name="twitter:description" content="1. Greatest Common Divisor两个或多个整数共有约数中最大的一个. a, b的GCD记为(a，b) 1.1 Euclidean algorithm(欧几里得算法)欧几里得算法, 又名辗转相除法, 可求最大公约数. 原理: 两个整数的最大公约数等于其中较小的数和两数的差的最大公约数.证明: 有a, b两个数, 求a和b的最大公约数. a可表示为kb + r, r为a mod b">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Greatest Common Divisor and Least Common Multiple - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Greatest-Common-Divisor"><span class="toc-text">1. Greatest Common Divisor</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Euclidean-algorithm-欧几里得算法"><span class="toc-text">1.1 Euclidean algorithm(欧几里得算法)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Stein-algorithm"><span class="toc-text">1.2 Stein algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Least-Common-Multiple"><span class="toc-text">2. Least Common Multiple</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-gcd和lcm的关系"><span class="toc-text">2.1 gcd和lcm的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-通过欧几里得算法得到LCM"><span class="toc-text">2.2 通过欧几里得算法得到LCM</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Greatest Common Divisor and Least Common Multiple
+        
+      </h1>
+      <time class="post-time">
+          01/19/18
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Greatest-Common-Divisor"><a href="#1-Greatest-Common-Divisor" class="headerlink" title="1. Greatest Common Divisor"></a>1. Greatest Common Divisor</h2><p>两个或多个整数共有约数中最大的一个. a, b的GCD记为(a，b)</p>
+<h3 id="1-1-Euclidean-algorithm-欧几里得算法"><a href="#1-1-Euclidean-algorithm-欧几里得算法" class="headerlink" title="1.1 Euclidean algorithm(欧几里得算法)"></a>1.1 Euclidean algorithm(欧几里得算法)</h3><p>欧几里得算法, 又名辗转相除法, 可求最大公约数. 原理: 两个整数的最大公约数等于其中较小的数和两数的差的最大公约数.<br>证明: 有a, b两个数, 求a和b的最大公约数. a可表示为kb + r, r为a mod b. 假设d为a和b的公约数, 所以d可被a和b整除. 因为r = a - kb, 所以d可以r整除.<br>举例: a = 1071, b = 462, 求最大公约数: 先从1071中不断减去462直到小于462(1071 = 2 × 462 + 147). 然后从462中不断减去147直到小于147(462 = 3 × 147 + 21). 再从147中不断减去21直到小于21(147 = 7 × 21 + 0). 此时余数是0, 所以1071和462的最大公约数是21.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">gcd</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (b == <span class="number">0</span>) <span class="keyword">return</span> a;</span><br><span class="line">    <span class="keyword">return</span> gcd(b, a % b);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-Stein-algorithm"><a href="#1-2-Stein-algorithm" class="headerlink" title="1.2 Stein algorithm"></a>1.2 Stein algorithm</h3><p>Euclidean algorithm虽然实现简单, 32位整数的模运算也只需要一个指令周期就可以完成. 但由于现代密码算法的提升, 模运算通常面对1024或更长的数字, 这样模运算的效率就会降低. Stein algorithm抛弃了除法和取模, 从而在大数求GCD方面占有很大优势.<br>当有两个数a和b时, 算法如下:<br>a == 0: b为GCD<br>b == 0: a为GCD<br>a为偶数且b为偶数: $a = a / 2$, $b = b / 2$<br>a为偶数且b为奇数: $a = a / 2$<br>b为偶数且a为奇数: $b = b / 2$<br>a为奇数且b为奇数: $a = abs(a - b)$, $b = min(a, b)$<br>原理: $gcd(ka,kb) = k × gcd(a,b)$</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span></span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">gcd</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a == <span class="number">0</span>) <span class="keyword">return</span> b;</span><br><span class="line">    <span class="keyword">if</span>(b == <span class="number">0</span>) <span class="keyword">return</span> a;</span><br><span class="line">    <span class="keyword">if</span>((a &amp; <span class="number">0x1</span>) == <span class="number">0</span> &amp;&amp; (b &amp; <span class="number">0x1</span>) == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">2</span> * gcd(a &gt;&gt; <span class="number">1</span>, b &gt;&gt; <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((a &amp; <span class="number">0x1</span>) == <span class="number">0</span>) <span class="keyword">return</span> gcd(a &gt;&gt; <span class="number">1</span>, b);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>((b &amp; <span class="number">0x1</span>) == <span class="number">0</span>) <span class="keyword">return</span> gcd(a, b &gt;&gt; <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> gcd(Math.abs(a - b), Math.min(a, b));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-Least-Common-Multiple"><a href="#2-Least-Common-Multiple" class="headerlink" title="2. Least Common Multiple"></a>2. Least Common Multiple</h2><p>两个或多个整数共有公倍数中最小的一个. a和b的最小公倍数记为[a，b]</p>
+<h3 id="2-1-gcd和lcm的关系"><a href="#2-1-gcd和lcm的关系" class="headerlink" title="2.1 gcd和lcm的关系"></a>2.1 gcd和lcm的关系</h3><p>最大公约数和最小公倍数之间之间的关系: 假设两个数a和b, 其最大公约数为c, 最小公倍数为d, 则 a × b = c × d.<br>证明:</p>
+<p>&#8757; a = c × a<sub>1</sub> × a<sub>2</sub> × … × a<sub>n</sub>, b = c × b<sub>1</sub> × b<sub>2</sub> × … × b<sub>n</sub><br>(a<sub>n</sub>和b<sub>n</sub>分别代表a和b中除c之外的因子, 例如12和16, 其gcd为4, 12的a<sub>1</sub> = 3, 16的b<sub>1</sub> = 2, b<sub>2</sub> = 2)</p>
+<p>&there4; d = c × a<sub>1</sub> × … × a<sub>n</sub> × b<sub>1</sub> × … × b<sub>n</sub><br>c × d = c × c × a<sub>1</sub> × … × a<sub>n</sub> × b<sub>1</sub> × … × b<sub>n</sub><br>a × b = c × c × a<sub>1</sub> × … × a<sub>n</sub> × b<sub>1</sub> × … × b<sub>n</sub></p>
+<p>&there4; a × b = c × d</p>
+<h3 id="2-2-通过欧几里得算法得到LCM"><a href="#2-2-通过欧几里得算法得到LCM" class="headerlink" title="2.2 通过欧几里得算法得到LCM"></a>2.2 通过欧几里得算法得到LCM</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span></span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">gcd</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(b == <span class="number">0</span>) <span class="keyword">return</span> a;</span><br><span class="line">    <span class="keyword">return</span> gcd(b, a % b);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">lcm</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> a * b / gcd(Math.abs(a), Math.abs(b));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/3188392202.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Find the single one</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2796177971.html">
+        <span class="next-text nav-default">Tree traversal</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/663676570.html';
+  var disqus_title = "Greatest Common Divisor and Least Common Multiple";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Virtual Memory Allocation And Paging">
+
+
+
+
+  <meta name="keywords" content="GNU C,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/1f7f.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/1f7f.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/1f7f.html">
+
+
+<meta name="description" content="1. Process Memory Concepts在进程拥有的所有资源中, 内存是最重要的. 通常每个进程会有一个线性的virtual address space(虚拟地址空间), 地址从0开始依次递增. virual memory被分为多个page(分页), 通常每个page为4kb大小, 每个page由真实的memory(称为frame)或secondary storage(如disk)支持">
+<meta name="keywords" content="GNU C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Virtual Memory Allocation And Paging">
+<meta property="og:url" content="https://zaf1ro.github.io/p/1f7f.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. Process Memory Concepts在进程拥有的所有资源中, 内存是最重要的. 通常每个进程会有一个线性的virtual address space(虚拟地址空间), 地址从0开始依次递增. virual memory被分为多个page(分页), 通常每个page为4kb大小, 每个page由真实的memory(称为frame)或secondary storage(如disk)支持">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2020-09-15T02:16:52.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Virtual Memory Allocation And Paging">
+<meta name="twitter:description" content="1. Process Memory Concepts在进程拥有的所有资源中, 内存是最重要的. 通常每个进程会有一个线性的virtual address space(虚拟地址空间), 地址从0开始依次递增. virual memory被分为多个page(分页), 通常每个page为4kb大小, 每个page由真实的memory(称为frame)或secondary storage(如disk)支持">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Virtual Memory Allocation And Paging - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Process-Memory-Concepts"><span class="toc-text">1. Process Memory Concepts</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Allocate-Storage-For-Prgram-Data"><span class="toc-text">2. Allocate Storage For Prgram Data</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Memory-Allocation-in-C-Programs"><span class="toc-text">2.1 Memory Allocation in C Programs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-The-GNU-Allocator"><span class="toc-text">2.2 The GNU Allocator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Unconstrained-Allocation"><span class="toc-text">2.3 Unconstrained Allocation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Obstacks"><span class="toc-text">3. Obstacks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Create-Obstacks"><span class="toc-text">3.1 Create Obstacks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Prepare-for-Using-Obstacks"><span class="toc-text">3.2 Prepare for Using Obstacks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Allocation-in-an-Obstack"><span class="toc-text">3.3 Allocation in an Obstack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Free-Objects-in-an-Obstack"><span class="toc-text">3.4 Free Objects in an Obstack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Grow-Objects"><span class="toc-text">3.5 Grow Objects</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-Status-of-an-Obstack"><span class="toc-text">3.7 Status of an Obstack</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Virtual Memory Allocation And Paging
+        
+      </h1>
+      <time class="post-time">
+          07/21/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Process-Memory-Concepts"><a href="#1-Process-Memory-Concepts" class="headerlink" title="1. Process Memory Concepts"></a>1. Process Memory Concepts</h2><p>在进程拥有的所有资源中, 内存是最重要的. 通常每个进程会有一个线性的<strong>virtual address space</strong>(虚拟地址空间), 地址从0开始依次递增. virual memory被分为多个<strong>page</strong>(分页), 通常每个page为4kb大小, 每个page由真实的memory(称为<strong>frame</strong>)或secondary storage(如disk)支持.<br>内存上的一个frame可被用于多个进程的不同virtual page. 例如, GNU C library中的printf函数在memory中只有一份, 但却可以被映射到多个进程的virtual memeory中作为printf函数被调用. 为了让进程可以访问virtual page的任何一部分, page背后必须有frame作为支撑. 但由于virual memory的总和是可以大于真实的memory大小, 因此page的访问可以在memory和disk之间反复切换. 当进程需要访问该page时, 则将数据放置到memory中; 但进程不需要时, 则将数据放置在disk中. 以上操作称为<strong>paging</strong>(分页).<br>当进程访问的page并没有实际memory作为支撑时, 会发生<strong>page fault</strong>. 当page fault发生时, kernel会挂起进程并为page寻找合适的frame, 之后恢复进程. 从进程的角度来看, 所有的page都是位于真实的memory中, 只不过paging操作会大大加长程序执行的时间. 对于时间敏感的程序, 可使用<strong>lock page</strong>来避免paging.<br>对于每个virtual address space, 都需要一个叫做memory allocation的过程来追踪每个地址存放了什么数据. 进程的memery allocation有两种主要方式: <strong>exec</strong>和<strong>编程</strong>. fork也是一种方式, 但这里并不是重点. Exec是一种为进程创建virtual address space的操作, 它为程序文件申请一块空间, 读取程序文件并执行文件. 一旦程序开始执行, 剩余的memeory allocation就是通过代码实现. GNU C中有两种memeory allocation方式: automatic和dynamic.<br><strong>Memory-mapped I/O</strong>是一种特殊的dynamic virtual memory allocation. 它会将内存映射到某个文件上, 依次保证内存中的数据和文件中的数据一模一样. 当程序修改内存中的数据时, 系统会将修改写入文件中.<br>除了allocate memory, 程序也可以deallocate memory. 首先, exec创造的内存无法被free; 当程序退出或执行完毕时, 其所占用的内存会被free. 进程的virtual address space被分为多个segments, 每个segment表示一块连续的virtual address. 以下几个segment比较重要:</p>
+<ul>
+<li>text segment: 包含程序的instructions, literals和static constants. 通常由exec分配并保持不变.</li>
+<li>data segment: 由exec分配内存, 并可通过函数修改大小</li>
+<li>stack segment: 随着stack扩大而扩大, 不会缩小</li>
+</ul>
+<h2 id="2-Allocate-Storage-For-Prgram-Data"><a href="#2-Allocate-Storage-For-Prgram-Data" class="headerlink" title="2. Allocate Storage For Prgram Data"></a>2. Allocate Storage For Prgram Data</h2><h3 id="2-1-Memory-Allocation-in-C-Programs"><a href="#2-1-Memory-Allocation-in-C-Programs" class="headerlink" title="2.1 Memory Allocation in C Programs"></a>2.1 Memory Allocation in C Programs</h3><p>C语言可使用variable(变量)来实现两种memory allocation:</p>
+<ol>
+<li>Static allocation: 当声明static或global variable时, 程序会在启动时为这些变量申请一块内存空间</li>
+<li>Automatic allocation: 当声明automatic variable(例如: function argument或local variable)时, 程序会在进入该变量的作用域时会自动申请内存空间, 并在变量离开作用域时自动free.<br>除了上述两种memory allocation, GNU C Library还提供了另一种方法: dynamic allocation. Dynamic allocation可让程序来决定内存申请和释放的时间, 并且可以决定内存申请的大小. 程序员必须明确地调用GNU C Library的函数来allocate或free内存, 但由于dynamic allocation需要更多计算时间, 所以只有在automatic allocation不能满足要求时才使用dynamic allocation. 使用dynamic allocation时不能用variable来声明d, 只能使用一个指针来指向该内存, 例如:<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">foobar</span> *<span class="title">ptr</span> = (<span class="title">struct</span> <span class="title">foobar</span> *) <span class="title">malloc</span>(<span class="title">sizeof</span>(<span class="title">struct</span> <span class="title">foobar</span>));</span></span><br><span class="line">ptr-&gt;name = x;</span><br><span class="line">ptr-&gt;next = current_foobar;</span><br><span class="line">current_foobar = ptr;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h3 id="2-2-The-GNU-Allocator"><a href="#2-2-The-GNU-Allocator" class="headerlink" title="2.2 The GNU Allocator"></a>2.2 The GNU Allocator</h3><p>GNU C Library中的malloc函数是从ptmalloc(pthreads malloc)派生而来, 以下是malloc中一些名词的解释:</p>
+<ol>
+<li>Arena: 被多个thread共享使用的结构, 可包含一个或多个heap.</li>
+<li>Heap: 一块连续的内存, 包含一个或多个chunk, 每个heap都属于一个arena.</li>
+<li>Chunk: 可被程序申请, 可被glibc释放, 可与相邻chunk合并的一小块内存. Chunk是程序申请内存的一个wrapper, 每一个chunk都属于一个heap, 也属于一个arena.</li>
+</ol>
+<p>通常情况下. GNU C Library为了多线程程序的效率, 会在heap上维护多个arena. 但与其他不同的是, 无论申请的内存大小, malloc都不会将chunk的大小保持在2的倍数. 当调用free来释放chunk时, 会自动与相邻的chunk合并, 这样可降低因fragmentation导致的内存浪费. 多个arena可保证多个thread同时申请内存, 依次提高性能. 当申请的内存过大时(例如: 申请的内存大于一个page), glibc会使用<strong>mmap</strong>来申请内存. mmap的好处在于, mmap会跳过arean, 直接向系统申请一个chunk, 因此当free该内存时, chunk可立刻返还给系统. </p>
+<h3 id="2-3-Unconstrained-Allocation"><a href="#2-3-Unconstrained-Allocation" class="headerlink" title="2.3 Unconstrained Allocation"></a>2.3 Unconstrained Allocation</h3><h4 id="2-3-1-Basic-Memory-Allocation"><a href="#2-3-1-Basic-Memory-Allocation" class="headerlink" title="2.3.1 Basic Memory Allocation"></a>2.3.1 Basic Memory Allocation</h4><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to a newly allocated block size bytes long,</span></span><br><span class="line"><span class="comment"> *        or a null pointer if the block could not be allocated</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc</span> <span class="params">(size t size)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>malloc申请的内存被没有任何初始化, 返回的指针类型为void, 虽然ISO C会自动将void*转换为其他类型, 但如果想继续使用traditional C, 则需要手动转换类型. 如果想初始化该内存, 可使用memset:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">foo</span> *<span class="title">ptr</span>;</span></span><br><span class="line">ptr = (struct foo *) <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(struct foo));</span><br><span class="line"><span class="keyword">if</span> (ptr == <span class="number">0</span>)</span><br><span class="line">  <span class="built_in">abort</span>();</span><br><span class="line"><span class="built_in">memset</span>(ptr, <span class="number">0</span>, <span class="keyword">sizeof</span>(struct foo));</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-2-Examples-of-malloc"><a href="#2-3-2-Examples-of-malloc" class="headerlink" title="2.3.2 Examples of malloc"></a>2.3.2 Examples of malloc</h4><p>当内存空间不足时, malloc会返回null pointer, 因此程序需要手动检查每一次malloc的返回值. 一种有效的解决方案就是为malloc创建一个wrapper function:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">xmalloc</span> <span class="params">(<span class="keyword">size_t</span> size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">void</span> *value = <span class="built_in">malloc</span> (size);</span><br><span class="line">  <span class="keyword">if</span> (value == <span class="number">0</span>)</span><br><span class="line">    fatal (<span class="string">"virtual memory exhausted"</span>);</span><br><span class="line">  <span class="keyword">return</span> value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当为字符串申请内存时需注意: 申请的内存大小应为字符串长度+1, 为字符串的结尾null character留出一个字符的空间.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">savestring</span> <span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *ptr, <span class="keyword">size_t</span> len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> *value = (<span class="keyword">char</span> *) xmalloc (len + <span class="number">1</span>);</span><br><span class="line">  value[len] = <span class="string">'\0'</span>;</span><br><span class="line">  <span class="keyword">return</span> (<span class="keyword">char</span> *) <span class="built_in">memcpy</span> (value, ptr, len);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>malloc返回的内存是已经对齐过的, 在32-bit系统上, 地址以8的倍数对齐; 在64-bit系统上, 地址以16的倍数对齐. </p>
+<h4 id="2-3-3-Free-Memory-Allocated-with-malloc"><a href="#2-3-3-Free-Memory-Allocated-with-malloc" class="headerlink" title="2.3.3 Free Memory Allocated with malloc"></a>2.3.3 Free Memory Allocated with malloc</h4><p>当不再需要malloc申请的内存后, 可调用free函数来回收该内存:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief deallocate the block of memory pointed at by ptr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free</span> <span class="params">(<span class="keyword">void</span> *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>free内存会直接修改内存里的数据, 因此不应在free后再去访问该内存的数据. 以下是一种free所有block的方法:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">chain</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">chain</span> *<span class="title">next</span>;</span></span><br><span class="line">  <span class="keyword">char</span> *name;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free_chain</span> <span class="params">(struct chain *chain)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (chain != <span class="number">0</span>)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">chain</span> *<span class="title">next</span> = <span class="title">chain</span>-&gt;<span class="title">next</span>;</span></span><br><span class="line">    <span class="built_in">free</span> (chain-&gt;name);</span><br><span class="line">    <span class="built_in">free</span> (chain);</span><br><span class="line">    chain = next;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通常情况下, free()不会将内存归还给系统, 而是作为malloc()的下次使用, malloc会用一个free-list连接起所有空闲内存块. 当程序运行结束时不需要释放内存, 因为进程结束后, 所有进程资源会自动归还给系统, 其中包括内存.</p>
+<h4 id="2-3-4-Change-the-Size-of-a-Block"><a href="#2-3-4-Change-the-Size-of-a-Block" class="headerlink" title="2.3.4 Change the Size of a Block"></a>2.3.4 Change the Size of a Block</h4><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the size of the block whose address is ptr to be newsize.</span></span><br><span class="line"><span class="comment"> * @return the new address of the block</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">realloc</span> <span class="params">(<span class="keyword">void</span> *ptr, size t newsize)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>若ptr指向的相邻内存后仍有空间, 则扩展空间; 若ptr指向的相邻内存已被使用, 则将内存复制到其他地址. 当ptr为null时, realloc()会直接申请一块新的内存, 与malloc(newsize)相同操作.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief changes the size of the block whose address is ptr to be long </span></span><br><span class="line"><span class="comment"> *        enough to contain a vector of nmemb elements, each of size size. </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">reallocarray</span> <span class="params">(<span class="keyword">void</span> *ptr, size t nmemb, size t size)</span></span></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-5-Allocate-Cleared-Space"><a href="#2-3-5-Allocate-Cleared-Space" class="headerlink" title="2.3.5 Allocate Cleared Space"></a>2.3.5 Allocate Cleared Space</h4><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate a block long enough to contain a vector of count elements,</span></span><br><span class="line"><span class="comment"> *        each of size eltsize</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">calloc</span> <span class="params">(size t count, size t eltsize)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-6-Allocate-Aligned-Memory-Blocks"><a href="#2-3-6-Allocate-Aligned-Memory-Blocks" class="headerlink" title="2.3.6 Allocate Aligned Memory Blocks"></a>2.3.6 Allocate Aligned Memory Blocks</h4><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate a block of size bytes whose address is a multiple of alignment</span></span><br><span class="line"><span class="comment"> * @return a null pointer on error and set errno to one of the following values:</span></span><br><span class="line"><span class="comment"> *         ENOMEN: insufficient memiry available to satisfy the request</span></span><br><span class="line"><span class="comment"> *         EINVAL: alignment is not a power of two</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">aligned_alloc</span> <span class="params">(size t alignment, size t size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief **OBSOLETE** allocate a block of size bytes whose address is a multiple of boundary</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">memalign</span> <span class="params">(size t boundary, size t size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocates size bytes and places the address of the allocated memory in *memptr.</span></span><br><span class="line"><span class="comment"> *        The address of the allocated memory will be a multiple of alignment</span></span><br><span class="line"><span class="comment"> * @param alignment must be a power of two and a multiple of sizeof(void *)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">posix_memalign</span> <span class="params">(<span class="keyword">void</span> **memptr, size t alignment, size t size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate size bytes and return a pointer to the allocated memory.</span></span><br><span class="line"><span class="comment"> *        The memory address will be a multiple of the page size.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">valloc</span> <span class="params">(size t size)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-7-Malloc-TUnable-Parameters"><a href="#2-3-7-Malloc-TUnable-Parameters" class="headerlink" title="2.3.7 Malloc TUnable Parameters"></a>2.3.7 Malloc TUnable Parameters</h4><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief adjust some parameters for dynamic memory allocation</span></span><br><span class="line"><span class="comment"> * @param param specify the parameter to be set as follow:</span></span><br><span class="line"><span class="comment"> *        M_MMAP_MAX: The maximum number of chunks to allocate with mmap, zero disables all use of mmap</span></span><br><span class="line"><span class="comment"> *        M_MMAP_THRESHOLD: All chunks larger than this value are allocated outside the normal heap, using the mmap system call</span></span><br><span class="line"><span class="comment"> *        M_PERTURB: If non-zero, the least significant byte is filled with the complement of value when allocation</span></span><br><span class="line"><span class="comment"> *        M_TOP_PAD: the amount of extra memory to obtain from the system when an arena needs to be exteneded</span></span><br><span class="line"><span class="comment"> *        M_TRIM_THRESHOLD: when the amount of contiguous free memory at the top of the heap is large than the value, </span></span><br><span class="line"><span class="comment"> *                          free this memory block back to system</span></span><br><span class="line"><span class="comment"> *        M_ARENA_TEST: specify the number of arena that can be created. The value is ignored if M_ARENA_MAX is set</span></span><br><span class="line"><span class="comment"> *        M_ARENA_MAX: set the number of arenas regardless of the number of cores in systems</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mallopt</span> <span class="params">(<span class="keyword">int</span> param, <span class="keyword">int</span> value)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-8-Heap-Consistency-Checking"><a href="#2-3-8-Heap-Consistency-Checking" class="headerlink" title="2.3.8 Heap Consistency Checking"></a>2.3.8 Heap Consistency Checking</h4><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief check the consistency of dynamic memeory</span></span><br><span class="line"><span class="comment"> * @param abortfn the function to call when consistency checks</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mcheck</span> <span class="params">(<span class="keyword">void</span> (*abortfn) (<span class="keyword">enum</span> mcheck_status status))</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-9-Memory-Allocation-Hooks"><a href="#2-3-9-Memory-Allocation-Hooks" class="headerlink" title="2.3.9 Memory Allocation Hooks"></a>2.3.9 Memory Allocation Hooks</h4><p>GNU C Library提供了一些hook方便在dynamic memory allocation中debug:</p>
+<ol>
+<li><p>__malloc_hook: 当该函数指针不为NULL时, 调用malloc时会触发这个hook, 函数原型如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @param size same as `size` of malloc()</span></span><br><span class="line"><span class="comment"> * @param caller the address of malloc function</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">function</span> <span class="params">(<span class="keyword">size_t</span> size, <span class="keyword">const</span> <span class="keyword">void</span> *caller)</span></span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>__realloc_hook: 当该函数指针不为NULL时, 调用realloc时会触发这个hook, 函数原型如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @param ptr same as `ptr` of realloc()</span></span><br><span class="line"><span class="comment"> * @param size same as `same` of realloc()</span></span><br><span class="line"><span class="comment"> * @param caller the address of realloc function</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">function</span> <span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> size, <span class="keyword">const</span> <span class="keyword">void</span> *caller)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>__free_hook: 当该函数指针不为NULL时, 调用free时会触发这个hook, 函数原型如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @param ptr same as `ptr` of free()</span></span><br><span class="line"><span class="comment"> * @param caller the address of free function</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">function</span> <span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">const</span> <span class="keyword">void</span> *caller)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>__memalign_hook: 当该函数指针不为NULL时, 调用aligned_alloc, memalign或posix_memalign时会触发这个hook, 函数原型如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @param alignment same as `alignment` of memalign()</span></span><br><span class="line"><span class="comment"> * @param size same as `size` of memalign()</span></span><br><span class="line"><span class="comment"> * @param caller the address of memalign function</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">function</span> <span class="params">(<span class="keyword">size_t</span> alignment, <span class="keyword">size_t</span> size, <span class="keyword">const</span> <span class="keyword">void</span> *caller)</span></span>;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>注意: 在hook中, 只有恢复原来的hook后才能调用内存函数, 否则会造成无限循环. 以下是<strong>malloc_hook和</strong>free_hook的例子:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;malloc.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> *<span class="title">my_malloc_hook</span> <span class="params">(<span class="keyword">size_t</span>, <span class="keyword">const</span> <span class="keyword">void</span> *)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_free_hook</span> <span class="params">(<span class="keyword">void</span>*, <span class="keyword">const</span> <span class="keyword">void</span> *)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_init</span> <span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  old_malloc_hook = __malloc_hook;</span><br><span class="line">  old_free_hook = __free_hook;</span><br><span class="line">  __malloc_hook = my_malloc_hook;</span><br><span class="line">  __free_hook = my_free_hook;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> *<span class="title">my_malloc_hook</span> <span class="params">(<span class="keyword">size_t</span> size, <span class="keyword">const</span> <span class="keyword">void</span> *caller)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">void</span> *result;</span><br><span class="line">  <span class="comment">/* Restore all old hooks */</span></span><br><span class="line">  __malloc_hook = old_malloc_hook;</span><br><span class="line">  __free_hook = old_free_hook;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Call recursively */</span></span><br><span class="line">  result = <span class="built_in">malloc</span> (size);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Save underlying hooks */</span></span><br><span class="line">  old_malloc_hook = __malloc_hook;</span><br><span class="line">  old_free_hook = __free_hook;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* printf might call malloc, so protect it too. */</span></span><br><span class="line">  <span class="built_in">printf</span> (<span class="string">"malloc (%u) returns %p\n"</span>, (<span class="keyword">unsigned</span> <span class="keyword">int</span>) size, result);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Restore our own hooks */</span></span><br><span class="line">  __malloc_hook = my_malloc_hook;</span><br><span class="line">  __free_hook = my_free_hook;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">my_free_hook</span> <span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">const</span> <span class="keyword">void</span> *caller)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="comment">/* Restore all old hooks */</span></span><br><span class="line">  __malloc_hook = old_malloc_hook;</span><br><span class="line">  __free_hook = old_free_hook;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Call recursively */</span></span><br><span class="line">  <span class="built_in">free</span> (ptr);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Save underlying hooks */</span></span><br><span class="line">  old_malloc_hook = __malloc_hook;</span><br><span class="line">  old_free_hook = __free_hook;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* printf might call free, so protect it too. */</span></span><br><span class="line">  <span class="built_in">printf</span> (<span class="string">"freed pointer %p\n"</span>, ptr);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Restore our own hooks */</span></span><br><span class="line">  __malloc_hook = my_malloc_hook;</span><br><span class="line">  __free_hook = my_free_hook;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main ()</span><br><span class="line">&#123;</span><br><span class="line">  my_init ();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-10-Statistics-for-Memory-Allocation-with-malloc"><a href="#2-3-10-Statistics-for-Memory-Allocation-with-malloc" class="headerlink" title="2.3.10 Statistics for Memory Allocation with malloc"></a>2.3.10 Statistics for Memory Allocation with malloc</h4><p>通过mallinfo()函数可获得dynamic memory allocation的信息, 函数原型如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function">struct mallinfo <span class="title">mallinfo</span> <span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>struct mallinfo包含以下成员:</p>
+<ol>
+<li>int arena: malloc中调用sbrk申请的内存大小, 单位为byte</li>
+<li>int ordblks: 未使用的chunk数量</li>
+<li>int smblks: unused</li>
+<li>int hblks: 使用mmap申请的chunk数量</li>
+<li>int hblkhd: 使用mmp申请的内存大小, 单位为byte</li>
+<li>int usmblks: unused</li>
+<li>int uordblks: allocator中已使用的内存大小, 单位为byte</li>
+<li>int fordblks: allocator中未被使用的内存大小, 单位为byte</li>
+<li>int keepcost: heap顶端可释放的内存大小</li>
+</ol>
+<h2 id="3-Obstacks"><a href="#3-Obstacks" class="headerlink" title="3. Obstacks"></a>3. Obstacks</h2><p>Obstack是一个内存池, obstack中必须第一个释放最后一个申请的对象. 除了释放对象的顺序限制, obstack和其他的内存池相同.</p>
+<h3 id="3-1-Create-Obstacks"><a href="#3-1-Create-Obstacks" class="headerlink" title="3.1 Create Obstacks"></a>3.1 Create Obstacks</h3><p>Obstack用结构体<code>struct obstack</code>来表示, 该结构体拥有固定的内存大小, 并记录了obstack的各种状态和其拥有的对象. 程序不应直接访问该结构体, 而应该调用obstack函数. Obstack中的所有对象都会被包装进一个名为chunks的内存块中, <code>struct obstac</code>会指向一个链表来表示所拥有的的chunks. 当申请的对象比当前chunk还要大时, 会自动申请新的chunk. 虽然不必手动管理chunk, 但还是需要为obstack提供一个申请chunk的函数, 一般会直接使用malloc.</p>
+<h3 id="3-2-Prepare-for-Using-Obstacks"><a href="#3-2-Prepare-for-Using-Obstacks" class="headerlink" title="3.2 Prepare for Using Obstacks"></a>3.2 Prepare for Using Obstacks</h3><p>当程序中需要调用obstack函数时, 需在header中添加<code>obstack.h</code>; 当源文件中使用了<code>macro obstack_ini</code>时, 还需要定义两个函数或macro:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> obstack_chunk_alloc xmalloc</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> obstack_chunk_free free</span></span><br></pre></td></tr></table></figure>
+
+<p><code>obstack_chunk_alloc</code>用于为chunk申请内存, <code>obstack_chunk_free</code>用于释放chunk的内存. 虽然obstack也是通过调用malloc来获取内存, 但实际中obstack会比程序自己调用malloc要快, 因为obstack会尽量少的调用obstack_chunk_alloc. 在使用<code>struct obstack</code>前, 需先调用obstack_init()来初始化该obstack:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize obstack for allocation of objects</span></span><br><span class="line"><span class="comment"> * @param ptr pointer to obstack</span></span><br><span class="line"><span class="comment"> * @return always return 1, call obstack_failed_handler if fails</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">obstack_init</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>obstack_failed_handler为函数指针, 函数原型如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">function</span> <span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>以下是初始化obstack的例子:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_obstack_alloc_failed</span> <span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line">obstack_alloc_failed_handler = &amp;my_obstack_alloc_failed;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* static variable */</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">obstack</span> <span class="title">ptr1</span>;</span></span><br><span class="line">obstack_init (&amp;ptr1);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* dynamically allocated */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">obstack</span> *<span class="title">ptr2</span> = (<span class="title">struct</span> <span class="title">obstack</span> *) <span class="title">xmalloc</span> (<span class="title">sizeof</span> (<span class="title">struct</span> <span class="title">obstack</span>));</span></span><br><span class="line">obstack_init (ptr2);</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-Allocation-in-an-Obstack"><a href="#3-3-Allocation-in-an-Obstack" class="headerlink" title="3.3 Allocation in an Obstack"></a>3.3 Allocation in an Obstack</h3><p>在obstack中申请对象最直接方式就是调用<code>obstack_alloc</code>, 函数如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate an uninitialized block of `size` bytes in an obstack and returns its address</span></span><br><span class="line"><span class="comment"> * @param ptr the address of struct obstack object which represents the obstack</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">obstack_alloc</span> <span class="params">(struct obstack *ptr, <span class="keyword">int</span> size)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>以下是在obstack中申请一个字符串<code>str</code>拷贝的例子:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">obstack</span> <span class="title">string_obstack</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">copystring</span> <span class="params">(<span class="keyword">char</span> *<span class="built_in">string</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">size_t</span> len = <span class="built_in">strlen</span> (<span class="built_in">string</span>) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">char</span> *s = (<span class="keyword">char</span> *) obstack_alloc (&amp;string_obstack, len);</span><br><span class="line">  <span class="built_in">memcpy</span> (s, <span class="built_in">string</span>, len);</span><br><span class="line">  <span class="keyword">return</span> s;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果想初始化obstack申请的内存, 可调用<code>obstack_copy</code>函数, 函数如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate and initialize it by copying `size` bytes of data starting at `address`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">obstack_copy</span> <span class="params">(struct obstack *ptr, <span class="keyword">void</span> *address, <span class="keyword">int</span> size)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-Free-Objects-in-an-Obstack"><a href="#3-4-Free-Objects-in-an-Obstack" class="headerlink" title="3.4 Free Objects in an Obstack"></a>3.4 Free Objects in an Obstack</h3><p>由于obstack是栈结构, 因此可以释放一个或多个对象. </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief If `object` is a null pointer, everthing allocated in the obstack is freed; Otherwise, every object since `object` will be freed </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">obstack_free</span> <span class="params">(struct obstack *ptr, <span class="keyword">void</span> *object)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>若参数object为null, 则obstack会变为未初始状态; 若参数为第一个申请的对象的指针, 则obstack会释放所有对象, 但还可以用于申请内存.</p>
+<h3 id="3-5-Grow-Objects"><a href="#3-5-Grow-Objects" class="headerlink" title="3.5 Grow Objects"></a>3.5 Grow Objects</h3><p>由于obstack中的chunk都是连续的, 因此已经申请内存的object无法改变内存大小. 但obstack提供了一种可拓展object的方式, 称为<code>growing objects</code>. 该方法可在obstack的末端不断扩充内存, 直到调用<code>obstack_finish</code>才返回新object的地址. 当正在生成growing object时, obstack不能调用其他allocation函数.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief add an uninitializing space to the growing object</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">obstack_blank</span> <span class="params">(struct obstack *ptr, <span class="keyword">int</span> size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief add a block of initialized space to the growing object</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">obstack_grow</span> <span class="params">(struct obstack *ptr, <span class="keyword">void</span> *data, <span class="keyword">int</span> size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief finish the growing object and return its address</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">obstack_finish</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the current size of the growing object in bytes. Must be called before obstack_finish()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">obstack_object_size</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-7-Status-of-an-Obstack"><a href="#3-7-Status-of-an-Obstack" class="headerlink" title="3.7 Status of an Obstack"></a>3.7 Status of an Obstack</h3><p>以下函数可提供某个obstack的当前状态:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the tentative address of the beginning of the currently growing obejct</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">obstack_base</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the address of the first free byte in the current chunk</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">obstack_next_free</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the size in bytes of the currently growing object</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">obstack_object_size</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/GNU-C/">GNU C</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/p/ab2f.html">
+        <span class="next-text nav-default">Context Sensitive Analysis (1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/1f7f.html';
+  var disqus_title = "Virtual Memory Allocation And Paging";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

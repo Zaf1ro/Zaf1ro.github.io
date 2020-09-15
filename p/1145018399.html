@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Class Method (Part 2)">
+
+
+
+
+  <meta name="keywords" content="Python,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/1145018399.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/1145018399.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/1145018399.html">
+
+
+<meta name="description" content="6. 创造自定义序列有一系列方法能让你的Python类操作起来像序列(sequence)一样(dict, tuple, list, string等). 有许多我很喜欢的方法, 因为Python赐予了他们惊人的控制程度, 并且使你的类实例在整个全局函数数组中漂亮的工作. 在我们详细描述之前, 需要先理清一下需求.  6.1 需求现在我们讨论一下在Python中创建自己的序列, 是时候讨论一下”协议”">
+<meta name="keywords" content="Python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Class Method (Part 2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/1145018399.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="6. 创造自定义序列有一系列方法能让你的Python类操作起来像序列(sequence)一样(dict, tuple, list, string等). 有许多我很喜欢的方法, 因为Python赐予了他们惊人的控制程度, 并且使你的类实例在整个全局函数数组中漂亮的工作. 在我们详细描述之前, 需要先理清一下需求.  6.1 需求现在我们讨论一下在Python中创建自己的序列, 是时候讨论一下”协议”">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2019-11-07T19:59:30.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Class Method (Part 2)">
+<meta name="twitter:description" content="6. 创造自定义序列有一系列方法能让你的Python类操作起来像序列(sequence)一样(dict, tuple, list, string等). 有许多我很喜欢的方法, 因为Python赐予了他们惊人的控制程度, 并且使你的类实例在整个全局函数数组中漂亮的工作. 在我们详细描述之前, 需要先理清一下需求.  6.1 需求现在我们讨论一下在Python中创建自己的序列, 是时候讨论一下”协议”">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Class Method (Part 2) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-创造自定义序列"><span class="toc-text">6. 创造自定义序列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-需求"><span class="toc-text">6.1 需求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-容器的方法"><span class="toc-text">6.2 容器的方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-举个例子"><span class="toc-text">6.3 举个例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-反射"><span class="toc-text">7. 反射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-可调用对象"><span class="toc-text">8. 可调用对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-上下文管理器"><span class="toc-text">9. 上下文管理器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-抽象基础类"><span class="toc-text">10. 抽象基础类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-构建描述符对象"><span class="toc-text">11. 构建描述符对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-复制"><span class="toc-text">12. 复制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-Pickling你的对象"><span class="toc-text">13. Pickling你的对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-Pickling"><span class="toc-text">13.1 Pickling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-Pickle你的对象"><span class="toc-text">13.2 Pickle你的对象</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Class Method (Part 2)
+        
+      </h1>
+      <time class="post-time">
+          12/11/15
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="6-创造自定义序列"><a href="#6-创造自定义序列" class="headerlink" title="6. 创造自定义序列"></a>6. 创造自定义序列</h2><p>有一系列方法能让你的Python类操作起来像序列(sequence)一样(dict, tuple, list, string等). 有许多我很喜欢的方法, 因为Python赐予了他们惊人的控制程度, 并且使你的类实例在整个全局函数数组中漂亮的工作. 在我们详细描述之前, 需要先理清一下需求. </p>
+<h3 id="6-1-需求"><a href="#6-1-需求" class="headerlink" title="6.1 需求"></a>6.1 需求</h3><p>现在我们讨论一下在Python中创建自己的序列, 是时候讨论一下”协议”(Protocols). 因为在其它语言中, 他们给你一系列方法并且你需要定义, 所以协议在某种程度上与接口相似；但Python协议是通俗的, 并且不需要显式声明来应用. 他们更像是指南.<br>为什么我们要讨论协议, 因为在Python中使用定制的容器(container)类型需使用到协议. 首先, 有一些协议可以用来定义不可变容器(immutable container)：为了做一个不可变容器, 你只需要定义__len__和__getitem__. 可变容器协议需要不可变容器添加上__setitem__和__delitem__. 最后, 如果你想让你的对象迭代, 迭代器需要遵循迭代器协议, 这就需要定义__iter__和next方法. </p>
+<h3 id="6-2-容器的方法"><a href="#6-2-容器的方法" class="headerlink" title="6.2 容器的方法"></a>6.2 容器的方法</h3><ul>
+<li>__len__(self): 返回容器的长度. 可变和不可变容器都需要定义这个方法. </li>
+<li>__getitem__(self, key): 访问item需要的方法, 使用self[key]. 这也是可变和不可变容器协议的一部分. 如果key的类型错误, 该方法应引起适当的异常:TypeError；如果key没有对应的value, 则应引起异常:KeyError. </li>
+<li>__setitem__(self, key, value): 分配item时需要的方法, 使用self[key]=value. 不可变容器协议的一部分. 也应在适当时刻引起KeyError和TypeError异常. </li>
+<li>__delitem__(self, key): 删除item时需要的方法. 这个是不可变容器协议的一部分. 应在key不存在时引起异常. </li>
+<li>__iter__(self): 返回一个容器的迭代器. 迭代器返回一系列上下文, 值得注意的是可以使用内建方法iter(), 并且为了遍历迭代器, 需要使用”for x in container”的形式. 迭代器就是对象本身, 并且他们也必须定义__iter__方法并返回self</li>
+<li>__reversed__(self): 当调用reversed()内建函数时需要使用该方法. 应返回该序列的逆序. 只有序列类才能使用这个方法, 例如list和tuple. </li>
+<li>__contains__(self, item): 用于成员测试, 使用in和not in. 为什么这个不是序列协议的一部分, 因为如果__contains__没定义, 那么Python就会遍历序列, 如果寻找到指定item就返回True</li>
+<li>__missing__(self, key): 该方法应用在dict的子类中. 它定义了如果访问的key找不到应作出怎么样行为. (举个例子：如果有一个字典d, 访问d[‘george’]而”george”并不是d的key, 那么就是调用d.__missing__(“george”))</li>
+</ul>
+<h3 id="6-3-举个例子"><a href="#6-3-举个例子" class="headerlink" title="6.3 举个例子"></a>6.3 举个例子</h3><p>让我们来看一下一个list使用了哪些功能结构, 你可以在其他语言中使用过(例如：Haskell)</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="string">'''类覆盖了一些list的额外功能, 比如head, tail, init, last, drop和take'''</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FunctionalList</span>:</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, values=None)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> values <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">      self.values = []</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">      self.values = values</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> len(self.values)</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span><span class="params">(self, key)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.values[key] <span class="comment"># 如果key是不合法的类型或数值, 那么list会引起异常</span></span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__setitem__</span><span class="params">(self, key, value)</span>:</span></span><br><span class="line">    self.values[key] = value</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__delitem__</span><span class="params">(self, key)</span>:</span></span><br><span class="line">    <span class="keyword">del</span> self.values[key]</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> iter(self.values)</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__reversed__</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> FunctionalList(reversed(self.values))</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">append</span><span class="params">(self, value)</span>:</span></span><br><span class="line">    self.values.append(value)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">head</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.values[<span class="number">0</span>] <span class="comment"># 获得第一个元素</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">tail</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.values[<span class="number">1</span>:] <span class="comment"># 获得除第一个之外的所有元素</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">init</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.values[:<span class="number">-1</span>] <span class="comment"># 获得除最后一个之外的所有元素</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">last</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.values[<span class="number">-1</span>] <span class="comment"># 获得最后一个元素</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">drop</span><span class="params">(self, n)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.values[n:] <span class="comment"># 获得除前n个元素之外的所有元素</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">take</span><span class="params">(self, n)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.values[:n] <span class="comment"># 获得前n个元素</span></span><br></pre></td></tr></table></figure>
+
+<p>现在你知道了怎么样实现你的序列, 其实还有很多定制序列的有用应用, 但很多已经存在于Python的标准库中, 例如Counter, OrderedDict和NameTuple</p>
+<h2 id="7-反射"><a href="#7-反射" class="headerlink" title="7. 反射"></a>7. 反射</h2><p>你可以通过定义内建函数isinstance()和isubclass()来控制反射, 如下：</p>
+<ul>
+<li>__instancecheck__(self, instance): 检查instance是否是你的类的一个实例</li>
+<li>__subclasscheck__(self, subclass): 检查subclass是够是你的类的一个子类</li>
+</ul>
+<p>这两个方法使用范围可能比较小, 由于它们不是很重要, 所以我不会花太多时间在他们身上. 但他们反射了一些Python面向对象编程的重要信息：永远有一种最简单的方法去实现, 即使这不是很必要. 这些方法可能看上去不是很有用, 但一旦你需要他们, 你可能觉得他们太有必要存在了. </p>
+<h2 id="8-可调用对象"><a href="#8-可调用对象" class="headerlink" title="8. 可调用对象"></a>8. 可调用对象</h2><p>可能你已经知道了, 在Python中, 函数(function)是第一类对象, 这意味着你可以传给函数和方法一些参数, 就像方法是一种类一样, 这是一个十分强大的特性. Python中一个特殊的方法可以使你的类实例变得像函数一样操作, 可以传给他们参数等等. 这一特性使得在Python中编程变得十分有趣.<br>__call__(self, [args…]): 允许类实例可以像函数一样被调用, 这意味着x()等同于x.__call__(), 注意__call__可以传递进去很多参数, 这意味着你可以像函数一样操作__call__, 传递多少参数都无所谓. __call__可以在类实例经常转换状态时使用, “调用”实例是一种符合直觉且优雅的方式改变对象状态. 下面是一个表示实体在平面上位置的类：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Entity</span>:</span></span><br><span class="line">  <span class="string">'''类来描述实体, 调用用来更新实体的位置'''</span></span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, size, x, y)</span>:</span></span><br><span class="line">    self.x, self.y = x, y</span><br><span class="line">    self.size = size</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__call__</span><span class="params">(self, x, y)</span>:</span></span><br><span class="line">    <span class="string">'''修改实体的位置'''</span></span><br><span class="line">    self.x, self.y = x, y</span><br><span class="line"> </span><br><span class="line">  <span class="comment"># skip...</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="9-上下文管理器"><a href="#9-上下文管理器" class="headerlink" title="9. 上下文管理器"></a>9. 上下文管理器</h2><p>在Python2.5中, Python引入了一个新的名词来使得代码重用, with表达式. 上下文管理器的概念在Python中已经新鲜了, 但直到PEP343, 它才作为第一类语言架构被接受. 你可能早就见过with表达式：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">with</span> open(<span class="string">'foo.txt'</span>) <span class="keyword">as</span> bar:</span><br><span class="line">  <span class="comment"># 用bar来做一些操作</span></span><br></pre></td></tr></table></figure>
+
+<p>当代码被with表达式包裹起来时, 上下文管理器的行为就被两个方法决定了：</p>
+<ul>
+<li>__enter__(self): 定义了在with表达式开头上下文管理器的行为. 注意, __enter__的返回值与with表达式声明的目标是绑定在一起的, 或是as后面的名称. </li>
+<li>__exit__(self, exception_type, exception_value, traceback): 定义了with表达式退出时上下文管理器应做什么. 它可以用来处理异常, 清理作用或做一些行为结束时的必要工作. 如果工作执行顺利, 那么exception_type, exception_value和traceback将会是空. 换句话说, 你可以选择自己处理异常, 或让用户处理. 如果你选择自己处理异常, 那么要确保一切结束后__exit__返回True. 如果你不想让上下文管理器来处理异常, 那么就让它报错吧. </li>
+</ul>
+<p>__enter__和__exit__如果被很好的定义上设置和清理行为, 那么对特殊类是很有用的. 你可以用这些方法来创建一个泛型上下文管理器来包裹起其他对象, 下面是一个例子：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="string">'''一个上下文管理器可以在with表达式中通过close方法自动地关闭一个对象'''</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Closer</span>:</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, obj)</span>:</span></span><br><span class="line">    self.obj = obj</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__enter__</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.obj <span class="comment"># bound to target</span></span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__exit__</span><span class="params">(self, exception_type, exception_val, trace)</span>:</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">      self.obj.close()</span><br><span class="line">    <span class="keyword">except</span> AttributeError: <span class="comment"># 对象是不可关闭的</span></span><br><span class="line">      <span class="keyword">print</span> <span class="string">'Not closable.'</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">True</span> <span class="comment"># 异常被成功地捕获并处理</span></span><br></pre></td></tr></table></figure>
+
+<p>下面是一个Closer的例子, 使用FTP连接来证明：</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">&gt;&gt;&gt; from magicmethods import Closer</span><br><span class="line">&gt;&gt;&gt; from ftplib import FTP</span><br><span class="line">&gt;&gt;&gt; with Closer(FTP(<span class="string">'ftp.somesite.com'</span>)) as conn:</span><br><span class="line">...   conn.dir()</span><br><span class="line">...</span><br><span class="line"><span class="comment"># 简介的展示输出</span></span><br><span class="line">output omitted <span class="keyword">for</span> brevity</span><br><span class="line">&gt;&gt;&gt; conn.dir()</span><br><span class="line"><span class="comment"># 引发AttributeError错误信息, 使用的连接不能关闭</span></span><br><span class="line">&gt;&gt;&gt; with Closer(int(5)) as i:</span><br><span class="line">...   i += 1</span><br><span class="line">...</span><br><span class="line">Not closable.</span><br><span class="line">&gt;&gt;&gt; i</span><br><span class="line">6</span><br></pre></td></tr></table></figure>
+
+<p>可以看出, 我们的with表达式优雅的处理了所有正确或不正确的使用. 这就是上下文管理器和方法的威力之处. 注意, Python标准库包含contextlib模块, 它也含有一个上下文管理器, contextlib.closing()可以实现相同的功能. (对于对象没有close方法的不会进行任何处理)</p>
+<h2 id="10-抽象基础类"><a href="#10-抽象基础类" class="headerlink" title="10. 抽象基础类"></a>10. 抽象基础类</h2><p>见 <a href="http://docs.python.org/2/library/abc.html" rel="external nofollow noopener noreferrer" target="_blank">http://docs.python.org/2/library/abc.html</a></p>
+<h2 id="11-构建描述符对象"><a href="#11-构建描述符对象" class="headerlink" title="11. 构建描述符对象"></a>11. 构建描述符对象</h2><p>描述符是一些能通过访问getting, setting和deleting来改变其他对象的类. 描述符不是独立存在的, 它需要一个所有者(owner)对象的支撑. 当建造的面向对象数据库或类的属性值依赖于其他数据库或类时, 描述符就很有用了；当表示不同计量单元下的属性或表示计算的属性时, 描述符也很有用.<br>为了创建一个描述符, 类中必须由__get__, __set__和__delete__的定义. </p>
+<ul>
+<li>__get__(self, instance, owner): 定义获取描述符的值时的行为, instance是所有者对象的实例, owner是所有者类本身</li>
+<li>__set__(self, instance, value): 定义描述符的值被修改时的行为, instance是所有者类的实例, value是修改值</li>
+<li>__delete__(self, instance): 定义描述符的值被删除时的卫星, instance是所有者类的实例</li>
+</ul>
+<p>下面是一个实例：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Meter</span><span class="params">(object)</span>:</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value=<span class="number">0.0</span>)</span>:</span></span><br><span class="line">    self.value = float(value)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> self.value</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></span><br><span class="line">    self.value = float(value)</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foot</span><span class="params">(object)</span>:</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__get__</span><span class="params">(self, instance, owner)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> instance.meter * <span class="number">3.2808</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__set__</span><span class="params">(self, instance, value)</span>:</span></span><br><span class="line">    instance.meter = float(value) / <span class="number">3.2808</span></span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Distance</span><span class="params">(object)</span>:</span></span><br><span class="line">  meter = Meter()</span><br><span class="line">  foot = Foot()</span><br></pre></td></tr></table></figure>
+
+<h2 id="12-复制"><a href="#12-复制" class="headerlink" title="12. 复制"></a>12. 复制</h2><p>有时处理可变对象时, 你想复制一个对象并不对源对象产生副作用, 这时就需要使用到Python的copy. Python模块并没有感知作用, 所以我们不需要担心基于linux的机器人起义, 但我们需要告诉Python怎么样高效地复制一些东西. </p>
+<ul>
+<li>__copy__(self)<br>为类对象定义一个copy.copy()方法, 它返回一个对象的浅拷贝, 这意味着所有的数据都是引用的, 所以对新复制的对象的修改会作用到源对象中</li>
+<li>__deepcopy__(self, memodict={})<br>为类实例定义一个copy.deepcopy()方法, 它返回一个对象的深拷贝, 这意味着数据和对象都被拷贝. memodict是一个被拷贝对象的缓存池, 它能优化拷贝行为, 并防止拷贝递归数据结构时引起的无限递归. 当你想深拷贝一个独立的属性时, 可以调用copy.deepcopy(), 并将memodict作为第一个参数.<br>那么这些方法都有什么用处？通常情况下, 颗粒化管理总比默认的好. 举个例子, 如果你想复制一个在缓存中以字典形式存储的对象, 但直接拷贝缓存是不可能的；而如果缓存可以在两个实例之间以内存形式存储, 那么就是可行的. </li>
+</ul>
+<h2 id="13-Pickling你的对象"><a href="#13-Pickling你的对象" class="headerlink" title="13. Pickling你的对象"></a>13. Pickling你的对象</h2><p>如果你跟其他Python使用者接触一段时间, 你至少听说过pickling. Pickling是一个将Python数据结构序列化的过程, 当你需要存储一个对象并在稍后取出时, Pickling十分有用, 但也有很多疑惑和忧虑的地方.<br>Pickling十分重要, 以至于不仅有自己的模块(pickle), 并且还有自己的协议和方法. 首先让我们先谈一下为已经存在的类型进行pickle.</p>
+<h3 id="13-1-Pickling"><a href="#13-1-Pickling" class="headerlink" title="13.1 Pickling"></a>13.1 Pickling</h3><p>假设你有一个字典想要先存起来等会儿提取出来. 你可以将它的内容写到文件里, 注意要确保你的语法正确, 使用exec()来剥离或将处理文件输入. 如果你将重要信息存在纯文本中, 任何形式的改变或崩溃都会使得程序崩溃或运行恶意代码. </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">data = &#123;<span class="string">'foo'</span>: [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],</span><br><span class="line">        <span class="string">'bar'</span>: (<span class="string">'Hello'</span>, <span class="string">'world!'</span>),</span><br><span class="line">        <span class="string">'baz'</span>: <span class="literal">True</span>&#125;</span><br><span class="line">jar = open(<span class="string">'data.pkl'</span>, <span class="string">'wb'</span>)</span><br><span class="line">pickle.dump(data, jar) <span class="comment"># 将pickle处理过的数据放入文件jar中</span></span><br><span class="line">jar.close()</span><br></pre></td></tr></table></figure>
+
+<p>几个小时后我们想拿回数据, 这时就需要unpickle</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"> </span><br><span class="line">pkl_file = open(<span class="string">'data.pkl'</span>, <span class="string">'rb'</span>) <span class="comment"># 连接到pickle数据</span></span><br><span class="line">data = pickle.load(pkl_file) <span class="comment"># 将数据加载到data变量中</span></span><br><span class="line">pkl_file.close()</span><br></pre></td></tr></table></figure>
+
+<p>注意, pickling并不是完美的, Pickle文件很容易由于意外而崩溃. Pickle可能比纯文本文件更加安全, 但它也可能用于运行恶意代码. 并且不同版本的Python也不一定兼容, 所以不想期望将pickle对象发送给别人后别人能打开它们. 但它可以作为一种缓存的工具或其他序列化任务. </p>
+<h3 id="13-2-Pickle你的对象"><a href="#13-2-Pickle你的对象" class="headerlink" title="13.2 Pickle你的对象"></a>13.2 Pickle你的对象</h3><p>Pickle不仅仅作用于内建类型, 任何类都遵循pickle协议. pickle协议有四个可选项方法来定制化它们的操作. </p>
+<ul>
+<li>__getinitargs__(self): 如果你不希望你在unpickle时调用__init__, 你可以定义该函数, 它会返回你希望返回的参数, 放在一个tuple中. 注意, 该方法只作用在old-style class中. </li>
+<li>__getnewargs__(self): 对于new-style class, 你可以决定哪些参数传给__new__. 该方法也会返回一个tuple给__new__, 里面全是参数. </li>
+<li>__getstate__(self): 当对象被pickle时, 你可以返回一个定制的状态, 而不是使用__dict__的方法. 当对象被unpickle时, 你会在__setstate__中用到这个状态值. </li>
+<li>__setstate__(self, state): 当对象被unpickle时, 如果已经定义了__setstatue__, 对象的状态值将会被传入该函数, 而不是直接应用于对象的__dict__. 该函数必须和__getstatue__一同使用：当两个方法都定义时, 你可表示对象被pickle的任何过程. </li>
+<li>__reduce__(self): 当定义额外类型时, 如果你要pickle它们时, 你必须告诉Python如果pickle它们. 当对象定义他本身如何被pickle时, 就需要调用__reduce__(), 它可以返回一个字符串的全局名称或tuple, 这样Python可以查看并pickletuple包括2到5个元素：一个可调用对象来重建对象；一个包含参数的tuple, 服务于可调用对象；状态值传递给__setstatue__；用于生成list项的迭代器, 他将被pickle；一个用来生成字典项的迭代, 他也将被pickle. </li>
+<li>__reduce_ex__(self): 该函数为兼容性存在, 如果该函数被定义, 它将会在pickle时覆盖__reduce__. 将会在pickle API为旧版本时调用__reduce__, 而不会调用__reduce_ex__. </li>
+</ul>
+<p>举个例子：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"> </span><br><span class="line"><span class="string">'''</span></span><br><span class="line"><span class="string">用于存储字符串和更改日志, 并且在pickle时丢弃它们</span></span><br><span class="line"><span class="string">'''</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Slate</span>:</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, value)</span>:</span></span><br><span class="line">    self.value = value</span><br><span class="line">    self.last_change = time.asctime()</span><br><span class="line">    self.history = &#123;&#125;</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">change</span><span class="params">(self, new_value)</span>:</span></span><br><span class="line">    <span class="comment"># 更改数值, 将上一次值添加到history中</span></span><br><span class="line">    self.history[self.last_change] = self.value</span><br><span class="line">    self.value = new_value</span><br><span class="line">    self.last_change = time.asctime()</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">print_changes</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">print</span> <span class="string">'Changelog for Slate object:'</span></span><br><span class="line">    <span class="keyword">for</span> k, v <span class="keyword">in</span> self.history.items():</span><br><span class="line">        <span class="keyword">print</span> <span class="string">'%s\t %s'</span> % (k, v)</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__getstate__</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="comment"># 不要反悔self.value或self.last_change</span></span><br><span class="line">    <span class="comment"># 我们想在unpickle时得到一个"black slate"</span></span><br><span class="line">    <span class="keyword">return</span> self.history</span><br><span class="line"> </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__setstate__</span><span class="params">(self, state)</span>:</span></span><br><span class="line">    <span class="comment"># 将self.history = state, 并将last_change和value设为空</span></span><br><span class="line">    self.history = state</span><br><span class="line">    self.value, self.last_change = <span class="literal">None</span>, <span class="literal">None</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Python/">Python</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/3822920830.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Atomic Commit (Part 3)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/1863502812.html">
+        <span class="next-text nav-default">Class Method (Part 1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/1145018399.html';
+  var disqus_title = "Class Method (Part 2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

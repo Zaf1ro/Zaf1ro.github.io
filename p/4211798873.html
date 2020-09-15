@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="JVM (Part 3)">
+
+
+
+
+  <meta name="keywords" content="Java,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/4211798873.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/4211798873.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/4211798873.html">
+
+
+<meta name="description" content="1. 调用函数1.1 调用成员函数public class Test &amp;#123;  int addTwo(int i, int j)&amp;#123;    return i+j;  &amp;#125;  /**   * int addTwo(int, int);   * Code: stack=2, locals=3, args_size=3   * 0: iload_1  // 从local varia">
+<meta name="keywords" content="Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM (Part 3)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/4211798873.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. 调用函数1.1 调用成员函数public class Test &amp;#123;  int addTwo(int i, int j)&amp;#123;    return i+j;  &amp;#125;  /**   * int addTwo(int, int);   * Code: stack=2, locals=3, args_size=3   * 0: iload_1  // 从local varia">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2019-11-09T02:09:15.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JVM (Part 3)">
+<meta name="twitter:description" content="1. 调用函数1.1 调用成员函数public class Test &amp;#123;  int addTwo(int i, int j)&amp;#123;    return i+j;  &amp;#125;  /**   * int addTwo(int, int);   * Code: stack=2, locals=3, args_size=3   * 0: iload_1  // 从local varia">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+JVM (Part 3) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-调用函数"><span class="toc-text">1. 调用函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-调用成员函数"><span class="toc-text">1.1 调用成员函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-调用父类函数"><span class="toc-text">1.2 调用父类函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-调用静态函数"><span class="toc-text">1.3 调用静态函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Constant-Local-Variable和Control-Construct的使用"><span class="toc-text">2. Constant, Local Variable和Control Construct的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-int类型变量的操作"><span class="toc-text">2.1 int类型变量的操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-short类型变量操作"><span class="toc-text">2.2 short类型变量操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-double类型变量操作"><span class="toc-text">2.3 double类型变量操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Arithmetic"><span class="toc-text">3. Arithmetic</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-访问Run-time-Constant-Pool"><span class="toc-text">4. 访问Run-time Constant Pool</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-数值范围为-1-5"><span class="toc-text">4.1 数值范围为-1~5</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-数值范围为-128-127"><span class="toc-text">4.2 数值范围为-128~127</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-常量范围为-32768-32767"><span class="toc-text">4.3 常量范围为-32768~32767</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-常量范围为-2147483648-2147483647"><span class="toc-text">4.4 常量范围为-2147483648~2147483647</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-long或double"><span class="toc-text">4.5 long或double</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-条件控制"><span class="toc-text">5. 条件控制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-int"><span class="toc-text">5.1 int</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-float或double"><span class="toc-text">5.2 float或double</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-break"><span class="toc-text">5.3 break</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-接收参数"><span class="toc-text">6. 接收参数</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          JVM (Part 3)
+        
+      </h1>
+      <time class="post-time">
+          11/08/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-调用函数"><a href="#1-调用函数" class="headerlink" title="1. 调用函数"></a>1. 调用函数</h2><h3 id="1-1-调用成员函数"><a href="#1-1-调用成员函数" class="headerlink" title="1.1 调用成员函数"></a>1.1 调用成员函数</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">addTwo</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> j)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> i+j;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * int addTwo(int, int);</span></span><br><span class="line"><span class="comment">   * Code: stack=2, locals=3, args_size=3</span></span><br><span class="line"><span class="comment">   * 0: iload_1  // 从local variable array[1]取值, [0]为this</span></span><br><span class="line"><span class="comment">   * 1: iload_2</span></span><br><span class="line"><span class="comment">   * 2: iadd</span></span><br><span class="line"><span class="comment">   * 3: ireturn</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">    Test t = <span class="keyword">new</span> Test();</span><br><span class="line">    t.addTwo(<span class="number">10</span>,<span class="number">11</span>);</span><br><span class="line">    addTwoStatic(<span class="number">11</span>,<span class="number">12</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * public static void main</span></span><br><span class="line"><span class="comment">   * Code: stack=3, locals=2, args_size=1</span></span><br><span class="line"><span class="comment">   * 0: new #2    // 在heap上创建于一个class对象, 并将objectref放入operand stack中</span></span><br><span class="line"><span class="comment">   * 3: dup       // 复制栈顶元素并放入栈顶</span></span><br><span class="line"><span class="comment">   * 4: invokespecial #3  // 调用Test的初始化函数init()</span></span><br><span class="line"><span class="comment">   *                      // 由于init无参数, 只将operand stack中的objectref取出并赋给init</span></span><br><span class="line"><span class="comment">   * 7: astore_1          // 将operand stack顶部元素取出并存入到local variable的索引1位置上</span></span><br><span class="line"><span class="comment">   * 8: aload_1           // 将local variable索引1位置上的元素放入operand stack顶部</span></span><br><span class="line"><span class="comment">   * 9: bipush 10         // 将常量10放入operand stack</span></span><br><span class="line"><span class="comment">   * 11: bipush 11        // 将常量11放入operand stack</span></span><br><span class="line"><span class="comment">   * 13: invokevirtual #4 // 调用函数int addTwo(int, int)</span></span><br><span class="line"><span class="comment">   *                      // 由于是成员函数, 所以将this, 10, 11都作为参数传给addTwo</span></span><br><span class="line"><span class="comment">   * 16: pop              // 得到结果并弹出</span></span><br><span class="line"><span class="comment">   * 25: return</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-调用父类函数"><a href="#1-2-调用父类函数" class="headerlink" title="1.2 调用父类函数"></a>1.2 调用父类函数</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SuperTest</span></span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getInfo</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">extends</span> <span class="title">SuperTest</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">get</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">super</span>.getInfo();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 0: aload_0          // 将this装入operand stack</span></span><br><span class="line"><span class="comment">   * 1: invokespecial #2 // 调用SuperTest.getinfo()</span></span><br><span class="line"><span class="comment">   *                     // 因为使用super指明是父类函数, 所以调用invokespecial</span></span><br><span class="line"><span class="comment">   * 4: ireturn</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-调用静态函数"><a href="#1-3-调用静态函数" class="headerlink" title="1.3 调用静态函数"></a>1.3 调用静态函数</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">addTwoStatic</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> j)</span></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> i+j;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * static int addTwoStatic(int, int);</span></span><br><span class="line"><span class="comment"> * Code: stack=2, locals=2, args_size=2</span></span><br><span class="line"><span class="comment"> * 0: iload_0  // 直接从索引0开始从local variable array中取值</span></span><br><span class="line"><span class="comment"> * 1: iload_1</span></span><br><span class="line"><span class="comment"> * 2: iadd</span></span><br><span class="line"><span class="comment"> * 3: ireturn</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">  addTwoStatic(<span class="number">11</span>,<span class="number">12</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 0: bipush 11</span></span><br><span class="line"><span class="comment"> * 2: bipush 12</span></span><br><span class="line"><span class="comment"> * 4: invokestatic #2 // 调用addTwoStatic(int, int)</span></span><br><span class="line"><span class="comment"> *                    // 由于是静态函数所以不需要传入this</span></span><br><span class="line"><span class="comment"> * 7: pop</span></span><br><span class="line"><span class="comment"> * 8: return</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-Constant-Local-Variable和Control-Construct的使用"><a href="#2-Constant-Local-Variable和Control-Construct的使用" class="headerlink" title="2. Constant, Local Variable和Control Construct的使用"></a>2. Constant, Local Variable和Control Construct的使用</h2><h3 id="2-1-int类型变量的操作"><a href="#2-1-int类型变量的操作" class="headerlink" title="2.1 int类型变量的操作"></a>2.1 int类型变量的操作</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">spin</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> i;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">    <span class="comment">// Loop body is empty</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 0: iconst_0      // 将constant 0放入operand stack中</span></span><br><span class="line"><span class="comment"> * 1: istore_0      // 将operand stack的顶端元素取出, 并赋值给local variable array中索引为0的元素(也就是i)</span></span><br><span class="line"><span class="comment"> * 2: iload_0       // 将local variable array中index为0的元素值(也就是i的值)放入operand stack中</span></span><br><span class="line"><span class="comment"> * 3: bipush 100    // 将要一个byte大小(因为100只用8位就能表示)的立即数放入operand stack</span></span><br><span class="line"><span class="comment"> * 5: if_icmpge 14  // 将operand stack顶部的两个值取出(例如v1和v2), 如果v1&gt;=v2, 跳至14</span></span><br><span class="line"><span class="comment"> * 8: iinc 0, 1     // 将local variable array中索引为0的值自加1(自加的值必须为signed int)</span></span><br><span class="line"><span class="comment"> * 11: goto 2       // 跳转到2</span></span><br><span class="line"><span class="comment"> * 14: return       // 返回void</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-short类型变量操作"><a href="#2-2-short类型变量操作" class="headerlink" title="2.2 short类型变量操作"></a>2.2 short类型变量操作</h3><p>由于operand stack和local variable的实现原因, Java指令支持int的store, load, add操作(也因为int使用最为频繁). 但对于其他Integer(byte, char, short)就没有相应的指令, 例如:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sspin</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">short</span> i;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">    ; <span class="comment">// Loop body is empty</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 0: iconst_0</span></span><br><span class="line"><span class="comment"> * 1: istore_0      // 使用int的方法存取</span></span><br><span class="line"><span class="comment"> * 2: iload_0</span></span><br><span class="line"><span class="comment"> * 3: bipush 100</span></span><br><span class="line"><span class="comment"> * 5: if_icmpge 16  // 使用int的比较方法来比较short类型</span></span><br><span class="line"><span class="comment"> * 8: iload_0</span></span><br><span class="line"><span class="comment"> * 9: iconst_1</span></span><br><span class="line"><span class="comment"> * 10: iadd</span></span><br><span class="line"><span class="comment"> * 11: i2s</span></span><br><span class="line"><span class="comment"> * 12: istore_0</span></span><br><span class="line"><span class="comment"> * 13: goto 2</span></span><br><span class="line"><span class="comment"> * 16: return</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-double类型变量操作"><a href="#2-3-double类型变量操作" class="headerlink" title="2.3 double类型变量操作"></a>2.3 double类型变量操作</h3><p>由于缺乏byte, char和short的操作指令, 所以用int的指令代替. 但这并没有什么不妥, 只不过int操作会导致值的截断<br>对于long和float类型来说, 有store和load指令, 但没有比较指令. 下面只以double为例:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dspin</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">double</span> i;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0.0</span>; i &lt; <span class="number">100.0</span>; i++) &#123;</span><br><span class="line">    ; <span class="comment">// Loop body is empty</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 0: dconst_0</span></span><br><span class="line"><span class="comment"> * 1: dstore_0</span></span><br><span class="line"><span class="comment"> * 2: dload_0</span></span><br><span class="line"><span class="comment"> * 3: ldc2_w #2 // double 100.0d</span></span><br><span class="line"><span class="comment"> * 6: dcmpg     // 从operand stack取出两个double值, v1,v2(v2在v1之上)</span></span><br><span class="line"><span class="comment"> *              // 如果v1&gt;v2, 将int 1放入operand stack</span></span><br><span class="line"><span class="comment"> *              // 如果v1==v2, 将int 0放入operand stack</span></span><br><span class="line"><span class="comment"> *              // 如果v1&lt;v2, 将int -1放入operand stack</span></span><br><span class="line"><span class="comment"> *              // 如果v1或v2其中一个为NaN, dcmpg将1放入operand stack, dcmpl将-1放入operand stack</span></span><br><span class="line"><span class="comment"> * 7: ifge 17   // 从operand stack顶部取出一个int值, 如果该值&gt;=0, 则跳转至17</span></span><br><span class="line"><span class="comment"> * 10: dload_0</span></span><br><span class="line"><span class="comment"> * 11: dconst_1</span></span><br><span class="line"><span class="comment"> * 12: dadd</span></span><br><span class="line"><span class="comment"> * 13: dstore_0</span></span><br><span class="line"><span class="comment"> * 14: goto 2</span></span><br><span class="line"><span class="comment"> * 17: return</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-Arithmetic"><a href="#3-Arithmetic" class="headerlink" title="3. Arithmetic"></a>3. Arithmetic</h2><p>JVM通常会在operand stack上做算术运算(iinc是个例外, 它直接针对local variable), 例如:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">align2grain</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> grain)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> ((i + grain-<span class="number">1</span>) &amp; ~(grain-<span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 0: iload_0   // 将local variable中第一个值(i)放入operand stack</span></span><br><span class="line"><span class="comment"> * 1: iload_1   // 将local variable中第二个值(grain)放入operand stack </span></span><br><span class="line"><span class="comment"> * 2: iadd      // 从operand stack中取出两个值, 相加(i+grain)并将结果放入operand stack</span></span><br><span class="line"><span class="comment"> * 3: iconst_1  // 将1放入operand stack</span></span><br><span class="line"><span class="comment"> * 4: isub      // 从operand stack中取出两个int值, 相减并将结果放入operand stack</span></span><br><span class="line"><span class="comment"> * 5: iload_1   // 将grain放入operand stack</span></span><br><span class="line"><span class="comment"> * 6: iconst_1  // 将1放入operand stack</span></span><br><span class="line"><span class="comment"> * 7: isub      // 取出两个int值相减并放回结果</span></span><br><span class="line"><span class="comment"> * 8: iconst_m1 // 放入-1(~x==-1^x)</span></span><br><span class="line"><span class="comment"> * 9: ixor      // 取出两个int, 异或操作后放入结果</span></span><br><span class="line"><span class="comment"> * 10: iand     // 取出两个int, and操作后放入结果</span></span><br><span class="line"><span class="comment"> * 11: ireturn</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-访问Run-time-Constant-Pool"><a href="#4-访问Run-time-Constant-Pool" class="headerlink" title="4. 访问Run-time Constant Pool"></a>4. 访问Run-time Constant Pool</h2><h3 id="4-1-数值范围为-1-5"><a href="#4-1-数值范围为-1-5" class="headerlink" title="4.1 数值范围为-1~5"></a>4.1 数值范围为-1~5</h3><p>使用<strong>iconst_<i></i></strong>指令</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">5</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 0: iconst_5 </span></span><br><span class="line"><span class="comment"> * 1: istore_1</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-数值范围为-128-127"><a href="#4-2-数值范围为-128-127" class="headerlink" title="4.2 数值范围为-128~127"></a>4.2 数值范围为-128~127</h3><p>使用<strong>bipush</strong>指令</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i1 = <span class="number">127</span>;</span><br><span class="line"><span class="keyword">int</span> i2 = -<span class="number">128</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 0: bipush    127</span></span><br><span class="line"><span class="comment"> * 2: istore_1</span></span><br><span class="line"><span class="comment"> * 3: bipush    -128</span></span><br><span class="line"><span class="comment"> * 5: istore_2</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-常量范围为-32768-32767"><a href="#4-3-常量范围为-32768-32767" class="headerlink" title="4.3 常量范围为-32768~32767"></a>4.3 常量范围为-32768~32767</h3><p>使用<strong>sipush</strong>指令</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i1 = -<span class="number">32768</span>;</span><br><span class="line"><span class="keyword">int</span> i2 = <span class="number">32767</span>;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 0: sipush -32768</span></span><br><span class="line"><span class="comment"> * 3: istore_1</span></span><br><span class="line"><span class="comment"> * 4: sipush 32767</span></span><br><span class="line"><span class="comment"> * 7: istore_2</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-常量范围为-2147483648-2147483647"><a href="#4-4-常量范围为-2147483648-2147483647" class="headerlink" title="4.4 常量范围为-2147483648~2147483647"></a>4.4 常量范围为-2147483648~2147483647</h3><p>使用<strong>ldc</strong>指令</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> i1 = -<span class="number">32769</span>;</span><br><span class="line"><span class="keyword">int</span> i2 = <span class="number">32768</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 0: ldc #2   // int -32769</span></span><br><span class="line"><span class="comment"> * 2: istore_1</span></span><br><span class="line"><span class="comment"> * 3: ldc #3   // int 32768</span></span><br><span class="line"><span class="comment"> * 5: istore_2</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-5-long或double"><a href="#4-5-long或double" class="headerlink" title="4.5 long或double"></a>4.5 long或double</h3><p>如果分配0或1, 则用<strong>lconst_<l></l></strong>和<strong>dconst_<d></d></strong></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">long</span> l1 = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">long</span> l2 = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">long</span> l3 = <span class="number">2</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 0: lconst_0</span></span><br><span class="line"><span class="comment"> * 1: lstore_1</span></span><br><span class="line"><span class="comment"> * 2: lconst_1</span></span><br><span class="line"><span class="comment"> * 3: lstore_3</span></span><br><span class="line"><span class="comment"> * 4: ldc2_w #2  // long 2l</span></span><br><span class="line"><span class="comment"> * 7: lstore 5</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">double</span> d1 = <span class="number">0.0</span>;</span><br><span class="line"><span class="keyword">double</span> d2 = <span class="number">1.0</span>;</span><br><span class="line"><span class="keyword">double</span> d3 = <span class="number">3.0</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 9: dconst_0</span></span><br><span class="line"><span class="comment"> * 10: dstore 7</span></span><br><span class="line"><span class="comment"> * 12: dconst_1</span></span><br><span class="line"><span class="comment"> * 13: dstore 9</span></span><br><span class="line"><span class="comment"> * 15: ldc2_w #4  // double 3.0d</span></span><br><span class="line"><span class="comment"> * 18: dstore 11</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="5-条件控制"><a href="#5-条件控制" class="headerlink" title="5. 条件控制"></a>5. 条件控制</h2><h3 id="5-1-int"><a href="#5-1-int" class="headerlink" title="5.1 int"></a>5.1 int</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">whileInt</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (i &lt; <span class="number">100</span>) &#123;</span><br><span class="line">    i++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 0: iconst_0      // 将0放入operand stack</span></span><br><span class="line"><span class="comment"> * 1: istore_0      // 将0从operand stack取出, 放入i</span></span><br><span class="line"><span class="comment"> * 2: iload_0       // 把i的值加载到operand stack中</span></span><br><span class="line"><span class="comment"> * 3: bipush 100    // 将100放入operand stack</span></span><br><span class="line"><span class="comment"> * 5: if_icmpge 14  // 取出并对比, i&gt;=100则跳转至14</span></span><br><span class="line"><span class="comment"> * 8: iinc 0, 1     // i自加1</span></span><br><span class="line"><span class="comment"> * 11: goto 2       // 跳转至2</span></span><br><span class="line"><span class="comment"> * 14: return</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-float或double"><a href="#5-2-float或double" class="headerlink" title="5.2 float或double"></a>5.2 float或double</h3><p>对于float和double类型来说, 有两种对比方式</p>
+<ul>
+<li>fcmpl和fcmpg</li>
+<li>dcmpl和dcmpg</li>
+</ul>
+<p>当遇到NaN时会做出不同的行为, 以下以double为例:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">lessThan100</span><span class="params">(<span class="keyword">double</span> d)</span> </span>&#123; <span class="comment">// 输入d为Double.NaN</span></span><br><span class="line">  <span class="keyword">if</span> (d &lt; <span class="number">100.0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 0: dload_0</span></span><br><span class="line"><span class="comment"> * 1: ldc2_w #2   // double 100.0d</span></span><br><span class="line"><span class="comment"> * 4: dcmpg       // 由于v1和v2中有NaN, 将1装入operand stack中</span></span><br><span class="line"><span class="comment"> * 5: ifge 10     // 1&gt;0, 跳转到10</span></span><br><span class="line"><span class="comment"> * 8: iconst_1</span></span><br><span class="line"><span class="comment"> * 9: ireturn</span></span><br><span class="line"><span class="comment"> * 10: iconst_m1  // 将-1放入operand stack</span></span><br><span class="line"><span class="comment"> * 11: ireturn    // 返回operand stack</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-break"><a href="#5-3-break" class="headerlink" title="5.3 break"></a>5.3 break</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">breakTest</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123; <span class="comment">// i=10</span></span><br><span class="line">  <span class="keyword">while</span>(i&lt;<span class="number">10</span>)&#123;</span><br><span class="line">    <span class="keyword">if</span>(i&gt;<span class="number">5</span>)</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    i++;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 0: iload_0</span></span><br><span class="line"><span class="comment"> * 1: bipush 10</span></span><br><span class="line"><span class="comment"> * 3: if_icmpge 20</span></span><br><span class="line"><span class="comment"> * 6: iload_0</span></span><br><span class="line"><span class="comment"> * 7: iconst_5</span></span><br><span class="line"><span class="comment"> * 8: if_icmple 14</span></span><br><span class="line"><span class="comment"> * 11: goto 20</span></span><br><span class="line"><span class="comment"> * 14: iinc 0, 1</span></span><br><span class="line"><span class="comment"> * 17: goto 0</span></span><br><span class="line"><span class="comment"> * 20: return</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="6-接收参数"><a href="#6-接收参数" class="headerlink" title="6. 接收参数"></a>6. 接收参数</h2><p>非成员函数将参数从0开始添加, 成员函数从1开始添加</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">addTwo</span><span class="params">(<span class="keyword">int</span> i, <span class="keyword">int</span> j)</span></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> i+j;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * static int addTwo(int, int);</span></span><br><span class="line"><span class="comment"> * flags: ACC_STATIC</span></span><br><span class="line"><span class="comment"> * Code:</span></span><br><span class="line"><span class="comment"> * stack=2, locals=2, args_size=2</span></span><br><span class="line"><span class="comment"> * 0: iload_0  // 从current frame的local variable array中获得索引为0的int值</span></span><br><span class="line"><span class="comment"> * 1: iload_1  // 从索引1上获得int值</span></span><br><span class="line"><span class="comment"> * 2: iadd   // 从operand stack中取出2个int相加</span></span><br><span class="line"><span class="comment"> * 3: ireturn  // 取出operand stack中所有值放入local variable array, 返回local variable array</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">  addTwo(<span class="number">1</span>,<span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * public static void main(java.lang.String[]);</span></span><br><span class="line"><span class="comment"> * flags: ACC_PUBLIC, ACC_STATIC</span></span><br><span class="line"><span class="comment"> * Code:</span></span><br><span class="line"><span class="comment"> * stack=2, locals=1, args_size=1</span></span><br><span class="line"><span class="comment"> * 0: iconst_1        // 将1放入operand stack</span></span><br><span class="line"><span class="comment"> * 1: iconst_2        // 将2放入operand stack</span></span><br><span class="line"><span class="comment"> * 2: invokestatic #2 // Method addTwo:(II)I</span></span><br><span class="line"><span class="comment"> * 5: pop             // 将operand stack顶部的值移出</span></span><br><span class="line"><span class="comment"> * 6: return</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Java/">Java</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/3024840094.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">JVM (Part 4)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/3792814616.html">
+        <span class="next-text nav-default">JVM (Part 2)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/4211798873.html';
+  var disqus_title = "JVM (Part 3)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>
