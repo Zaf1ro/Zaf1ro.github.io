@@ -8,7 +8,7 @@
 
 
 
-  <meta name="description" content="Virtual Memory Allocation And Paging">
+  <meta name="description" content="Virtual Memory Allocation And Paging (1)">
 
 
 
@@ -40,14 +40,14 @@
 <meta name="description" content="1. Process Memory Concepts在进程拥有的所有资源中, 内存是最重要的. 通常每个进程会有一个线性的virtual address space(虚拟地址空间), 地址从0开始依次递增. virual memory被分为多个page(分页), 通常每个page为4kb大小, 每个page由真实的memory(称为frame)或secondary storage(如disk)支持">
 <meta name="keywords" content="GNU C">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Virtual Memory Allocation And Paging">
+<meta property="og:title" content="Virtual Memory Allocation And Paging (1)">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1f7f.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. Process Memory Concepts在进程拥有的所有资源中, 内存是最重要的. 通常每个进程会有一个线性的virtual address space(虚拟地址空间), 地址从0开始依次递增. virual memory被分为多个page(分页), 通常每个page为4kb大小, 每个page由真实的memory(称为frame)或secondary storage(如disk)支持">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2020-09-18T02:08:07.211Z">
+<meta property="og:updated_time" content="2020-09-20T03:07:39.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Virtual Memory Allocation And Paging">
+<meta name="twitter:title" content="Virtual Memory Allocation And Paging (1)">
 <meta name="twitter:description" content="1. Process Memory Concepts在进程拥有的所有资源中, 内存是最重要的. 通常每个进程会有一个线性的virtual address space(虚拟地址空间), 地址从0开始依次递增. virual memory被分为多个page(分页), 通常每个page为4kb大小, 每个page由真实的memory(称为frame)或secondary storage(如disk)支持">
 
 
@@ -59,7 +59,7 @@
 
 
     <title>
-Virtual Memory Allocation And Paging - Zaf1ro's Blog
+Virtual Memory Allocation And Paging (1) - Zaf1ro's Blog
 </title>
   </head>
 
@@ -77,7 +77,7 @@ Virtual Memory Allocation And Paging - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Process-Memory-Concepts"><span class="toc-text">1. Process Memory Concepts</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Allocate-Storage-For-Prgram-Data"><span class="toc-text">2. Allocate Storage For Prgram Data</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Memory-Allocation-in-C-Programs"><span class="toc-text">2.1 Memory Allocation in C Programs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-The-GNU-Allocator"><span class="toc-text">2.2 The GNU Allocator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Unconstrained-Allocation"><span class="toc-text">2.3 Unconstrained Allocation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Obstacks"><span class="toc-text">3. Obstacks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Create-Obstacks"><span class="toc-text">3.1 Create Obstacks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Prepare-for-Using-Obstacks"><span class="toc-text">3.2 Prepare for Using Obstacks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Allocation-in-an-Obstack"><span class="toc-text">3.3 Allocation in an Obstack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Free-Objects-in-an-Obstack"><span class="toc-text">3.4 Free Objects in an Obstack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Grow-Objects"><span class="toc-text">3.5 Grow Objects</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-Status-of-an-Obstack"><span class="toc-text">3.7 Status of an Obstack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-Alignment-of-Data-in-Obstacks"><span class="toc-text">3.8 Alignment of Data in Obstacks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-9-Obstack-Chunks"><span class="toc-text">3.9 Obstack Chunks</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Resize-the-Data-Segment"><span class="toc-text">4. Resize the Data Segment</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Process-Memory-Concepts"><span class="toc-text">1. Process Memory Concepts</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Allocate-Storage-For-Prgram-Data"><span class="toc-text">2. Allocate Storage For Prgram Data</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Memory-Allocation-in-C-Programs"><span class="toc-text">2.1 Memory Allocation in C Programs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-The-GNU-Allocator"><span class="toc-text">2.2 The GNU Allocator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Unconstrained-Allocation"><span class="toc-text">2.3 Unconstrained Allocation</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -124,7 +124,7 @@ Virtual Memory Allocation And Paging - Zaf1ro's Blog
     <header class="post-header">
       <h1 class="post-title">
         
-          Virtual Memory Allocation And Paging
+          Virtual Memory Allocation And Paging (1)
         
       </h1>
       <time class="post-time">
@@ -219,48 +219,7 @@ Virtual Memory Allocation And Paging - Zaf1ro's Blog
 <li>int fordblks: allocator中未被使用的内存大小, 单位为byte</li>
 <li>int keepcost: heap顶端可释放的内存大小</li>
 </ol>
-<h2 id="3-Obstacks"><a href="#3-Obstacks" class="headerlink" title="3. Obstacks"></a>3. Obstacks</h2><p>Obstack是一个内存池, obstack中必须第一个释放最后一个申请的对象. 除了释放对象的顺序限制, obstack和其他的内存池相同.</p>
-<h3 id="3-1-Create-Obstacks"><a href="#3-1-Create-Obstacks" class="headerlink" title="3.1 Create Obstacks"></a>3.1 Create Obstacks</h3><p>Obstack用结构体<code>struct obstack</code>来表示, 该结构体拥有固定的内存大小, 并记录了obstack的各种状态和其拥有的对象. 程序不应直接访问该结构体, 而应该调用obstack函数. Obstack中的所有对象都会被包装进一个名为chunks的内存块中, <code>struct obstac</code>会指向一个链表来表示所拥有的的chunks. 当申请的对象比当前chunk还要大时, 会自动申请新的chunk. 虽然不必手动管理chunk, 但还是需要为obstack提供一个申请chunk的函数, 一般会直接使用malloc.</p>
-<h3 id="3-2-Prepare-for-Using-Obstacks"><a href="#3-2-Prepare-for-Using-Obstacks" class="headerlink" title="3.2 Prepare for Using Obstacks"></a>3.2 Prepare for Using Obstacks</h3><p>当程序中需要调用obstack函数时, 需在header中添加<code>obstack.h</code>; 当源文件中使用了<code>macro obstack_ini</code>时, 还需要定义两个函数或macro:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> obstack_chunk_alloc xmalloc</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> obstack_chunk_free free</span></span><br></pre></td></tr></table></figure>
 
-<p><code>obstack_chunk_alloc</code>用于为chunk申请内存, <code>obstack_chunk_free</code>用于释放chunk的内存. 虽然obstack也是通过调用malloc来获取内存, 但实际中obstack会比程序自己调用malloc要快, 因为obstack会尽量少的调用obstack_chunk_alloc. 在使用<code>struct obstack</code>前, 需先调用obstack_init()来初始化该obstack:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize obstack for allocation of objects</span></span><br><span class="line"><span class="comment"> * @param ptr pointer to obstack</span></span><br><span class="line"><span class="comment"> * @return always return 1, call obstack_failed_handler if fails</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">obstack_init</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<p>obstack_failed_handler为函数指针, 函数原型如下:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">function</span> <span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<p>以下是初始化obstack的例子:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">my_obstack_alloc_failed</span> <span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line">obstack_alloc_failed_handler = &amp;my_obstack_alloc_failed;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* static variable */</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">obstack</span> <span class="title">ptr1</span>;</span></span><br><span class="line">obstack_init (&amp;ptr1);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* dynamically allocated */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">obstack</span> *<span class="title">ptr2</span> = (<span class="title">struct</span> <span class="title">obstack</span> *) <span class="title">xmalloc</span> (<span class="title">sizeof</span> (<span class="title">struct</span> <span class="title">obstack</span>));</span></span><br><span class="line">obstack_init (ptr2);</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-3-Allocation-in-an-Obstack"><a href="#3-3-Allocation-in-an-Obstack" class="headerlink" title="3.3 Allocation in an Obstack"></a>3.3 Allocation in an Obstack</h3><p>在obstack中申请对象最直接方式就是调用<code>obstack_alloc</code>, 函数如下:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate an uninitialized block of `size` bytes in an obstack and </span></span><br><span class="line"><span class="comment"> *        return its address</span></span><br><span class="line"><span class="comment"> * @param ptr the address of struct obstack object which represents the obstack</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">obstack_alloc</span> <span class="params">(struct obstack *ptr, <span class="keyword">int</span> size)</span></span></span><br></pre></td></tr></table></figure>
-
-<p>以下是在obstack中申请一个字符串<code>str</code>拷贝的例子:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">obstack</span> <span class="title">string_obstack</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">copystring</span> <span class="params">(<span class="keyword">char</span> *<span class="built_in">string</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">size_t</span> len = <span class="built_in">strlen</span> (<span class="built_in">string</span>) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">char</span> *s = (<span class="keyword">char</span> *) obstack_alloc (&amp;string_obstack, len);</span><br><span class="line">  <span class="built_in">memcpy</span> (s, <span class="built_in">string</span>, len);</span><br><span class="line">  <span class="keyword">return</span> s;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果想初始化obstack申请的内存, 可调用<code>obstack_copy</code>函数, 函数如下:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate and initialize it by copying `size` bytes of data starting </span></span><br><span class="line"><span class="comment"> *        at `address`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">obstack_copy</span> <span class="params">(struct obstack *ptr, <span class="keyword">void</span> *address, <span class="keyword">int</span> size)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-4-Free-Objects-in-an-Obstack"><a href="#3-4-Free-Objects-in-an-Obstack" class="headerlink" title="3.4 Free Objects in an Obstack"></a>3.4 Free Objects in an Obstack</h3><p>由于obstack是栈结构, 因此可以释放一个或多个对象. </p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief If `object` is a null pointer, everthing allocated in the obstack is </span></span><br><span class="line"><span class="comment"> *        freed; Otherwise, every object since `object` will be freed </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">obstack_free</span> <span class="params">(struct obstack *ptr, <span class="keyword">void</span> *object)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<p>若参数object为null, 则obstack会变为未初始状态; 若参数为第一个申请的对象的指针, 则obstack会释放所有对象, 但还可以用于申请内存.</p>
-<h3 id="3-5-Grow-Objects"><a href="#3-5-Grow-Objects" class="headerlink" title="3.5 Grow Objects"></a>3.5 Grow Objects</h3><p>由于obstack中的chunk都是连续的, 因此已经申请内存的object无法改变内存大小. 但obstack提供了一种可拓展object的方式, 称为<code>growing objects</code>. 该方法可在obstack的末端不断扩充内存, 直到调用<code>obstack_finish</code>才返回新object的地址. 当正在生成growing object时, obstack不能调用其他allocation函数.</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief add an uninitializing space to the growing object</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">obstack_blank</span> <span class="params">(struct obstack *ptr, <span class="keyword">int</span> size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief add a block of initialized space to the growing object</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">obstack_grow</span> <span class="params">(struct obstack *ptr, <span class="keyword">void</span> *data, <span class="keyword">int</span> size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief finish the growing object and return its address</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">obstack_finish</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the current size of the growing object in bytes. Must be called before obstack_finish()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">obstack_object_size</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-7-Status-of-an-Obstack"><a href="#3-7-Status-of-an-Obstack" class="headerlink" title="3.7 Status of an Obstack"></a>3.7 Status of an Obstack</h3><p>以下函数可提供某个obstack的当前状态:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the tentative address of the beginning of the currently growing obejct</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">obstack_base</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the address of the first free byte in the current chunk</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> * <span class="title">obstack_next_free</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the size in bytes of the currently growing object</span></span><br><span class="line"><span class="comment"> *        equal to obstack_next_free(ptr) - obstack_base(ptr)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">obstack_object_size</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-8-Alignment-of-Data-in-Obstacks"><a href="#3-8-Alignment-of-Data-in-Obstacks" class="headerlink" title="3.8 Alignment of Data in Obstacks"></a>3.8 Alignment of Data in Obstacks</h3><p>每个obstack都有一个alignment boundary. 申请object时, obstack会从alignment boundary的倍数开始. Obstack提供了一个macro来获取或修改alignment boundary:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">obstack_alignment_mask</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-9-Obstack-Chunks"><a href="#3-9-Obstack-Chunks" class="headerlink" title="3.9 Obstack Chunks"></a>3.9 Obstack Chunks</h3><p>obstack会申请一个chunk来放置一个或多个对象. Chunk默认大小为4096 bytes, 包含8 bytes的额外开销. Obstack提供了一个macro来获取或修改chunk size:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">obstack_chunk_size</span> <span class="params">(struct obstack *ptr)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<p>chunk size应为2的倍数, 且不应比4096小.</p>
-<h2 id="4-Resize-the-Data-Segment"><a href="#4-Resize-the-Data-Segment" class="headerlink" title="4. Resize the Data Segment"></a>4. Resize the Data Segment</h2><p>通常来说, 程序不需要直接调用这一节的函数, 只为GNC C Library memory allocator自用, 也可以当做system call的接口.</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the space allocated for the calling process by setting the</span></span><br><span class="line"><span class="comment"> *        process' break value to `addr`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">brk</span> <span class="params">(<span class="keyword">void</span> *addr)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the space allocated for the calling process by adding `delta` </span></span><br><span class="line"><span class="comment"> *        bytes to the process' break value</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">sbrk</span> <span class="params">(<span class="keyword">ptrdiff_t</span> delta)</span></span>;</span><br></pre></td></tr></table></figure>
     </div>
 
     <footer class="post-footer">
@@ -275,6 +234,12 @@ Virtual Memory Allocation And Paging - Zaf1ro's Blog
       
       
   <nav class="post-nav">
+    
+      <a class="prev" href="/p/d701.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Virtual Memory Allocation And Paging (2)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
     
     
       <a class="next" href="/p/ab2f.html">
@@ -315,7 +280,7 @@ MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
 <script type="text/javascript">
   var disqus_shortname = 'zaf1ro';
   var disqus_identifier = 'p/1f7f.html';
-  var disqus_title = "Virtual Memory Allocation And Paging";
+  var disqus_title = "Virtual Memory Allocation And Paging (1)";
 
   var disqus = {
     load : function disqus(){
