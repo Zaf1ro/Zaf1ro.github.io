@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="DDD and CQRS Pattern (1)">
+
+
+
+
+  <meta name="keywords" content="Microservices,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/b145.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/b145.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/b145.html">
+
+
+<meta name="description" content="1. OverviewDDD(Domain Driven Design)和CQRS(Command Query Responsibility Segregation)可用于降低microservices中业务逻辑的复杂度. 2. CQRSCQRS是一种将数据读取和写入分离的pattern(模式), 基本思想是将系统操作划分为两个类别:  Query(查询): 返回结果, 不改变系统状态, 且没有任">
+<meta name="keywords" content="Microservices">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DDD and CQRS Pattern (1)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/b145.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. OverviewDDD(Domain Driven Design)和CQRS(Command Query Responsibility Segregation)可用于降低microservices中业务逻辑的复杂度. 2. CQRSCQRS是一种将数据读取和写入分离的pattern(模式), 基本思想是将系统操作划分为两个类别:  Query(查询): 返回结果, 不改变系统状态, 且没有任">
+<meta property="og:locale" content="zh">
+<meta property="og:image" content="https://zaf1ro.github.io/images/DDD/1-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/DDD/1-2.png">
+<meta property="og:updated_time" content="2021-02-11T01:53:33.752Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DDD and CQRS Pattern (1)">
+<meta name="twitter:description" content="1. OverviewDDD(Domain Driven Design)和CQRS(Command Query Responsibility Segregation)可用于降低microservices中业务逻辑的复杂度. 2. CQRSCQRS是一种将数据读取和写入分离的pattern(模式), 基本思想是将系统操作划分为两个类别:  Query(查询): 返回结果, 不改变系统状态, 且没有任">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/DDD/1-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+DDD and CQRS Pattern (1) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Overview"><span class="toc-text">1. Overview</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-CQRS"><span class="toc-text">2. CQRS</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          DDD and CQRS Pattern (1)
+        
+      </h1>
+      <time class="post-time">
+          02/10/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h2><p>DDD(Domain Driven Design)和CQRS(Command Query Responsibility Segregation)可用于降低microservices中业务逻辑的复杂度.<br><img src="/images/DDD/1-1.png" alt="External microservice architecture versus internal architecture patterns for each microservice"></p>
+<h2 id="2-CQRS"><a href="#2-CQRS" class="headerlink" title="2. CQRS"></a>2. CQRS</h2><p>CQRS是一种将数据读取和写入分离的pattern(模式), 基本思想是将系统操作划分为两个类别:</p>
+<ol>
+<li>Query(查询): 返回结果, 不改变系统状态, 且没有任何副作用</li>
+<li>Command(命令): 改变系统状态</li>
+</ol>
+<p>CQS是一个简单的概念: 每个系统的操作要么返回状态, 要么修改状态, 不会两者兼具. CQRS基于CQS原则, 只不过更为详细: CQRS可以当做是基于command和query的pattern, 并提供了异步信息; CQRS还有一些更高级的方案, 比如Query和Command操作的数据库可以是不同数据库(物理层面或数据库类型层面); 更先进的CQRS会为command实现ES(Event-Sourcing, 数据源), 可以让event保存在domain modal中, 而不是状态中. 目前我们只需要了解CQRS的最基本方法, 也就是command与query分离.<br>CQRS的实现很简单: 把query分为一层, 把command分为另外一层, 每层都有自己的data model(不一定为不同的数据库). Query和command可以在同一个microservice中, 也可以在不同的microservices或进程中, 彼此不会互相影响, 以此做到横向扩展和优化.<br>CQRS表示有系统中有两个对象用于读/写操作, 以订单系统为例, 以下是一个简化版遵循CQRS的microservices:<br><img src="/images/DDD/1-2.png" alt="Simplified CQRS- and DDD-based microservice"></p>
+<p>上图可看到, CQRS pattern将ViewModels和query从command和Domain Model中分离出来, 这种方法使得query跳脱出DDD pattern的限制和约束, 而DDD pattern只对事务和更新有效. CQRS pattern的本质是: 查询是idempotent(幂等的, 任意多次执行所产生的影响均与一次执行的影响相同), 无论query操作执行多少次, 都不会对系统状态产生任何改变. 换句话说, query没有任何副作用. 因此, query和command可以使用不同的data model, 即使该例中query和command使用相同数据库.<br>对于command来说, 由于涉及到系统状态的改变, 以及不断变化的业务逻辑, command会变得十分复杂, 使用时也应小心谨慎. 因而DDD应运而生, 可以降低command的复杂度, 并实现更好的model system.<br>其中一种实现DDD的方式为Aggregate pattern, 根据domain object在domain中的关系, 将多个domain object作为单个unit来对待. 文本只在transactional/updates领域(由command引发的操作)使用DDD pattern; 对于query, 有很多成熟的ORM可供选择: EF Core, AutoMapper projections, stored procedures, views, materialized views或micro ORM.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/p/25bb.html">
+        <span class="next-text nav-default">Low-Level Input/Output</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/b145.html';
+  var disqus_title = "DDD and CQRS Pattern (1)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

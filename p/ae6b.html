@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Input/Output on Streams (2)">
+
+
+
+
+  <meta name="keywords" content="GNU C,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/ae6b.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/ae6b.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/ae6b.html">
+
+
+<meta name="description" content="10. Block Input/Output/** * @brief read `count` objects of size `size` into the array `data` from the stream * @return return the numbers of objects actually read */size_t fread (void *data, size_t si">
+<meta name="keywords" content="GNU C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Input&#x2F;Output on Streams (2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/ae6b.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="10. Block Input/Output/** * @brief read `count` objects of size `size` into the array `data` from the stream * @return return the numbers of objects actually read */size_t fread (void *data, size_t si">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2020-10-01T15:13:19.615Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Input&#x2F;Output on Streams (2)">
+<meta name="twitter:description" content="10. Block Input/Output/** * @brief read `count` objects of size `size` into the array `data` from the stream * @return return the numbers of objects actually read */size_t fread (void *data, size_t si">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Input/Output on Streams (2) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Block-Input-Output"><span class="toc-text">10. Block Input/Output</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-End-Of-File-and-Errors"><span class="toc-text">11. End-Of-File and Errors</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-Recover-from-errors"><span class="toc-text">12. Recover from errors</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-Text-Stream-and-Binary-Stream"><span class="toc-text">13. Text Stream and Binary Stream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-File-Positioning"><span class="toc-text">14. File Positioning</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-Portable-File-Position-Functions"><span class="toc-text">15. Portable File-Position Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-Stream-Buffering"><span class="toc-text">16. Stream Buffering</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#16-1-Buffering-Concepts"><span class="toc-text">16.1 Buffering Concepts</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-2-Flush-Buffers"><span class="toc-text">16.2 Flush Buffers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-3-Control-Which-Kind-of-Buffering"><span class="toc-text">16.3 Control Which Kind of Buffering</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-Other-Kinds-of-Streams"><span class="toc-text">17. Other Kinds of Streams</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#17-1-String-Streams"><span class="toc-text">17.1 String Streams</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-2-Custom-Streams-and-Cookies"><span class="toc-text">17.2 Custom Streams and Cookies</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-3-Custom-Stream-Hook-Functions"><span class="toc-text">17.3 Custom Stream Hook Functions</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Input/Output on Streams (2)
+        
+      </h1>
+      <time class="post-time">
+          10/01/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="10-Block-Input-Output"><a href="#10-Block-Input-Output" class="headerlink" title="10. Block Input/Output"></a>10. Block Input/Output</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read `count` objects of size `size` into the array `data` from the stream</span></span><br><span class="line"><span class="comment"> * @return return the numbers of objects actually read</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">size_t</span> fread (<span class="keyword">void</span> *data, <span class="keyword">size_t</span> size, <span class="keyword">size_t</span> count, FILE *stream);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equivalent to fread() except that it does not implicitly lock the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">size_t</span> fread_unlocked (<span class="keyword">void</span> *data, <span class="keyword">size_t</span> size, <span class="keyword">size_t</span> count, FILE *stream);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief write `count` objects of size `size` from the array `data` to the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">size_t</span> fwrite (<span class="keyword">const</span> <span class="keyword">void</span> *data, <span class="keyword">size_t</span> size, <span class="keyword">size_t</span> count, FILE *stream);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equivalent to fwrite() except that it does not implicitly lock the stream </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">size_t</span> fwrite_unlocked (<span class="keyword">const</span> <span class="keyword">void</span> *data, <span class="keyword">size_t</span> size, <span class="keyword">size_t</span> count, FILE *stream);</span><br></pre></td></tr></table></figure>
+
+<h2 id="11-End-Of-File-and-Errors"><a href="#11-End-Of-File-and-Errors" class="headerlink" title="11. End-Of-File and Errors"></a>11. End-Of-File and Errors</h2><p>大部分stream函数会返回EOF来表示操作失败. 由于EOF既表示文件末尾, 也表示操作失败, 因此需要使用<strong>feof()</strong>来区分.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return nonzero if the EOF indicator for the stream is set</span></span><br><span class="line"><span class="comment"> *        The EOF flag is set when user attempts to read past the EOF</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">feof</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equivalent to feof() except that it does not implicitly lock the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">feof_unlocked</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return nonzero if the error indicator for the stream is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ferror</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equivalent to ferror() except that it does not implicitly lock the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ferror_unlocked</span> <span class="params">(FILE *stream)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="12-Recover-from-errors"><a href="#12-Recover-from-errors" class="headerlink" title="12. Recover from errors"></a>12. Recover from errors</h2><p>可通过以下函数来清楚EOF flag和error:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief clear the end-of-file and error indicator for the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">clearerr</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equivalent to clearerr() except that it does not implicitly lock the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">clearerr_unlocked</span> <span class="params">(FILE *stream)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="13-Text-Stream-and-Binary-Stream"><a href="#13-Text-Stream-and-Binary-Stream" class="headerlink" title="13. Text Stream and Binary Stream"></a>13. Text Stream and Binary Stream</h2><p>Text stream和binary stream的区别如下:</p>
+<ol>
+<li>Text stream以line为单位进行读取, 每个line之间用newline chacter分开; 而binary stream中没有line这一概念, 只有一串字符. 在某些系统中, line的长度限制为254字符.</li>
+<li>在某些系统中, text stream只能将printable character, tab character和newline写入到文件中; 而binary stream则可以处理任意字符.</li>
+<li>在某些系统中, newline前面的space可能会被忽略, 导致下次读取时消失</li>
+<li>对于text stream, 输入和输出的字符并不一定为文件中的字符; 对于binary stream, 输入和输出的字符一定和文件相同</li>
+</ol>
+<p>整体来说, binary stream比text stream更可靠和可预测, 那为什么不直接使用binary stream呢? 这是因为在某些系统中, text stream和binary stream使用不同的文件格式, 当读取和写入文本文件时, 只能使用text stream. 但对于GNU C Library和其他POSIX system, text stream和binary stream没有区别.</p>
+<h2 id="14-File-Positioning"><a href="#14-File-Positioning" class="headerlink" title="14. File Positioning"></a>14. File Positioning</h2><p>File positioning用于描述文件在stream中读取和写入的位置. I/O操作会让stream中的file position向前推进. 在GNU系统中, file position作为一个integer表示从文件头部到当前位置中间的字节数. 部分文件支持移动file position, 这类文件称为random-access file.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the current file position of the stream</span></span><br><span class="line"><span class="comment"> * @return -1 on failure if stream does not support file positioning</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">int</span> <span class="title">ftell</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief similiar to ftell, except that it returns a value of type off_t</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">off_t</span> ftello (FILE *stream);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the file position of stream</span></span><br><span class="line"><span class="comment"> * @param whence must be one of the following values:</span></span><br><span class="line"><span class="comment"> *        1. SEEK_SET: offset is relative to the beginning of the file</span></span><br><span class="line"><span class="comment"> *        2. SEEK_CUR: offset is relative to the current file position</span></span><br><span class="line"><span class="comment"> *        3. SEEK_END: offset is relative to the end of the file</span></span><br><span class="line"><span class="comment"> * @return zero on success, nonzero on failure</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fseek</span> <span class="params">(FILE *stream, <span class="keyword">long</span> <span class="keyword">int</span> offset, <span class="keyword">int</span> whence)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief similiar to fseek() but fix a problem with POSIX types. </span></span><br><span class="line"><span class="comment"> *        Type long int for the offset is not compatible with POSIX.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fseeko</span> <span class="params">(FILE *stream, <span class="keyword">off_t</span> offset, <span class="keyword">int</span> whence)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief position the stream at the beginning of the file</span></span><br><span class="line"><span class="comment"> *        equivalent to fseek(stream, 0, SEEK_SET)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rewind</span> <span class="params">(FILE *stream)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="15-Portable-File-Position-Functions"><a href="#15-Portable-File-Position-Functions" class="headerlink" title="15. Portable File-Position Functions"></a>15. Portable File-Position Functions</h2><p>在GNU系统中, file position表示字符数; 但在某些ISO C系统中, text stream和binary stream不同, 无法使用字符数来表示text stream中的file position. 举例: 在某些系统中, file position包含record在文件中的offset, 和record中的character offset. 因此如果想要实现可移植性, 需要遵循以下规定:</p>
+<ul>
+<li>ftell()的返回值与当前file position距离文件头部的字符数并无任何关系, 只能保证在fseek()和fseeko()中使用该返回值可以回到相同的file position.</li>
+<li>当对text stream使用fseek()或fseeko()时, 要么保证offset为0, 要么保证在whence为<strong>SEEK_SET</strong>时, offset为该stream的ftell()返回值.</li>
+<li>当使用ungetc()时, text stream中的file position变为undefined, 直到ungetc()的字符被读取.</li>
+</ul>
+<p>但即使严格遵守以上规定, 面对超大文件时还是会遇到问题: 由于ftell()和fseeko()使用<strong>long int</strong>表示file position, 可能不足以表示超大文件中的file position. 但对于ftello()和fseeko(), 其使用<strong>off_t</strong>类型, 该类型可以确保可以覆盖所有file position. 如果想应对不同系统的不同编码, 可使用fgetpos()和fsetpos(), 这两个函数使用<strong>fpos_t</strong>来表示系统中的file position, 不同的系统会对该类型有不同的定义.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the value of file position indicator for the stream in the fpos_t object</span></span><br><span class="line"><span class="comment"> * @return zero on success; otherwise nonzero on failure</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fgetpos</span> <span class="params">(FILE *stream, <span class="keyword">fpos_t</span> *position)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the file position for the stream to the position</span></span><br><span class="line"><span class="comment"> * @return zero on success, clear the end-of-file indicator on the stream, discard any</span></span><br><span class="line"><span class="comment"> *         character that were pushed back by ungetc(); nonzero on failure</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fsetpos</span> <span class="params">(FILE *stream, <span class="keyword">const</span> <span class="keyword">fpos_t</span> *position)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="16-Stream-Buffering"><a href="#16-Stream-Buffering" class="headerlink" title="16. Stream Buffering"></a>16. Stream Buffering</h2><p>被写入到stream中的字符会先在一个block中保存, 并异步传输到文件中, 而不是立即写入文件. 相同的, stream会将文件中的一块数据放入block, 而不是一个个字符读取. 这一策略称为buffering. 当程序中使用stream为用户做交互式输入和输出时, 需要了解buffering的工作流程. </p>
+<h3 id="16-1-Buffering-Concepts"><a href="#16-1-Buffering-Concepts" class="headerlink" title="16.1 Buffering Concepts"></a>16.1 Buffering Concepts</h3><p>以下是三种不同的buffering策略:</p>
+<ul>
+<li>unbuffered stream: 立即从文件中读取或写入字符</li>
+<li>line buffered stream: 只有遇到newline character才触发文件写入操作</li>
+<li>fully buffered stream: 当buffer满的时候再触发文件操作</li>
+</ul>
+<p>除了连接到terminal的stream为line buffered stream, 其他stream几乎都是fully buffered stream. </p>
+<h3 id="16-2-Flush-Buffers"><a href="#16-2-Flush-Buffers" class="headerlink" title="16.2 Flush Buffers"></a>16.2 Flush Buffers</h3><p>Flush a buffered stream意味着将所有字符写入到文件中, 以下是自动flush的几种情况:</p>
+<ul>
+<li>buffer已满, 程序执行output操作</li>
+<li>stream被关闭</li>
+<li>程序调用exit()</li>
+<li>stream为line buffered且输入newline character</li>
+<li>程序对该文件进行input操作</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief cause any buffered output on stream to be delivered to the file,</span></span><br><span class="line"><span class="comment"> *        cause buffered output on all open output stream to be flushed if `stream` is null</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fflush</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equivalent to fflush() except that it does not implicitly lock the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fflush_unlocked</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief flush all line buffered streams currently opened</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">void</span> _flushlbf (<span class="keyword">void</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief cause the buffer of stream to be emptied</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">void</span> __fpurge (FILE *stream);</span><br></pre></td></tr></table></figure>
+
+<h3 id="16-3-Control-Which-Kind-of-Buffering"><a href="#16-3-Control-Which-Kind-of-Buffering" class="headerlink" title="16.3 Control Which Kind of Buffering"></a>16.3 Control Which Kind of Buffering</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief specify that the stream should have the buffering mode</span></span><br><span class="line"><span class="comment"> * @param buf if buf argument is a null pointer, setvbuf() allocates a buffer itself using malloc()</span></span><br><span class="line"><span class="comment"> * @param mode must be one of the following values:</span></span><br><span class="line"><span class="comment"> *        1. _IOFBF: stream should be fully buffered</span></span><br><span class="line"><span class="comment"> *        2. _IOLBF: stream should be line buffered</span></span><br><span class="line"><span class="comment"> *        3. _IONBF: stream sbhould be unbuffered</span></span><br><span class="line"><span class="comment"> * @param size the size of buffer</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setvbuf</span> <span class="params">(FILE *stream, <span class="keyword">char</span> *buf, <span class="keyword">int</span> mode, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief if buf is a null pointer, this function is equivalent to setvbuf with a mode argument of _IONBF,</span></span><br><span class="line"><span class="comment"> *        otherwise it is equivalent to calling setvbuf with buf, and a mode of _IOFBF and a size argument of BUFSIZ</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setbuf</span> <span class="params">(FILE *stream, <span class="keyword">char</span> *buf)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief if buf is null pointer, this function makes stream unbuffered, </span></span><br><span class="line"><span class="comment"> *        otherwise it makes stream fully buffered using buf</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setbuffer</span> <span class="params">(FILE *stream, <span class="keyword">char</span> *buf, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief make stream be line buffered and allocate the buffer for you</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setlinebuf</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a nonzero value in case the stream is line buffered, otherwise return zero</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">int</span> __flbf (FILE *stream);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the size of the buffer in the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">size_t</span> __fbufsize (FILE *stream);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the number of bytes currently in the output buffer</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">size_t</span> __fpending (FILE *stream);</span><br></pre></td></tr></table></figure>
+
+<h2 id="17-Other-Kinds-of-Streams"><a href="#17-Other-Kinds-of-Streams" class="headerlink" title="17. Other Kinds of Streams"></a>17. Other Kinds of Streams</h2><h3 id="17-1-String-Streams"><a href="#17-1-String-Streams" class="headerlink" title="17.1 String Streams"></a>17.1 String Streams</h3><p>没有底层I/O操作, 所有I/O操作都通过buffer和内存之间传送数据. </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open a stream that allows the access specified by opentype argument, and </span></span><br><span class="line"><span class="comment"> *        read from or write to the buffer specified by buf argument, the buf must</span></span><br><span class="line"><span class="comment"> *        be at least size bytes long.</span></span><br><span class="line"><span class="comment"> *        When stream open for writing is closed or flushed, a null byte is written </span></span><br><span class="line"><span class="comment"> *        at the end of the buffer if there is space.</span></span><br><span class="line"><span class="comment"> *        For a stream open for reading, null character in the buffer do not count </span></span><br><span class="line"><span class="comment"> *        as end-of-file.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">FILE * <span class="title">fmemopen</span> <span class="params">(<span class="keyword">void</span> *buf, <span class="keyword">size_t</span> size, <span class="keyword">const</span> <span class="keyword">char</span> *opentype)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open a stream for writing to a buffer. The buffer is allocated dynamically,</span></span><br><span class="line"><span class="comment"> *        and grown as necessary. The buffer will not be cleaned up automatically.</span></span><br><span class="line"><span class="comment"> *        When stream is closed or flushed, ptr and sizeloc are updated to contain</span></span><br><span class="line"><span class="comment"> *        the pointer to the buffer and is size. </span></span><br><span class="line"><span class="comment"> *        </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">FILE * <span class="title">open_memstream</span> <span class="params">(<span class="keyword">char</span> **ptr, <span class="keyword">size_t</span> *sizeloc)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>以下是fmemopen()和open_memstream()的例子:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* fmemopen() */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">char</span> buffer[] = <span class="string">"foobar"</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span> <span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> ch;</span><br><span class="line">  FILE *stream;</span><br><span class="line"></span><br><span class="line">  stream = fmemopen (buffer, <span class="built_in">strlen</span> (buffer), <span class="string">"r"</span>);</span><br><span class="line">  <span class="comment">/* output: foobar */</span></span><br><span class="line">  <span class="keyword">while</span> ((ch = fgetc (stream)) != EOF)</span><br><span class="line">    <span class="built_in">printf</span> (<span class="string">"%c"</span>, ch);</span><br><span class="line">  fclose (stream);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* open_memstream() */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span> <span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> *bp;</span><br><span class="line">  <span class="keyword">size_t</span> size;</span><br><span class="line">  FILE *stream;</span><br><span class="line"></span><br><span class="line">  stream = open_memstream (&amp;bp, &amp;size);</span><br><span class="line">  <span class="built_in">fprintf</span> (stream, <span class="string">"hello"</span>);</span><br><span class="line">  fflush (stream);</span><br><span class="line">  <span class="built_in">printf</span> (<span class="string">"buf = %s, size = %zu\n"</span>, bp, size); <span class="comment">/* buf = hello, size = 5 */</span></span><br><span class="line">  <span class="built_in">fprintf</span> (stream, <span class="string">", world"</span>);</span><br><span class="line">  fclose (stream);</span><br><span class="line">  <span class="built_in">printf</span> (<span class="string">"buf = %s, size = %zu\n"</span>, bp, size); <span class="comment">/* buf = hello, world, size = 12 */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="17-2-Custom-Streams-and-Cookies"><a href="#17-2-Custom-Streams-and-Cookies" class="headerlink" title="17.2 Custom Streams and Cookies"></a>17.2 Custom Streams and Cookies</h3><p>在custom stream中有一个特殊的object称为<strong>cookie</strong>, 该对象记录了每一次存储和读取数据. stream function不会直接使用到该参数, 甚至都不知道cookie的类型. 为了实现custom stream, 需要指定如何在特定的位置读取或存储数据, 为此需要<strong>hook function</strong>实现读取, 写入, 改变file postion, 和关闭stream. 这四种操作都要经过stream cookie, 从而让cookie知道数据在哪里被读取或写入. 当创建custom stream时, 需要指定cookie pointer, 并且四个hook functions存储在<strong>cookie_io_functions_t</strong>中:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  <span class="keyword">cookie_read_function_t</span>  *read;  <span class="comment">/* read operations for the stream */</span></span><br><span class="line">  <span class="keyword">cookie_write_function_t</span> *write; <span class="comment">/* write operations for the stream */</span></span><br><span class="line">  <span class="keyword">cookie_seek_function_t</span>  *seek;  <span class="comment">/* seek operations on the stream */</span></span><br><span class="line">  <span class="keyword">cookie_close_function_t</span> *close; <span class="comment">/* close the stream */</span></span><br><span class="line">&#125; <span class="keyword">cookie_io_functions_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create the stream for communicating with the cookie</span></span><br><span class="line"><span class="comment"> * @return the newly stream or a null pointer</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">FILE * <span class="title">fopencookie</span> <span class="params">(<span class="keyword">void</span> *cookie, <span class="keyword">const</span> <span class="keyword">char</span> *opentype, <span class="keyword">cookie_io_functions_t</span> io-functions)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="17-3-Custom-Stream-Hook-Functions"><a href="#17-3-Custom-Stream-Hook-Functions" class="headerlink" title="17.3 Custom Stream Hook Functions"></a>17.3 Custom Stream Hook Functions</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read data from the cookie</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">ssize_t</span> reader (<span class="keyword">void</span> *cookie, <span class="keyword">char</span> *buffer, <span class="keyword">size_t</span> size);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief write data to the cookie</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">ssize_t</span> writer (<span class="keyword">void</span> *cookie, <span class="keyword">const</span> <span class="keyword">char</span> *buffer, <span class="keyword">size_t</span> size);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief seek operation on the cookie</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">seeker</span> <span class="params">(<span class="keyword">void</span> *cookie, <span class="keyword">off64_t</span> *position, <span class="keyword">int</span> whence)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief cleanup operation on the cookie for closing the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">cleaner</span> <span class="params">(<span class="keyword">void</span> *cookie)</span></span>;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/GNU-C/">GNU C</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/25bb.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Low-Level Input/Output</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/e3de.html">
+        <span class="next-text nav-default">Input/Output on Streams (1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/ae6b.html';
+  var disqus_title = "Input/Output on Streams (2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Low-Level Input/Output">
+
+
+
+
+  <meta name="keywords" content="GNU C,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/25bb.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/25bb.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/25bb.html">
+
+
+<meta name="description" content="1. Open and Close Files/** * @brief create and return a new file descriptor for thr file named by filename *        this function is a cancellation point in multi-threaded program *        this functi">
+<meta name="keywords" content="GNU C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Low-Level Input&#x2F;Output">
+<meta property="og:url" content="https://zaf1ro.github.io/p/25bb.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. Open and Close Files/** * @brief create and return a new file descriptor for thr file named by filename *        this function is a cancellation point in multi-threaded program *        this functi">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2020-10-15T21:04:32.508Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Low-Level Input&#x2F;Output">
+<meta name="twitter:description" content="1. Open and Close Files/** * @brief create and return a new file descriptor for thr file named by filename *        this function is a cancellation point in multi-threaded program *        this functi">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Low-Level Input/Output - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Open-and-Close-Files"><span class="toc-text">1. Open and Close Files</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Input-and-Output-Primitives"><span class="toc-text">2. Input and Output Primitives</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Set-the-File-Position-of-a-Descriptor"><span class="toc-text">3. Set the File Position of a Descriptor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Descriptors-and-Streams"><span class="toc-text">4. Descriptors and Streams</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Dangers-of-Mixing-Streams-and-Descriptors"><span class="toc-text">5. Dangers of Mixing Streams and Descriptors</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Linked-Channels"><span class="toc-text">5.1 Linked Channels</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Independent-Channels"><span class="toc-text">5.2 Independent Channels</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Low-Level Input/Output
+        
+      </h1>
+      <time class="post-time">
+          10/01/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Open-and-Close-Files"><a href="#1-Open-and-Close-Files" class="headerlink" title="1. Open and Close Files"></a>1. Open and Close Files</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create and return a new file descriptor for thr file named by filename</span></span><br><span class="line"><span class="comment"> *        this function is a cancellation point in multi-threaded program</span></span><br><span class="line"><span class="comment"> *        this function is the underlying primitive for the fopen() and freopen()</span></span><br><span class="line"><span class="comment"> * @param falgs control how the file is to be opened</span></span><br><span class="line"><span class="comment"> * @param mode used only when a file is created</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span> <span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *filename, <span class="keyword">int</span> flags[, <span class="keyword">mode_t</span> mode])</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equivalent to open(filename, O_WRONLY | O_CREAT | O_TRUNC, mode)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">creat</span> <span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *filename, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief close the file descriptor filedes by the following consequences:</span></span><br><span class="line"><span class="comment"> *        1. the file descriptor is deallocated</span></span><br><span class="line"><span class="comment"> *        2. any record locks owned by the process on the file are unlocked</span></span><br><span class="line"><span class="comment"> *        3. when all file descriptors associated with a pipe or FIFO have been closed</span></span><br><span class="line"><span class="comment"> *        this function is a cancellation point in multi-threaded program</span></span><br><span class="line"><span class="comment"> *        this function is the underlying file </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">close</span> <span class="params">(<span class="keyword">int</span> filedes)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-Input-and-Output-Primitives"><a href="#2-Input-and-Output-Primitives" class="headerlink" title="2. Input and Output Primitives"></a>2. Input and Output Primitives</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read up to `size` bytes from the file with descriptor `filedes`, storing the result in the `buffer`</span></span><br><span class="line"><span class="comment"> * @return number of bytes read, might less than `size` since there aren't many bytes left in the file</span></span><br><span class="line"><span class="comment"> *         -1 in case of an error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">ssize_t</span> read (<span class="keyword">int</span> filedes, <span class="keyword">void</span> *buffer, <span class="keyword">size_t</span> size);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief similar to the read function, but data block is not read from the current postion of file descriptor.</span></span><br><span class="line"><span class="comment"> *        Instead the data is read from the file starting at position `offset` </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">ssize_t</span> pread (<span class="keyword">int</span> filedes, <span class="keyword">void</span> *buffer, <span class="keyword">size_t</span> size, <span class="keyword">off_t</span> offset);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief write up to `size` bytes from `buffer` to the file with descriptor `filedes`. Once the function returns, </span></span><br><span class="line"><span class="comment"> *        the data is enqueued to be written, but not necessarily written out to permanent storage immediately.</span></span><br><span class="line"><span class="comment"> *        You can use `fsync` when you need to be sure the data has been permanently stored; Or set `O_FSYNC` flag</span></span><br><span class="line"><span class="comment"> *        on open mode to make `write` always store the data to disk before return.</span></span><br><span class="line"><span class="comment"> * @return the number of bytes actually written</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">ssize_t</span> write (<span class="keyword">int</span> filedes, <span class="keyword">const</span> <span class="keyword">void</span> *buffer, <span class="keyword">size_t</span> size);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief similar to write function. The data block is not written to the current position of file descriptor.</span></span><br><span class="line"><span class="comment"> *        Instead the data is written to the file starting at position `offset`</span></span><br><span class="line"><span class="comment"> *        On Linux, if a file is opened with O_APPEND, pwrite appends data to the end of file, regardless of the value of offset</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">ssize_t</span> pwrite (<span class="keyword">int</span> filedes, <span class="keyword">const</span> <span class="keyword">void</span> *buffer, <span class="keyword">size_t</span> size, <span class="keyword">off_t</span> offset);</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-Set-the-File-Position-of-a-Descriptor"><a href="#3-Set-the-File-Position-of-a-Descriptor" class="headerlink" title="3. Set the File Position of a Descriptor"></a>3. Set the File Position of a Descriptor</h2><p>stream中可使用fseek()设置一个stream的file position, file descriptor则需要使用lseek()来设置file position. </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the file position of the file with descriptor `fieldes`</span></span><br><span class="line"><span class="comment"> * @param offset specifies how the offset should be interpreted, must be one of following value:</span></span><br><span class="line"><span class="comment"> *        1. SEEK_SET: offset is a count of characters from the beginning of the file</span></span><br><span class="line"><span class="comment"> *        2. SEEK_CUR: offset is a count of characters from the current file position</span></span><br><span class="line"><span class="comment"> *        3. SEEK_END: offset is a count of characters from the end of file. If you specifies a postion</span></span><br><span class="line"><span class="comment"> *                     past the end of file, the file will be extended with zeros up to that position</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">off_t</span> lseek (<span class="keyword">int</span> filedes, <span class="keyword">off_t</span> offset, <span class="keyword">int</span> whence);</span><br></pre></td></tr></table></figure>
+
+<p>使用lseek()将当前file position超出文件末尾时, 该操作并不会扩展文件, lseek()也不会修改文件内容; 但后续的write操作会扩展文件, 文件末尾和file position之间用零填充. stream中的fseek(), fseeko(), ftell()和rewind()都以lseek()为基础.</p>
+<h2 id="4-Descriptors-and-Streams"><a href="#4-Descriptors-and-Streams" class="headerlink" title="4. Descriptors and Streams"></a>4. Descriptors and Streams</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a new stream for the file descriptor `filedes`</span></span><br><span class="line"><span class="comment"> * @param opentype same as the opentype in fopen()</span></span><br><span class="line"><span class="comment"> * @return the new stream. If the stream cannot be created, a null pointer is returned instead</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function">FILE * <span class="title">fdopen</span> <span class="params">(<span class="keyword">int</span> filedes, <span class="keyword">const</span> <span class="keyword">char</span> *opentype)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the file descriptor associated with the `stream`.</span></span><br><span class="line"><span class="comment"> * @return return -1 if stream does not do I/O</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fileno</span> <span class="params">(FILE *stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equivalent to the fileno function except that it does not lock the stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fileno_unlocked</span> <span class="params">(FILE *stream)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="5-Dangers-of-Mixing-Streams-and-Descriptors"><a href="#5-Dangers-of-Mixing-Streams-and-Descriptors" class="headerlink" title="5. Dangers of Mixing Streams and Descriptors"></a>5. Dangers of Mixing Streams and Descriptors</h2><p>程序中可能会出现多个file descriptor和stream指向同一个文件, 并存在两种情况: </p>
+<ol>
+<li>file descriptor和stream共享同一个file position</li>
+<li>file descriptor和stream拥有各自的file position</li>
+</ol>
+<p>应尽量避免在程序中使用file descriptor和stream指向同一个文件, 除非都用于input(读取). 以下我们将file descriptor和stream都称为channel.</p>
+<h3 id="5-1-Linked-Channels"><a href="#5-1-Linked-Channels" class="headerlink" title="5.1 Linked Channels"></a>5.1 Linked Channels</h3><p>若指向同一文件的多个channel共享一个file position, 则称之为<strong>linked channels</strong>. 以下是几种导致linked channels的情况:</p>
+<ol>
+<li>fdopen(): 通过一个file descriptor来创建一个stream</li>
+<li>fileno(): 通过一个stream获取一个file descriptor</li>
+<li>dup()/dup2(): 复制一个file descriptor</li>
+</ol>
+<p>当你已经拥有一个stream, 又需要另一个linked channel(stream或file descriptor)时, 需要先调用fflush()将之前的stream清空. 终止一个进程, 或在进程中执行新的程序, 这两个操作都会将当前进程的所有stream关闭; 若stream被关闭, 其他进程中关联的file descriptor的file position会变成undefined, 因此在stream被关闭前需调用fflush()清空stream.</p>
+<h3 id="5-2-Independent-Channels"><a href="#5-2-Independent-Channels" class="headerlink" title="5.2 Independent Channels"></a>5.2 Independent Channels</h3><p>当在一个seekable file开启一个channel(stream或file descriptor)时, 每个channel都拥有各自的file position, 被称为independent channels.<br>大部分情况下, independent channel之间不会有冲突, 但还是需要注意一下几点:</p>
+<ul>
+<li>在做任何读取或写入之前, 需要清空output stream</li>
+<li>在读取任何被修改的数据前, 需要先清空input stream</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/GNU-C/">GNU C</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/b145.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">DDD and CQRS Pattern (1)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/ae6b.html">
+        <span class="next-text nav-default">Input/Output on Streams (2)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/25bb.html';
+  var disqus_title = "Low-Level Input/Output";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>
