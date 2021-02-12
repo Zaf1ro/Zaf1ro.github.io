@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="DDD and CQRS Pattern (2)">
+
+
+
+
+  <meta name="keywords" content="Microservices,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/dd44.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/dd44.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/dd44.html">
+
+
+<meta name="description" content="1. Design a DDD-oriented microserviceDDD(Domain-driven design)提倡基于业务逻辑的建模. 在构建程序时, DDD会用domain来描述问题. 每一个独立的问题域作为一个BCs(Bounded Contexts, 每一个BCs关联一个microservices), 并强调使用一种通用语言来讨论问题. DDD还提出了一些其他概念和模式来帮助实">
+<meta name="keywords" content="Microservices">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DDD and CQRS Pattern (2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/dd44.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. Design a DDD-oriented microserviceDDD(Domain-driven design)提倡基于业务逻辑的建模. 在构建程序时, DDD会用domain来描述问题. 每一个独立的问题域作为一个BCs(Bounded Contexts, 每一个BCs关联一个microservices), 并强调使用一种通用语言来讨论问题. DDD还提出了一些其他概念和模式来帮助实">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2021-02-12T01:58:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DDD and CQRS Pattern (2)">
+<meta name="twitter:description" content="1. Design a DDD-oriented microserviceDDD(Domain-driven design)提倡基于业务逻辑的建模. 在构建程序时, DDD会用domain来描述问题. 每一个独立的问题域作为一个BCs(Bounded Contexts, 每一个BCs关联一个microservices), 并强调使用一种通用语言来讨论问题. DDD还提出了一些其他概念和模式来帮助实">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+DDD and CQRS Pattern (2) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Design-a-DDD-oriented-microservice"><span class="toc-text">1. Design a DDD-oriented microservice</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Keep-the-microservice-context-boundaries-relatively-small"><span class="toc-text">2. Keep the microservice context boundaries relatively small</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Layers-in-DDD-microservices"><span class="toc-text">3. Layers in DDD microservices</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          DDD and CQRS Pattern (2)
+        
+      </h1>
+      <time class="post-time">
+          02/11/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Design-a-DDD-oriented-microservice"><a href="#1-Design-a-DDD-oriented-microservice" class="headerlink" title="1. Design a DDD-oriented microservice"></a>1. Design a DDD-oriented microservice</h2><p>DDD(Domain-driven design)提倡基于业务逻辑的建模. 在构建程序时, DDD会用domain来描述问题. 每一个独立的问题域作为一个BCs(Bounded Contexts, 每一个BCs关联一个microservices), 并强调使用一种通用语言来讨论问题. DDD还提出了一些其他概念和模式来帮助实现, 例如: domain entities with rich models, value objects, aggregates, aggregate root.<br>由于DDD的学习曲线比较陡峭, DDD有时会被认为是一个障碍. 其难点并非在于pattern本身, 而是如何根据业务问题组织代码, 并使用通用语言. 此外, 只有在实现重要业务规则的复杂microservices时才会用到DDD, 较为简单的功能可以通过CURD或其他方法来实现.<br>当设计一个microservices时, 重点在于如何划分各个microservices的边界. 借助DDD可以理解domain中的复杂性. 对于每个BCs的domain model, 我们需要确定并定义entities, value objects和aggregates, 以此来为domain建模. 在边界中创建并优化的domain model用于定义其context, 对于microservices来说尤为明显, 边界中的component最终会构成microservices, 但在某些情况下, BC或business microservices可由多个物理服务组成. DDD和microservice都与边界有关.</p>
+<h2 id="2-Keep-the-microservice-context-boundaries-relatively-small"><a href="#2-Keep-the-microservice-context-boundaries-relatively-small" class="headerlink" title="2. Keep the microservice context boundaries relatively small"></a>2. Keep the microservice context boundaries relatively small</h2><p>不同BCs之间边界的决定来自于两个相互矛盾的目标:</p>
+<ol>
+<li>创造尽可能小的microservices</li>
+<li>避免多个microservices之间有过多的通信</li>
+</ol>
+<p>开发者应不断地缩小每个microservices的边界, 直到microservices之间的通信次数因边界划分而激增. Cohesion是单个BC的关键. 若两个microservices总需要和对方合作, 则它们应合并为一个microservices. 另一个考量方式是autonomy(自治权), 若一个microservices必须依赖另一个microservices才能处理请求, 则该microservice并不具备autonomy.</p>
+<h2 id="3-Layers-in-DDD-microservices"><a href="#3-Layers-in-DDD-microservices" class="headerlink" title="3. Layers in DDD microservices"></a>3. Layers in DDD microservices</h2><p>大多数业务和技术较为复杂的项目都由多个layer定义, layer是一个逻辑上的概念, 与服务的部署无关. Layer的存在是为了帮助开发者更好的管理代码的复杂度, 不同的layer有不同的类型, 不同类型之间需要翻译.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/p/b145.html">
+        <span class="next-text nav-default">DDD and CQRS Pattern (1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/dd44.html';
+  var disqus_title = "DDD and CQRS Pattern (2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>
