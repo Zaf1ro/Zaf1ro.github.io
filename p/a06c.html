@@ -46,7 +46,10 @@
 <meta property="og:description" content="1. How to Identify Bounded ContextBounded Context的好处很明显, 为domain划清边界, 并在内部建立自己的Ubiquitous Language, 让domain model中的属性与其上下文一致. 但问题也很明显: 如何找到每个domain的Bounded Context. 下面是一个已经划分好的BC. 很多项目中可能没有那么多时间深入探讨do">
 <meta property="og:locale" content="zh">
 <meta property="og:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-1.png">
-<meta property="og:updated_time" content="2021-02-23T22:51:47.697Z">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-7-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-7-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-7-3.png">
+<meta property="og:updated_time" content="2021-02-25T18:20:05.757Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Bounded Context">
 <meta name="twitter:description" content="1. How to Identify Bounded ContextBounded Context的好处很明显, 为domain划清边界, 并在内部建立自己的Ubiquitous Language, 让domain model中的属性与其上下文一致. 但问题也很明显: 如何找到每个domain的Bounded Context. 下面是一个已经划分好的BC. 很多项目中可能没有那么多时间深入探讨do">
@@ -79,7 +82,7 @@ Bounded Context - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-How-to-Identify-Bounded-Context"><span class="toc-text">1. How to Identify Bounded Context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Linguistic"><span class="toc-text">2. Linguistic</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Business-Capability"><span class="toc-text">3. Business Capability</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Autonomy"><span class="toc-text">4. Autonomy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Keep-the-microservice-context-boundaries-relatively-small"><span class="toc-text">5. Keep the microservice context boundaries relatively small</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Conway-Laws"><span class="toc-text">6. Conway Laws</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Summary"><span class="toc-text">7. Summary</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Size-of-Bounded-Context"><span class="toc-text">7.1 Size of Bounded Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-Misunderstanding-of-BC"><span class="toc-text">7.2 Misunderstanding of BC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3-Power-of-Bounded-Context"><span class="toc-text">7.3 Power of Bounded Context</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-How-to-Identify-Bounded-Context"><span class="toc-text">1. How to Identify Bounded Context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Linguistic"><span class="toc-text">2. Linguistic</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Business-Capability"><span class="toc-text">3. Business Capability</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Autonomy"><span class="toc-text">4. Autonomy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Keep-the-microservice-context-boundaries-relatively-small"><span class="toc-text">5. Keep the microservice context boundaries relatively small</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Conway-Laws"><span class="toc-text">6. Conway Laws</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Cinema-Example"><span class="toc-text">7. Cinema Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Summary"><span class="toc-text">8. Summary</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-Size-of-Bounded-Context"><span class="toc-text">8.1 Size of Bounded Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-Misunderstanding-of-BC"><span class="toc-text">8.2 Misunderstanding of BC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-3-Power-of-Bounded-Context"><span class="toc-text">8.3 Power of Bounded Context</span></a></li></ol>
   </div>
 
     </div>
@@ -170,13 +173,32 @@ Bounded Context - Zaf1ro's Blog
 </ol>
 <p>开发者应不断地缩小每个microservices的边界, 直到microservices之间的通信成本超过了某个限度. Cohesion是单个BC的关键. 若两个microservices总需要和对方合作, 则它们应合并为一个microservices. 另一个考量方式是autonomy(自治权), 若一个microservices必须依赖另一个microservices才能处理请求, 则该microservice并不具备autonomy.</p>
 <h2 id="6-Conway-Laws"><a href="#6-Conway-Laws" class="headerlink" title="6. Conway Laws"></a>6. Conway Laws</h2><p>根据<strong>Conway Laws</strong>, 软件系统的架构应符合开发团队的架构. 对于Legacy system, 若该系统已经难以维护, 且没有更多时间重构, 这是应将该系统独立为一个BC, 并建立多个Adapter去连接其他BC. 很多时候导入Bounded Context并没有获得预期效果, 问题可能出在组织架构上. 忽视开发团队的架构而去细分BC只会提高部门合作成本.<br>从某种角度来说, BC其实是开发组织的分工, 当组织越来越大时, 贴近BC的分工能让开发者能容易管理与合作. 从而减少团队间的依赖关系, 以达到更高的自治性.</p>
-<h2 id="7-Summary"><a href="#7-Summary" class="headerlink" title="7. Summary"></a>7. Summary</h2><h3 id="7-1-Size-of-Bounded-Context"><a href="#7-1-Size-of-Bounded-Context" class="headerlink" title="7.1 Size of Bounded Context"></a>7.1 Size of Bounded Context</h3><p>Bounded Context并没有一个固定的大小, 主要看语义和业务能力来判断. 在项目刚开始时, 业务逻辑相对简单, 通常不需要太多BC就可以完成所有需求; 但随着项目不断扩大, 会有越来越多的外部概念渗入BC, 从而导致迭代速度降低, 沟通成本增大.</p>
-<h3 id="7-2-Misunderstanding-of-BC"><a href="#7-2-Misunderstanding-of-BC" class="headerlink" title="7.2 Misunderstanding of BC"></a>7.2 Misunderstanding of BC</h3><ol>
+<h2 id="7-Cinema-Example"><a href="#7-Cinema-Example" class="headerlink" title="7. Cinema Example"></a>7. Cinema Example</h2><p>假设我们需要建立一个电影院系统, 具体需求如下:</p>
+<ul>
+<li><strong>Box Office</strong>(售票处)可以售票给顾客, 同时检查顾客的<strong>身份</strong>, <strong>时间</strong>, <strong>电影</strong>, <strong>座位</strong></li>
+<li>与<strong>Online Booking</strong>(第三方订票网站)合作, 利用线上方式预订电影票</li>
+<li><strong>Auditorium</strong>(放映厅)会在顾客进入前检查电影票</li>
+<li>顾客可在售票处购买食物, 然后去<strong>Concession Stand</strong>(小卖部)领食物</li>
+<li>小卖部还负责管理食物的库存, 少于50%时要及时补货</li>
+</ul>
+<p>分析过后, 可以将整个业务分为三个主要需求: 售票, 观影, 食物. 其中<strong>观影</strong>是电影院的core domain, 其他的属于supporting subdomain.<br><img src="/images/microservice/bounded-context-7-1.png" alt="Cinema Subdomain"></p>
+<p>根据每个domain的情况, 分为以下几个Bounded Contexts:</p>
+<ul>
+<li>Box Office Context: 售票处</li>
+<li>Online Booking: 网上售票</li>
+<li>Concession Stand Context: 小卖部</li>
+<li>Inventory Context: 仓库</li>
+<li>Auditorium Context: 放映厅</li>
+</ul>
+<p><img src="/images/microservice/bounded-context-7-2.png" alt="Cinema Bounded Context"></p>
+<p>可以看到, 很多bounded context都会用到<strong>ticket</strong>(电影票)这个实体. 一个电影票在不同的context中可能有不同行为:<br><img src="/images/microservice/bounded-context-7-3.png" alt="Ticket in Different Contexts"></p>
+<h2 id="8-Summary"><a href="#8-Summary" class="headerlink" title="8. Summary"></a>8. Summary</h2><h3 id="8-1-Size-of-Bounded-Context"><a href="#8-1-Size-of-Bounded-Context" class="headerlink" title="8.1 Size of Bounded Context"></a>8.1 Size of Bounded Context</h3><p>Bounded Context并没有一个固定的大小, 主要看语义和业务能力来判断. 在项目刚开始时, 业务逻辑相对简单, 通常不需要太多BC就可以完成所有需求; 但随着项目不断扩大, 会有越来越多的外部概念渗入BC, 从而导致迭代速度降低, 沟通成本增大.</p>
+<h3 id="8-2-Misunderstanding-of-BC"><a href="#8-2-Misunderstanding-of-BC" class="headerlink" title="8.2 Misunderstanding of BC"></a>8.2 Misunderstanding of BC</h3><ol>
 <li>从一开始划分BC, 之后再也不改动: 应随着项目复杂度的提升而不断划分BC, BC的划分不会一步到位</li>
 <li>根据技术划分BC: 比如说根据数据库划分, 根据外部依赖划分, 这些都不能决定BC的边界</li>
 <li>根据开发任务划分BC: 新的功能或需求并不能代表我们需要新增一个BC, 保持BC的语意一致性才是重心</li>
 </ol>
-<h2 id="7-3-Power-of-Bounded-Context"><a href="#7-3-Power-of-Bounded-Context" class="headerlink" title="7.3 Power of Bounded Context"></a>7.3 Power of Bounded Context</h2><ul>
+<h2 id="8-3-Power-of-Bounded-Context"><a href="#8-3-Power-of-Bounded-Context" class="headerlink" title="8.3 Power of Bounded Context"></a>8.3 Power of Bounded Context</h2><ul>
 <li>概念不会混淆: 在BC的语意边界内调用服务时, 开发者很清楚自己在做什么. 例如: 当使用User这个名词时, 很容易弄不明白这到底代表什么, User可以表示客户, 或管理员, 或User系统.</li>
 <li>分离业务功能: 当我们开发某个功能时, 很可能牵扯到另一个业务功能. 例如: 订单系统可能牵扯权限问题, 那么权限到底应该会放在哪里比较好. 以下是两种思路:<ol>
 <li>在所有需要判断的地方都放置判断语句</li>
@@ -200,6 +222,12 @@ Bounded Context - Zaf1ro's Blog
       
       
   <nav class="post-nav">
+    
+      <a class="prev" href="/p/7dc1.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Context Mapping</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
     
     
       <a class="next" href="/p/5a33.html">
