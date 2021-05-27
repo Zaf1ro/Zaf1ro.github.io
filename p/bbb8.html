@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head><meta name="generator" content="Hexo 3.9.0">
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Kafka Design (1)">
+
+
+
+
+  <meta name="keywords" content="Microservices,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/bbb8.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/bbb8.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/bbb8.html">
+
+
+<meta name="description" content="1. MotivationKafka是一套被大公司用于处理实时数据的统一平台, 因此需要考虑很多使用场景, 例如:  为了处理大量事件流, 需要high-throughput(高吞吐量), 例如实时日志汇总 为了从离线系统中周期性地读取数据, 需要处理大量积压数据 为了处理传统通信, 需要low-latency(低延迟) 由于很多服务都依赖于该系统, 因此当硬件出错时, 该系统应保证fault-t">
+<meta name="keywords" content="Microservices">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka Design (1)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/bbb8.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. MotivationKafka是一套被大公司用于处理实时数据的统一平台, 因此需要考虑很多使用场景, 例如:  为了处理大量事件流, 需要high-throughput(高吞吐量), 例如实时日志汇总 为了从离线系统中周期性地读取数据, 需要处理大量积压数据 为了处理传统通信, 需要low-latency(低延迟) 由于很多服务都依赖于该系统, 因此当硬件出错时, 该系统应保证fault-t">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2021-05-27T20:39:05.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka Design (1)">
+<meta name="twitter:description" content="1. MotivationKafka是一套被大公司用于处理实时数据的统一平台, 因此需要考虑很多使用场景, 例如:  为了处理大量事件流, 需要high-throughput(高吞吐量), 例如实时日志汇总 为了从离线系统中周期性地读取数据, 需要处理大量积压数据 为了处理传统通信, 需要low-latency(低延迟) 由于很多服务都依赖于该系统, 因此当硬件出错时, 该系统应保证fault-t">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Kafka Design (1) - Zaf1ro's Blog
+</title>
+  </head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Motivation"><span class="toc-text">1. Motivation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Persistence"><span class="toc-text">2. Persistence</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Don’t-fear-the-filesystem"><span class="toc-text">2.1 Don’t fear the filesystem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Constant-Time-Suffices"><span class="toc-text">2.2 Constant Time Suffices</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Efficiency"><span class="toc-text">3. Efficiency</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Small-I-O-operations"><span class="toc-text">3.1 Small I/O operations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Excessive-byte-copying"><span class="toc-text">3.2 Excessive byte copying</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-End-to-end-Batch-Compression"><span class="toc-text">3.3 End-to-end Batch Compression</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-The-Producer"><span class="toc-text">4. The Producer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Load-balancing"><span class="toc-text">4.1 Load balancing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Asynchronous-send"><span class="toc-text">4.2 Asynchronous send</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-The-Consumer"><span class="toc-text">5. The Consumer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Push-vs-Pull"><span class="toc-text">5.1 Push vs. Pull</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Consumer-Position"><span class="toc-text">5.2 Consumer Position</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Offline-Data-Load"><span class="toc-text">5.3 Offline Data Load</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Static-Membership"><span class="toc-text">5.4 Static Membership</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Kafka Design (1)
+        
+      </h1>
+      <time class="post-time">
+          05/23/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Motivation"><a href="#1-Motivation" class="headerlink" title="1. Motivation"></a>1. Motivation</h2><p>Kafka是一套被大公司用于处理实时数据的统一平台, 因此需要考虑很多使用场景, 例如:</p>
+<ul>
+<li>为了处理大量事件流, 需要<strong>high-throughput</strong>(高吞吐量), 例如实时日志汇总</li>
+<li>为了从离线系统中周期性地读取数据, 需要处理大量积压数据</li>
+<li>为了处理传统通信, 需要<strong>low-latency</strong>(低延迟)</li>
+<li>由于很多服务都依赖于该系统, 因此当硬件出错时, 该系统应保证<strong>fault-tolerance</strong>(容错性)</li>
+</ul>
+<p>上述这些要求使得kafka更像一个database log, 而不是传统的messaging system.</p>
+<h2 id="2-Persistence"><a href="#2-Persistence" class="headerlink" title="2. Persistence"></a>2. Persistence</h2><h3 id="2-1-Don’t-fear-the-filesystem"><a href="#2-1-Don’t-fear-the-filesystem" class="headerlink" title="2.1 Don’t fear the filesystem"></a>2.1 Don’t fear the filesystem</h3><p>Kafka十分依赖filesystem来存储和缓存消息. 程序员可能存在一个感觉: 磁盘很慢, 这种不仅让他们怀疑这类持久化结构能否提供优秀的性能. 实际上, 磁盘的确慢, 但并没有想象中的那么慢, 如果能适当地使用磁盘结构, 其速度通常会快过网络传输.<br>有关磁盘性能的一个事实: 硬盘的吞吐量与磁盘寻道的延迟密切相关. 以六个7000rpm SATA RAID-5阵列的硬盘为例, <strong>线性写入</strong>的速度为600MB每秒, 而<strong>随机写入</strong>的速度为100k每秒, 中间相差6000倍. 线性读写十分容易预判, 且被操作系统极大地优化. 现代操作系统提供read-ahead(预读)和write-behind(后写)技术来预读数据和一次写入多块数据.<br>为弥补硬盘的性能, 现代操作系统会越来越积极地将内存用于<strong>disk cache</strong>(硬盘缓存). 操作系统会将所有空闲的内存都作为硬盘缓存, 虽然回收内存时会有性能惩罚. 所有的硬盘读写都会经过统一的缓存. 若不使用direct I/O, 这一特性很难被关闭, 因此, 若进程在内存中保留所有数据, 这些数据依然会在OS pagecache中重复一遍.<br>对于JVM, Java内存消耗存在以下两个特性:</p>
+<ul>
+<li>object的内存开销很大, 通过是object中所有数据占内存的两倍</li>
+<li>虽然heap(堆)内的数据越来越多, Java垃圾回收变得越来越复杂和迟缓</li>
+</ul>
+<p>综上所述, 使用文件系统并依赖于硬盘缓存, 这么做优于让程序在内存中维护数据. 对于32GB内存的系统, 可有28GB到30GB的空闲内存作为硬盘缓存. 此外, 即便kafka服务重启, 这些缓存还是可用的, 但如果让程序在内存中维护数据, 每次重启都需花费大量时间来申请缓存(10GB内存需要10分钟). 这样也能大大简化代码, 将缓存和文件操作都交由操作系统. 如果你的磁盘支持线性读取, 则预读能将有用的数据从硬盘中缓存到内存中.<br>因此, 与其让程序在内存中尽可能地放置数据, 并在内存即将耗尽之时flush入磁盘, 不如每次都写入数据(也就是写入磁盘缓存), 让内核决定何时flush. </p>
+<h3 id="2-2-Constant-Time-Suffices"><a href="#2-2-Constant-Time-Suffices" class="headerlink" title="2.2 Constant Time Suffices"></a>2.2 Constant Time Suffices</h3><p>messageing system(消息系统)会为每个consumer创造一个queue, 称为persistent data structure(持久性数据结构), 一般由B-Tree或其他random access data structure(随机访问数据结构)构成, 用于存放消息的元数据. B-Tree是最多功能的数据结构, 使得消息系统支持事务性和非事务性语义. B-Tree的时间复杂度为<strong>O(logN)</strong>, 可以约等于常数时间, 但对于磁盘操作就不一样了. 磁盘寻道需要10ms, 一个磁盘在同一时间只能进行一次磁盘寻道, 并发能力受限. 因此当存在大量磁盘寻道时, 性能开销很大. 由于存储设备会混合使用速度较快的硬盘缓存和速度较慢的磁盘操作, 树形结构的性能会随着数据量的增大而骤减, 例如: 双倍的数据会导致不止双倍的性能降低.<br>若persistent queue只读取或追加文件, 这就与logging solution类似. 这种结构的优点在于, 所有操作的时间复杂度为<strong>O(1)</strong>, 且读取操作不会阻塞写入或其他读取操作. 由于性能与数据量无关, 因此服务器可以使用价格便宜, 转速较低的1+TB SATA drive. 虽然这些磁盘寻道速度慢, 但价格只有三分之一, 且三倍容量.<br>拥有近乎无限量的磁盘空间, 且没有任何性能代价, 这意味着Kafka拥有其他消息系统没有的优势. 举个例子, 在Kafka中, 与其删除掉已读的数据, Kafka可让数据保留很长时间(如一周), 让consumer有更多的灵活性.</p>
+<h2 id="3-Efficiency"><a href="#3-Efficiency" class="headerlink" title="3. Efficiency"></a>3. Efficiency</h2><p>Kafka一个主要应用: 处理网络活动数据, 这类应用需要十分大的容量: 每次网页访问可能产生几十次写入操作, 每个消息都至少会被consumer读取一次, 因此读取操作的代价越小越好. 在创建和运行过多个类似系统后, <strong>效率</strong>是多用户操作的关键. 若应用使用量的小幅增加导致下流基础设施服务成为瓶颈, 则每次小变动都成为问题. 通过提升速度, 可以确保在底层基础设备崩溃前, 应用先崩溃. 当集中式集群上的集中式服务有上百个应用时, 这一点尤为重要, 因为每天都会有使用方式上的改变.<br>上一节讲了磁盘的效率问题, 还剩下两个方面影响效率:</p>
+<ul>
+<li>过多的小型I/O操作</li>
+<li>过多的字节拷贝</li>
+</ul>
+<h3 id="3-1-Small-I-O-operations"><a href="#3-1-Small-I-O-operations" class="headerlink" title="3.1 Small I/O operations"></a>3.1 Small I/O operations</h3><p>小型I/O操作发生在两个地方:</p>
+<ul>
+<li>client和server之间的消息传输</li>
+<li>server自己的持久化操作</li>
+</ul>
+<p>为避免第一种情况, Kafka创建了一种新的传输协议, 称为<strong>message set</strong>(消息集), 该协议会将多个消息聚集在一起. 这使得一次网络请求发送多个消息, 比起一个个传输消息, 这样能平摊网络往返的开销. Server会将多个消息一次性添加到log文件中, consumer也会一次性获取多个连续消息. 这样简单的优化可以极大地加快速度, 批处理可使用更大的网络数据包, 更大的顺序磁盘操作, 连续的内存块. 所有这些都让Kafka将突发的随机写入流变为线性写入流, 传输给consumer.</p>
+<h3 id="3-2-Excessive-byte-copying"><a href="#3-2-Excessive-byte-copying" class="headerlink" title="3.2 Excessive byte copying"></a>3.2 Excessive byte copying</h3><p>对于字节拷贝, 在低消息速率下并不是个问题, 但在负载变高时影响就很大了. 为了避免这种情况, Kafka采用标准化二进制消息格式, 该格式由producer, broker和consumer共享, 因此数据块在它们之间传输无需任何修改.<br>broker中的message log实际上是一个包含多个文件的文件夹, 每个message log都由一系列message set组成, 每个message set采用相同的格式, 由producer和consumer使用. 这种通用格式可以实现一个十分重要的优化: 持久化日志块的网络传输. 现代Unix操作系统提供高度优化的方式, 用于将数据从pagecache传输到socket. Linux中为<strong>sendfile</strong>, 为理解sendfile的影响, 需要先理解数据如何从文件传输到socket:</p>
+<ol>
+<li>操作系统从磁盘读取数据到kernel的pagecache</li>
+<li>应用读取数据, 数据从kernel space转移到user space buffer</li>
+<li>应用将数据写回到kernel space中的socket buffer</li>
+<li>操作系统将socket buffer中的数据复制给NIC buffer, 然后发送至网络</li>
+</ol>
+<p>这明显效率很低, 其中包含四次拷贝和两次system call. sendfile可以让数据从pagecache发送到网络, 从而避免拷贝从user space拷贝数据. 只需要将数据拷贝给NIC buffer即可.<br>通过上述zero-copy的优化, 数据只需要被拷贝到pagecache一次, 读取时直接从pagecache中发送到网络, 而不需要读取到user spce中. 这样数据读取速度可追平网络传输速度. 因此, 借助pagecache和sendfile, Kafka集群上的大部分读取操作都不是在磁盘执行, 而是直接通过cache获取. </p>
+<h3 id="3-3-End-to-end-Batch-Compression"><a href="#3-3-End-to-end-Batch-Compression" class="headerlink" title="3.3 End-to-end Batch Compression"></a>3.3 End-to-end Batch Compression</h3><p>绝大多数情况下, Kafka的瓶颈不在于CPU或磁盘, 而在于<strong>bandwidth</strong>(带宽), 尤其是data center(数据中心)之间通过广域网传输数据. 用户当然可以自行压缩消息, 但这会导致糟糕的压缩率, 因为大量容易由相同类型消息之间的重复造成的. 更高效的方式是对多个消息进行压缩, 而不是单个消息.<br>Kafka支持一种高效的批处理格式, 一批消息可以被一起压缩, 并以这种形式发送到server端, server端会直接将压缩的数据写入日志, 数据只会被consumer解压. 目前Kafka支持GZIP, Snappy, LZ4和ZStandard压缩协议.</p>
+<h2 id="4-The-Producer"><a href="#4-The-Producer" class="headerlink" title="4. The Producer"></a>4. The Producer</h2><h3 id="4-1-Load-balancing"><a href="#4-1-Load-balancing" class="headerlink" title="4.1 Load balancing"></a>4.1 Load balancing</h3><p>当producer向partition的leader broker发送数据时, 不需要经过任何中间路由层. 为让producer实现这一点, 所有Kafka节点都可以随时向producer发送一个metadata, 其中包含服务器的活动状态和topic的partition, 以便让producer正确地发送请求.<br>Producer负责决定消息发送到哪个partition, 可以采取随机发送, 也可以使用负载均衡的方式, 或通过某些语义分区函数. 通过让用户设置key, 并对其哈希来暴露语义分区的接口. 举个例子, 若key使用user id, 则给定用户的数据会放置在同一个partition中. 这反过来使得consumer可对他们获得的数据做出<strong>locality assumption</strong>(局部性假设). 这种分区设计方式允许consumer采取局部性敏感的处理方式.</p>
+<h3 id="4-2-Asynchronous-send"><a href="#4-2-Asynchronous-send" class="headerlink" title="4.2 Asynchronous send"></a>4.2 Asynchronous send</h3><p>批处理是提高效率的重要方式之一, 通过让Kafka producer开启批处理, 能让更多的数据保留在内存中, 并在一次请求中发送更多数据. 批处理可以配置为堆积消息的上限数量或发送请求的上限延迟. 这样能保证一次传输更多字节, 让server端进行更少的I/O操作. 这种缓存方式是可配置的, 通过牺牲一些延迟来实现更好的吞吐量.</p>
+<h2 id="5-The-Consumer"><a href="#5-The-Consumer" class="headerlink" title="5. The Consumer"></a>5. The Consumer</h2><p>Kafka consumer通过向拥有partition的broker发送fetch请求来获取数据. Consumer可在请求中指定log的offset, 也可以重新获取之前消费过的数据.</p>
+<h3 id="5-1-Push-vs-Pull"><a href="#5-1-Push-vs-Pull" class="headerlink" title="5.1 Push vs. Pull"></a>5.1 Push vs. Pull</h3><p>设计Kafka consumer时有一个最初的问题, consumer应从broker拉取数据, 还是broker主动向consumer推送数据. Kafka选择了一种更保守的设计, 大多数message system也采用这种设计, 也就是让producer主动向broker推送数据, consumer主动从broker拉取数据. 一些以日志为中心的系统(如Scribe和Apache Flume)采用截然相反的策略: broker主动向consumer推送数据. 两种设计各有优缺点: broker主动推送的系统很难处理多种consumer, 因为broker掌握着数据发送的速率, 这样虽然能让消费者以最大效率消耗消息, 但也有可能由于consumer处理速度不足而丢失消息; consumer主动拉取的系统则对consumer更加友善, consumer掌握着更多的主动权, 通过某种backoff protocol(补偿协议)可以让consumer充分发挥传输效率, 但又不会超负荷. 因此Kafka选择了传统的pull model.<br>主动拉取数据的系统还有一个优势, 可以对发送给consumer的数据采取激进的批处理. broker主动推送的系统必须在不知道下游consumer能否处理的情况下, 决定发送一个消息, 还是囤积更多消息延迟发送. 若为了追求低延迟, 则每次发送只包含一个消息. 而consumer主动拉取的设计可以从log的某个位置开始, 一次获取多个消息, 可以在不增加延迟的情况下实现更好的批处理.<br>而consumer主动拉取的不足之处在于, 如果broker端没有任何数据, consumer会不断地轮询等待数据到达. 为避免这种情况, 可阻塞consumer的请求, 直到broker有数据时再回复请求.<br>当然也可以使用其他拉取数据的设计, Producer可以先将数据写入本地的log中, 等待broker从producer拉取数据. 但Kafka的producer可能有上千个, 成千上万个磁盘并不能让事情变得可靠. 只需要大规模运行SLA的管道, 就不需要producer的持久化.</p>
+<h3 id="5-2-Consumer-Position"><a href="#5-2-Consumer-Position" class="headerlink" title="5.2 Consumer Position"></a>5.2 Consumer Position</h3><p>消息消耗的进度也是影响messaging system运行效率的关键之一. 绝大多数messaging system把包含消耗进度的metadata保存在broker, 当消息传递给consumer时, broker需要立刻记录这个事件, 或等到consumer确认后记录. 这种设计很符合直接, 对于单个服务器来说, 其不知道metadata还要发送给谁. 由于很多messaging system的metadata数据结构伸缩性很差, 因此这也是个务实的选择. 由于broker明白消耗到哪里, 因此可以删除已被消耗的数据, 让数据尺寸小一些.<br>还有一件很难确定的事情: broker和consumer如何确定某个消息是否已被消费. 若borker在发出消息后就确认该消息已被consumer消费, 那么consumer可能没有接收到消息或处理失败, 则该消息丢失. 为解决这个问题, 很多messaging system添加了acknowledgement机制, 当broker发送消息时, 该消息被标记为<strong>sent</strong>(已发送), 而不是<strong>consumed</strong>(已消耗); broker会等到consumer返回ack, 收到ack后将消息状态改为consumed. 这种方案可以解决消息丢失问题, 但会产生新的问题:</p>
+<ol>
+<li>若consumer成功接收并处理消息, 但在发送ack前崩溃, 则该消息在broker的状态仍为sent, 会被消费两次</li>
+<li>broker必须为所有已发送的消息保存多个状态, 这会造成性能降低</li>
+<li>如何处理那些状态为sent, 但始终没有被确认的消息</li>
+</ol>
+<p>Kafka的处理方式则不同. Kafka对partition进行分类, 称为<strong>topic</strong>. 同一时间, 一个topic只能被订阅了该topic的consumer group中的一个consumer消耗, 这意味着每个consumer在每个partition的位置只是一个整数, 即下一个要被消耗的消息的偏移量. 这使得消耗量的状态很小, 每个partition只有一个数字. 该状态可被定期检查, 让消息确认的代价变得很低.<br>这种策略还有一个额外的好处, consumer可以选择一个旧的offset来重复消耗消息.这违背了queue的定义, 但这也是很多consumer需要的功能. 举个例子, 如果consumer的代码中有一个bug, 但该consumer已经处理过一些消息, 可以让consumer修复完bug后重新处理消息.</p>
+<h3 id="5-3-Offline-Data-Load"><a href="#5-3-Offline-Data-Load" class="headerlink" title="5.3 Offline Data Load"></a>5.3 Offline Data Load</h3><p>可拓展的持久性允许consumer周期性的加载数据, 例如, 可以周期性地将散装数据批量的加载到离线系统中, 如Hadoop或关系型数据仓库.<br>以Hadoop为例, 通过将负载划分各个map task中, 实现数据加载的并行化, 每个task可由node/topic/partition组成. Hadoop提供了任务管理, 失败的任务会自动重启, 且没有数据重复的危险.</p>
+<h3 id="5-4-Static-Membership"><a href="#5-4-Static-Membership" class="headerlink" title="5.4 Static Membership"></a>5.4 Static Membership</h3><p><strong>Static membership</strong>(静态成员)旨在提高stream applicatiomn, consumer group和其他基于group rebalance protocol的应用的可用性. Rebalance protocol依赖于group coordinator为group member分配entity id. 这些生成的id是临时性的, 并会在member重启和重新加入时更改. 对于consumer, 在执行管理操作时, 例如代码部署, 配置更新, 周期性重启时, 这种<strong>dynamic membership</strong>(动态成员)会导致大部分任务重新分配给不同实例. 对于大型状态程序, 每次更换任务都需长时间来恢复本地状态, 导致应用周期性或永远无法使用. 基于上述观察, Kafka的group management protocol允许group member提供一个持久的entity id. 根据id, group membership可保持不变, 因此也无需触发rebalance.<br>如果想使用static membership:</p>
+<ul>
+<li>升级broker cluser和client到2.4或以上版本, 并且确保升级后的broker中的<strong>inter.broker.protocol.version</strong>为2.3或以上</li>
+<li>在consumer中, 设置一个独一无二的<strong>GROUP_INSTANCE_ID_CONFIG</strong>(consumer group内不重复即可)</li>
+<li>在Kafka stream application中, 设置一个独一无二的<strong>GROUP_INSTANCE_ID_CONFIG</strong></li>
+</ul>
+<p>若broker版本低于2.3, 但client仍然设置<strong>GROUP_INSTANCE_ID_CONFIG</strong>, client会检测broker的版本, 并抛出<strong>UnsupportedException</strong>; 若存在两个具有相同id的client, 则会触发broker的防护机制, client会立即关闭并抛出<strong>FencedInstanceIdException</strong>.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/p/3435.html">
+        <span class="next-text nav-default">Repository</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/bbb8.html';
+  var disqus_title = "Kafka Design (1)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>
