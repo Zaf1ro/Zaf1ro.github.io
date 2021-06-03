@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -37,18 +37,18 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/1612091064.html">
 
 
-<meta name="description" content="1. 原因 内存读取的速度相对于CPU的处理速度来说太慢 由于指令需要分取立即数和各种action, 所以一字节长的指令无法全部用来表示地址空间. 地址线宽度计算公式:　　$ wordSize-log2(wordSize/byteSize) $　　如果一个32为的CPU的字长为32bit, 字节大小为8bit, 那么地址线宽度为32-log2(32/8)=30, 所以可选择的地址单元个数为2^30">
-<meta name="keywords" content="GNU C">
+<meta name="description" content="1. 原因 内存读取的速度相对于CPU的处理速度来说太慢 由于指令需要分取立即数和各种action, 所以一字节长的指令无法全部用来表示地址空间. 地址线宽度计算公式:　　$ wordSize-log2(wordSize&#x2F;byteSize) $　　如果一个32为的CPU的字长为32bit, 字节大小为8bit, 那么地址线宽度为32-log2(32&#x2F;8)&#x3D;30, 所以可选择的地址单元个数为2^30">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Memory alignment">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1612091064.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
-<meta property="og:description" content="1. 原因 内存读取的速度相对于CPU的处理速度来说太慢 由于指令需要分取立即数和各种action, 所以一字节长的指令无法全部用来表示地址空间. 地址线宽度计算公式:　　$ wordSize-log2(wordSize/byteSize) $　　如果一个32为的CPU的字长为32bit, 字节大小为8bit, 那么地址线宽度为32-log2(32/8)=30, 所以可选择的地址单元个数为2^30">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2020-07-22T00:34:25.000Z">
+<meta property="og:description" content="1. 原因 内存读取的速度相对于CPU的处理速度来说太慢 由于指令需要分取立即数和各种action, 所以一字节长的指令无法全部用来表示地址空间. 地址线宽度计算公式:　　$ wordSize-log2(wordSize&#x2F;byteSize) $　　如果一个32为的CPU的字长为32bit, 字节大小为8bit, 那么地址线宽度为32-log2(32&#x2F;8)&#x3D;30, 所以可选择的地址单元个数为2^30">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-03-27T14:47:07.000Z">
+<meta property="article:modified_time" content="2020-07-22T00:34:25.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="GNU C">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Memory alignment">
-<meta name="twitter:description" content="1. 原因 内存读取的速度相对于CPU的处理速度来说太慢 由于指令需要分取立即数和各种action, 所以一字节长的指令无法全部用来表示地址空间. 地址线宽度计算公式:　　$ wordSize-log2(wordSize/byteSize) $　　如果一个32为的CPU的字长为32bit, 字节大小为8bit, 那么地址线宽度为32-log2(32/8)=30, 所以可选择的地址单元个数为2^30">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Memory alignment - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -77,7 +77,7 @@ Memory alignment - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-原因"><span class="toc-text">1. 原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-解决方案"><span class="toc-text">2. 解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-例子"><span class="toc-text">3. 例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-编译器设置"><span class="toc-text">4. 编译器设置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-对齐系数"><span class="toc-text">4.1 对齐系数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-对齐条件"><span class="toc-text">4.2 对齐条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-例子"><span class="toc-text">4.3 例子</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%8E%9F%E5%9B%A0"><span class="toc-text">1. 原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">2. 解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BE%8B%E5%AD%90"><span class="toc-text">3. 例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%BC%96%E8%AF%91%E5%99%A8%E8%AE%BE%E7%BD%AE"><span class="toc-text">4. 编译器设置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%AF%B9%E9%BD%90%E7%B3%BB%E6%95%B0"><span class="toc-text">4.1 对齐系数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%AF%B9%E9%BD%90%E6%9D%A1%E4%BB%B6"><span class="toc-text">4.2 对齐条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E4%BE%8B%E5%AD%90"><span class="toc-text">4.3 例子</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -102,7 +102,7 @@ Memory alignment - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -142,19 +142,19 @@ Memory alignment - Zaf1ro's Blog
 <li>前面变量大小必须为后面变量大小的整数倍, 否则就补齐</li>
 <li>整个struct的大小必须为最大变量大小的整数倍</li>
 </ol>
-<h2 id="3-例子"><a href="#3-例子" class="headerlink" title="3. 例子"></a>3. 例子</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test1</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;  <span class="comment">// 变量大小为4字节</span></span><br><span class="line">  <span class="keyword">char</span> b; <span class="comment">// 变量大小为1字节, 但前面的变量a大小为4字节</span></span><br><span class="line">          <span class="comment">// 根据第一准则, b后面需要填充3字节</span></span><br><span class="line">  <span class="keyword">long</span> c; <span class="comment">// 变量大小为4字节</span></span><br><span class="line">&#125; test1;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test2</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;  <span class="comment">// 变量大小为4字节</span></span><br><span class="line">  <span class="keyword">char</span> b; <span class="comment">// 变量大小为1字节</span></span><br><span class="line">  <span class="keyword">char</span> c; <span class="comment">// 变量大小为1字节, 整个结构体的大小为6字节</span></span><br><span class="line">          <span class="comment">// 但最大变量为4字节, 根据第二准则, 应在最后填充2字节</span></span><br><span class="line">&#125; test2;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="comment">/* The size of Test1 is 12 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"The size of Test1 is %d\n"</span>, <span class="keyword">sizeof</span>(test1));</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* The size of Test2 is 8 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"The size of Test2 is %d\n"</span>, <span class="keyword">sizeof</span>(test2));</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3-例子"><a href="#3-例子" class="headerlink" title="3. 例子"></a>3. 例子</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test1</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;  <span class="comment">// 变量大小为4字节</span></span><br><span class="line">  <span class="keyword">char</span> b; <span class="comment">// 变量大小为1字节, 但前面的变量a大小为4字节</span></span><br><span class="line">          <span class="comment">// 根据第一准则, b后面需要填充3字节</span></span><br><span class="line">  <span class="keyword">long</span> c; <span class="comment">// 变量大小为4字节</span></span><br><span class="line">&#125; test1;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test2</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;  <span class="comment">// 变量大小为4字节</span></span><br><span class="line">  <span class="keyword">char</span> b; <span class="comment">// 变量大小为1字节</span></span><br><span class="line">  <span class="keyword">char</span> c; <span class="comment">// 变量大小为1字节, 整个结构体的大小为6字节</span></span><br><span class="line">          <span class="comment">// 但最大变量为4字节, 根据第二准则, 应在最后填充2字节</span></span><br><span class="line">&#125; test2;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="comment">/* The size of Test1 is 12 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;The size of Test1 is %d\n&quot;</span>, <span class="keyword">sizeof</span>(test1));</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* The size of Test2 is 8 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;The size of Test2 is %d\n&quot;</span>, <span class="keyword">sizeof</span>(test2));</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="4-编译器设置"><a href="#4-编译器设置" class="headerlink" title="4. 编译器设置"></a>4. 编译器设置</h2><h3 id="4-1-对齐系数"><a href="#4-1-对齐系数" class="headerlink" title="4.1 对齐系数"></a>4.1 对齐系数</h3><p>每个平台上的编译器都有自己默认的”对齐系数”, 程序员可以通过</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> pack(n), n = 1, 2, 4, 8, 16</span></span><br></pre></td></tr></table></figure>
-
 <p>来改变系数, n就是指定的”对齐系数”</p>
 <h3 id="4-2-对齐条件"><a href="#4-2-对齐条件" class="headerlink" title="4.2 对齐条件"></a>4.2 对齐条件</h3><ol>
 <li>使用#pragma pack(n), 编译器将按照n个字节对齐</li>
 <li>使用#pragma pack(), 取消自定义的字节对齐方式</li>
 <li>如果#pragma pack(n)中指定的n大于结构体重最大的成员的size, 则其不起作用, 结构体仍按照size最大成员进行对齐</li>
 </ol>
-<h3 id="4-3-例子"><a href="#4-3-例子" class="headerlink" title="4.3 例子"></a>4.3 例子</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line">  </span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> pack(1) <span class="comment">// 将对齐系数调为1</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test1</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;</span><br><span class="line">  <span class="keyword">char</span> b;</span><br><span class="line">  <span class="keyword">long</span> c; <span class="comment">// 变量大小为4, 需要对齐</span></span><br><span class="line">          <span class="comment">// 但由于对齐系数为1, 所以不需要填充</span></span><br><span class="line">&#125; test1;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> pack()  <span class="comment">// 关闭自定义的对齐规则</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test2</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;</span><br><span class="line">  <span class="keyword">char</span> b;</span><br><span class="line">  <span class="keyword">long</span> c; <span class="comment">// 变量大小为4, 由于前面变量大小为1, </span></span><br><span class="line">          <span class="comment">// 所以需要在前面填充3个字节</span></span><br><span class="line">&#125; test2;</span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="comment">/* The size of Test1 is 9 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"The size of Test1 is %d\n"</span>, <span class="keyword">sizeof</span>(test1));</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* The size of Test2 is 12 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"The size of Test2 is %d\n"</span>, <span class="keyword">sizeof</span>(test2));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h3 id="4-3-例子"><a href="#4-3-例子" class="headerlink" title="4.3 例子"></a>4.3 例子</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line">  </span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> pack(1) <span class="comment">// 将对齐系数调为1</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test1</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;</span><br><span class="line">  <span class="keyword">char</span> b;</span><br><span class="line">  <span class="keyword">long</span> c; <span class="comment">// 变量大小为4, 需要对齐</span></span><br><span class="line">          <span class="comment">// 但由于对齐系数为1, 所以不需要填充</span></span><br><span class="line">&#125; test1;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> pack()  <span class="comment">// 关闭自定义的对齐规则</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test2</span> &#123;</span></span><br><span class="line">  <span class="keyword">int</span> a;</span><br><span class="line">  <span class="keyword">char</span> b;</span><br><span class="line">  <span class="keyword">long</span> c; <span class="comment">// 变量大小为4, 由于前面变量大小为1, </span></span><br><span class="line">          <span class="comment">// 所以需要在前面填充3个字节</span></span><br><span class="line">&#125; test2;</span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">  <span class="comment">/* The size of Test1 is 9 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;The size of Test1 is %d\n&quot;</span>, <span class="keyword">sizeof</span>(test1));</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* The size of Test2 is 12 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;The size of Test2 is %d\n&quot;</span>, <span class="keyword">sizeof</span>(test2));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 

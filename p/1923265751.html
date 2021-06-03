@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,19 +38,19 @@
 
 
 <meta name="description" content="1. 特定网络需求的满足每个IPv4可拆分为网络部分(network part)和主机部分(host part), 分为了A, B, C, D, E五类:    Class Network Part Octet Private Address    A 0xxxxxxx 0.x.x.x - 127.x.x.x 10.0.0.0 – 10.255.255.255  127.0.0.0 - 127.2">
-<meta name="keywords" content="Network">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VLSM (Variable-Length Subnet Mask)">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1923265751.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. 特定网络需求的满足每个IPv4可拆分为网络部分(network part)和主机部分(host part), 分为了A, B, C, D, E五类:    Class Network Part Octet Private Address    A 0xxxxxxx 0.x.x.x - 127.x.x.x 10.0.0.0 – 10.255.255.255  127.0.0.0 - 127.2">
-<meta property="og:locale" content="zh">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Network/VLSM/3.1_1.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Network/VLSM/3.2_1.png">
-<meta property="og:updated_time" content="2019-12-18T18:11:42.000Z">
+<meta property="article:published_time" content="2017-06-13T23:54:27.000Z">
+<meta property="article:modified_time" content="2019-12-18T18:11:42.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Network">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="VLSM (Variable-Length Subnet Mask)">
-<meta name="twitter:description" content="1. 特定网络需求的满足每个IPv4可拆分为网络部分(network part)和主机部分(host part), 分为了A, B, C, D, E五类:    Class Network Part Octet Private Address    A 0xxxxxxx 0.x.x.x - 127.x.x.x 10.0.0.0 – 10.255.255.255  127.0.0.0 - 127.2">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/VLSM/3.1_1.png">
 
 
@@ -64,7 +64,7 @@
     <title>
 VLSM (Variable-Length Subnet Mask) - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -80,7 +80,7 @@ VLSM (Variable-Length Subnet Mask) - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-特定网络需求的满足"><span class="toc-text">1. 特定网络需求的满足</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Subnetting-子网划分"><span class="toc-text">2. Subnetting(子网划分)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Subnet-Mask-子网掩码"><span class="toc-text">2.1 Subnet Mask(子网掩码)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Example"><span class="toc-text">2.2 Example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-VLSM"><span class="toc-text">3. VLSM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Example"><span class="toc-text">3.1 Example</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Steps-to-determine-subnet-address"><span class="toc-text">3.2 Steps to determine subnet address</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Route-Summarization-路由汇总"><span class="toc-text">4. Route Summarization(路由汇总)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-路由匹配规则"><span class="toc-text">4.1 路由匹配规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-汇总"><span class="toc-text">4.2 汇总</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-汇总的缺陷"><span class="toc-text">4.3 汇总的缺陷</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%89%B9%E5%AE%9A%E7%BD%91%E7%BB%9C%E9%9C%80%E6%B1%82%E7%9A%84%E6%BB%A1%E8%B6%B3"><span class="toc-text">1. 特定网络需求的满足</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Subnetting-%E5%AD%90%E7%BD%91%E5%88%92%E5%88%86"><span class="toc-text">2. Subnetting(子网划分)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Subnet-Mask-%E5%AD%90%E7%BD%91%E6%8E%A9%E7%A0%81"><span class="toc-text">2.1 Subnet Mask(子网掩码)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Example"><span class="toc-text">2.2 Example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-VLSM"><span class="toc-text">3. VLSM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Example"><span class="toc-text">3.1 Example</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Steps-to-determine-subnet-address"><span class="toc-text">3.2 Steps to determine subnet address</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Route-Summarization-%E8%B7%AF%E7%94%B1%E6%B1%87%E6%80%BB"><span class="toc-text">4. Route Summarization(路由汇总)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E8%B7%AF%E7%94%B1%E5%8C%B9%E9%85%8D%E8%A7%84%E5%88%99"><span class="toc-text">4.1 路由匹配规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%B1%87%E6%80%BB"><span class="toc-text">4.2 汇总</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%B1%87%E6%80%BB%E7%9A%84%E7%BC%BA%E9%99%B7"><span class="toc-text">4.3 汇总的缺陷</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -105,7 +105,7 @@ VLSM (Variable-Length Subnet Mask) - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -427,10 +427,8 @@ VLSM (Variable-Length Subnet Mask) - Zaf1ro's Blog
 </ul>
 <p><img src="/images/Network/VLSM/3.2_1.png" alt="VLSM示例2"><br>可以看出, 这个网络中需要规划8个subnet, 其中1号到4号subnet分别需要两个IP Address, 分别对应两个路由器的一端, 而5号到8号subnet则分别需要50个IP Address.<br>划分子网时需先满足需要IP Address最多数量的子网, 该例中需要的最多IP Address为50个, 所以host part需要有6位(2<sup>6</sup>=64&gt;50), 而172.16.32.0这个子网的mask为20位, 所以剩下可分配的host part为12位, 所以划分子网后剩下的network part为6位(32-20-6)</p>
 <figure class="highlight tex"><table><tr><td class="code"><pre><span class="line">Subnetted Address: 172.16.32.0/20</span><br><span class="line">1010 1100 0001 0000 0010 0000 0000 0000</span><br><span class="line"></span><br><span class="line">VLSM Address: 172.16.32.0/26</span><br><span class="line"></span><br><span class="line">5st subnet: 最后16位: 0010 0000 0000 0000 172.16.32.0/26</span><br><span class="line">6st subnet: 最后16位: 0010 0001 0000 0000 172.16.32.64/26</span><br><span class="line">7st subnet: 最后16位: 0010 0010 0000 0000 172.16.32.128/26</span><br><span class="line">8st subnet: 最后16位: 0010 0011 0000 0000 172.16.32.192/26</span><br></pre></td></tr></table></figure>
-
 <p>剩下的4个subnet分别需要2个IP Address, 所以需要2位(2<sup>2</sup>=4&gt;2)host part即可满足, 其他位都可以设为network part. 我们把172.16.33.0/26切分给/30.</p>
 <figure class="highlight tex"><table><tr><td class="code"><pre><span class="line">Subnetted Address: 172.16.32.0/20</span><br><span class="line">1010 1100 0001 0000 0010 0000 0000 0000</span><br><span class="line"></span><br><span class="line">VLSM Address: 172.16.32.0/30</span><br><span class="line"></span><br><span class="line">1st subnet: 最后8位: 0011 0000 0000 0000 172.16.33.0/30</span><br><span class="line">2st subnet: 最后16位: 0011 0000 0000 0100 172.16.33.4/30</span><br><span class="line">3st subnet: 最后8位: 0011 0000 0000 1000 172.16.33.8/30</span><br><span class="line">4st subnet: 最后8位: 0011 0000 0000 1100 172.16.33.12/30</span><br></pre></td></tr></table></figure>
-
 <p>最后还剩下59个/29的subnet和12个/30的subnet</p>
 <h2 id="4-Route-Summarization-路由汇总"><a href="#4-Route-Summarization-路由汇总" class="headerlink" title="4. Route Summarization(路由汇总)"></a>4. Route Summarization(路由汇总)</h2><p>由于Router中的routing table需要记录所有路由信息来转发信息, 但是由于VLSM的mask, 导致routing table变得十分大, 转发的效率也变得很低, 这时就需要Route Summarization. 路由汇总有两个好处:</p>
 <ul>

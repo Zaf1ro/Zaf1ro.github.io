@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. Ugly Number1.1 DescriptionWrite a program to check whether a given number is an ugly number.Ugly numbers are positive numbers whose prime factors only include 2, 3, 5. For example, 6, 8 are ugly wh">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Ugly Number">
 <meta property="og:url" content="https://zaf1ro.github.io/p/3076433365.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. Ugly Number1.1 DescriptionWrite a program to check whether a given number is an ugly number.Ugly numbers are positive numbers whose prime factors only include 2, 3, 5. For example, 6, 8 are ugly wh">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T18:10:51.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-01-31T20:48:15.000Z">
+<meta property="article:modified_time" content="2019-11-11T18:10:51.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Ugly Number">
-<meta name="twitter:description" content="1. Ugly Number1.1 DescriptionWrite a program to check whether a given number is an ugly number.Ugly numbers are positive numbers whose prime factors only include 2, 3, 5. For example, 6, 8 are ugly wh">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Ugly Number - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Ugly Number - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -137,9 +137,13 @@ Ugly Number - Zaf1ro's Blog
 <h3 id="1-2-Math-Solution"><a href="#1-2-Math-Solution" class="headerlink" title="1.2 Math Solution"></a>1.2 Math Solution</h3><p>思路: 通过不断的除以2, 3, 5得到最后的余数, 如果不为1则说明不为ugly number</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isUgly</span><span class="params">(<span class="keyword">int</span> num)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(num == <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">while</span>(num % <span class="number">2</span> == <span class="number">0</span>) num /= <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">while</span>(num % <span class="number">5</span> == <span class="number">0</span>) num /= <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">while</span>(num % <span class="number">3</span> == <span class="number">0</span>) num /= <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">return</span> num == <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+
+
 <h2 id="2-Ugly-Number-II"><a href="#2-Ugly-Number-II" class="headerlink" title="2. Ugly Number II"></a>2. Ugly Number II</h2><h3 id="2-1-Description"><a href="#2-1-Description" class="headerlink" title="2.1 Description"></a>2.1 Description</h3><p>Write a program to find the n-th ugly number.<br>Ugly numbers are positive numbers whose prime factors only include 2, 3, 5. For example, 1, 2, 3, 4, 5, 6, 8, 9, 10, 12 is the sequence of the first 10 ugly numbers.<br>Note that 1 is typically treated as an ugly number, and n <strong>does not exceed 1690</strong>.</p>
 <h3 id="2-2-Dynamic-Programming-Solution"><a href="#2-2-Dynamic-Programming-Solution" class="headerlink" title="2.2 Dynamic Programming Solution"></a>2.2 Dynamic Programming Solution</h3><p>思路: 由于所有ugly number都是由2, 3, 5组成的, 并且第n个元素值一定比第n+1个元素值小, 所以可通过计算n之前的ugly number来计算第n个的元素值.</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">nthUglyNumber</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] res = <span class="keyword">new</span> <span class="keyword">int</span>[n];   <span class="comment">/* 0 - nth ugly number */</span></span><br><span class="line">    res[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">int</span>[] idx = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">3</span>];   <span class="comment">/* index of prime factor 2, 3, 5 */</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">      <span class="keyword">int</span> min = Math.min(Math.min(res[idx[<span class="number">0</span>]] * <span class="number">2</span>, res[idx[<span class="number">1</span>]] * <span class="number">3</span>), res[idx[<span class="number">2</span>]] * <span class="number">5</span>);</span><br><span class="line">      res[i] = min;</span><br><span class="line">      <span class="keyword">if</span> (res[idx[<span class="number">0</span>]] * <span class="number">2</span> == min) idx[<span class="number">0</span>]++;</span><br><span class="line">      <span class="keyword">if</span> (res[idx[<span class="number">1</span>]] * <span class="number">3</span> == min) idx[<span class="number">1</span>]++;</span><br><span class="line">      <span class="keyword">if</span> (res[idx[<span class="number">2</span>]] * <span class="number">5</span> == min) idx[<span class="number">2</span>]++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res[n - <span class="number">1</span>];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="3-Super-Ugly-Number"><a href="#3-Super-Ugly-Number" class="headerlink" title="3. Super Ugly Number"></a>3. Super Ugly Number</h2><h3 id="3-1-Description"><a href="#3-1-Description" class="headerlink" title="3.1 Description"></a>3.1 Description</h3><p>Write a program to find the nth super ugly number.<br>Super ugly numbers are positive numbers whose all prime factors are in the given prime list primes of size k. For example, [1, 2, 4, 7, 8, 13, 14, 16, 19, 26, 28, 32] is the sequence of the first 12 super ugly numbers given primes = [2, 7, 13, 19] of size 4.<br>Note:</p>
 <ul>
@@ -150,7 +154,6 @@ Ugly Number - Zaf1ro's Blog
 </ul>
 <h3 id="3-2-Dynamic-Programming-Solution"><a href="#3-2-Dynamic-Programming-Solution" class="headerlink" title="3.2 Dynamic Programming Solution"></a>3.2 Dynamic Programming Solution</h3><p>思路: 与之前相同</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">nthSuperUglyNumber</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span>[] primes)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] res = <span class="keyword">new</span> <span class="keyword">int</span>[n];</span><br><span class="line">    res[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">int</span>[] idx = <span class="keyword">new</span> <span class="keyword">int</span>[primes.length];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">      <span class="keyword">int</span> min = Integer.MAX_VALUE;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; primes.length; j++)</span><br><span class="line">        min = Math.min(min, res[idx[j]] * primes[j]);</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; primes.length; j++)</span><br><span class="line">        <span class="keyword">if</span> (min == res[idx[j]] * primes[j])</span><br><span class="line">          idx[j]++;</span><br><span class="line">      res[i] = min;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res[n - <span class="number">1</span>];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 

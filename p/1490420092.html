@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. DescriptionGiven a complete binary tree, count the number of nodes.Definition of a complete binary tree:In a complete binary tree every level, except possibly the last, is completely filled, and al">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Count Complete Tree Nodes">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1490420092.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. DescriptionGiven a complete binary tree, count the number of nodes.Definition of a complete binary tree:In a complete binary tree every level, except possibly the last, is completely filled, and al">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T20:48:07.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-27T19:21:59.000Z">
+<meta property="article:modified_time" content="2019-11-11T20:48:07.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Count Complete Tree Nodes">
-<meta name="twitter:description" content="1. DescriptionGiven a complete binary tree, count the number of nodes.Definition of a complete binary tree:In a complete binary tree every level, except possibly the last, is completely filled, and al">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Count Complete Tree Nodes - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Count Complete Tree Nodes - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -141,7 +141,6 @@ Count Complete Tree Nodes - Zaf1ro's Blog
 </ol>
 <p>除最后一层外, 其他层的叶子节点数量为$2^n$, 所以只要知道层数侧可以得到节点的数量. 最后一层不确定有几个节点, 所以需要二分法不断探测多少个节点.</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"> * public class TreeNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   TreeNode left;</span></span><br><span class="line"><span class="comment"> *   TreeNode right;</span></span><br><span class="line"><span class="comment"> *   TreeNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">helper</span><span class="params">(TreeNode root, <span class="keyword">int</span> height)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (height == <span class="number">1</span>) &#123;             <span class="comment">// get to the last layer of nodes</span></span><br><span class="line">      <span class="keyword">if</span> (root.right != <span class="keyword">null</span>) <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">      <span class="keyword">if</span> (root.left != <span class="keyword">null</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    TreeNode mid = root.left;     <span class="comment">// search from the mid of current tree</span></span><br><span class="line">    <span class="keyword">int</span> newHeight = <span class="number">1</span>;       </span><br><span class="line">    <span class="keyword">while</span> (newHeight &lt; height) &#123;    <span class="comment">// reach to the last layer of tree</span></span><br><span class="line">      mid = mid.right;</span><br><span class="line">      newHeight++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// the mid of the last layer of tree is null, so start looking for the left of tree</span></span><br><span class="line">    <span class="keyword">if</span> (mid == <span class="keyword">null</span>) <span class="keyword">return</span> helper(root.left, height - <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// the mid of the last layer of tree is not null, </span></span><br><span class="line">    <span class="comment">// so the right of the last layer of tree might be not null, start search the right of root</span></span><br><span class="line">    <span class="keyword">return</span> (<span class="number">1</span> &lt;&lt; (height - <span class="number">1</span>)) + helper(root.right, height - <span class="number">1</span>);  </span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">countNodes</span><span class="params">(TreeNode root)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (root.left == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    TreeNode tmp = root;</span><br><span class="line">    <span class="keyword">int</span> height = <span class="number">0</span>, count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (tmp.left != <span class="keyword">null</span>) &#123;    </span><br><span class="line">      tmp = tmp.left;</span><br><span class="line">      count += (<span class="number">1</span> &lt;&lt; height);   <span class="comment">// count the number of nodes of tree</span></span><br><span class="line">      height++;           <span class="comment">// get the height of tree</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> count + helper(root, height);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 

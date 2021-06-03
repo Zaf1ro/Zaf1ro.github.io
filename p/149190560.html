@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. DescriptionYou are given coins of different denominations and a total amount of money amount. Write a function to compute the fewest number of coins that you need to make up that amount. If that am">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Coin Change">
 <meta property="og:url" content="https://zaf1ro.github.io/p/149190560.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. DescriptionYou are given coins of different denominations and a total amount of money amount. Write a function to compute the fewest number of coins that you need to make up that amount. If that am">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T17:41:17.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-08T13:50:51.000Z">
+<meta property="article:modified_time" content="2019-11-11T17:41:17.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Coin Change">
-<meta name="twitter:description" content="1. DescriptionYou are given coins of different denominations and a total amount of money amount. Write a function to compute the fewest number of coins that you need to make up that amount. If that am">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Coin Change - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Coin Change - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -141,9 +141,10 @@ Coin Change - Zaf1ro's Blog
 <h2 id="2-Recursive-Solution"><a href="#2-Recursive-Solution" class="headerlink" title="2. Recursive Solution"></a>2. Recursive Solution</h2><p>思路: 通过不断减小amount获知需要多少coin<br>Time Complexity: $O(m^n), \text{m is coin, n is amount}$<br>Space Complexity: $O(1)$</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">helper</span><span class="params">(<span class="keyword">int</span>[] coins, <span class="keyword">int</span> amount, <span class="keyword">int</span> count)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (amount &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span> Integer.MAX_VALUE;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (amount == <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span> count;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> min = Integer.MAX_VALUE;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; coins.length; i++)</span><br><span class="line">      min = Math.min(min, helper(coins, amount - coins[i], count + <span class="number">1</span>));</span><br><span class="line">    <span class="keyword">return</span> min;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">coinChange</span><span class="params">(<span class="keyword">int</span>[] coins, <span class="keyword">int</span> amount)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> res =  helper(coins, amount, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> res == Integer.MAX_VALUE ? -<span class="number">1</span> : res;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+
+
 <h2 id="3-Dynamic-Programming-Solution"><a href="#3-Dynamic-Programming-Solution" class="headerlink" title="3. Dynamic Programming Solution"></a>3. Dynamic Programming Solution</h2><p>思路: 代码思路与上一题相同, 但通过数组来记忆上一次减少amount时的coin数量<br>Time Complexity: $O(mn), \quad \text{m为coin数量, n为amount}$<br>Space Complexity: $O(n), \quad \text{n为amount}$ </p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">coinChange</span><span class="params">(<span class="keyword">int</span>[] coins, <span class="keyword">int</span> amount)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (amount &lt; <span class="number">0</span>) </span><br><span class="line">      <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span>[] res = <span class="keyword">new</span> <span class="keyword">int</span>[amount + <span class="number">1</span>];</span><br><span class="line">    Arrays.fill(res, amount + <span class="number">1</span>);</span><br><span class="line">    res[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= amount; i++)</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> coin: coins)</span><br><span class="line">        <span class="keyword">if</span> (i &gt;= coin)</span><br><span class="line">          res[i] = Math.min(res[i], res[i - coin] + <span class="number">1</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> res[amount] &gt; amount ? -<span class="number">1</span> : res[amount];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 

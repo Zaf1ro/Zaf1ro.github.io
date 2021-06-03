@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -37,14 +37,13 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/b4dd.html">
 
 
-<meta name="description" content="1. The Big Picture以下是TCP/IP protocols的总览:上图包含IPv4和IPv6, 左边的应用使用IPv4, 右边的应用使用IPv6. tcpdump使用BPF(BSD packet filter)或DLPI(datalink provider interface)与datalink直接通信. 图中dashed line以上的应用使用相对应的protocol通信, 以下">
-<meta name="keywords" content="UNP">
+<meta name="description" content="1. The Big Picture以下是TCP&#x2F;IP protocols的总览:上图包含IPv4和IPv6, 左边的应用使用IPv4, 右边的应用使用IPv6. tcpdump使用BPF(BSD packet filter)或DLPI(datalink provider interface)与datalink直接通信. 图中dashed line以上的应用使用相对应的protocol通信, 以下">
 <meta property="og:type" content="article">
 <meta property="og:title" content="The Transport Layer">
 <meta property="og:url" content="https://zaf1ro.github.io/p/b4dd.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
-<meta property="og:description" content="1. The Big Picture以下是TCP/IP protocols的总览:上图包含IPv4和IPv6, 左边的应用使用IPv4, 右边的应用使用IPv6. tcpdump使用BPF(BSD packet filter)或DLPI(datalink provider interface)与datalink直接通信. 图中dashed line以上的应用使用相对应的protocol通信, 以下">
-<meta property="og:locale" content="zh">
+<meta property="og:description" content="1. The Big Picture以下是TCP&#x2F;IP protocols的总览:上图包含IPv4和IPv6, 左边的应用使用IPv4, 右边的应用使用IPv6. tcpdump使用BPF(BSD packet filter)或DLPI(datalink provider interface)与datalink直接通信. 图中dashed line以上的应用使用相对应的protocol通信, 以下">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNP/transport-layer-1.gif">
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNP/transport-layer-2.gif">
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNP/transport-layer-3.gif">
@@ -58,10 +57,11 @@
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNP/transport-layer-11.gif">
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNP/transport-layer-12.gif">
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNP/transport-layer-13.gif">
-<meta property="og:updated_time" content="2019-12-07T17:46:33.000Z">
+<meta property="article:published_time" content="2019-11-11T19:24:02.000Z">
+<meta property="article:modified_time" content="2019-12-07T17:46:33.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="UNP">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="The Transport Layer">
-<meta name="twitter:description" content="1. The Big Picture以下是TCP/IP protocols的总览:上图包含IPv4和IPv6, 左边的应用使用IPv4, 右边的应用使用IPv6. tcpdump使用BPF(BSD packet filter)或DLPI(datalink provider interface)与datalink直接通信. 图中dashed line以上的应用使用相对应的protocol通信, 以下">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/UNP/transport-layer-1.gif">
 
 
@@ -75,7 +75,7 @@
     <title>
 The Transport Layer - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -116,7 +116,7 @@ The Transport Layer - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -235,7 +235,7 @@ The Transport Layer - Zaf1ro's Blog
 </ol>
 <p>TCP connection需要四个要素: local IP address, local port, foreign IP address, foreign port. 对于SCTP来说, 需要一组local IP addresses, 一个local port, 一组foreign IP addresses, 一个foreign port. IP address和port number用于表示一个endpoint, 也称为socket. </p>
 <h2 id="9-TCP-Port-Numbers-and-Concurrent-Servers"><a href="#9-TCP-Port-Numbers-and-Concurrent-Servers" class="headerlink" title="9. TCP Port Numbers and Concurrent Servers"></a>9. TCP Port Numbers and Concurrent Servers</h2><p>并发server中, server主进程会一直产生子进程来处理新的连接. 假设我们现在有一个server, 其拥有<strong>12.106.32.254</strong>和<strong>192.168.42.1</strong>两个IP addresses, 并使用<strong>21</strong> port number. server主进程进入LISTEN状态, 等待client的连接请求:<br><img src="/images/UNP/transport-layer-7.gif" alt="TCP server with a passive open on port 21"></p>
-<p>其中, <strong>{*:21, *:*}</strong>表示server端的socket pair: server会持续监听任意local IP address上的21号port, 可以接收来自任意foreign IP address和foreign port number的连接请求.<br>假设有一个client尝试连接该server, 其IP address为<strong>206.168.112.219</strong>, port number为<strong>1500</strong>:<br><img src="/images/UNP/transport-layer-8.gif" alt="Connection request from client to server"><br>当client和server完成TCP 3-way handshake后, server会调用fork()复制主进程, 并让子进程处理请求:<br><img src="/images/UNP/transport-layer-9.gif" alt="Concurrent server has child handle client"></p>
+<p>其中, <strong>{*:21, *:*}<strong>表示server端的socket pair: server会持续监听任意local IP address上的21号port, 可以接收来自任意foreign IP address和foreign port number的连接请求.<br>假设有一个client尝试连接该server, 其IP address为</strong>206.168.112.219</strong>, port number为<strong>1500</strong>:<br><img src="/images/UNP/transport-layer-8.gif" alt="Connection request from client to server"><br>当client和server完成TCP 3-way handshake后, server会调用fork()复制主进程, 并让子进程处理请求:<br><img src="/images/UNP/transport-layer-9.gif" alt="Concurrent server has child handle client"></p>
 <p>其中, server的主进程被称为<strong>listening socket</strong>, server子进程被称为<strong>connected socket</strong>. 虽然两者都占用local port 21, 但listening socket用于监听并接受新的连接请求, connected socket则用于与client交换数据. 若此时另一个client请求连接该server, 则结果如下:<br><img src="/images/UNP/transport-layer-10.gif" alt="Second client connection with same server"></p>
 <h2 id="10-Buffer-Sizes-and-Limitations"><a href="#10-Buffer-Sizes-and-Limitations" class="headerlink" title="10. Buffer Sizes and Limitations"></a>10. Buffer Sizes and Limitations</h2><p>IP datagram的大小受到以下条件限制:</p>
 <ul>

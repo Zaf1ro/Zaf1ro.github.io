@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -37,18 +37,18 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/1530729121.html">
 
 
-<meta name="description" content="1. Binary Tree PathsGiven a binary tree, return all root-to-leaf paths.For example, given the following binary tree:    1 /   \2   3 \  5  All root-to-leaf paths are: [&amp;quot;1-&amp;gt;2-&amp;gt;5&amp;quot;, &amp;quot">
-<meta name="keywords" content="Algorithm">
+<meta name="description" content="1. Binary Tree PathsGiven a binary tree, return all root-to-leaf paths.For example, given the following binary tree:    1 &#x2F;   \2   3 \  5 All root-to-leaf paths are: [&quot;1-&gt;2-&gt;5&quot;, &quot;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Binary Tree Paths">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1530729121.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
-<meta property="og:description" content="1. Binary Tree PathsGiven a binary tree, return all root-to-leaf paths.For example, given the following binary tree:    1 /   \2   3 \  5  All root-to-leaf paths are: [&amp;quot;1-&amp;gt;2-&amp;gt;5&amp;quot;, &amp;quot">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T20:42:14.000Z">
+<meta property="og:description" content="1. Binary Tree PathsGiven a binary tree, return all root-to-leaf paths.For example, given the following binary tree:    1 &#x2F;   \2   3 \  5 All root-to-leaf paths are: [&quot;1-&gt;2-&gt;5&quot;, &quot;">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-13T19:29:08.000Z">
+<meta property="article:modified_time" content="2019-11-11T20:42:14.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Binary Tree Paths">
-<meta name="twitter:description" content="1. Binary Tree PathsGiven a binary tree, return all root-to-leaf paths.For example, given the following binary tree:    1 /   \2   3 \  5  All root-to-leaf paths are: [&amp;quot;1-&amp;gt;2-&amp;gt;5&amp;quot;, &amp;quot">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Binary Tree Paths - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Binary Tree Paths - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -134,13 +134,14 @@ Binary Tree Paths - Zaf1ro's Blog
 
     <div class="post-content">
       <h2 id="1-Binary-Tree-Paths"><a href="#1-Binary-Tree-Paths" class="headerlink" title="1. Binary Tree Paths"></a>1. Binary Tree Paths</h2><p>Given a binary tree, return all root-to-leaf paths.<br>For example, given the following binary tree:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">   1</span><br><span class="line"> /   \</span><br><span class="line">2   3</span><br><span class="line"> \</span><br><span class="line">  5</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">   1</span><br><span class="line"> /   \</span><br><span class="line">2   3</span><br><span class="line"> \</span><br><span class="line">  5</span><br></pre></td></tr></table></figure>
 <p>All root-to-leaf paths are:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[&quot;1-&gt;2-&gt;5&quot;, &quot;1-&gt;3&quot;]</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&quot;1-&gt;2-&gt;5&quot;, &quot;1-&gt;3&quot;]</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="2-DFS"><a href="#2-DFS" class="headerlink" title="2. DFS"></a>2. DFS</h2><p>思路: 深度遍历每一条通向leaf的path, 直到抵达leaf. 一旦抵达leaf, 则将字符串放入List中</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"> * public class TreeNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   TreeNode left;</span></span><br><span class="line"><span class="comment"> *   TreeNode right;</span></span><br><span class="line"><span class="comment"> *   TreeNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">helper</span><span class="params">(TreeNode root, List&lt;String&gt; res, String path)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="keyword">null</span>) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span> (root.left == <span class="keyword">null</span> &amp;&amp; root.right == <span class="keyword">null</span>) &#123;</span><br><span class="line">      res.add(path + Integer.toString(root.val));</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    helper(root.left, res, path + Integer.toString(root.val) + <span class="string">"-&gt;"</span>);</span><br><span class="line">    helper(root.right, res, path + Integer.toString(root.val) + <span class="string">"-&gt;"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;String&gt; <span class="title">binaryTreePaths</span><span class="params">(TreeNode root)</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; res = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    helper(root, res, <span class="string">""</span>);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"> * public class TreeNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   TreeNode left;</span></span><br><span class="line"><span class="comment"> *   TreeNode right;</span></span><br><span class="line"><span class="comment"> *   TreeNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">helper</span><span class="params">(TreeNode root, List&lt;String&gt; res, String path)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (root == <span class="keyword">null</span>) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span> (root.left == <span class="keyword">null</span> &amp;&amp; root.right == <span class="keyword">null</span>) &#123;</span><br><span class="line">      res.add(path + Integer.toString(root.val));</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    helper(root.left, res, path + Integer.toString(root.val) + <span class="string">&quot;-&gt;&quot;</span>);</span><br><span class="line">    helper(root.right, res, path + Integer.toString(root.val) + <span class="string">&quot;-&gt;&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;String&gt; <span class="title">binaryTreePaths</span><span class="params">(TreeNode root)</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; res = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    helper(root, res, <span class="string">&quot;&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
     </div>
 
     <footer class="post-footer">

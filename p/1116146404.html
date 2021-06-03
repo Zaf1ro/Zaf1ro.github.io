@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. DescriptionWrite a program to find the node at which the intersection of two singly linked lists begins.For example, the following two linked lists: A:    a1 → a2        ↘          c1 → c2 → c3">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Intersection of Two Linked Lists">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1116146404.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. DescriptionWrite a program to find the node at which the intersection of two singly linked lists begins.For example, the following two linked lists: A:    a1 → a2        ↘          c1 → c2 → c3">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T18:23:25.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-21T17:38:20.000Z">
+<meta property="article:modified_time" content="2019-11-11T18:23:25.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Intersection of Two Linked Lists">
-<meta name="twitter:description" content="1. DescriptionWrite a program to find the node at which the intersection of two singly linked lists begins.For example, the following two linked lists: A:    a1 → a2        ↘          c1 → c2 → c3">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Intersection of Two Linked Lists - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Intersection of Two Linked Lists - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -134,12 +134,13 @@ Intersection of Two Linked Lists - Zaf1ro's Blog
 
     <div class="post-content">
       <h2 id="1-Description"><a href="#1-Description" class="headerlink" title="1. Description"></a>1. Description</h2><p>Write a program to find the node at which the intersection of two singly linked lists begins.<br>For example, the following two linked lists:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">A:    a1 → a2</span><br><span class="line">        ↘</span><br><span class="line">          c1 → c2 → c3</span><br><span class="line">        ↗      </span><br><span class="line">B: b1 → b2 → b3</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">A:    a1 → a2</span><br><span class="line">        ↘</span><br><span class="line">          c1 → c2 → c3</span><br><span class="line">        ↗      </span><br><span class="line">B: b1 → b2 → b3</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="2-Solution"><a href="#2-Solution" class="headerlink" title="2. Solution"></a>2. Solution</h2><p>思路: 假设链表A和链表B的共同段的长度为x, 链表A非共同段的长度为y, 链表B费共同段的长度为z, 则A的总长度为x+y, B的总长度为x+z. 假设两个节点坐标m和n分别从A和B的链表头部出发, m走到A的终点后再从B的头部出发, n走到B的终点后再从A的头部出发, 则m和n走过的长度为x+y+z. 所以两者一定会在intersection处相遇.</p>
 <p>Time Complexity: $O(m+n)$<br>Space Complexity: $O(1)$</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * public class ListNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   ListNode next;</span></span><br><span class="line"><span class="comment"> *   ListNode(int x) &#123;</span></span><br><span class="line"><span class="comment"> *     val = x;</span></span><br><span class="line"><span class="comment"> *     next = null;</span></span><br><span class="line"><span class="comment"> *   &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> ListNode <span class="title">getIntersectionNode</span><span class="params">(ListNode headA, ListNode headB)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (headA == <span class="keyword">null</span> || headB == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    ListNode a = headA, b = headB;</span><br><span class="line">    <span class="keyword">while</span> (a != b) &#123;</span><br><span class="line">      a = a == <span class="keyword">null</span> ? headB : a.next;   <span class="comment">/* keep going or start from another linked-list */</span></span><br><span class="line">      b = b == <span class="keyword">null</span> ? headA : b.next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> a;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 

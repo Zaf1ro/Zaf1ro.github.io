@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. Word Pattern1.1 DescriptionGiven a pattern and a string str, find if str follows the same pattern.Here follow means a full match, such that there is a bijection between a letter in pattern and a no">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Word Pattern">
 <meta property="og:url" content="https://zaf1ro.github.io/p/187886117.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. Word Pattern1.1 DescriptionGiven a pattern and a string str, find if str follows the same pattern.Here follow means a full match, such that there is a bijection between a letter in pattern and a no">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T20:36:43.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-20T17:42:08.000Z">
+<meta property="article:modified_time" content="2019-11-11T20:36:43.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Word Pattern">
-<meta name="twitter:description" content="1. Word Pattern1.1 DescriptionGiven a pattern and a string str, find if str follows the same pattern.Here follow means a full match, such that there is a bijection between a letter in pattern and a no">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Word Pattern - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Word Pattern - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -134,7 +134,7 @@ Word Pattern - Zaf1ro's Blog
 
     <div class="post-content">
       <h2 id="1-Word-Pattern"><a href="#1-Word-Pattern" class="headerlink" title="1. Word Pattern"></a>1. Word Pattern</h2><h3 id="1-1-Description"><a href="#1-1-Description" class="headerlink" title="1.1 Description"></a>1.1 Description</h3><p>Given a pattern and a string str, find if str follows the same pattern.<br>Here follow means a full match, such that there is a bijection between a letter in pattern and a non-empty word in str.<br>Examples:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">pattern = &quot;abba&quot;, str = &quot;dog cat cat dog&quot; should return true.</span><br><span class="line">pattern = &quot;abba&quot;, str = &quot;dog cat cat fish&quot; should return false.</span><br><span class="line">pattern = &quot;aaaa&quot;, str = &quot;dog cat cat dog&quot; should return false.</span><br><span class="line">pattern = &quot;abba&quot;, str = &quot;dog dog dog dog&quot; should return false.</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pattern = &quot;abba&quot;, str = &quot;dog cat cat dog&quot; should return true.</span><br><span class="line">pattern = &quot;abba&quot;, str = &quot;dog cat cat fish&quot; should return false.</span><br><span class="line">pattern = &quot;aaaa&quot;, str = &quot;dog cat cat dog&quot; should return false.</span><br><span class="line">pattern = &quot;abba&quot;, str = &quot;dog dog dog dog&quot; should return false.</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-2-HashMap"><a href="#1-2-HashMap" class="headerlink" title="1.2 HashMap"></a>1.2 HashMap</h3><p>思路: 该问题中返回false有三种情况:</p>
 <ol>
@@ -143,8 +143,7 @@ Word Pattern - Zaf1ro's Blog
 <li>str中多个String对应pattern中的一个Character</li>
 </ol>
 <p>第一种情况最好解决, 直接判断长度即可. 剩下两种情况需要用HashMap判断上一次插入的Character和String的坐标是否相同</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">wordPattern</span><span class="params">(String pattern, String str)</span> </span>&#123;</span><br><span class="line">    Map map = <span class="keyword">new</span> HashMap&lt;&gt;();  <span class="comment">/* 不声明Map的类型, 这样可用Character和String作为Map的Key */</span></span><br><span class="line">    String[] strlist = str.split(<span class="string">" "</span>);</span><br><span class="line">    <span class="keyword">if</span> (strlist.length != pattern.length()) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">for</span> (Integer i = <span class="number">0</span>; i &lt; pattern.length(); i++)</span><br><span class="line">      <span class="comment">/* 只要上次插入的坐标不同, 则说明满足第二或第三种情况 */</span></span><br><span class="line">      <span class="keyword">if</span> (map.put(pattern.charAt(i), i) != map.put(strlist[i], i))</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">wordPattern</span><span class="params">(String pattern, String str)</span> </span>&#123;</span><br><span class="line">    Map map = <span class="keyword">new</span> HashMap&lt;&gt;();  <span class="comment">/* 不声明Map的类型, 这样可用Character和String作为Map的Key */</span></span><br><span class="line">    String[] strlist = str.split(<span class="string">&quot; &quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (strlist.length != pattern.length()) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">for</span> (Integer i = <span class="number">0</span>; i &lt; pattern.length(); i++)</span><br><span class="line">      <span class="comment">/* 只要上次插入的坐标不同, 则说明满足第二或第三种情况 */</span></span><br><span class="line">      <span class="keyword">if</span> (map.put(pattern.charAt(i), i) != map.put(strlist[i], i))</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 

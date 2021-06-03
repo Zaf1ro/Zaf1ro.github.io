@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -37,18 +37,18 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/3297199434.html">
 
 
-<meta name="description" content="1. DescriptionGiven a string containing only digits, restore it by returning all possible valid IP address combinations.For example: Given &amp;quot;25525511135&amp;quot;,return [&amp;quot;255.255.11.135&amp;quot;, &amp;">
-<meta name="keywords" content="Algorithm">
+<meta name="description" content="1. DescriptionGiven a string containing only digits, restore it by returning all possible valid IP address combinations.For example: Given &quot;25525511135&quot;,return [&quot;255.255.11.135&quot;, &amp;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Restore Ip Addresses">
 <meta property="og:url" content="https://zaf1ro.github.io/p/3297199434.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
-<meta property="og:description" content="1. DescriptionGiven a string containing only digits, restore it by returning all possible valid IP address combinations.For example: Given &amp;quot;25525511135&amp;quot;,return [&amp;quot;255.255.11.135&amp;quot;, &amp;">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T20:08:53.000Z">
+<meta property="og:description" content="1. DescriptionGiven a string containing only digits, restore it by returning all possible valid IP address combinations.For example: Given &quot;25525511135&quot;,return [&quot;255.255.11.135&quot;, &amp;">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-26T21:30:38.000Z">
+<meta property="article:modified_time" content="2019-11-11T20:08:53.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Restore Ip Addresses">
-<meta name="twitter:description" content="1. DescriptionGiven a string containing only digits, restore it by returning all possible valid IP address combinations.For example: Given &amp;quot;25525511135&amp;quot;,return [&amp;quot;255.255.11.135&amp;quot;, &amp;">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Restore Ip Addresses - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Restore Ip Addresses - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -134,7 +134,9 @@ Restore Ip Addresses - Zaf1ro's Blog
 
     <div class="post-content">
       <h2 id="1-Description"><a href="#1-Description" class="headerlink" title="1. Description"></a>1. Description</h2><p>Given a string containing only digits, restore it by returning all possible valid IP address combinations.<br>For example:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Given &quot;25525511135&quot;,</span><br><span class="line">return [&quot;255.255.11.135&quot;, &quot;255.255.111.35&quot;].</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Given &quot;25525511135&quot;,</span><br><span class="line">return [&quot;255.255.11.135&quot;, &quot;255.255.111.35&quot;].</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="2-DFS"><a href="#2-DFS" class="headerlink" title="2. DFS"></a>2. DFS</h2><p>思路: 判断字符串是否为合法IP分为三种情况:</p>
 <ol>
@@ -142,8 +144,7 @@ Restore Ip Addresses - Zaf1ro's Blog
 <li>字符串的首字母不为0 且 字符串长度大于1</li>
 <li>字符串解析为数值后, 数值不大于255</li>
 </ol>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isValid</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (s.length() == <span class="number">0</span> || s.length() &gt; <span class="number">3</span> || (s.charAt(<span class="number">0</span>) == <span class="string">'0'</span> &amp;&amp; s.length() &gt; <span class="number">1</span>) || Integer.parseInt(s) &gt; <span class="number">255</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">helper</span><span class="params">(List&lt;String&gt; res, String s, <span class="keyword">int</span> i, String ip, <span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (count &gt; <span class="number">3</span> || i &gt;= s.length()) <span class="keyword">return</span>;  <span class="comment">/* wrong ip decode */</span></span><br><span class="line">    <span class="keyword">if</span> (count == <span class="number">3</span>) &#123; <span class="comment">/* the last segment of ip address */</span></span><br><span class="line">      String str = s.substring(i);</span><br><span class="line">      <span class="keyword">if</span> (isValid(str)) res.add(ip + <span class="string">"."</span> + str);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String[] nums = <span class="keyword">new</span> String[<span class="number">3</span>];  <span class="comment">/* length of string: 1 - 3 */</span></span><br><span class="line">    nums[<span class="number">0</span>] = s.substring(i, i+<span class="number">1</span>);</span><br><span class="line">    nums[<span class="number">1</span>] = i + <span class="number">1</span> &lt; s.length() ? s.substring(i, i+<span class="number">2</span>) : <span class="string">""</span>;</span><br><span class="line">    nums[<span class="number">2</span>] = i + <span class="number">2</span> &lt; s.length() ? s.substring(i, i+<span class="number">3</span>) : <span class="string">""</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">3</span>; j++) &#123;</span><br><span class="line">      <span class="keyword">if</span> (isValid(nums[j]))  <span class="comment">/* note: the first segment ip address doesn't contain '.' */</span></span><br><span class="line">        helper(res, s, i + j + <span class="number">1</span>, ip.equals(<span class="string">""</span>) ? nums[j] : ip + <span class="string">"."</span> + nums[j], count + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;String&gt; <span class="title">restoreIpAddresses</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; res = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    helper(res, s, <span class="number">0</span>, <span class="string">""</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isValid</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (s.length() == <span class="number">0</span> || s.length() &gt; <span class="number">3</span> || (s.charAt(<span class="number">0</span>) == <span class="string">&#x27;0&#x27;</span> &amp;&amp; s.length() &gt; <span class="number">1</span>) || Integer.parseInt(s) &gt; <span class="number">255</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">helper</span><span class="params">(List&lt;String&gt; res, String s, <span class="keyword">int</span> i, String ip, <span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (count &gt; <span class="number">3</span> || i &gt;= s.length()) <span class="keyword">return</span>;  <span class="comment">/* wrong ip decode */</span></span><br><span class="line">    <span class="keyword">if</span> (count == <span class="number">3</span>) &#123; <span class="comment">/* the last segment of ip address */</span></span><br><span class="line">      String str = s.substring(i);</span><br><span class="line">      <span class="keyword">if</span> (isValid(str)) res.add(ip + <span class="string">&quot;.&quot;</span> + str);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String[] nums = <span class="keyword">new</span> String[<span class="number">3</span>];  <span class="comment">/* length of string: 1 - 3 */</span></span><br><span class="line">    nums[<span class="number">0</span>] = s.substring(i, i+<span class="number">1</span>);</span><br><span class="line">    nums[<span class="number">1</span>] = i + <span class="number">1</span> &lt; s.length() ? s.substring(i, i+<span class="number">2</span>) : <span class="string">&quot;&quot;</span>;</span><br><span class="line">    nums[<span class="number">2</span>] = i + <span class="number">2</span> &lt; s.length() ? s.substring(i, i+<span class="number">3</span>) : <span class="string">&quot;&quot;</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">3</span>; j++) &#123;</span><br><span class="line">      <span class="keyword">if</span> (isValid(nums[j]))  <span class="comment">/* note: the first segment ip address doesn&#x27;t contain &#x27;.&#x27; */</span></span><br><span class="line">        helper(res, s, i + j + <span class="number">1</span>, ip.equals(<span class="string">&quot;&quot;</span>) ? nums[j] : ip + <span class="string">&quot;.&quot;</span> + nums[j], count + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;String&gt; <span class="title">restoreIpAddresses</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; res = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    helper(res, s, <span class="number">0</span>, <span class="string">&quot;&quot;</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 

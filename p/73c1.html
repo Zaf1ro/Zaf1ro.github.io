@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,22 +38,22 @@
 
 
 <meta name="description" content="1. Introduction1.1 Conceptual Roadmap编译器作为一种计算机程序, 负责将一种语言转换为另一种语言. 为了实现这个目的, 编译器必须理解源语言和目标语言的形式, 内容, 语法和语义, 并需要一种策略将源语言映射到目标语言. 典型的编译器结构为: front-end负责处理源语言, back-end负责处理目标语言, front-end和back-end之间用一种形">
-<meta name="keywords" content="Compiler">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Overview of Compilation">
 <meta property="og:url" content="https://zaf1ro.github.io/p/73c1.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. Introduction1.1 Conceptual Roadmap编译器作为一种计算机程序, 负责将一种语言转换为另一种语言. 为了实现这个目的, 编译器必须理解源语言和目标语言的形式, 内容, 语法和语义, 并需要一种策略将源语言映射到目标语言. 典型的编译器结构为: front-end负责处理源语言, back-end负责处理目标语言, front-end和back-end之间用一种形">
-<meta property="og:locale" content="zh">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-1.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-2.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-3.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-4.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-5.png">
-<meta property="og:updated_time" content="2020-01-29T01:33:40.000Z">
+<meta property="article:published_time" content="2020-01-27T13:24:06.000Z">
+<meta property="article:modified_time" content="2020-01-29T01:33:40.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Compiler">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Overview of Compilation">
-<meta name="twitter:description" content="1. Introduction1.1 Conceptual Roadmap编译器作为一种计算机程序, 负责将一种语言转换为另一种语言. 为了实现这个目的, 编译器必须理解源语言和目标语言的形式, 内容, 语法和语义, 并需要一种策略将源语言映射到目标语言. 典型的编译器结构为: front-end负责处理源语言, back-end负责处理目标语言, front-end和back-end之间用一种形">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/Compiler/1-1.png">
 
 
@@ -67,7 +67,7 @@
     <title>
 Overview of Compilation - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -108,7 +108,7 @@ Overview of Compilation - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -182,17 +182,13 @@ Overview of Compilation - Zaf1ro's Blog
 <h4 id="3-1-2-Intermediate-Representations"><a href="#3-1-2-Intermediate-Representations" class="headerlink" title="3.1.2 Intermediate Representations"></a>3.1.2 Intermediate Representations</h4><p>Front-end最后的任务是生成代码对应的IR. 根据输入语言和输出语言的不同, 使用的IR类型也会有所不同. 一些IR将代码表示为一个图, 另一些IR表示为有序的汇编代码, 以下是IR可能的表达方式:<br>$$<br>t_0 \leftarrow a \times 2 \\<br>t_1 \leftarrow t_0 \times b \\<br>t_2 \leftarrow t_1 \times c \\<br>t_3 \leftarrow t_2 \times d \\<br>a \leftarrow t_3<br>$$</p>
 <h3 id="3-2-The-Optimizer"><a href="#3-2-The-Optimizer" class="headerlink" title="3.2 The Optimizer"></a>3.2 The Optimizer</h3><p>当front-end为源代码产生IR时, 会遵循源代码中的执行顺序, 因此产生的IR虽然在代码逻辑上没有问题, 但在性能上可能存在缺陷. Optimizer负责减少代码运行时间, 减小编译后的代码长度, 并降低CPU执行代码时的耗能. 假设原始代码如下:</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">b ← ···</span><br><span class="line">c ← ···</span><br><span class="line">a ← <span class="number">1</span></span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span> to n</span><br><span class="line">  read d</span><br><span class="line">  a ← a × <span class="number">2</span> × b × c × d</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
-
 <p>由于b, c的值在上述循环中不变, 只有a和d在循环内部改变, 所以可以重写为以下代码:</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">b ← ···</span><br><span class="line">c ← ···</span><br><span class="line">a ← <span class="number">1</span></span><br><span class="line">t ← <span class="number">2</span> × b × c</span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span> to n</span><br><span class="line">  read d</span><br><span class="line">  a ← a × d × t</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
-
 <p>优化后的版本, 乘法操作的次数从<strong>4n</strong>降低为<strong>2n+2</strong>. Compiler中的优化分为两个部分:</p>
 <ol>
-<li>Analysis: 判断代码何处可进行优化, 一般有以下几种分析技术:<ol>
+<li>Analysis: 判断代码何处可进行优化, 一般有以下几种分析技术:</li>
 <li>数据流分析(Dataflow analysis): 编译时推断运行时值的流动</li>
 <li>相关性分析(Dependence analysis): 利用number-theoretic(数论)推断下标表达式的合理性</li>
-</ol>
-</li>
 <li>Transformation: 分析代码后还需要一种重写代码的方式, 从而让代码可高效运行. 例如: 找到循环中不变的计算并将其移至不那么频繁执行的位置. 代码转换的方式十分丰富, 每种代码转换的运行范围和所需技术都不同. </li>
 </ol>
 <h3 id="3-3-The-Back-End"><a href="#3-3-The-Back-End" class="headerlink" title="3.3 The Back End"></a>3.3 The Back End</h3><p>Back-end负责将IR转换为目标语言的代码. Back-end会决定操作执行的顺序, 并选择哪些数值存放在register(寄存器), 哪些数值存在内存中. 本章使用ILOC指令集, 可以看做RISC(reduced instruction set computer, 精简指令集)的简化版. </p>

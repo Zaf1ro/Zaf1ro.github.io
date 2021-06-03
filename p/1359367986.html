@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. 简介1.1 历史UNIX对错误的系统调用采用一种简单的指示方式, 用汇编语言实现, 使用条件编码的进位标志来测试.   如果进位标志被清零, 则说明系统调用成功 如果进位标志不为零, 则说明系统调用错误  一个机器寄存器记录了一个很小的整数, 用来说明错误的性质 1.2 C中的错误处理C采用一个具有外部连接的数据对象, 任何失败的系统调用都从内核中存储一个叫做errno的整型变量作为错误编码">
-<meta name="keywords" content="GNU C">
 <meta property="og:type" content="article">
 <meta property="og:title" content="errno.h">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1359367986.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. 简介1.1 历史UNIX对错误的系统调用采用一种简单的指示方式, 用汇编语言实现, 使用条件编码的进位标志来测试.   如果进位标志被清零, 则说明系统调用成功 如果进位标志不为零, 则说明系统调用错误  一个机器寄存器记录了一个很小的整数, 用来说明错误的性质 1.2 C中的错误处理C采用一个具有外部连接的数据对象, 任何失败的系统调用都从内核中存储一个叫做errno的整型变量作为错误编码">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2020-07-22T00:32:46.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-07-05T20:20:20.000Z">
+<meta property="article:modified_time" content="2020-07-22T00:32:46.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="GNU C">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="errno.h">
-<meta name="twitter:description" content="1. 简介1.1 历史UNIX对错误的系统调用采用一种简单的指示方式, 用汇编语言实现, 使用条件编码的进位标志来测试.   如果进位标志被清零, 则说明系统调用成功 如果进位标志不为零, 则说明系统调用错误  一个机器寄存器记录了一个很小的整数, 用来说明错误的性质 1.2 C中的错误处理C采用一个具有外部连接的数据对象, 任何失败的系统调用都从内核中存储一个叫做errno的整型变量作为错误编码">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 errno.h - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -77,7 +77,7 @@ errno.h - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-简介"><span class="toc-text">1. 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-历史"><span class="toc-text">1.1 历史</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-C中的错误处理"><span class="toc-text">1.2 C中的错误处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-数学错误"><span class="toc-text">1.3 数学错误</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-lt-errno-h-gt-的使用"><span class="toc-text">2. &lt;errno.h&gt;的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-lt-errno-h-gt-的实现"><span class="toc-text">3. &lt;errno.h&gt;的实现</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="toc-text">1. 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%8E%86%E5%8F%B2"><span class="toc-text">1.1 历史</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-C%E4%B8%AD%E7%9A%84%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86"><span class="toc-text">1.2 C中的错误处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%95%B0%E5%AD%A6%E9%94%99%E8%AF%AF"><span class="toc-text">1.3 数学错误</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-lt-errno-h-gt-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">2. &lt;errno.h&gt;的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-lt-errno-h-gt-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">3. &lt;errno.h&gt;的实现</span></a></li></ol>
   </div>
 
     </div>
@@ -102,7 +102,7 @@ errno.h - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -149,17 +149,16 @@ errno.h - Zaf1ro's Blog
 </ul>
 <p>但”有效位丢失”是一个不确定是否要报告的错误. 不同的程序员对于这个问题有不同的看法, 有些情况下有效位丢失并不是一个严重问题.</p>
 <h2 id="2-lt-errno-h-gt-的使用"><a href="#2-lt-errno-h-gt-的使用" class="headerlink" title="2. &lt;errno.h&gt;的使用"></a>2. &lt;errno.h&gt;的使用</h2><p>不同的系统对于错误编码的值设置不同, 如果需要为某个系统写代码, 那不得不去学习他的错误代码文档. 如果编写可移植代码, 则要避免任何附加的错误代码假设, 如下:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> a = <span class="built_in">sqrt</span>(<span class="number">-1</span>);</span><br><span class="line">  <span class="keyword">if</span> (errno)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"invalid!errno=%d"</span>, errno);  <span class="comment">// invalid!errno=33</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> a = <span class="built_in">sqrt</span>(<span class="number">-1</span>);</span><br><span class="line">  <span class="keyword">if</span> (errno)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;invalid!errno=%d&quot;</span>, errno);  <span class="comment">// invalid!errno=33</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="3-lt-errno-h-gt-的实现"><a href="#3-lt-errno-h-gt-的实现" class="headerlink" title="3. &lt;errno.h&gt;的实现"></a>3. &lt;errno.h&gt;的实现</h2><p>&lt;errno.h&gt;的主要目的在于建立errno这个宏, 当调用其他库函数时, 如果出现错误则对这个宏进行修改, 覆盖为相应的错误编码. errno在程序启动时为0, 但不能被任何库函数设置为0.</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* errno.h standard header */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _ERRNO</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _ERRNO</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _YVALS</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;yvals.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">// _YVALS</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* error codes */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EDOM   _EDOM</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> ERANGE _ERANGE</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EFPOS  _EFPOS</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* add your codes */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _NERR _ERRMAX   <span class="comment">/* 最后一个code+1 */</span></span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> errno;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">// _ERRNO</span></span></span><br></pre></td></tr></table></figure>
-
 <p>这里errno面临一个问题: 有时errno对于错误的说明过于模糊, 有时又过于清楚. 由于任何库函数都能对errno进行不同的修改, 所以唯一能依赖的只有C标准中明确规定的错误行为, 例如: 调用sqrt(-1)就可以知道errno包含了EDOM值.<br>由于不同系统的错误编码不同, 所以部分库函数需要知道错误编码的有效范围, 或者一些特定的错误编码, 这时就需要&lt;yvals.h&gt;来规范</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MY_YVALS_H <span class="comment">/* 宏保护 */</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* errno属性 */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _EDOM   33 <span class="comment">/* 用来确定宏EDOM的值 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _ERANGE 34 <span class="comment">/* 用来确定宏ERANGE的值 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _EFPOS  35 <span class="comment">/* 用来确定宏EFPOS的值 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _ERRMAX 36 <span class="comment">/* 用来确定错误编码的范围 **/</span></span></span><br></pre></td></tr></table></figure>
-
 <p>errno.c确保errno初始化为0, 并#undef预处理指令来保证&lt;errno.h&gt;的安全性</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* errno storage */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> errno</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> errno = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 

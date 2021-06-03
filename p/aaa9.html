@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,13 +38,12 @@
 
 
 <meta name="description" content="1. Definition of DDDDDD(Domain-driven design)作为一种概念, 主张将软件代码中的结构和语言(class name, class method, class variable)与business domain(业务领域)相结合. 举个例子, 若一个应用用于处理贷款, 那么它可能包含名为LoadApplication和Customer的class, 还有名为">
-<meta name="keywords" content="Microservices">
 <meta property="og:type" content="article">
 <meta property="og:title" content="DDD Overview">
 <meta property="og:url" content="https://zaf1ro.github.io/p/aaa9.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. Definition of DDDDDD(Domain-driven design)作为一种概念, 主张将软件代码中的结构和语言(class name, class method, class variable)与business domain(业务领域)相结合. 举个例子, 若一个应用用于处理贷款, 那么它可能包含名为LoadApplication和Customer的class, 还有名为">
-<meta property="og:locale" content="zh">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/microservice/ddd-overview-1.jpg">
 <meta property="og:image" content="https://zaf1ro.github.io/images/microservice/ddd-overview-2.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/microservice/ddd-overview-3.png">
@@ -53,10 +52,11 @@
 <meta property="og:image" content="https://zaf1ro.github.io/images/microservice/ddd-overview-5.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/microservice/ddd-overview-6.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/microservice/ddd-overview-10.png">
-<meta property="og:updated_time" content="2021-02-25T15:16:36.000Z">
+<meta property="article:published_time" content="2021-01-02T14:10:18.000Z">
+<meta property="article:modified_time" content="2021-02-25T15:16:36.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Microservices">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="DDD Overview">
-<meta name="twitter:description" content="1. Definition of DDDDDD(Domain-driven design)作为一种概念, 主张将软件代码中的结构和语言(class name, class method, class variable)与business domain(业务领域)相结合. 举个例子, 若一个应用用于处理贷款, 那么它可能包含名为LoadApplication和Customer的class, 还有名为">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/microservice/ddd-overview-1.jpg">
 
 
@@ -70,7 +70,7 @@
     <title>
 DDD Overview - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -111,7 +111,7 @@ DDD Overview - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -208,10 +208,9 @@ DDD Overview - Zaf1ro's Blog
 <li>对象几乎没有什么行为, 只有一些简单的getter和setter</li>
 </ul>
 <p>其中一些ORM工具如Hibernate. Entity Framework更是助长了anemic pattern的扩散. 当使用anemic model时, 看似是面向对象编程(使用到class, 且class中有紧密相关的数据与操作函数), 但实际上只是对数据进行简单的封装, 本质上仍然是<strong>面向过程</strong>. 这种模式设计下的class对象功能贫乏, 就像贫血一样, 因此称为anemic pattern. 当上层调用这种pattern的对象时, 很容易写出transaction script(事务脚本), 导致开发效率低下, 维护成本巨大, 如下:</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">customer = <span class="keyword">new</span> Customer(<span class="string">'Bill'</span>);</span><br><span class="line">order = Order.create(customer, <span class="string">'Coffee'</span>);</span><br><span class="line">staff = <span class="keyword">new</span> Staff(<span class="number">9527</span>);</span><br><span class="line">cashier = <span class="keyword">new</span> Cashier();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结账</span></span><br><span class="line">order.setStaff(staff);</span><br><span class="line">staff.setCashier(cashier);</span><br><span class="line">staff.setOrders(order);</span><br><span class="line">cashier.addOrder(order);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 泡咖啡</span></span><br><span class="line">cup = <span class="keyword">new</span> Cup();</span><br><span class="line">staff.setCup();</span><br><span class="line">cup.setFilterCone(<span class="keyword">new</span> FilterCone());</span><br><span class="line">cup.setCoffeeGround(<span class="keyword">new</span> Coffee());</span><br><span class="line">staff.brew(cup);</span><br><span class="line">staff.wait();</span><br><span class="line">staff.setFilterCone(<span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 送餐</span></span><br><span class="line">staff.setCoffeeTo(customer);</span><br><span class="line">customer.setCoffee(order);</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">customer = <span class="keyword">new</span> Customer(<span class="string">&#x27;Bill&#x27;</span>);</span><br><span class="line">order = Order.create(customer, <span class="string">&#x27;Coffee&#x27;</span>);</span><br><span class="line">staff = <span class="keyword">new</span> Staff(<span class="number">9527</span>);</span><br><span class="line">cashier = <span class="keyword">new</span> Cashier();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结账</span></span><br><span class="line">order.setStaff(staff);</span><br><span class="line">staff.setCashier(cashier);</span><br><span class="line">staff.setOrders(order);</span><br><span class="line">cashier.addOrder(order);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 泡咖啡</span></span><br><span class="line">cup = <span class="keyword">new</span> Cup();</span><br><span class="line">staff.setCup();</span><br><span class="line">cup.setFilterCone(<span class="keyword">new</span> FilterCone());</span><br><span class="line">cup.setCoffeeGround(<span class="keyword">new</span> Coffee());</span><br><span class="line">staff.brew(cup);</span><br><span class="line">staff.wait();</span><br><span class="line">staff.setFilterCone(<span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 送餐</span></span><br><span class="line">staff.setCoffeeTo(customer);</span><br><span class="line">customer.setCoffee(order);</span><br></pre></td></tr></table></figure>
 <p>通过DDD设计后, 与domain expert沟通并形成Ubiquitous Language后, 可让代码修改如下:</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">barista = <span class="keyword">new</span> Barista(<span class="number">9527</span>);</span><br><span class="line">customer = <span class="keyword">new</span> Customer(<span class="string">'Bill'</span>);</span><br><span class="line">order = customer.placeOrder(order);</span><br><span class="line"></span><br><span class="line">barista.processPayment(order);</span><br><span class="line">barista.make(order);</span><br><span class="line">barista.serveOrderTo(order, customer);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">barista = <span class="keyword">new</span> Barista(<span class="number">9527</span>);</span><br><span class="line">customer = <span class="keyword">new</span> Customer(<span class="string">&#x27;Bill&#x27;</span>);</span><br><span class="line">order = customer.placeOrder(order);</span><br><span class="line"></span><br><span class="line">barista.processPayment(order);</span><br><span class="line">barista.make(order);</span><br><span class="line">barista.serveOrderTo(order, customer);</span><br></pre></td></tr></table></figure>
 
 <h2 id="Pro-of-DDD"><a href="#Pro-of-DDD" class="headerlink" title="Pro of DDD"></a>Pro of DDD</h2><p>以下是DDD的优点:</p>
 <ul>

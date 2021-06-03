@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,20 +38,20 @@
 
 
 <meta name="description" content="1. 锁机制的目的SQLite为了顺序化的处理transaction而使用了锁机制, 这样能有效地管理事务请求数据库的顺序. SQLite的锁机制有一条原则: SQLite的锁是database级别的. 上锁和解锁都只针对database本身, 不针对某个row或page. 2. 五种锁状态 NOLOCK该状态的transaction不拥有database的锁. 这种状态下该transaction">
-<meta name="keywords" content="SQLite">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Lock Management">
 <meta property="og:url" content="https://zaf1ro.github.io/p/4968e509.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. 锁机制的目的SQLite为了顺序化的处理transaction而使用了锁机制, 这样能有效地管理事务请求数据库的顺序. SQLite的锁机制有一条原则: SQLite的锁是database级别的. 上锁和解锁都只针对database本身, 不针对某个row或page. 2. 五种锁状态 NOLOCK该状态的transaction不拥有database的锁. 这种状态下该transaction">
-<meta property="og:locale" content="zh">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/lock-management-1.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/lock-management-2.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/lock-management-3.png">
-<meta property="og:updated_time" content="2019-10-08T19:14:29.000Z">
+<meta property="article:published_time" content="2017-08-02T20:27:25.000Z">
+<meta property="article:modified_time" content="2019-10-08T19:14:29.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="SQLite">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Lock Management">
-<meta name="twitter:description" content="1. 锁机制的目的SQLite为了顺序化的处理transaction而使用了锁机制, 这样能有效地管理事务请求数据库的顺序. SQLite的锁机制有一条原则: SQLite的锁是database级别的. 上锁和解锁都只针对database本身, 不针对某个row或page. 2. 五种锁状态 NOLOCK该状态的transaction不拥有database的锁. 这种状态下该transaction">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/SQLite/lock-management-1.png">
 
 
@@ -65,7 +65,7 @@
     <title>
 Lock Management - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -81,7 +81,7 @@ Lock Management - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-锁机制的目的"><span class="toc-text">1. 锁机制的目的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-五种锁状态"><span class="toc-text">2. 五种锁状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-锁机制流程"><span class="toc-text">3. 锁机制流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-状态转换"><span class="toc-text">3.1 状态转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-引发的问题"><span class="toc-text">3.2 引发的问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Linux和Windows的锁系统"><span class="toc-text">4. Linux和Windows的锁系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Linux锁系统"><span class="toc-text">4.1 Linux锁系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Windows锁系统"><span class="toc-text">4.2 Windows锁系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-SQLite锁状态与原生系统锁系统"><span class="toc-text">4.3 SQLite锁状态与原生系统锁系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-锁状态具体内容"><span class="toc-text">5. 锁状态具体内容</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-锁的偏移"><span class="toc-text">5.1 锁的偏移</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-锁的定义"><span class="toc-text">5.2 锁的定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-锁页-lock-type-lock"><span class="toc-text">5.3 锁页(lock-type lock)</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%94%81%E6%9C%BA%E5%88%B6%E7%9A%84%E7%9B%AE%E7%9A%84"><span class="toc-text">1. 锁机制的目的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BA%94%E7%A7%8D%E9%94%81%E7%8A%B6%E6%80%81"><span class="toc-text">2. 五种锁状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%94%81%E6%9C%BA%E5%88%B6%E6%B5%81%E7%A8%8B"><span class="toc-text">3. 锁机制流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2"><span class="toc-text">3.1 状态转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%BC%95%E5%8F%91%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">3.2 引发的问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Linux%E5%92%8CWindows%E7%9A%84%E9%94%81%E7%B3%BB%E7%BB%9F"><span class="toc-text">4. Linux和Windows的锁系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Linux%E9%94%81%E7%B3%BB%E7%BB%9F"><span class="toc-text">4.1 Linux锁系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Windows%E9%94%81%E7%B3%BB%E7%BB%9F"><span class="toc-text">4.2 Windows锁系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-SQLite%E9%94%81%E7%8A%B6%E6%80%81%E4%B8%8E%E5%8E%9F%E7%94%9F%E7%B3%BB%E7%BB%9F%E9%94%81%E7%B3%BB%E7%BB%9F"><span class="toc-text">4.3 SQLite锁状态与原生系统锁系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E9%94%81%E7%8A%B6%E6%80%81%E5%85%B7%E4%BD%93%E5%86%85%E5%AE%B9"><span class="toc-text">5. 锁状态具体内容</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E9%94%81%E7%9A%84%E5%81%8F%E7%A7%BB"><span class="toc-text">5.1 锁的偏移</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E9%94%81%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-text">5.2 锁的定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E9%94%81%E9%A1%B5-lock-type-lock"><span class="toc-text">5.3 锁页(lock-type lock)</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -106,7 +106,7 @@ Lock Management - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -211,7 +211,6 @@ Lock Management - Zaf1ro's Blog
 <li>EXCLUSIVE LOCK: 由于EXCLUSIVE LOCK不允许其他进程拥有SHARED LOCK, 所以EXCLUSIVE LOCK和SHARED LOCK使用相同的文件区域, 并添加write-lock.</li>
 </ul>
 <h3 id="5-2-锁的定义"><a href="#5-2-锁的定义" class="headerlink" title="5.2 锁的定义"></a>5.2 锁的定义</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NO_LOCK         0</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SHARED_LOCK     1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> RESERVED_LOCK   2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PENDING_LOCK    3</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXCLUSIVE_LOCK  4</span></span><br></pre></td></tr></table></figure>
-
 <p>随着锁级别的升高, 其类型值也在变大</p>
 <h3 id="5-3-锁页-lock-type-lock"><a href="#5-3-锁页-lock-type-lock" class="headerlink" title="5.3 锁页(lock-type lock)"></a>5.3 锁页(lock-type lock)</h3><p>SQLite把这512字节(PENDING占1byte, REVERSED占1byte, SHARED占510bytes)作为锁页, 该页是原生系统的加锁区域, 用于实现文件的并发访问.<br>锁页位于1073741824字节和1073742335字节之间, 即1G的位置, 小于1G的数据库文件则没有此页. 由于SQLite并不对锁页进行读写, 而原生系统可以对不存在的文件区域进行加锁, 所以SQLite把锁页的位置定在了0X40000000, 这样可以省去512字节空间. Windows中被上锁的空间将被操作系统保留, 由于这个原因, SQLite不能把数据存在被上锁的空间中.<br>以下是如何利用Linux系统锁来实现SQLite锁状态:<br><img src="/images/SQLite/lock-management-3.png" alt="Relationship between SQLite locks and Linux locks"></p>
 

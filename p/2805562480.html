@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. DescriptionGiven a linked list and a value x, partition it such that all nodes less than x come before nodes greater than or equal to x.You should preserve the original relative order of the nodes">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Partition List">
 <meta property="og:url" content="https://zaf1ro.github.io/p/2805562480.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. DescriptionGiven a linked list and a value x, partition it such that all nodes less than x come before nodes greater than or equal to x.You should preserve the original relative order of the nodes">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T18:47:20.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-03-01T17:40:37.000Z">
+<meta property="article:modified_time" content="2019-11-11T18:47:20.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Partition List">
-<meta name="twitter:description" content="1. DescriptionGiven a linked list and a value x, partition it such that all nodes less than x come before nodes greater than or equal to x.You should preserve the original relative order of the nodes">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Partition List - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Partition List - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -134,14 +134,14 @@ Partition List - Zaf1ro's Blog
 
     <div class="post-content">
       <h2 id="1-Description"><a href="#1-Description" class="headerlink" title="1. Description"></a>1. Description</h2><p>Given a linked list and a value x, partition it such that all nodes less than x come before nodes greater than or equal to x.<br>You should preserve the original relative order of the nodes in each of the two partitions.<br>For example,</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Given 1-&gt;4-&gt;3-&gt;2-&gt;5-&gt;2 and x = 3,</span><br><span class="line">return 1-&gt;2-&gt;2-&gt;4-&gt;3-&gt;5.</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Given 1-&gt;4-&gt;3-&gt;2-&gt;5-&gt;2 and x = 3,</span><br><span class="line">return 1-&gt;2-&gt;2-&gt;4-&gt;3-&gt;5.</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="2-Two-Pointers-Solution"><a href="#2-Two-Pointers-Solution" class="headerlink" title="2. Two-Pointers Solution"></a>2. Two-Pointers Solution</h2><p>思路: 利用两个节点标记两个链表:</p>
 <ol>
 <li>h1用于记录节点, 其节点值小于x</li>
-<li>h2用于记录节点, 其节点值大于或等于x<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * public class ListNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   ListNode next;</span></span><br><span class="line"><span class="comment"> *   ListNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> ListNode <span class="title">partition</span><span class="params">(ListNode head, <span class="keyword">int</span> x)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (head == <span class="keyword">null</span> || head.next == <span class="keyword">null</span>) <span class="keyword">return</span> head;</span><br><span class="line">    ListNode h1 = <span class="keyword">new</span> ListNode(<span class="number">0</span>), h2 = <span class="keyword">new</span> ListNode(<span class="number">0</span>);</span><br><span class="line">    ListNode l1 = h1, l2 = h2;</span><br><span class="line">    <span class="keyword">while</span> (head != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (head.val &lt; x ) &#123; <span class="comment">/* add the node to list h1 */</span></span><br><span class="line">        l1.next = head;</span><br><span class="line">        l1 = head;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123; <span class="comment">/* add the node to list h2 */</span></span><br><span class="line">        l2.next = head;</span><br><span class="line">        l2 = head;</span><br><span class="line">      &#125;</span><br><span class="line">      head = head.next;</span><br><span class="line">    &#125;</span><br><span class="line">    l2.next = <span class="keyword">null</span>;</span><br><span class="line">    l1.next = h2.next; <span class="comment">/* connect h1 and h2 */</span></span><br><span class="line">    <span class="keyword">return</span> h1.next;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-</li>
+<li>h2用于记录节点, 其节点值大于或等于x<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * public class ListNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   ListNode next;</span></span><br><span class="line"><span class="comment"> *   ListNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> ListNode <span class="title">partition</span><span class="params">(ListNode head, <span class="keyword">int</span> x)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (head == <span class="keyword">null</span> || head.next == <span class="keyword">null</span>) <span class="keyword">return</span> head;</span><br><span class="line">    ListNode h1 = <span class="keyword">new</span> ListNode(<span class="number">0</span>), h2 = <span class="keyword">new</span> ListNode(<span class="number">0</span>);</span><br><span class="line">    ListNode l1 = h1, l2 = h2;</span><br><span class="line">    <span class="keyword">while</span> (head != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (head.val &lt; x ) &#123; <span class="comment">/* add the node to list h1 */</span></span><br><span class="line">        l1.next = head;</span><br><span class="line">        l1 = head;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123; <span class="comment">/* add the node to list h2 */</span></span><br><span class="line">        l2.next = head;</span><br><span class="line">        l2 = head;</span><br><span class="line">      &#125;</span><br><span class="line">      head = head.next;</span><br><span class="line">    &#125;</span><br><span class="line">    l2.next = <span class="keyword">null</span>;</span><br><span class="line">    l1.next = h2.next; <span class="comment">/* connect h1 and h2 */</span></span><br><span class="line">    <span class="keyword">return</span> h1.next;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ol>
 
     </div>

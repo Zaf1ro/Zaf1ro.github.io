@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,13 +38,12 @@
 
 
 <meta name="description" content="1. IntroductionScanner作为front-end的第一阶段, 也称为lexical analyzer, 负责读取字符流并获取单词, 若单词合法, 则为其分配词类(part of speech), 否则报错. 以下是scanner用到的一些模型:  recogizer: 用于识别字符流中的单词 regular expression: 一种用于定义syntax(语法)的符号形式 一系">
-<meta name="keywords" content="Compiler">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Scanner (1)">
 <meta property="og:url" content="https://zaf1ro.github.io/p/dc20.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. IntroductionScanner作为front-end的第一阶段, 也称为lexical analyzer, 负责读取字符流并获取单词, 若单词合法, 则为其分配词类(part of speech), 否则报错. 以下是scanner用到的一些模型:  recogizer: 用于识别字符流中的单词 regular expression: 一种用于定义syntax(语法)的符号形式 一系">
-<meta property="og:locale" content="zh">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-1.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-2.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-3.png">
@@ -72,10 +71,11 @@
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-25.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-26.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-27.png">
-<meta property="og:updated_time" content="2020-02-10T20:57:01.000Z">
+<meta property="article:published_time" content="2020-01-29T16:30:03.000Z">
+<meta property="article:modified_time" content="2020-02-10T20:57:01.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Compiler">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Scanner (1)">
-<meta name="twitter:description" content="1. IntroductionScanner作为front-end的第一阶段, 也称为lexical analyzer, 负责读取字符流并获取单词, 若单词合法, 则为其分配词类(part of speech), 否则报错. 以下是scanner用到的一些模型:  recogizer: 用于识别字符流中的单词 regular expression: 一种用于定义syntax(语法)的符号形式 一系">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/Compiler/2-1.png">
 
 
@@ -89,7 +89,7 @@
     <title>
 Scanner (1) - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -105,7 +105,7 @@ Scanner (1) - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Recognize-Words"><span class="toc-text">2. Recognize Words</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-A-Formalism-for-Recognizer"><span class="toc-text">2.1 A Formalism for Recognizer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Recognize-More-Complex-Words"><span class="toc-text">2.2 Recognize More Complex Words</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Regular-Expression"><span class="toc-text">3. Regular Expression</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Formalize-the-Notation"><span class="toc-text">3.1 Formalize the Notation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Examples"><span class="toc-text">3.2 Examples</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Closure-Properties-of-REs"><span class="toc-text">3.3 Closure Properties of REs</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-From-RE-to-Scanner"><span class="toc-text">4. From RE to Scanner</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Non-deterministic-Finite-Auotmata"><span class="toc-text">4.1 Non-deterministic Finite Auotmata</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-RE-to-NFA-Thompson’s-Construction"><span class="toc-text">4.2 RE to NFA: Thompson’s Construction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-NFA-to-DFA-The-Subset-Construction"><span class="toc-text">4.3 NFA to DFA: The Subset Construction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-DFA-to-Minimal-DFA-Hopcroft’s-Algorithm"><span class="toc-text">4.4 DFA to Minimal DFA: Hopcroft’s Algorithm</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Use-a-DFA-as-a-Recognizer"><span class="toc-text">4.5 Use a DFA as a Recognizer</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Recognize-Words"><span class="toc-text">2. Recognize Words</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-A-Formalism-for-Recognizer"><span class="toc-text">2.1 A Formalism for Recognizer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Recognize-More-Complex-Words"><span class="toc-text">2.2 Recognize More Complex Words</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Regular-Expression"><span class="toc-text">3. Regular Expression</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Formalize-the-Notation"><span class="toc-text">3.1 Formalize the Notation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Examples"><span class="toc-text">3.2 Examples</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Closure-Properties-of-REs"><span class="toc-text">3.3 Closure Properties of REs</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-From-RE-to-Scanner"><span class="toc-text">4. From RE to Scanner</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Non-deterministic-Finite-Auotmata"><span class="toc-text">4.1 Non-deterministic Finite Auotmata</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-RE-to-NFA-Thompson%E2%80%99s-Construction"><span class="toc-text">4.2 RE to NFA: Thompson’s Construction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-NFA-to-DFA-The-Subset-Construction"><span class="toc-text">4.3 NFA to DFA: The Subset Construction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-DFA-to-Minimal-DFA-Hopcroft%E2%80%99s-Algorithm"><span class="toc-text">4.4 DFA to Minimal DFA: Hopcroft’s Algorithm</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Use-a-DFA-as-a-Recognizer"><span class="toc-text">4.5 Use a DFA as a Recognizer</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -130,7 +130,7 @@ Scanner (1) - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -170,8 +170,7 @@ Scanner (1) - Zaf1ro's Blog
 </ol>
 <p>为实现为每个单词分配词类, scanner会使用一种描述programming language的词汇结构, 称为microsyntax(微语法). Microsyntax负责将字符拼成单词, 或将单词拆分为字符. 大多数编程语言将blank(空格)或punctuation(标点)作为单词分隔符, 由一个或多个alphanumeric character(字母字符, 包括a-z, A-Z, 0-9)组成的单词称为identifier(标识符), 但规定首字符必须不能为数字.<br>大多数编程语言还定义了另一种单词, 称为keyword(关键字)或reserved word(保留字). Keyword具有特殊意义, 例如C和Java中的<strong>while</strong>和<strong>static</strong>, 并拥有自己的词类. 所以当程序中包含<strong>while</strong>单词时, 即便while符合identifier的定义, scanner只将其识别为keyword.</p>
 <h2 id="2-Recognize-Words"><a href="#2-Recognize-Words" class="headerlink" title="2. Recognize Words"></a>2. Recognize Words</h2><p>识别单词最简单的方法就是逐个字符查看. 假设需要检测keyword <strong>new</strong>, 现有NextChar()函数可逐个输出代码中的字符, 以下为实现代码:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">c ← NextChar();</span><br><span class="line">if (c = &apos;n&apos;)</span><br><span class="line">  c ← NextChar();</span><br><span class="line">  if (c = &apos;e&apos;)</span><br><span class="line">    c ← NextChar();</span><br><span class="line">      if (c = &apos;w&apos;)</span><br><span class="line">        report success;</span><br><span class="line">      else </span><br><span class="line">        try something else;</span><br><span class="line">  else </span><br><span class="line">    try something else;</span><br><span class="line">else </span><br><span class="line">  try something else;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">c ← NextChar();</span><br><span class="line">if (c = &#x27;n&#x27;)</span><br><span class="line">  c ← NextChar();</span><br><span class="line">  if (c = &#x27;e&#x27;)</span><br><span class="line">    c ← NextChar();</span><br><span class="line">      if (c = &#x27;w&#x27;)</span><br><span class="line">        report success;</span><br><span class="line">      else </span><br><span class="line">        try something else;</span><br><span class="line">  else </span><br><span class="line">    try something else;</span><br><span class="line">else </span><br><span class="line">  try something else;</span><br></pre></td></tr></table></figure>
 <p>上述代码可总结为以下transition diagram(转换图):<br><img src="/images/Compiler/2-1.png" alt="Transition Diagram of Recognizing &quot;new&quot;"></p>
 <p>上图中, start state(初始状态)记为$s_0$, accepting state(接收状态)记为$s_3$, 用双层圆圈表示. 只有输入的单词为<strong>new</strong>时才会抵达$s_3$. 可用相同方式构建一个识别keyword <strong>while</strong>的recognizer, 其transition diagram如下:<br><img src="/images/Compiler/2-2.png" alt="Transition Diagram of Recognizing &quot;while&quot;"></p>
 <p>为识别多个单词, 可从同一state发出多个边. 下图的transition diagram表示可识别单词<strong>new</strong>和<strong>not</strong>的recognizer:<br><img src="/images/Compiler/2-3.png" alt="Transition Diagram of Recognizing &quot;new&quot; and &quot;not&quot;"></p>
@@ -275,9 +274,9 @@ Scanner (1) - Zaf1ro's Blog
 <ul>
 <li>若只识别单个单词, 如<strong>new</strong>, 则RE为<strong>new</strong></li>
 <li>若需识别两个单词, 如<strong>new</strong>和<strong>while</strong>, 则RE为<strong>new|while</strong></li>
-<li>若识别的单词有重复前缀, 如<strong>new</strong>和<strong>not</strong>, 则RE为<strong>n(ew|ot)</strong>, <strong>|</strong>表示<strong>或</strong>. 其FA的transition diagram如下:<br><img src="/images/Compiler/2-7.png" alt="Transition Diagram of Recognizing &quot;new&quot; and &quot;not&quot;"></li>
+<li>若识别的单词有重复前缀, 如<strong>new</strong>和<strong>not</strong>, 则RE为<strong>n(ew|ot)</strong>, <strong>|<strong>表示</strong>或</strong>. 其FA的transition diagram如下:<br><img src="/images/Compiler/2-7.png" alt="Transition Diagram of Recognizing &quot;new&quot; and &quot;not&quot;"></li>
 </ul>
-<p>最后剩下一种情况, 循环. RE使用$x^{*}$的方式表示<strong>x的零或多次出现</strong>, <strong>*</strong>操作符被称为Kleene closure, 或简称closure(闭包). 以下是用RE表示的<strong>数字</strong>词类:<br>$$<br>0|(1|2|3|4|5|6|7|8|9)(0|1|2|3|4|5|6|7|8|9)^{*}<br>$$</p>
+<p>最后剩下一种情况, 循环. RE使用$x^{*}$的方式表示<strong>x的零或多次出现</strong>, <strong>*<strong>操作符被称为Kleene closure, 或简称closure(闭包). 以下是用RE表示的</strong>数字</strong>词类:<br>$$<br>0|(1|2|3|4|5|6|7|8|9)(0|1|2|3|4|5|6|7|8|9)^{*}<br>$$</p>
 <h3 id="3-1-Formalize-the-Notation"><a href="#3-1-Formalize-the-Notation" class="headerlink" title="3.1 Formalize the Notation"></a>3.1 Formalize the Notation</h3><p>RE中字母表$\sum$中字符串的集合, 外加一个空字符串$\epsilon$, 形成了RE的language. 对于指定RE r, 其语言为$\textit{L}(r)$. 假设R和S各为字符串, RE的三种基本操作如下:</p>
 <ul>
 <li>Alternation(选择): 表示两个字符串的并集, 记作$R|S$, 定义为$\{x|x \in R \ or \ x \in S\}$</li>
@@ -298,10 +297,10 @@ Scanner (1) - Zaf1ro's Blog
 <li>无符号整数: RE表示为$0|[1 \cdots 9][0 \cdots 9]^{*}$</li>
 <li>无符号实数: RE表示为$(0|[1 \cdots 9][0 \cdots 9]^{*} (\epsilon |.[0 \cdots 9]^{*}))$, 前半部分负责检测整数位, 后半段负责检测小数位</li>
 <li>求补运算符: 使用<strong>^</strong>可简化RE, 例如Java中的字符串可表示为$”(\textrm{^”})^{*}”$</li>
-<li>Java中使用<strong>//</strong>作为注释的开端, 直到行末尾都为注释内容, 可表示为$//(\textrm{ˆ\n})^{*}\textrm{\n}$. 若是多行注释符, 以/*开始, 以*/结束, 则RE为$\textrm{/*}(\textrm{^*|*+^/})^{*}\textrm{*/}$</li>
+<li>Java中使用**//**作为注释的开端, 直到行末尾都为注释内容, 可表示为$//(\textrm{ˆ\n})^{*}\textrm{\n}$. 若是多行注释符, 以/*开始, 以*/结束, 则RE为$\textrm{/*}(\textrm{^*|*+^/})^{*}\textrm{*/}$</li>
 </ol>
 <p>以第五个例子Java的多行注释为例, 由RE构建的FA如下图:<br><img src="/images/Compiler/2-8.png" alt="Transition Diagram of Recognizing Multiline Comments"></p>
-<p>可以看到, RE和FA之间的关系不再name明显, 原因在于从$s_2$到$s_3$的状态转换: 当recognizer识别到<strong>*</strong>字符时, 无论下一个字符是否为<strong>/</strong>, 都需要正确的处理. 以汇编语言中的寄存器命名为例: 字母<strong>r</strong>开头, 后接一个整数, 对应的RE应为$r[0 \cdots 9]^+$; 但实际中寄存器数量是有限的, 假设只能有32个寄存器, 则RE应为$r([0 \cdots 2]([0 \cdots 9]|\epsilon)|[4 \cdots 9]|(3(0|1|\epsilon)))$<br><img src="/images/Compiler/2-9.png" alt="Transition Diagram of Recognizing Register Name"></p>
+<p>可以看到, RE和FA之间的关系不再name明显, 原因在于从$s_2$到$s_3$的状态转换: 当recognizer识别到<strong>*<strong>字符时, 无论下一个字符是否为</strong>/</strong>, 都需要正确的处理. 以汇编语言中的寄存器命名为例: 字母<strong>r</strong>开头, 后接一个整数, 对应的RE应为$r[0 \cdots 9]^+$; 但实际中寄存器数量是有限的, 假设只能有32个寄存器, 则RE应为$r([0 \cdots 2]([0 \cdots 9]|\epsilon)|[4 \cdots 9]|(3(0|1|\epsilon)))$<br><img src="/images/Compiler/2-9.png" alt="Transition Diagram of Recognizing Register Name"></p>
 <p>虽然FA变得更复杂, 但对于同等长度的字符串来说, FA的处理时间是相通的. FA的开销只与输入字符串的长度有关, 因为每个单字符只进行一次状态转移. 如果觉得上述RE不易理解, 可使用一个更简单的RE:<br>$$<br>r0|r00|r1|r01|r2|r02|r3|r03|r4|r04|r5|r05|r6|r06|r7|r07|r8|r08|r9|r09|r10| \\<br>r11|r12|r13|r14|r15|r16|r17|r18|r19|r20|r21|r22|r23|r24|r25|r26|r27|r28|r29|r30|r31<br>$$</p>
 <h3 id="3-3-Closure-Properties-of-REs"><a href="#3-3-Closure-Properties-of-REs" class="headerlink" title="3.3 Closure Properties of REs"></a>3.3 Closure Properties of REs</h3><p>当一个或一组RE经过操作后, 仍是RE, 这就是RE的闭包性质. <strong>连接</strong>操作允许我们从简单的RE构建复杂的RE, <strong>Kleene closure</strong>让我们用简洁的方式构建无限集, <strong>选择</strong>操作允许我们对多个语法范畴取并集, 有限闭包使得我们可定义庞大且有限的集合. </p>
 <h2 id="4-From-RE-to-Scanner"><a href="#4-From-RE-to-Scanner" class="headerlink" title="4. From RE to Scanner"></a>4. From RE to Scanner</h2><p>RE虽然能形式化表示语言, 但不能直接被运行, 还需要构造成FA. 以下是RE构建FA所需的算法:</p>
@@ -350,20 +349,17 @@ Scanner (1) - Zaf1ro's Blog
 <li>每个状态至多有<strong>1</strong>个转入或转出的字符转移</li>
 </ul>
 <h3 id="4-3-NFA-to-DFA-The-Subset-Construction"><a href="#4-3-NFA-to-DFA-The-Subset-Construction" class="headerlink" title="4.3 NFA to DFA: The Subset Construction"></a>4.3 NFA to DFA: The Subset Construction</h3><p>上一节提供了从RE到NFA的方法, 这一节负责将NFA转换为DFA, 让状态转换变得确定. Subset construction以$\text{NFA}(N, \sum, {\delta}_N, n_0, N_A)$为输入, 生成一个$\text{DFA}(D, \sum, {\delta}_D, d_0, D_A)$, 其中, NFA和DFA拥有相同的字符表$\sum$, 但其他部分不一定相同. 以下为subset construction算法:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$q_0$ $\leftarrow$ $\epsilon$-closure(&#123;$n_0$&#125;);</span><br><span class="line">Q $\leftarrow$ $q_0$;</span><br><span class="line">WorkList $\leftarrow$ &#123;$q_0$&#125;;</span><br><span class="line"></span><br><span class="line">while (WorkList $\neq$ $\emptyset$) do</span><br><span class="line">  remove q from WorkList;</span><br><span class="line">  for each character c $\in$ $\sum$ do</span><br><span class="line">    t $\leftarrow$ $\epsilon$-closure(Delta(q, c));</span><br><span class="line">    T[q, c] $\leftarrow$ t;</span><br><span class="line">    if t $\notin$ Q then</span><br><span class="line">      add t to Q and to WorkList;</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$q_0$ $\leftarrow$ $\epsilon$-closure(&#123;$n_0$&#125;);</span><br><span class="line">Q $\leftarrow$ $q_0$;</span><br><span class="line">WorkList $\leftarrow$ &#123;$q_0$&#125;;</span><br><span class="line"></span><br><span class="line">while (WorkList $\neq$ $\emptyset$) do</span><br><span class="line">  remove q from WorkList;</span><br><span class="line">  for each character c $\in$ $\sum$ do</span><br><span class="line">    t $\leftarrow$ $\epsilon$-closure(Delta(q, c));</span><br><span class="line">    T[q, c] $\leftarrow$ t;</span><br><span class="line">    if t $\notin$ Q then</span><br><span class="line">      add t to Q and to WorkList;</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
 <p>其中, $\epsilon$-$closure(s_i)$表示从某状态$s_i$出发, 仅通过$\epsilon$-$transition$所能到达的所有状态, 这些状态是等价的. $Delta(q, c)$表示从configuration q中读取字符c时能到达的所有configuration. 整个算法的过程描述如下:</p>
 <ol>
 <li>从$n_0$出发, 通过$\epsilon$-$transition$能达到的所有状态(包含$n_0$), 这些状态构成了$q_0$</li>
 <li>将Q置为$q_0$, 并将$q_0$做一个configuration放入名为$\text{WorkList}$的configuration set中</li>
 <li>若$\text{WorkList}$不为空, 则保持循环</li>
 <li>从$\text{WorkList}$中取出一个configuration, 称为$q$</li>
-<li>对于字符表$\sum$中的每个字符$c$, 进行如下操作:<ol>
+<li>对于字符表$\sum$中的每个字符$c$, 进行如下操作:</li>
 <li>找到$q$输入字符$c$后所能转移到的新configuration, 称为$t$</li>
 <li>将该次转移记录在表$T$中</li>
 <li>若$t$没有出现在$Q$中, 则将t加入到$Q$和$\text{WorkList}$</li>
-</ol>
-</li>
 </ol>
 <p>$Q$是单调递增的. 由于NFA中的configuration数量是有限的, 每个configuration只会出现一次, 所以while循环总会停止运行. 在循环停止时, $Q$包含了NFA中所有有效的configuration, $T$包含所有configuration间的转移. $Q$最大有$|2^N|$个configuration, NFA中非决定性选择数量决定了configuration set的大小. 当subset construction运行后就已经构造了一个DFA模型, 每个configuration $q_i \in Q$都需要一个状态$d_i \in D$来表示. 若$q_i$中包含NFA中的accepting state, 则$d_i$为DFA的accepting state; $q_0$对应的$d_0$即为start state. 遵循$q_i$到$d_i$的映射, 可从T构造出转移函数${\delta}_D$.</p>
 <p>以$a(b|c)^{*}$为例, 其NFA如下:<br><img src="/images/Compiler/2-22.png" alt="NFA for a(b|c)&lt;sup&gt;*&lt;/sup&gt;"></p>
@@ -371,29 +367,37 @@ Scanner (1) - Zaf1ro's Blog
 <ol>
 <li>$q_0$设置为$\epsilon$-$closure(n_0)$, 也就是$n_0$. $Q$和$\text{WorkList}$也为$n_0$</li>
 <li>每次while迭代时, 需从$\text{WorkList}$中取出一个configuration, 名为$q$, 并对$\sum$中所有字符(a, b, c)分别进行$\epsilon$-$closure(Delta(q, x))$计算(x表示字符a, b或c)</li>
-<li>第1次while迭代: 取出$q_0$(也就是$n_0$)并计算:<ul>
+<li>第1次while迭代: 取出$q_0$(也就是$n_0$)并计算:</li>
+</ol>
+<ul>
 <li>a返回$q_1$: $n_1, n_2, n_3, n_4, n_6, n_9$, 添加到$\text{WorkList}$中</li>
 <li>b和c返回: 空集</li>
 </ul>
-</li>
-<li>第2次while迭代: 取出$q_1$并计算:<ul>
+<ol start="4">
+<li>第2次while迭代: 取出$q_1$并计算:</li>
+</ol>
+<ul>
 <li>a返回: 空集</li>
 <li>b返回$q_2$: $n_5, n_8, n_9, n_3, n_4, n_6$, 添加到$\text{WorkList}$中</li>
 <li>c返回$q_3$: $n_7, n_8, n_9, n_3, n_4, n_6$, 添加到$\text{WorkList}$中</li>
 </ul>
-</li>
-<li>第3次while迭代, 取出$q_2$并计算:<ul>
+<ol start="5">
+<li>第3次while迭代, 取出$q_2$并计算:</li>
+</ol>
+<ul>
 <li>a返回: 空集</li>
 <li>b返回: $q_2$, 不添加重复configuration到$\text{WorkList}$中</li>
 <li>c返回: $q_3$, 不添加重复configuration到$\text{WorkList}$中</li>
 </ul>
-</li>
-<li>第4次while迭代: 取出$q_3$并计算:<ul>
+<ol start="6">
+<li>第4次while迭代: 取出$q_3$并计算:</li>
+</ol>
+<ul>
 <li>a返回: 空集</li>
 <li>b返回: $q_2$, 不添加重复configuration到$\text{WorkList}$中</li>
 <li>c返回: $q_3$, 不添加重复configuration到$\text{WorkList}$中</li>
 </ul>
-</li>
+<ol start="7">
 <li>$\text{WorkList}$为空, 退出while循环</li>
 </ol>
 <p>以下是subset construction各次迭代过程表:</p>
@@ -448,33 +452,23 @@ Scanner (1) - Zaf1ro's Blog
 </tbody></table>
 <p>通过上述4个DFA的状态可得以下FA图:<br><img src="/images/Compiler/2-23.png" alt="Resulting DFA"></p>
 <p>以下是一种离线计算$\epsilon$-closure()的方法:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">for each state $n \in N$ do</span><br><span class="line">  $E_n \leftarrow &#123;n&#125;$</span><br><span class="line">end;</span><br><span class="line">WorkList $\leftarrow$ N</span><br><span class="line">while (WorkList $\neq$ $\emptyset$) do</span><br><span class="line">  remove n from WorkList</span><br><span class="line">  t $\leftarrow$ &#123;n&#125; $\cup$ $&#123;\bigcup&#125;_&#123;n \xrightarrow&#123;\epsilon&#125; p \in &#123;\delta&#125;_N&#125;$</span><br><span class="line">  if t $\neq$ $E_n$</span><br><span class="line">    $E_n$ $\leftarrow$ t</span><br><span class="line">    WorkList $\leftarrow$ WorkList $\cup$ &#123;m|m$\xrightarrow&#123;\epsilon&#125;$n $\in$ $&#123;\delta&#125;_N$&#125;</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">for each state $n \in N$ do</span><br><span class="line">  $E_n \leftarrow &#123;n&#125;$</span><br><span class="line">end;</span><br><span class="line">WorkList $\leftarrow$ N</span><br><span class="line">while (WorkList $\neq$ $\emptyset$) do</span><br><span class="line">  remove n from WorkList</span><br><span class="line">  t $\leftarrow$ &#123;n&#125; $\cup$ $&#123;\bigcup&#125;_&#123;n \xrightarrow&#123;\epsilon&#125; p \in &#123;\delta&#125;_N&#125;$</span><br><span class="line">  if t $\neq$ $E_n$</span><br><span class="line">    $E_n$ $\leftarrow$ t</span><br><span class="line">    WorkList $\leftarrow$ WorkList $\cup$ &#123;m|m$\xrightarrow&#123;\epsilon&#125;$n $\in$ $&#123;\delta&#125;_N$&#125;</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
 <p>算法步骤如下:</p>
 <ol>
 <li>初始化: 为NFA的每个状态节点$n$创建一个集合$E_n$, 表示从$n$出发的所有$\epsilon$-$transition$; 集合$\text{WorkList}$表示NFA中所有状态节点</li>
-<li>若集合$\text{WorkList}$不为空, 则保持循环:<ol>
+<li>若集合$\text{WorkList}$不为空, 则保持循环:</li>
 <li>从集合$\text{WorkList}$取出一个状态节点$n$</li>
 <li>计算从$n$出发的所有$\epsilon$-$transition$, 命名为$p$, 并通过$p$获得$E_p$, 将所有$E_p$和$n$的并集命名为集合$t$</li>
-<li>若$t$不等于$E_n$, 说明需要更新$E_n$:<ol>
-<li>$E_n$替换为t</li>
-<li>将$n$的所有前趋$\epsilon$-$transition$节点$m$加入到WorkList中, 保证前趋节点也可以更新集合$E_m$</li>
-</ol>
-</li>
-</ol>
-</li>
+<li>若$t$不等于$E_n$, 说明需要更新$E_n$:    1. $E_n$替换为t    2. 将$n$的所有前趋$\epsilon$-$transition$节点$m$加入到WorkList中, 保证前趋节点也可以更新集合$E_m$</li>
 </ol>
 <h3 id="4-4-DFA-to-Minimal-DFA-Hopcroft’s-Algorithm"><a href="#4-4-DFA-to-Minimal-DFA-Hopcroft’s-Algorithm" class="headerlink" title="4.4 DFA to Minimal DFA: Hopcroft’s Algorithm"></a>4.4 DFA to Minimal DFA: Hopcroft’s Algorithm</h3><p>作为RE到DFA的最后一步, 负责减少DFA中的状态数目. Subset construction产生的冗余状态节点虽然不会影响扫描字符串的时间, 但会增加recognizer所占内存空间, 更小的recognizer更适合载入到cache中.<br>为最小化$\text{DFA}(D, \sum, \delta, d_0, D_A)$中的状态数量, 需要判断两个状态是否等价, 即两者对任何输入字符是否产生同样的行为. 以下是Hopcroft’s Algorithm代码:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Split(S) &#123;</span><br><span class="line">  for each c $\in$ $\sum$ do</span><br><span class="line">    if c splits S into $s_1$ and $s_2$</span><br><span class="line">      return &#123;$s_1$, $s_2$&#125;;</span><br><span class="line">  end;</span><br><span class="line">  return S;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">T $\leftarrow$ &#123;$D_A$, &#123;$D − D_A$&#125;&#125;;</span><br><span class="line">P $\leftarrow$ $\emptyset$</span><br><span class="line">while (P $\neq$ T) do</span><br><span class="line">  P $\leftarrow$ T;</span><br><span class="line">  T $\leftarrow$ $\emptyset$;</span><br><span class="line">  for each set p $\in$ P do</span><br><span class="line">    T $\leftarrow$ T $\cup$ Split(p);</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Split(S) &#123;</span><br><span class="line">  for each c $\in$ $\sum$ do</span><br><span class="line">    if c splits S into $s_1$ and $s_2$</span><br><span class="line">      return &#123;$s_1$, $s_2$&#125;;</span><br><span class="line">  end;</span><br><span class="line">  return S;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">T $\leftarrow$ &#123;$D_A$, &#123;$D − D_A$&#125;&#125;;</span><br><span class="line">P $\leftarrow$ $\emptyset$</span><br><span class="line">while (P $\neq$ T) do</span><br><span class="line">  P $\leftarrow$ T;</span><br><span class="line">  T $\leftarrow$ $\emptyset$;</span><br><span class="line">  for each set p $\in$ P do</span><br><span class="line">    T $\leftarrow$ T $\cup$ Split(p);</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
 <p>算法步骤:</p>
 <ol>
 <li>将所有状态划分为两类: $p_0 = D_A$和$p_1 = {D - D_A}$, 分别表示<strong>接收状态</strong>和<strong>非接收状态</strong></li>
-<li>若状态集合$P$与$T$不等, 则保持循环:<ol>
+<li>若状态集合$P$与$T$不等, 则保持循环:</li>
 <li>$P$代表上次集合划分的结果, $T$表示这次集合划分的结果</li>
 <li>对同一集合的所有状态进行等价性划分</li>
-</ol>
-</li>
 </ol>
 <p>对于<strong>状态划分</strong>的解释: 若存在两个状态$d_i$, $d_j$对于所有输入字符都有相同的行为, 则它们同属于一个DFA状态集合. 例如: $d_i \xrightarrow{c} d_x, d_j \xrightarrow{c} d_y$, 而$d_i, d_j \in p_s$, 那么$d_x, d_j$也必定属于同一集合. 该算法不会跟踪集合中每个状态对于所有输入字符的行为, 而是针对单个输入字符的行为进行划分, 例如: 对于字符$c \in \sum$, $c$对于每个状态$d_i \in p_s$都必须产生同样的行为, 否则拆分$p_s$.<br><img src="/images/Compiler/2-24.png" alt="Split a Partition around a"></p>
 <p>以$fee|fie$为例, 其DFA如下图:<br><img src="/images/Compiler/2-25.png" alt="DFA for fee|fie"></p>

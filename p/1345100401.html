@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,20 +38,20 @@
 
 
 <meta name="description" content="1. IntroRead-Copy-Update(RCU)作为一种同步机制为reader端提供了极快的读取速度和高并发性. 与RCU相同使用场景的锁应为rwlock(读写锁), 它们都适用于Reader-Writer(RCU的updater可理解为rwlock中的writer)的场景,  但也存在些许不同:  RCU允许多个reader和最多一个updater并发运行, rwlock只允许多个re">
-<meta name="keywords" content="Concurrency">
 <meta property="og:type" content="article">
 <meta property="og:title" content="RCU">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1345100401.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. IntroRead-Copy-Update(RCU)作为一种同步机制为reader端提供了极快的读取速度和高并发性. 与RCU相同使用场景的锁应为rwlock(读写锁), 它们都适用于Reader-Writer(RCU的updater可理解为rwlock中的writer)的场景,  但也存在些许不同:  RCU允许多个reader和最多一个updater并发运行, rwlock只允许多个re">
-<meta property="og:locale" content="zh">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/rcu-1.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/rcu-2.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/rcu-3.png">
-<meta property="og:updated_time" content="2019-11-09T02:40:27.000Z">
+<meta property="article:published_time" content="2019-07-02T23:51:07.000Z">
+<meta property="article:modified_time" content="2019-11-09T02:40:27.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Concurrency">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="RCU">
-<meta name="twitter:description" content="1. IntroRead-Copy-Update(RCU)作为一种同步机制为reader端提供了极快的读取速度和高并发性. 与RCU相同使用场景的锁应为rwlock(读写锁), 它们都适用于Reader-Writer(RCU的updater可理解为rwlock中的writer)的场景,  但也存在些许不同:  RCU允许多个reader和最多一个updater并发运行, rwlock只允许多个re">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/multithreading/Basic/rcu-1.png">
 
 
@@ -65,7 +65,7 @@
     <title>
 RCU - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -106,7 +106,7 @@ RCU - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -205,8 +205,7 @@ RCU - Zaf1ro's Blog
 </tr>
 </tbody></table>
 <h3 id="3-1-Read-side"><a href="#3-1-Read-side" class="headerlink" title="3.1 Read-side"></a>3.1 Read-side</h3><p>在Tree RCU的实现中, rcu_read_lock和rcu_read_unlock的实现非常简单，分别是关闭抢占和打开抢占:</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> __rcu_read_lock(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  preempt_disable();</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> __rcu_read_unlock(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  preempt_enable();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> __rcu_read_lock(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">preempt_disable</span>();</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> __rcu_read_unlock(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">preempt_enable</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>RCU的reader不允许critical section被block, 所以reader进入critical section之前会将该CPU设置为non-preemptive(非抢占模式), 离开critical section将CPU重新设置为preemptive(抢占模式). 所以如果每个CPU都发生过抢夺, 说明不在rcu_read_lock和rcu_read_unlock之间.</p>
 <h3 id="3-2-Quiescent-State"><a href="#3-2-Quiescent-State" class="headerlink" title="3.2 Quiescent State"></a>3.2 Quiescent State</h3><p>reader的critical section之外的时间都称之为quiescent state, RCU在CPU进入quiescent state后会调用回调函数标记该CPU已退出critical section. 为避免抢夺某个全局变量来统计所有CPU都进入过quiescent state, RCU使用Tree RCU来减轻竞争.<br><img src="/images/multithreading/Basic/rcu-3.png" alt="Tree RCU"></p>
 <p>Tree RCU使用rcu_node节点来管理CPU: 假设有4个CPU, rcu_node1管理CPU1和CPU2，rcu_node2管理CPU3和CPU4, 再用一个rcu_node3作为根节点管理rcu_node1和2. 当CPU1和CPU2经历quiescent state后清除rcu_node1中的对应位，CPU3和CPU4经历经历quiescent state后清除rcu_node2中的对应位。rcu_node1和rcu_node2中的对应位都清除后，就可以清除增加的rcu_node3中的对应位.</p>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Kafka Design (3)">
+
+
+
+
+  <meta name="keywords" content="Microservices,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/7d29.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/7d29.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/7d29.html">
+
+
+<meta name="description" content="1. Log CompactionLog compaction(日志压缩)确保在Kafka中, 对于单个topic partition的log数据来说, 每个message key至少保留一个最新值. 它能解决一些特殊场景, 例如, 应用在崩溃或系统故障后恢复, 或是维护完成后程序重启. 让我们详细研究这些用例, 并阐述压缩是如何工作的.目前为止, 我们只描述过一个简单的方法来保存数据, 也就是在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka Design (3)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/7d29.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. Log CompactionLog compaction(日志压缩)确保在Kafka中, 对于单个topic partition的log数据来说, 每个message key至少保留一个最新值. 它能解决一些特殊场景, 例如, 应用在崩溃或系统故障后恢复, 或是维护完成后程序重启. 让我们详细研究这些用例, 并阐述压缩是如何工作的.目前为止, 我们只描述过一个简单的方法来保存数据, 也就是在">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kafka/log_cleaner_anatomy.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kafka/log_compaction.png">
+<meta property="article:published_time" content="2021-06-02T13:50:21.000Z">
+<meta property="article:modified_time" content="2021-06-03T21:14:35.705Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Microservices">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kafka/log_cleaner_anatomy.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Kafka Design (3) - Zaf1ro's Blog
+</title>
+  <meta name="generator" content="Hexo 5.4.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Log-Compaction"><span class="toc-text">1. Log Compaction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Log-Compaction-Basics"><span class="toc-text">1.1 Log Compaction Basics</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-What-guarantees-does-log-compaction-provide"><span class="toc-text">1.2 What guarantees does log compaction provide?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Log-Compaction-Details"><span class="toc-text">1.3 Log Compaction Details</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-Configuring-The-Log-Cleaner"><span class="toc-text">1.4 Configuring The Log Cleaner</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Quotas"><span class="toc-text">2. Quotas</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Why-are-quotas-necessary"><span class="toc-text">2.1 Why are quotas necessary?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Client-groups"><span class="toc-text">2.2 Client groups</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Quota-Configuration"><span class="toc-text">2.3 Quota Configuration</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Network-Bandwidth-Quotas"><span class="toc-text">2.4 Network Bandwidth Quotas</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Request-Rate-Quotas"><span class="toc-text">2.5 Request Rate Quotas</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-Enforcement"><span class="toc-text">2.6 Enforcement</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Kafka Design (3)
+        
+      </h1>
+      <time class="post-time">
+          06/02/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Log-Compaction"><a href="#1-Log-Compaction" class="headerlink" title="1. Log Compaction"></a>1. Log Compaction</h2><p><strong>Log compaction</strong>(日志压缩)确保在Kafka中, 对于单个topic partition的log数据来说, 每个message key至少保留一个最新值. 它能解决一些特殊场景, 例如, 应用在崩溃或系统故障后恢复, 或是维护完成后程序重启. 让我们详细研究这些用例, 并阐述压缩是如何工作的.<br>目前为止, 我们只描述过一个简单的方法来保存数据, 也就是在一段固定时间后, 或日志大小达到某个阈值后删除旧数据. 这种方式对于临时时间类数据十分有效, 例如, 每个记录独立存在的日志系统. 但还存在另一种数据流方式: 对于键控修改的可变数据日志, 例如, 对数据表的更改.<br>让我们以一个具体的例子讨论这种流. 假设我们有一个topic保存用户邮箱地址. 每当用户修改其邮箱地址时, 我们都会向该topic发送一个消息, key为用户id. 假设用户的id为<strong>123</strong>, 每个消息都包含邮箱地址的更改(其他id的消息被忽略):</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">123 =&gt; bill@microsoft.com</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">123 =&gt; bill@gatesfoundation.org</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">123 =&gt; bill@gmail.com</span><br></pre></td></tr></table></figure>
+<p>日志压缩给我们提供了更精细的日志保存机制, 从而为每个primary key至少保留最新的更新(例如: <a href="mailto:&#98;&#105;&#108;&#x6c;&#64;&#103;&#109;&#97;&#105;&#x6c;&#46;&#99;&#111;&#x6d;">&#98;&#105;&#108;&#x6c;&#64;&#103;&#109;&#97;&#105;&#x6c;&#46;&#99;&#111;&#x6d;</a>). 这么做保证了日志包含每个key对应的最终值的完整快照, 而不是最近更新的key. 这意味着下游consumer可以从改topic恢复其状态, 无需保留所有更改的日志. 下面是log compaction的一些用例:</p>
+<ol>
+<li>Database change subscription(数据库更改订阅): 多个数据系统共享一个数据集合是十分常见的, 其中有些系统是RDBMS, 有些是key-value store. 举个例子, 现在有一个数据库, 一个cache, 一个搜索集群, 一个Hadoop集群. 对于数据库的每次修改都需反应在其他系统中. 如果只处理实时更新, 则只需要最新的日志; 但如果用于重新加载缓存或恢复故障搜索节点, 则需要完整数据集.</li>
+<li>Event sourcing(事件源): 这是一种应用设计风格, 将查询处理和应用程序设计结合到一起, 并将日志修改作为应用的主要存储.</li>
+<li>Journaling for high-availability(高可用日志): 进程通过将对本地状态的修改写入日志中, 可实现本地计算的容错性, 这样其他进程就可以在本进程故障时加载修改日志. 一个具体的例子是, 在流查询系统中处理计数, 聚合和其他类似于”分组”的操作.</li>
+</ol>
+<p>上述的场景中, 主要用于处理修改的实时反馈, 但当机器故障, 需要重新加载数据, 或重新处理数据时, 还需要加载完整日志. Log compaction允许使用相同的topic支持上述两种场景.<br>如果我们拥有无限的日志保留时间, 且在日志中保留每一个修改, 则需要从系统启动就实时记录系统的状态. 有了完整日志, 我们就可以通过回放前N个日志记录来恢复到任何一个时间点. 这种假想的完整日志实际中并不可行, 因为即便是稳定的数据集, 日志也会无限增长. 丢弃掉旧的更新作为一种简单的日志保存机制, 可以防止日志空间无限扩张; 但日志也无法让系统从原始状态恢复到当前状态, 因为旧的更新被丢弃.<br>相比于基于时间的粗粒度日志保存方案, Log compaction提供了一种更细粒度, 保存每个记录的保存方式. 通过保留同一key的最新更新, 可保证每个key至少有一个最新状态. 日志保存策略的单元是topic, 所以一个集群中的多个topic可采用不同的保存方式: 某些topic根据时间或空间删除旧数据, 某另外一些topic使用log compaction来保留最新的更新.<br>Log compaction的灵感来自于Linkedin的一个古老且成功的基础设施: 一个成为Databus的数据库日志更新缓存服务. 与其他日志存储系统不同, Kafka提供订阅服务, 并为<strong>线性读写</strong>组织数据. 与Databus不同的是, Kafka作为消息源, 即使在上游数据源无法重放的情况下依然有用.</p>
+<h3 id="1-1-Log-Compaction-Basics"><a href="#1-1-Log-Compaction-Basics" class="headerlink" title="1.1 Log Compaction Basics"></a>1.1 Log Compaction Basics</h3><p>下图是Kafka log的逻辑结构图, 每个message都有一个偏移量:<br><img src="/images/Kafka/log_cleaner_anatomy.png" alt="Log Cleaner Anatomy"></p>
+<p>Log Head与传统的Kafka log相同. 它具有密集的, 顺序的偏移量并保留所有消息. Log compaction为处理log Tail添加了一个选项. 上图的log中有一个压缩后的Log Tail. 注意, log tail内的消息保留原始的偏移量, 从一开始创建就不会被修改. 即使该偏移量上的消息被压缩, 所有偏移量在日志中仍是有效的. 这种情况下, 无法区分该位置与下一个出现在日志中的最高偏移量. 举个例子, 上图中偏移量36, 37和38都是相同的位置, 对这三个偏移量的读取只会返回以偏移量38为起始的消息.<br>压缩还允许删除操作. 当一个消息的值为空时, 意味着该消息从日志中删除. 这种记录也被成为<strong>tombstone</strong>(墓碑). 此删除标记会导致所有拥有相同key的旧消息被删除; 但删除标记比较特殊, 它们会在一段时间后从日志中清空以释放空间, 该时间点称为<strong>delete retention point</strong>.<br>压缩通过周期性重新复制log segment在后台完成, 清理操作不会阻塞读取操作, 并可通过设置I/O吞吐量来防止影响producer和consumer. 实际压缩一个log segment过程如下:<br><img src="/images/Kafka/log_compaction.png" alt="log Compaction"></p>
+<h3 id="1-2-What-guarantees-does-log-compaction-provide"><a href="#1-2-What-guarantees-does-log-compaction-provide" class="headerlink" title="1.2 What guarantees does log compaction provide?"></a>1.2 What guarantees does log compaction provide?</h3><p>压缩提供了以下保证:</p>
+<ol>
+<li>任何跟上log head的consumer都看到所有写入的数据. 这些消息有顺序的偏移量. topic的<strong>min.compaction.lag.ms</strong>设置可保证消息在写入后, 压缩前滞留的最短时间. topic的<strong>max.compaction.lag.ms</strong>设置可保证消息写入和消息符合压缩条件的最大延迟.</li>
+<li>消息的顺序依然保持不变, 压缩不会更改顺序, 只会删除一部分消息.</li>
+<li>消息的偏移量保持不变, 偏移量是消息在日志中某个位置的永久标识符.</li>
+<li>任何从头开始处理日志的consumer都能以写入顺序, 至少读取到每个记录的最新状态. 此外, 如果consumer在topic的<strong>delete.retention.ms</strong>设置(默认24小时)的时间段内读取到log head, 则可以看到所有删除标记. 换句话说, 由于移除删除标记与读取数据同时进行, 如果consumer的延迟超过delete.retention.ms, 则会错过删除标记.</li>
+</ol>
+<h3 id="1-3-Log-Compaction-Details"><a href="#1-3-Log-Compaction-Details" class="headerlink" title="1.3 Log Compaction Details"></a>1.3 Log Compaction Details</h3><p>Log compaction由log cleaner处理, 这是一个后台运行的线程池, 用于重新复制log segment文件, 删除出现在log head中具有相同key的记录. 每个conpactor线程工作原理如下:</p>
+<ol>
+<li>挑选log head与log tail比例最高的日志</li>
+<li>为log head中的每个key的最新值做一个摘要</li>
+<li>从头到尾复制整个日志, 期间删除相同key的记录. 新的log segment会替代旧的记录, 因此只需保留一个segment大小的额外磁盘空间即可.</li>
+<li>log head的摘要本质上是一个空间紧凑的哈希表, 每个条目占24字节. 若有8GB的清理缓存区, 则每次清理可处理266GB的log head(假设有1000条消息).</li>
+</ol>
+<h3 id="1-4-Configuring-The-Log-Cleaner"><a href="#1-4-Configuring-The-Log-Cleaner" class="headerlink" title="1.4 Configuring The Log Cleaner"></a>1.4 Configuring The Log Cleaner</h3><p>Log cleaner默认启动. 该服务会启动一个cleaner线程池. 如果想在某个topic开启日志清理, 可添加一下配置:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">log.cleanup.policy=compact</span><br></pre></td></tr></table></figure>
+
+<p><strong>log.cleanup.policy</strong>是broker配置设置中的一个属性, 在broker的server.properties文件中. 它会影响集群里中所有没有配置日志清理的topic. 通过设计压缩的时延, 可以让log head的尺寸保持的尽量小:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">log.cleaner.min.compaction.lag.ms</span><br></pre></td></tr></table></figure>
+
+<p>这可用于防止消息的存在短于某个时间段而被压缩. 如果不设置该属性, 除了最后一个segment, 其余所有log segment都有资格被压缩. 当前写入的segment不会被压缩, 即使其中所有消息都滞后于最小压缩时延. Log cleaner还可以设置一个最大时延, 以确保未被压缩的log head有资格进行日志压缩:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">log.cleaner.max.compaction.lag.ms</span><br></pre></td></tr></table></figure>
+<p>若日志很少有数据写入, 该属性可保证一定时间后该segment符合压缩资格. 如果不设置该属性, log中的log head比例可能很难超过min.cleanable.dirty.ratio, 因此迟迟不会被压缩. 该属性并不能保证压缩一定执行, 还需要考虑log cleaner线程的可用性, 还有实际压缩时间的影响. </p>
+<h2 id="2-Quotas"><a href="#2-Quotas" class="headerlink" title="2. Quotas"></a>2. Quotas</h2><p>当producer和consumer请求broker资源时, Kafka cluster课对此进行配额配置. 以下是两种Kafka broker可以设置的配额:</p>
+<ol>
+<li>网络带宽配额: 定义了字节速率阈值(自0.9起)</li>
+<li>请求速率配额: 将CPU使用阈值定义为网络和I/O线程百分比(自0.11起)</li>
+</ol>
+<h3 id="2-1-Why-are-quotas-necessary"><a href="#2-1-Why-are-quotas-necessary" class="headerlink" title="2.1 Why are quotas necessary?"></a>2.1 Why are quotas necessary?</h3><p>Producer和consumer可能会生产/消耗大量数据, 或频繁发送请求, 从而垄断broker的资源, 造成网络饱和. 配置配额可以防止上述问题发生, 在多用户集群中尤为重要, 因为一小群行为不良的client会降低所有行为良好的client的用户体验. 实际上, 当将Kafka作为服务运行时, 可以根据商定的合同强制执行API限制.</p>
+<h3 id="2-2-Client-groups"><a href="#2-2-Client-groups" class="headerlink" title="2.2 Client groups"></a>2.2 Client groups</h3><p>Kafka client的身份为user principal, 其代表一个安全集群中的经过身份验证的用户. 在一个支持非验证client身份的集群中, user principal是一组未验证身份的用户, 由broker通过可配置的PrincipalBuilder挑选. Client-id作为client逻辑分组, 是由client应用挑选的有意义的名称. 元组(user, client-id)定义了一个安全的client逻辑分组, 这些client共享client-id和user principal.<br>配额可用于(user, client-id), user, 或client-id组. 对于一个给定的连接, 会使用最匹配该连接的配额. 一个配额组的所有连接共享其配额. 举个例子, 如果(user=”test-user”, client-id=”test-client”)有10MB每秒的生产配额, 所有user为test-user, 且client-id为test-client的producer共享该配额.</p>
+<h3 id="2-3-Quota-Configuration"><a href="#2-3-Quota-Configuration" class="headerlink" title="2.3 Quota Configuration"></a>2.3 Quota Configuration</h3><p>配额配置可按照(user, client-id), user和lcient-id分组. 如果需要更高或更低的配额, 可以从任何配额级别覆盖默认配额. 该机制和对于topic的日志配置覆盖类似. user和(user, client-id)配额会写入ZooKeeper的/config/users下, client-id配额写入/config/clients下. 这些配额会被所有broker读取, 并立即生效. 这使得我们无需重启整个集群即可修改配额. 每个分组的默认配额也可以使用相同方式动态更新.<br>以下是配额的配置顺序:</p>
+<ol>
+<li>/config/users/&lt;user&gt;/clients/&lt;client-id&gt;</li>
+<li>/config/users/&lt;user&gt;/clients/&lt;default&gt;</li>
+<li>/config/users/&lt;user&gt;</li>
+<li>/config/users/&lt;default&gt;/clients/&lt;client-id&gt;</li>
+<li>/config/users/&lt;default&gt;/clients/&lt;default&gt;</li>
+<li>/config/users/&lt;default&gt;</li>
+<li>/config/clients/&lt;client-id&gt;</li>
+<li>/config/clients/&lt;default&gt;</li>
+</ol>
+<p>Broker的属性(quota.producer.default, quota.consumer.default)也能用于为client-id分组设置网络带宽配额的默认值. 这些属性已被弃用, 并会在之后的版本移除. client-id的默认配额与其他配额一样, 都可以在ZooKeeper设置.</p>
+<h3 id="2-4-Network-Bandwidth-Quotas"><a href="#2-4-Network-Bandwidth-Quotas" class="headerlink" title="2.4 Network Bandwidth Quotas"></a>2.4 Network Bandwidth Quotas</h3><p>网络带宽配额定义为字节速率阈值, 由一组内的所有client共享. 默认情况下, 每个唯一的client组都会收到一个固定的配额, 由集群配置, 单位为bytes/sec. 该配额基于每个代理定义的. 在client被限制前, 每组client可以向每个broker发布/获取X字节/秒.</p>
+<h3 id="2-5-Request-Rate-Quotas"><a href="#2-5-Request-Rate-Quotas" class="headerlink" title="2.5 Request Rate Quotas"></a>2.5 Request Rate Quotas</h3><p>请求率配额定义为: 在一个配额窗口内, 一个client在每个broker上使用request handler I/O thread和network thread的时间比. 配额的n%表示一个线程的n%, 因此总配额为((num.io.threads + num.network.threads) * 100)%. 在被限制前, 每个client组都可以在一个配额窗口内使用不超过n%的I/O和network thread. 由于I/O和network的线程数量与broker的内核数成正比, 请求率配额也表示每组client共享的CPU使用率.</p>
+<h3 id="2-6-Enforcement"><a href="#2-6-Enforcement" class="headerlink" title="2.6 Enforcement"></a>2.6 Enforcement</h3><p>默认情况下, 每个client组都会收到一个由集群配置的固定配额, 该配额是基于每个broker定义的. 每个client都可以在被限制前使用该配额. 之所以让client掌握每个broker的配额, 而不是让客户端掌握整个集群的配额, 是因为后者需要让client配额在每个broker上共享. 实现这种配额方式比配额本身的实现都难.<br>当超出配额时broker应作何反应? 首先, broker计算出能让该client降低到配额以下的延迟量, 并返回一个携带延迟的恢复. 如果是获取数据的请求, 则回复中不会携带任何数据. 然后, broker会将该client的channel静音, 不处理来自该client的任何请求, 直到延迟结束. 当Kafka client收到一个含有非零延迟持续时间的回复后, 会避免在延迟期间发送请求. 因此, 来自受限client的请求会被双方阻塞. 即使旧的client实现不考虑延迟响应, broker也会通过静音channel的方法限制client. 受限的client只有在延迟结束后才会收到响应.<br>字节率和线程使用率会在多个小窗口上测量(如: 30个窗口, 每个窗口1秒), 以便快速检测和纠正配额违规. 通常情况下, 设置较大的测量窗口(如10个窗口, 每个窗口30秒)会在经历突发流量激增后, 产生长时间延迟, 导致用户体验交叉.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/p/fb87.html">
+        <span class="next-text nav-default">Kafka Design (2)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/7d29.html';
+  var disqus_title = "Kafka Design (3)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

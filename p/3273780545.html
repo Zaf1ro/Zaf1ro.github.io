@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. DescriptionGiven a n x n matrix where each of the rows and columns are sorted in ascending order, find the $k^{th}$ smallest element in the matrix.Note that it is the $k^{th}$ smallest element in t">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kth Smallest Element in a Sorted Matrix">
 <meta property="og:url" content="https://zaf1ro.github.io/p/3273780545.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. DescriptionGiven a n x n matrix where each of the rows and columns are sorted in ascending order, find the $k^{th}$ smallest element in the matrix.Note that it is the $k^{th}$ smallest element in t">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T17:06:29.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-27T20:44:29.000Z">
+<meta property="article:modified_time" content="2019-11-11T17:06:29.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Kth Smallest Element in a Sorted Matrix">
-<meta name="twitter:description" content="1. DescriptionGiven a n x n matrix where each of the rows and columns are sorted in ascending order, find the $k^{th}$ smallest element in the matrix.Note that it is the $k^{th}$ smallest element in t">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Kth Smallest Element in a Sorted Matrix - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Kth Smallest Element in a Sorted Matrix - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -134,11 +134,12 @@ Kth Smallest Element in a Sorted Matrix - Zaf1ro's Blog
 
     <div class="post-content">
       <h2 id="1-Description"><a href="#1-Description" class="headerlink" title="1. Description"></a>1. Description</h2><p>Given a n x n matrix where each of the rows and columns are sorted in ascending order, find the $k^{th}$ smallest element in the matrix.<br>Note that it is the $k^{th}$ smallest element in the sorted order, not the $k^{th}$ distinct element.<br>Example:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">matrix = [</span><br><span class="line">  [ 1,  5,  9],</span><br><span class="line">  [10, 11, 13],</span><br><span class="line">  [12, 13, 15]</span><br><span class="line">],</span><br><span class="line">k = 8,</span><br><span class="line">return 13.</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">matrix = [</span><br><span class="line">  [ 1,  5,  9],</span><br><span class="line">  [10, 11, 13],</span><br><span class="line">  [12, 13, 15]</span><br><span class="line">],</span><br><span class="line">k = 8,</span><br><span class="line">return 13.</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="2-Binary-Search-Solution"><a href="#2-Binary-Search-Solution" class="headerlink" title="2. Binary Search Solution"></a>2. Binary Search Solution</h2><p>思路: 首先, 矩阵中的第k大小的元素一定介于最小元素和最大元素之间, 可通过二分搜索来找到. 由于矩阵为排序好的多个数组, 这样查找小于n的元素数量时不需要遍历整个矩阵, 只需要从左下查找.</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="comment">/* get the number of elements which the value is less than hi */</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getLessNum</span><span class="params">(<span class="keyword">int</span>[][] matrix, <span class="keyword">int</span> hi)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> row = matrix.length - <span class="number">1</span>, col = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (row &gt;= <span class="number">0</span> &amp;&amp; col &lt; matrix.length) &#123;</span><br><span class="line">      <span class="comment">/* if the matrix[row][col] is higher than hi, so the matrix[col][col+n] must higher than hi */</span></span><br><span class="line">      <span class="keyword">if</span> (matrix[row][col] &gt; hi) &#123; </span><br><span class="line">        row--;    <span class="comment">/* go to upper row of matrix */</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        count += row + <span class="number">1</span>;</span><br><span class="line">        col++;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> count;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">kthSmallest</span><span class="params">(<span class="keyword">int</span>[][] matrix, <span class="keyword">int</span> k)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = matrix.length;</span><br><span class="line">    <span class="keyword">int</span> lo = matrix[<span class="number">0</span>][<span class="number">0</span>], hi = matrix[n - <span class="number">1</span>][n - <span class="number">1</span>];</span><br><span class="line">    <span class="keyword">while</span> (lo &lt; hi) &#123;</span><br><span class="line">      <span class="keyword">int</span> mid = lo + ((hi - lo) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">      <span class="comment">/* count the number of elements which value is less than mid */</span></span><br><span class="line">      <span class="keyword">int</span> count = getLessNum(matrix, mid);</span><br><span class="line">      <span class="keyword">if</span> (count &lt; k) </span><br><span class="line">        lo = mid + <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">else</span> </span><br><span class="line">        hi = mid;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> lo;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 

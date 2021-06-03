@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Kafka Design (2)">
+
+
+
+
+  <meta name="keywords" content="Microservices,">
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
+<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/fb87.html">
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/fb87.html">
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/fb87.html">
+
+
+<meta name="description" content="1. Message Delivery Semantics在对producer和consumer的工作方式有了些许了解后, 我们来讨论Kafka在producer和consumer之间提供的semantic guarantee(语义保证). 以下是几种可能的消息传递保证:  At most once: 消息可能会丢失, 但不会重传 At least once: 消息不会丢失, 但可能会重传 Exa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka Design (2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/fb87.html">
+<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:description" content="1. Message Delivery Semantics在对producer和consumer的工作方式有了些许了解后, 我们来讨论Kafka在producer和consumer之间提供的semantic guarantee(语义保证). 以下是几种可能的消息传递保证:  At most once: 消息可能会丢失, 但不会重传 At least once: 消息不会丢失, 但可能会重传 Exa">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-05-27T20:50:54.000Z">
+<meta property="article:modified_time" content="2021-06-01T13:43:30.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Microservices">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+
+
+  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
+
+
+
+    <title>
+Kafka Design (2) - Zaf1ro's Blog
+</title>
+  <meta name="generator" content="Hexo 5.4.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Zaf1ro's Blog</a>
+        </h1>
+      </div>
+      <div id="google-search">
+        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+        <div class="gcse-search"></div>
+      </div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Message-Delivery-Semantics"><span class="toc-text">1. Message Delivery Semantics</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Replication"><span class="toc-text">2. Replication</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Replicated-Logs-Quorums-ISRs-and-State-Machines"><span class="toc-text">2.1 Replicated Logs: Quorums, ISRs, and State Machines</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Unclean-leader-election-What-if-they-all-die"><span class="toc-text">2.2 Unclean leader election: What if they all die?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Availability-and-Durability-Guarantees"><span class="toc-text">2.3 Availability and Durability Guarantees</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Replica-Management"><span class="toc-text">2.4 Replica Management</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </button>
+  
+  
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Kafka Design (2)
+        
+      </h1>
+      <time class="post-time">
+          05/27/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Message-Delivery-Semantics"><a href="#1-Message-Delivery-Semantics" class="headerlink" title="1. Message Delivery Semantics"></a>1. Message Delivery Semantics</h2><p>在对producer和consumer的工作方式有了些许了解后, 我们来讨论Kafka在producer和consumer之间提供的<strong>semantic guarantee</strong>(语义保证). 以下是几种可能的消息传递保证:</p>
+<ul>
+<li>At most once: 消息可能会丢失, 但不会重传</li>
+<li>At least once: 消息不会丢失, 但可能会重传</li>
+<li>Exactly once: 消息不会丢失, 也不会重传</li>
+</ul>
+<p>值得注意的是, message delivery semantic分为两个问题:</p>
+<ul>
+<li>发送一个消息的持久性保证</li>
+<li>消耗一个消息的持久性保证</li>
+</ul>
+<p>Kafka的语义很简单. 当发布一个消息时, 会有一个<strong>消息被提交到日志中</strong>的概念. 一旦发布的消息被<strong>提交</strong>到日志中, 只要复制了包含该消息的partition的broker状态为alive, 该消息就不会被丢失. 下一节将详细地描述committed message的定义, alive partition, 还有尝试处理的不同失败类型. 我们假设有一个完美的, 不会丢包的broker, 并尝试理解对于producer和consumer的保证. 如果一个producer尝试发布一个消息并遇到网络错误, 那就无法确定该错误发生在消息commit前还是commit后, 类似于自动生成的key插入数据库table的语义.<br>Kafka的语义很简单, 在0.11.0.0版本之前, 若producer没有收到象征着消息被commit的响应, 只能重发该消息. 若上一个消息成功消息, 那么重发的消息会被重复写入一遍log, 符合<strong>at-least-once</strong>的传递语义. 从0.11.0.0版本开始, Kafka producer也支持了idempotent delivery option(幂等交付选项), 该选项保证重发数据不会造成log中数据的重复. 为此, borker为每个producer分配了一个ID, 并会对相同ID的producer发送的相同序列号的消息去重. Producer还支持使用类似业务的语义向多个topic partition发送消息, 例如: 所有消息要么全部成功写入, 要么全部失败. 目的在于在Kafka topic之间实现exactly-once的处理.<br>并非所有用例都需要如此强力的保证. 对于延迟敏感的实例来说, 我们需要确定producer的承受能力. 若producer需要等待消息被commit, 那么可能需要10ms. 但producer也可以异步发送消息, 或只等待leader确认, 不需要follower拥有消息.<br>现在来从consumer的角度描述语义. 若所有副本拥有相同的日志, 且拥有相同的偏移量. Consumer控制日志的偏移量. 若consumer从未崩溃, 其可以将位置信息保存在内存中; 但如果consumer崩溃, 我们希望新的consumer可以接管该topic partition, 并从一个合适的位置进行处理. 假设consumer读取了一些消息, 以下是几个处理消息和更新位置的选项:</p>
+<ol>
+<li>Consumer接收消息, 将位置保存在log中, 最后处理数据. 若consumer在保存位置后, 处理消息之前崩溃, 则新的consumer就会在保存后的位置处开始处理, 之前的消息无法再被处理. 这种语义称为<strong>at-most-once</strong>, 因为在consumer处理消息失败时, 消息可能不会被处理.</li>
+<li>Consumer接收消息, 处理消息, 最后保存位置. 若consumer在处理消息后, 保存位置前崩溃, 新的consumer会接收到已被处理的消息. 这种语义称为<strong>at-least-once</strong>. 大多数情况下, 消息有一个<strong>primary key</strong>(主键), 因此更新操作是幂等的(接收到同一个消息两次只会用一个副本覆盖另一条记录).</li>
+</ol>
+<p>那么如何实现<strong>exactly-once</strong>语义? 当从一个Kafka topic消费消息, 并向另一个topic生产消息时, 我们可以利用0.11.0.0的transactional producer功能. Consumer的位置被当做一条消息保存在topic中, 因此我们可以将<strong>写入topic</strong>和<strong>写入offset</strong>放置在一个transaction中. 若transaction被中止, 则consumer的位置不会更新, 生成的消息也可能不会被其他consumer消费(取决于consumer的隔离级别). 以下是两种isolation level:</p>
+<ul>
+<li>默认隔离级别为<strong>read_uncommitted</strong>: 所有消息对consumer都可见, 即使该消息是被中止的transaction的一部分.</li>
+<li>read_committed: consumer只能消费已被成功提交的transaction中的消息, 或没有包含在transaction中的消息.</li>
+</ul>
+<p>当写入一个外部系统时, 如何协调<strong>更新consumer位置</strong>和<strong>consumer对外输出</strong>. 一种经典的解决方案为, 在保存consumer位置和保存consumer输出之间, 引入<strong>two-phase commit</strong>(二阶段提交). 但其实有一种更简单的方法: 让consumer将位置和输出放在同一个地方. 这么做有一个优点, 很多consumer写入的输出系统不支持二阶段提交. 以Kafka Connect为例, 该连接器将HDFS中的数据和其读取的数据偏移量一起填充, 以确保数据和偏移量都被更新或都不更新. 对于需要更强语义的数据系统, 我们遵循类似的方法, 为此可以让消息不携带主键, 以允许数据去重.<br>所以Kafka支持Kafka Stream中的<strong>exactly-once delivery</strong>, 并且在Kafka topic之间传输和处理数据时, transactional producer/consumer可提供exactly-once delivery. 对于外部系统, Kafka提供Kafka Connect实现exactly-once delivery. 默认情况下, Kafka提供at-least-once delivery. 通过禁用producer重试, 并在consumer处理消息之前提交偏移量, 用户可实现at-most-once delivery.</p>
+<h2 id="2-Replication"><a href="#2-Replication" class="headerlink" title="2. Replication"></a>2. Replication</h2><p>kafka会在可配置的多个服务器上复制每个topic的partition(通过设置replication factor来设定副本数量). 但集群中某个服务器崩溃时, 可自动故障转移到副本, 从而在出故障时保证可用性. 其他messaging system提供了类似的副本功能, 但根据我们的观点, 这些功能是格格不入的, 没有被大量使用, 且存在很多缺陷: 副本处于非活动状态, 吞吐量收到严重影响, 需要手动配置等. Kafka默认开启副本, 也可以通过将replication factor设置为1来实现无副本的topic.<br>Kafka的副本单元为topic partition. 故障未发生时, Kafka的每个partition都有有一个leader和0个或0个以上的follower. 副本的总数量, 也就是replication factor, 由leader和follower组成. 所有对于partition的读写操作都须通过leader. 通常情况下, partition的数量比broker多, leader会平均分布在broker上. Follower上的log与leader上的log完全相同, 它们具有相同的偏移量, 相同顺序的消息(leader在某些时间点可能在log末尾有一些还未来得及复制的消息).<br>Follower和Kafka consumer一样从leader获取消息, 并将其添加到自己的log. 让follower从leader拉取数据, 而不是leader推送数据, 这么做可以让follower批处理日志条目. 与大多数分布式系统一样, 自动处理故障需要对节点的<strong>alive</strong>状态做出明确定义. 对于Kafka, 节点活跃度有两个条件:</p>
+<ol>
+<li>节点必须能够和ZooKeeper保持会话(通过ZooKeeper的心跳机制)</li>
+<li>对于follower, 其必须能复制leader上的数据, 且不能落后太多</li>
+</ol>
+<p>若节点满足上述两个条件, 则称之为<strong>in sync</strong>, 这样避免了alive或failed的模糊性. Leader负责跟踪in sync状态的节点集合. 若某个follower崩溃, 卡顿, 或落后太多, leader会将其从in sync副本列表中移除. 卡顿和滞后的副本由replica.lag.time.max.ms配置决定.<br>在分布式系统术语中, Kafka仅解决<strong>fail/recover</strong>类型的故障, 例如节点突然停止工作, 之后又恢复工作. Kafka不处理<strong>Byzantine</strong>类型的故障, 例如节点产生任意或恶意的回复.<br>现在可以精确定义什么是<strong>消息被提交</strong>: 当partition的所有in sync副本都将该消息写入log中. 只有被提交的消息才能转交给consumer. 这意味着consumer无须担心消息会因为leader的崩溃而丢失. 另一方面, producer可以权衡<strong>延迟</strong>与<strong>持久性</strong>, 并决定是否等待消息被提交. 这偏好通过producer端ack的设置来控制. 需要注意的是, topic有一个最少in-sync副本的数量设置, 当producer请求ack时会检查该数值. 若producer请求一个不太严格的ack, 即使in-sync副本数小于设定值, 消息也会被提交和消费.<br>只要有一个活着的同步副本, 就不会丢失已提交的消息, 这是Kafka可以保证的. 在短暂的故障转移后, 若出现节点故障, Kafka仍是可用的. 但如果存在网络分区, Kafka可能仍不可用.</p>
+<h3 id="2-1-Replicated-Logs-Quorums-ISRs-and-State-Machines"><a href="#2-1-Replicated-Logs-Quorums-ISRs-and-State-Machines" class="headerlink" title="2.1 Replicated Logs: Quorums, ISRs, and State Machines"></a>2.1 Replicated Logs: Quorums, ISRs, and State Machines</h3><p>从本质上来说, 一个Kafka partition就是一个<strong>replicated log</strong>(复制日志). 复制日志是分布式数据系统中最基本的primitive之一, 并且有很多实现方法. 可以将复制日志作为primitive, 以状态机样式来时先分布式系统.<br>复制日志模拟了按照一系列值顺序达成共识的过程(通常对日志条目进行编号: 0,1,2…). 有很多实现的方法, 最简单且最快速的方法是由leader选择值顺序. 只要leader存活, 所有follower只需要复制值并订阅leader即可.<br>只要leader不崩溃, 我们就不需要follower. 当leader崩溃时, 需要从follower中选举出新的leader. 但follower本身也有落后或崩溃的风险, 因此必须保证选择最新的follower. 日志复制算法必须提供一个最基本的保证: 当通知client一个已提交的消息, 这时leader崩溃, 新选的leader必须有该消息. 这存在一个权衡点: 若leader在宣布该消息已被提交前等待更多的follower确认, 则会有更多潜在的可选举leader.<br>如果选择所需要的ACK数量, 还有选择leader时需要对比的日志数, 这样保证有重叠, 称为<strong>Quorum</strong>.<br>一种常见的权衡方式为: 使用<strong>多数票</strong>来实现消息提交和leader选举. 这不是Kafka的实现方式, 但可以通过研究这种方法来了解其中取舍. 假设我们有$2f+1$个副本, 若在leader宣布消息提交前必须有$f+1$个副本接收到该消息, 且选举新的leader时, 必须从至少$f+1$个副本中选取日志最完整的follower作为新的leader, 则只要崩溃的节点数不超过$f$个, leader就可以拥有所有提交的消息. 因为对于任意$f+1$个副本, 至少有一个副本拥有所有已提交的消息, 该副本拥有最完整的日志, 因此也会被选举为新的leader. 每个算法还需要处理许多其他细节(例如, 精确定义什么使得日志更加完整, 确保leader崩溃时或修改集群中的一组服务器时, 如何保证日志的一致性), 目前我们暂时忽略这些问题.<br>多数票方法有一个很好的特性: 延迟取决于最高的服务器. 若replication factor为3, 则延迟取决于最高的follower, 而不是最慢的. ZooKeeper的Zab, Raft和Viewstamped Replication存在很多算法. 与Kafka的实现最相似的学术期刊为Microsoft的PacificA.<br>多数票方法的缺点在于, 不需要几次节点崩溃就会让系统没有可被选举的leader. 为容许一次故障就需要三份数据拷贝, 为容许两次故障则需要5份数据拷贝. 对于实际系统而言, 只有足够的冗余性才能容忍单个故障是不够的. 每次写5次副本, 使用5倍的存储空间, 和1/5的带宽, 在大容量的数据存储上并不可行. 这就是为什么Quorum算法更多的出现在共享集群配置, 例如ZooKeeper, 而不是主流数据存储. 例如, HDFS的namenode的高可用性基于多数票机制, 但数据存储不是.<br>Kafka采用一个稍微不同的方式来选择其quorum集合. Kafka动态地维护一组in-sync replicas(ISR), 而不是多数票. 只有ISR组内的成员有资格选举leader. 只有所有ISR都收到了消息, 该消息才可被认作已提交, 只写入partition不能认为提交成功. 每当发生变动时, ISR都会保存到ZooKeeper中. 因此, ISR中的任何副本都有资格作为leader. 这对于Kafka这种拥有多partition且需要保证节点负载均衡的模型来说十分重要. 通过ISR模型和$f+1$份副本, Kafka topic可在不丢失任何已提交消息的前提下容忍$f$次故障.<br>对于大多数用例, 这种权衡是合理的. 实践中, 为了容忍$f$次故障, 多数票和ISR方法都需等待相同个数的副本确认来确认消息被提交. (例如: 为了容忍一次故障, 多数票需要三分副本和一个ack, ISR方法需要两个副本和一个ack). 不需要最慢的服务器就能确保消息提交, 这是多数票方法的优点. 但是, 我们可以通过让client自行决定是否等待消息提交来改善这种情况, 并且, 由于ISR方法需要较小的replication factor,<br> 从而带来额外的吞吐量和磁盘空间.<br>两种设计还有一个十分重要的不同之处, Kafka并不需要之前故障的节点恢复时保有数据完整性. 复制算法依赖于<strong>stable storage</strong>的存在并不少见, stable storage(存储稳定)指在故障恢复场景中, 数据不会丢失且不会违背一致性. 上述假设有两个问题: 第一, 在实际的持久性数据系统操作中, 磁盘错误是很常见的错误, 且其无法保证数据完整性. 第二, 我们不希望在每次写入数据后都调用fsync来保证一致性, 这会让性能下降两三个数量级. Kafka协议允许副本重新加入到ISR集合中, 在重新加入前, 即便其丢失了unflush数据, 也需要重新同步. </p>
+<h3 id="2-2-Unclean-leader-election-What-if-they-all-die"><a href="#2-2-Unclean-leader-election-What-if-they-all-die" class="headerlink" title="2.2 Unclean leader election: What if they all die?"></a>2.2 Unclean leader election: What if they all die?</h3><p>Kafka对于数据丢失的保障建立在至少有一个存活的in-sync replica上. 如果某个partition的所有节点都故障, 则失去保障. 当所有副本都挂掉时, 系统可以采用以下两种方案:</p>
+<ol>
+<li>等待ISR中的某个副本回复, 并将其选举为新的leader(数据不一定完整)</li>
+<li>选择第一个恢复的副本作为leader, 不需要是ISR中的一员</li>
+</ol>
+<p>这是一种<strong>可用性</strong>和<strong>一致性</strong>之间的权衡. 若我们选择等待ISR中的副本, 则副本故障期间系统是不可用的; 若副本全部被破坏或数据丢失, 那么服务将永远处于瘫痪状态. 若我们允许一个非in-sync replica作为leader, 其log会成为消息的真实来源, 但实际可能存在数据丢失. 从0.11.0.0开始, Kafka选择使用第一种策略, 并倾向于等待一致的副本. 该属性可通过<strong>unclean.leader.election.enable</strong>配置, 来平衡实际用例中的可用性和一致性.<br>这种困境不光存在于Kafka, 其存在于所有基于Quorum的方案. 举个例子, 对于多数票方案, 若大多数服务器遭遇永久故障, 要么选择丢失所有数据, 要么选择违反一致性, 将集群中其他存活的服务器的数据作为真实数据源. </p>
+<h3 id="2-3-Availability-and-Durability-Guarantees"><a href="#2-3-Availability-and-Durability-Guarantees" class="headerlink" title="2.3 Availability and Durability Guarantees"></a>2.3 Availability and Durability Guarantees</h3><p>当写入Kafka时, producer可以通过选择不同的ack(0, 1, -1)来决定是否等待数据提交. <strong>所有副本的确认</strong>并不保证所有副本都收到消息. 默认情况下, 当acks=all时, 所有in-sync replica都收到消息后就完成了确认. 例如: 若一个topic仅配置了两个副本, 一个失败, 另一个成功, 那么写入操作还是被认作成功的. 但如果其余副本也失败了, 则写入的数据会丢失. 虽然这能最大程度上确保partition的可用性, 但对于需要更需要持久性而非可用性的用例来说, 这种策略是不受欢迎的. 因此, Kafka提供了两种topic级别的配置, 以此平衡持久性和可用性:</p>
+<ol>
+<li>关闭unclean leader election: 若所有副本都不可用, partition会处于不可用状态, 直到最近的leader恢复可用. 这可能导致不可用, 但不会丢失数据.</li>
+<li>指定一个最小ISR大小: 如果ISR的副本数大于某个特定值, 则该partition接受写操作. 这样可以防止单个副本遭遇故障后消息丢失的问题. 只有acks=all时这一设置才有效, 至少有特定个in-sync replica收到消息, producer才会收到确认. 这个选项提供了一个可用性和持久性之间的权衡. 若给最小ISR数量一个较大值, 则可以保证更好的持久性, 因为消息会被写入更多的副本, 丢失消息的概率也会降低; 但这也会降低可用性, 若in-sync replica的存活数量小于阈值, 该partition将不支持写入操作. </li>
+</ol>
+<h3 id="2-4-Replica-Management"><a href="#2-4-Replica-Management" class="headerlink" title="2.4 Replica Management"></a>2.4 Replica Management</h3><p>上述的讨论只围绕着一个log, 也就是一个topic中的一个partition. 然而, 在Kafka集群中会有成百上千个partition. 我们尝试以轮询的方式平衡集群中的partition, 避免大量topic的partition集中在少数节点. 同样, 我们尝试平衡leader, 这样每个节点都能承担一定比例的leader职责.<br>Leader的选举过程也很重要, 这决定了不可用窗口期的长度. 一个简单的leader选举实现可以是: 当某个节点出现故障, 为该节点上的所有partition都举行一次选举. 相反, 我们可以推选一个broker作为<strong>controller</strong>. 这个controller会检测broker层面的故障, 并负责为故障节点中的所有受影响partition分配新的leader. 这样可以批处理多个修改leader的通发生故障, 剩余的broker中会有一个成为新的controller.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/7d29.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Kafka Design (3)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/bbb8.html">
+        <span class="next-text nav-default">Kafka Design (1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/fb87.html';
+  var disqus_title = "Kafka Design (2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+  
+
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+  
+
+  
+    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: true
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

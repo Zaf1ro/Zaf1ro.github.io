@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -37,20 +37,20 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/133139382.html">
 
 
-<meta name="description" content="1. PipelinedCPU通常需要五步来执行指令:  Fetch(从register取出一个32位的指令) Decode(指令解码) Execute(执行指令) Memory Access(需要访问内存时使用, 例如load/store指令) Write-back(将运算结果写回register)  为提高CPU的throughput(吞吐量), 运用instruction pipelinin">
-<meta name="keywords" content="Concurrency">
+<meta name="description" content="1. PipelinedCPU通常需要五步来执行指令:  Fetch(从register取出一个32位的指令) Decode(指令解码) Execute(执行指令) Memory Access(需要访问内存时使用, 例如load&#x2F;store指令) Write-back(将运算结果写回register)  为提高CPU的throughput(吞吐量), 运用instruction pipelinin">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Hardware">
 <meta property="og:url" content="https://zaf1ro.github.io/p/133139382.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
-<meta property="og:description" content="1. PipelinedCPU通常需要五步来执行指令:  Fetch(从register取出一个32位的指令) Decode(指令解码) Execute(执行指令) Memory Access(需要访问内存时使用, 例如load/store指令) Write-back(将运算结果写回register)  为提高CPU的throughput(吞吐量), 运用instruction pipelinin">
-<meta property="og:locale" content="zh">
+<meta property="og:description" content="1. PipelinedCPU通常需要五步来执行指令:  Fetch(从register取出一个32位的指令) Decode(指令解码) Execute(执行指令) Memory Access(需要访问内存时使用, 例如load&#x2F;store指令) Write-back(将运算结果写回register)  为提高CPU的throughput(吞吐量), 运用instruction pipelinin">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/hardware-1.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/hardware-2.png">
-<meta property="og:updated_time" content="2019-10-03T13:24:50.000Z">
+<meta property="article:published_time" content="2019-05-20T18:36:15.000Z">
+<meta property="article:modified_time" content="2019-10-03T13:24:50.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Concurrency">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hardware">
-<meta name="twitter:description" content="1. PipelinedCPU通常需要五步来执行指令:  Fetch(从register取出一个32位的指令) Decode(指令解码) Execute(执行指令) Memory Access(需要访问内存时使用, 例如load/store指令) Write-back(将运算结果写回register)  为提高CPU的throughput(吞吐量), 运用instruction pipelinin">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/multithreading/Basic/hardware-1.png">
 
 
@@ -64,7 +64,7 @@
     <title>
 Hardware - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -80,7 +80,7 @@ Hardware - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Pipelined"><span class="toc-text">1. Pipelined</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Memory-Reference"><span class="toc-text">2. Memory Reference</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Atomic-Operations"><span class="toc-text">3. Atomic Operations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Memory-Barrier"><span class="toc-text">4. Memory Barrier</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Cache-Miss"><span class="toc-text">5. Cache Miss</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-I-O-Operations"><span class="toc-text">6. I/O Operations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Costs-of-Operations"><span class="toc-text">7. Costs of Operations</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Pipelined"><span class="toc-text">1. Pipelined</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Memory-Reference"><span class="toc-text">2. Memory Reference</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Atomic-Operations"><span class="toc-text">3. Atomic Operations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Memory-Barrier"><span class="toc-text">4. Memory Barrier</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Cache-Miss"><span class="toc-text">5. Cache Miss</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-I-O-Operations"><span class="toc-text">6. I&#x2F;O Operations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Costs-of-Operations"><span class="toc-text">7. Costs of Operations</span></a></li></ol>
   </div>
 
     </div>
@@ -105,7 +105,7 @@ Hardware - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -161,11 +161,9 @@ Hardware - Zaf1ro's Blog
 </ol>
 <p>但从原理来说, atomic operation与CPU pipeline矛盾. 即使一些看似很简单的操作, 其实也无法通过多个指令完成, 例如:</p>
 <figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">uint64_t</span> sharedValue = <span class="number">0</span>;</span><br><span class="line">sharedValue = <span class="number">0x100000002</span>; <span class="comment">/* mov DWORD PTR sharedValue, 2</span></span><br><span class="line"><span class="comment">                            * mov DWORD PTR sharedValue+4, 1</span></span><br><span class="line"><span class="comment">                            */</span></span><br></pre></td></tr></table></figure>
-
 <p>所以为实现atomic operation, 需要pipeline delayed或pipeline flush, 从而造成CPU性能下降.</p>
 <h2 id="4-Memory-Barrier"><a href="#4-Memory-Barrier" class="headerlink" title="4. Memory Barrier"></a>4. Memory Barrier</h2><p>由于CPU的性能优化会导致out-of-order execution(指令乱序执行), 这会导致多线程的并发编程出现意外结果, 例如:</p>
 <figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Processor 1</span></span><br><span class="line"><span class="keyword">while</span> (f == <span class="number">0</span>);</span><br><span class="line">print x;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Processor 2</span></span><br><span class="line">x = <span class="number">42</span>;</span><br><span class="line">f = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-
 <p>x和f的assignment operation乱序执行会导致print的结果不同, 这时需要memory barrier(内存屏障)来保证CPU按照某种顺序执行, 也必然导致CPU性能下降.</p>
 <h2 id="5-Cache-Miss"><a href="#5-Cache-Miss" class="headerlink" title="5. Cache Miss"></a>5. Cache Miss</h2><p>对于单个CPU来说, cache极大地降低了访问内存延迟. 但对于多个CPU来说, 由于每个CPU都有各自的cache, 某个CPU访问的变量可能在其他CPU的cache中, 发生cache miss. 例如:<br><img src="/images/multithreading/Basic/hardware-2.png" alt="Basic five-stage pipeline"></p>
 <p>当CPU0想要对CPU7中cache的数据进行CAS operation(compare and swap)时, 必须进行以下步骤:</p>

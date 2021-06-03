@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,13 +38,12 @@
 
 
 <meta name="description" content="4. 回滚原子提交被设想为是瞬发的, 但第三节已经显示, 这一系列操作实际上会占用有限时间. 假设断电发生在上述操作中, 为了保持信息改变的瞬发性, 我们需要”回滚”(rollback)任何一部分修改信息, 并将数据库的状态恢复到事务进行之前.  4.1 当出现错误时假设断电发生在3.10, 就是数据库的修改信息正在写入硬盘时. 在电源恢复后, 情况就像上图所示: 我们想修改三个页面, 但只有一个">
-<meta name="keywords" content="SQLite">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Atomic Commit (Part 2)">
 <meta property="og:url" content="https://zaf1ro.github.io/p/4207285567.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="4. 回滚原子提交被设想为是瞬发的, 但第三节已经显示, 这一系列操作实际上会占用有限时间. 假设断电发生在上述操作中, 为了保持信息改变的瞬发性, 我们需要”回滚”(rollback)任何一部分修改信息, 并将数据库的状态恢复到事务进行之前.  4.1 当出现错误时假设断电发生在3.10, 就是数据库的修改信息正在写入硬盘时. 在电源恢复后, 情况就像上图所示: 我们想修改三个页面, 但只有一个">
-<meta property="og:locale" content="zh">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-1.gif">
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-2.gif">
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-3.gif">
@@ -57,10 +56,11 @@
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-10.gif">
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-11.gif">
 <meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-12.gif">
-<meta property="og:updated_time" content="2019-10-08T19:13:05.000Z">
+<meta property="article:published_time" content="2015-12-08T03:02:03.000Z">
+<meta property="article:modified_time" content="2019-10-08T19:13:05.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="SQLite">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Atomic Commit (Part 2)">
-<meta name="twitter:description" content="4. 回滚原子提交被设想为是瞬发的, 但第三节已经显示, 这一系列操作实际上会占用有限时间. 假设断电发生在上述操作中, 为了保持信息改变的瞬发性, 我们需要”回滚”(rollback)任何一部分修改信息, 并将数据库的状态恢复到事务进行之前.  4.1 当出现错误时假设断电发生在3.10, 就是数据库的修改信息正在写入硬盘时. 在电源恢复后, 情况就像上图所示: 我们想修改三个页面, 但只有一个">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-1.gif">
 
 
@@ -74,7 +74,7 @@
     <title>
 Atomic Commit (Part 2) - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -90,7 +90,7 @@ Atomic Commit (Part 2) - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-回滚"><span class="toc-text">4. 回滚</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-当出现错误时"><span class="toc-text">4.1 当出现错误时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-热回滚日志-Hot-Rollback-Journals"><span class="toc-text">4.2 热回滚日志(Hot Rollback Journals)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-获得数据库的排它锁"><span class="toc-text">4.3 获得数据库的排它锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-回滚回不完整的修改"><span class="toc-text">4.4 回滚回不完整的修改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-删除热日志"><span class="toc-text">4.5 删除热日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-好似未完成的写入操作没发生过一样继续工作"><span class="toc-text">4.6 好似未完成的写入操作没发生过一样继续工作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-多文件提交"><span class="toc-text">5. 多文件提交</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-每个数据库文件单独的回滚日志"><span class="toc-text">5.1 每个数据库文件单独的回滚日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-主日志文件-The-Master-Jounal-File"><span class="toc-text">5.2 主日志文件(The Master Jounal File)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-更新回滚日志文件头部"><span class="toc-text">5.3 更新回滚日志文件头部</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-更新数据库文件"><span class="toc-text">5.4 更新数据库文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-删除主日志文件"><span class="toc-text">5.5 删除主日志文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-清除所有回滚日志文件"><span class="toc-text">5.6 清除所有回滚日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-提交过程中的其他细节"><span class="toc-text">6. 提交过程中的其他细节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-始终日志完成扇区-Sectors"><span class="toc-text">6.1 始终日志完成扇区(Sectors)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-处理写入日志文件的垃圾"><span class="toc-text">6.2 处理写入日志文件的垃圾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-提交前流出缓存"><span class="toc-text">6.3 提交前流出缓存</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%9B%9E%E6%BB%9A"><span class="toc-text">4. 回滚</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%BD%93%E5%87%BA%E7%8E%B0%E9%94%99%E8%AF%AF%E6%97%B6"><span class="toc-text">4.1 当出现错误时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%83%AD%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97-Hot-Rollback-Journals"><span class="toc-text">4.2 热回滚日志(Hot Rollback Journals)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E8%8E%B7%E5%BE%97%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E6%8E%92%E5%AE%83%E9%94%81"><span class="toc-text">4.3 获得数据库的排它锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%9B%9E%E6%BB%9A%E5%9B%9E%E4%B8%8D%E5%AE%8C%E6%95%B4%E7%9A%84%E4%BF%AE%E6%94%B9"><span class="toc-text">4.4 回滚回不完整的修改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%88%A0%E9%99%A4%E7%83%AD%E6%97%A5%E5%BF%97"><span class="toc-text">4.5 删除热日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E5%A5%BD%E4%BC%BC%E6%9C%AA%E5%AE%8C%E6%88%90%E7%9A%84%E5%86%99%E5%85%A5%E6%93%8D%E4%BD%9C%E6%B2%A1%E5%8F%91%E7%94%9F%E8%BF%87%E4%B8%80%E6%A0%B7%E7%BB%A7%E7%BB%AD%E5%B7%A5%E4%BD%9C"><span class="toc-text">4.6 好似未完成的写入操作没发生过一样继续工作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%A4%9A%E6%96%87%E4%BB%B6%E6%8F%90%E4%BA%A4"><span class="toc-text">5. 多文件提交</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%AF%8F%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%87%E4%BB%B6%E5%8D%95%E7%8B%AC%E7%9A%84%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97"><span class="toc-text">5.1 每个数据库文件单独的回滚日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E4%B8%BB%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6-The-Master-Jounal-File"><span class="toc-text">5.2 主日志文件(The Master Jounal File)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%9B%B4%E6%96%B0%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E5%A4%B4%E9%83%A8"><span class="toc-text">5.3 更新回滚日志文件头部</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%87%E4%BB%B6"><span class="toc-text">5.4 更新数据库文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%88%A0%E9%99%A4%E4%B8%BB%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">5.5 删除主日志文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-%E6%B8%85%E9%99%A4%E6%89%80%E6%9C%89%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">5.6 清除所有回滚日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%8F%90%E4%BA%A4%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84%E5%85%B6%E4%BB%96%E7%BB%86%E8%8A%82"><span class="toc-text">6. 提交过程中的其他细节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%A7%8B%E7%BB%88%E6%97%A5%E5%BF%97%E5%AE%8C%E6%88%90%E6%89%87%E5%8C%BA-Sectors"><span class="toc-text">6.1 始终日志完成扇区(Sectors)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%A4%84%E7%90%86%E5%86%99%E5%85%A5%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%9A%84%E5%9E%83%E5%9C%BE"><span class="toc-text">6.2 处理写入日志文件的垃圾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%8F%90%E4%BA%A4%E5%89%8D%E6%B5%81%E5%87%BA%E7%BC%93%E5%AD%98"><span class="toc-text">6.3 提交前流出缓存</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -115,7 +115,7 @@ Atomic Commit (Part 2) - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -176,7 +176,6 @@ Atomic Commit (Part 2) - Zaf1ro's Blog
 <h3 id="6-1-始终日志完成扇区-Sectors"><a href="#6-1-始终日志完成扇区-Sectors" class="headerlink" title="6.1 始终日志完成扇区(Sectors)"></a>6.1 始终日志完成扇区(Sectors)</h3><p>在3.5节中, 当数据库页面的原始内容写入回滚日志文件中时, SQLite会写入完整的扇区(sector), 即使数据库的页面大小小于扇区尺寸. 从历史角度来说, SQLite的扇区大小被硬编码为512比特, 并且由于页面最小为512比特, 所以这从来不是一个问题. 从3.3.14开始, SQlite便有可能用大于512比特的大容量储存器. 所以从3.3.14开始, 只要扇区中的任何一个页面需要写入日志文件, 那么这个扇区的所有页面都会写入.<br>将扇区中的所有页面存起来是十分有必要的, 因为这可以写入扇区时的断电情况. 假设扇区1(sector 1)中页面2需要被修改, 但这个扇区上有4个页面(page1,2,3,4). 为了将页面2的信息写入数据库文件, 底层硬件还需要将页面1,3,4一起重写. 如果写入操作由于断电中断, 导致页面1,3,4中的一个或多个含有错误信息. 因此为了防止这种数据库崩溃, 需要将所有页面的原始信息都写入回滚日志文件. </p>
 <h3 id="6-2-处理写入日志文件的垃圾"><a href="#6-2-处理写入日志文件的垃圾" class="headerlink" title="6.2 处理写入日志文件的垃圾"></a>6.2 处理写入日志文件的垃圾</h3><p>当向回滚日志文件追加数据库时, SQLite会悲观地假设文件先被没用的”垃圾”充满, 然后再用正确的数据替代. 换句话说, SQLite假设文件是先增加体积, 再写入数据. 如果断电发生在文件增长体积之后, 而在写入数据之前, 回滚日志文件会被垃圾充满. 当恢复电力后, SQLite进程发现回滚日志文件装满垃圾数据, 紧接着回滚写入原始数据库文件中, 这样会使数据库文件中存有垃圾数据, 崩溃.<br>SQLite对此问题有两层防线. 第一层, SQLite将回滚日志文件的页面数量记录到日志文件的头部, 这个数量被初始化为0. 当尝试回滚一个不完整的日志文件时, 进程发现日志文件中没有页面, 就不会对数据库文件做修改. 在提交之前, 回滚日志文件将被写入硬盘中, 来确保信息已经同步到硬盘中, 并且文件中没有垃圾信息, 这时才会将头部的页面数量从0变为回滚日志文件的页面数量. 头部与数据库信息位于不同的扇区, 这样写入头部时断电不会影响到数据部分. 回滚日志文件被写入了两次: 一次是页面内容, 一次是头部写入页面数量.<br>上述的情况描述了synchronous pragma设为full的情况</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA synchronous=FULL;</span><br></pre></td></tr></table></figure>
-
 <p>默认synchronous是为full, 并且情况像上述一样. 如果synchronous降级为normal, 那么SQLite会在页面数量写入后只会写入回滚日志文件一次. 这会带来一个风险, 那就是修改页面数量的操作发生在写入数据之前, 写入数据库虽然是提前发生的, 但SQLite假设实际的文件系统会重新调整写入顺序, 所以即便页面数量的写入发生在后面, 也有可能会提前写入. 第二道防线就是SQLite会为日志文件记录每一个页面的32校验值. 当进行回滚操作时, 这些校验值会告诉SQLite页面是否有效, 如果发现不正确的值, SQLite会放弃修改. 由于校验值比较小, 所以存在误判率, 但也不用过多担心, 因为误判率实在很低, 校验值还是起到了很强的保护作用的.<br>注意: 当synchronous设为FULL时, 校验值对于回滚日志文件就没有意义了. 只有设为NORMAL时我们才依赖于校验值. 尽管如此, 校验值还是无害的, 所以无论synchronous设为任何值, 都讲校验值保存在日志文件中. </p>
 <h3 id="6-3-提交前流出缓存"><a href="#6-3-提交前流出缓存" class="headerlink" title="6.3 提交前流出缓存"></a>6.3 提交前流出缓存</h3><p>3.0节的提交过程假设所有的数据库修改信息都会保存在内存中, 直到提交. 有时一个较大的改动可能会在提交前移出用户缓存, 那样的话在必须在事务完成前将缓存移到数据库文件中.<br>在移出缓存之前, 数据库连接状态和3.6节相同. 初始的页面内容需要保存在回滚日志文件中, 并且页面的修改保留在用户内存中. 为了将缓存移出, SQlite执行3.7节和3.8节的操作, 换句话说, 回滚日志文件被写入硬盘, 这时就需要一个排它锁, 并将修改的信息写入数据库文件中. 但剩下的步骤将推迟到事务彻底提交为止才进行. 一个新的日志头部将追加到回滚日志文件的尾部, 并且有需要的获得一个排它锁, 进程又回到3.6步骤. 当事务真正提交或需要移出缓存时, 又要重复3.7和3.8步骤. (3.8在第二次和接下来的执行中都被忽略了, 因为数据库的排它锁会一直持有. )<br>一次移出缓存导致数据库文件上的保留锁升级为排它锁. 这会降低并发性. 一次移出缓存也会导致额外的硬盘写入和同步操作. 因此移出缓存会严重降低性能. 综上所述, 应该在任何情况下都避免移出缓存. </p>
 

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. DescriptionGiven a time represented in the format “HH:MM”, form the next closest time by reusing the current digits. There is no limit on how many times a digit can be reused.You may assume the giv">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Next Closest Time">
 <meta property="og:url" content="https://zaf1ro.github.io/p/286748673.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. DescriptionGiven a time represented in the format “HH:MM”, form the next closest time by reusing the current digits. There is no limit on how many times a digit can be reused.You may assume the giv">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T20:04:03.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-27T00:03:37.000Z">
+<meta property="article:modified_time" content="2019-11-11T20:04:03.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Next Closest Time">
-<meta name="twitter:description" content="1. DescriptionGiven a time represented in the format “HH:MM”, form the next closest time by reusing the current digits. There is no limit on how many times a digit can be reused.You may assume the giv">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Next Closest Time - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Next Closest Time - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -135,14 +135,15 @@ Next Closest Time - Zaf1ro's Blog
     <div class="post-content">
       <h2 id="1-Description"><a href="#1-Description" class="headerlink" title="1. Description"></a>1. Description</h2><p>Given a time represented in the format “HH:MM”, form the next closest time by reusing the current digits. There is no limit on how many times a digit can be reused.<br>You may assume the given input string is always valid. For example, “01:34”, “12:09” are all valid. “1:34”, “12:9” are all invalid.</p>
 <p>Example 1:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: &quot;19:34&quot;</span><br><span class="line">Output: &quot;19:39&quot;</span><br><span class="line">Explanation: The next closest time choosing from digits 1, 9, 3, 4, is 19:39, which occurs 5 minutes later.  It is not 19:33, because this occurs 23 hours and 59 minutes later.</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: &quot;19:34&quot;</span><br><span class="line">Output: &quot;19:39&quot;</span><br><span class="line">Explanation: The next closest time choosing from digits 1, 9, 3, 4, is 19:39, which occurs 5 minutes later.  It is not 19:33, because this occurs 23 hours and 59 minutes later.</span><br></pre></td></tr></table></figure>
 
 <p>Example 2:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: &quot;23:59&quot;</span><br><span class="line">Output: &quot;22:22&quot;</span><br><span class="line">Explanation: The next closest time choosing from digits 2, 3, 5, 9, is 22:22. It may be assumed that the returned time is next day&apos;s time since it is smaller than the input time numerically.</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: &quot;23:59&quot;</span><br><span class="line">Output: &quot;22:22&quot;</span><br><span class="line">Explanation: The next closest time choosing from digits 2, 3, 5, 9, is 22:22. It may be assumed that the returned time is next day&#x27;s time since it is smaller than the input time numerically.</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="2-Solution"><a href="#2-Solution" class="headerlink" title="2. Solution"></a>2. Solution</h2><p>思路: 直接解决这个问题将要分很多种情况, 不如直接遍历所有可能时刻, 选择一个最小时刻.</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span>[] divisors = &#123;<span class="number">600</span>, <span class="number">60</span>, <span class="number">10</span>, <span class="number">1</span>&#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">nextClosestTime</span><span class="params">(String time)</span> </span>&#123;</span><br><span class="line">    String[] t = time.split(<span class="string">":"</span>);</span><br><span class="line">    <span class="keyword">int</span> target = Integer.parseInt(t[<span class="number">0</span>]) * <span class="number">60</span> + Integer.parseInt(t[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">char</span>[] combine = <span class="keyword">new</span> <span class="keyword">char</span>[<span class="number">4</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>, j = <span class="number">0</span>; i &lt;= <span class="number">1440</span>; i++) &#123;     <span class="comment">// i == 1440 -&gt; 00:00, iterate all circle</span></span><br><span class="line">      <span class="keyword">int</span> sum = (target + i) % <span class="number">1440</span>;        <span class="comment">// prevent that situation: 23:59 -&gt; 22:22</span></span><br><span class="line">      <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; <span class="number">4</span>; j++) &#123;</span><br><span class="line">        combine[j] = (<span class="keyword">char</span>)(<span class="string">'0'</span> + sum / divisors[j]);   <span class="comment">// get each character of each time</span></span><br><span class="line">        sum %= divisors[j];           <span class="comment">// change the time</span></span><br><span class="line">        <span class="comment">// check whether the character is in the input string </span></span><br><span class="line">        <span class="keyword">if</span> (time.indexOf(combine[j]) == -<span class="number">1</span>) <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span>(j == <span class="number">4</span>) <span class="keyword">break</span>;   <span class="comment">// find the answer</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> String(combine, <span class="number">0</span>, <span class="number">2</span>) + <span class="string">":"</span> + <span class="keyword">new</span> String(combine, <span class="number">2</span>, <span class="number">2</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span>[] divisors = &#123;<span class="number">600</span>, <span class="number">60</span>, <span class="number">10</span>, <span class="number">1</span>&#125;;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">nextClosestTime</span><span class="params">(String time)</span> </span>&#123;</span><br><span class="line">    String[] t = time.split(<span class="string">&quot;:&quot;</span>);</span><br><span class="line">    <span class="keyword">int</span> target = Integer.parseInt(t[<span class="number">0</span>]) * <span class="number">60</span> + Integer.parseInt(t[<span class="number">1</span>]);</span><br><span class="line">    <span class="keyword">char</span>[] combine = <span class="keyword">new</span> <span class="keyword">char</span>[<span class="number">4</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>, j = <span class="number">0</span>; i &lt;= <span class="number">1440</span>; i++) &#123;     <span class="comment">// i == 1440 -&gt; 00:00, iterate all circle</span></span><br><span class="line">      <span class="keyword">int</span> sum = (target + i) % <span class="number">1440</span>;        <span class="comment">// prevent that situation: 23:59 -&gt; 22:22</span></span><br><span class="line">      <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; <span class="number">4</span>; j++) &#123;</span><br><span class="line">        combine[j] = (<span class="keyword">char</span>)(<span class="string">&#x27;0&#x27;</span> + sum / divisors[j]);   <span class="comment">// get each character of each time</span></span><br><span class="line">        sum %= divisors[j];           <span class="comment">// change the time</span></span><br><span class="line">        <span class="comment">// check whether the character is in the input string </span></span><br><span class="line">        <span class="keyword">if</span> (time.indexOf(combine[j]) == -<span class="number">1</span>) <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span>(j == <span class="number">4</span>) <span class="keyword">break</span>;   <span class="comment">// find the answer</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> String(combine, <span class="number">0</span>, <span class="number">2</span>) + <span class="string">&quot;:&quot;</span> + <span class="keyword">new</span> String(combine, <span class="number">2</span>, <span class="number">2</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 

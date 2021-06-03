@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="7. 优化分析可知, 对于绝大部分的操作系统和环境, SQLite的大部分时间都花在IO操作. 所以减少IO操作势必会极大地提高SQLite性能, 这一节就描述了SQLite在保证原子性的同时, 对于如何减少IO操作数量提出的一些技术方法.  7.1 事务间保留缓存3.12节说明了原子提交的过程, 一旦释放共享锁(shared lock), 所有数据库的缓存镜像都要被清除. 因为如果进程没有了共享">
-<meta name="keywords" content="SQLite">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Atomic Commit (Part 3)">
 <meta property="og:url" content="https://zaf1ro.github.io/p/3822920830.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="7. 优化分析可知, 对于绝大部分的操作系统和环境, SQLite的大部分时间都花在IO操作. 所以减少IO操作势必会极大地提高SQLite性能, 这一节就描述了SQLite在保证原子性的同时, 对于如何减少IO操作数量提出的一些技术方法.  7.1 事务间保留缓存3.12节说明了原子提交的过程, 一旦释放共享锁(shared lock), 所有数据库的缓存镜像都要被清除. 因为如果进程没有了共享">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-09T03:31:16.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2015-12-15T23:50:03.000Z">
+<meta property="article:modified_time" content="2019-11-09T03:31:16.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="SQLite">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Atomic Commit (Part 3)">
-<meta name="twitter:description" content="7. 优化分析可知, 对于绝大部分的操作系统和环境, SQLite的大部分时间都花在IO操作. 所以减少IO操作势必会极大地提高SQLite性能, 这一节就描述了SQLite在保证原子性的同时, 对于如何减少IO操作数量提出的一些技术方法.  7.1 事务间保留缓存3.12节说明了原子提交的过程, 一旦释放共享锁(shared lock), 所有数据库的缓存镜像都要被清除. 因为如果进程没有了共享">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Atomic Commit (Part 3) - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -77,7 +77,7 @@ Atomic Commit (Part 3) - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-优化"><span class="toc-text">7. 优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-事务间保留缓存"><span class="toc-text">7.1 事务间保留缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-独占访问模式-Exclusive-Access-Mode"><span class="toc-text">7.2 独占访问模式(Exclusive Access Mode)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-不要将空白列表页面写入日志中"><span class="toc-text">7.3 不要将空白列表页面写入日志中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-单个页面更新和原子扇区写入"><span class="toc-text">7.4 单个页面更新和原子扇区写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-带有安全附加语义-Safe-Append-Semantics-的文件系统"><span class="toc-text">7.5 带有安全附加语义(Safe Append Semantics)的文件系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-6-持久性回滚日志文件"><span class="toc-text">7.6 持久性回滚日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-测试原子提交行为"><span class="toc-text">8. 测试原子提交行为</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-一些能导致崩溃的事情"><span class="toc-text">9. 一些能导致崩溃的事情</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-缺乏锁的实现"><span class="toc-text">9.1 缺乏锁的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-不完整的硬盘刷新"><span class="toc-text">9.2 不完整的硬盘刷新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-局部文件删除"><span class="toc-text">9.3 局部文件删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-4-垃圾写入文件中"><span class="toc-text">9.4 垃圾写入文件中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-5-删除或重命名热日志文件"><span class="toc-text">9.5 删除或重命名热日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-未来的方向与总结"><span class="toc-text">10. 未来的方向与总结</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E4%BC%98%E5%8C%96"><span class="toc-text">7. 优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E4%BA%8B%E5%8A%A1%E9%97%B4%E4%BF%9D%E7%95%99%E7%BC%93%E5%AD%98"><span class="toc-text">7.1 事务间保留缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E7%8B%AC%E5%8D%A0%E8%AE%BF%E9%97%AE%E6%A8%A1%E5%BC%8F-Exclusive-Access-Mode"><span class="toc-text">7.2 独占访问模式(Exclusive Access Mode)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E4%B8%8D%E8%A6%81%E5%B0%86%E7%A9%BA%E7%99%BD%E5%88%97%E8%A1%A8%E9%A1%B5%E9%9D%A2%E5%86%99%E5%85%A5%E6%97%A5%E5%BF%97%E4%B8%AD"><span class="toc-text">7.3 不要将空白列表页面写入日志中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E5%8D%95%E4%B8%AA%E9%A1%B5%E9%9D%A2%E6%9B%B4%E6%96%B0%E5%92%8C%E5%8E%9F%E5%AD%90%E6%89%87%E5%8C%BA%E5%86%99%E5%85%A5"><span class="toc-text">7.4 单个页面更新和原子扇区写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-%E5%B8%A6%E6%9C%89%E5%AE%89%E5%85%A8%E9%99%84%E5%8A%A0%E8%AF%AD%E4%B9%89-Safe-Append-Semantics-%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-text">7.5 带有安全附加语义(Safe Append Semantics)的文件系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-6-%E6%8C%81%E4%B9%85%E6%80%A7%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">7.6 持久性回滚日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E6%B5%8B%E8%AF%95%E5%8E%9F%E5%AD%90%E6%8F%90%E4%BA%A4%E8%A1%8C%E4%B8%BA"><span class="toc-text">8. 测试原子提交行为</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E4%B8%80%E4%BA%9B%E8%83%BD%E5%AF%BC%E8%87%B4%E5%B4%A9%E6%BA%83%E7%9A%84%E4%BA%8B%E6%83%85"><span class="toc-text">9. 一些能导致崩溃的事情</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E7%BC%BA%E4%B9%8F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">9.1 缺乏锁的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E4%B8%8D%E5%AE%8C%E6%95%B4%E7%9A%84%E7%A1%AC%E7%9B%98%E5%88%B7%E6%96%B0"><span class="toc-text">9.2 不完整的硬盘刷新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E5%B1%80%E9%83%A8%E6%96%87%E4%BB%B6%E5%88%A0%E9%99%A4"><span class="toc-text">9.3 局部文件删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-4-%E5%9E%83%E5%9C%BE%E5%86%99%E5%85%A5%E6%96%87%E4%BB%B6%E4%B8%AD"><span class="toc-text">9.4 垃圾写入文件中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-5-%E5%88%A0%E9%99%A4%E6%88%96%E9%87%8D%E5%91%BD%E5%90%8D%E7%83%AD%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">9.5 删除或重命名热日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%9C%AA%E6%9D%A5%E7%9A%84%E6%96%B9%E5%90%91%E4%B8%8E%E6%80%BB%E7%BB%93"><span class="toc-text">10. 未来的方向与总结</span></a></li></ol>
   </div>
 
     </div>
@@ -102,7 +102,7 @@ Atomic Commit (Part 3) - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -147,20 +147,16 @@ Atomic Commit (Part 3) - Zaf1ro's Blog
 <h3 id="7-5-带有安全附加语义-Safe-Append-Semantics-的文件系统"><a href="#7-5-带有安全附加语义-Safe-Append-Semantics-的文件系统" class="headerlink" title="7.5 带有安全附加语义(Safe Append Semantics)的文件系统"></a>7.5 带有安全附加语义(Safe Append Semantics)的文件系统</h3><p>另一个在3.5.0版本加入的优化就是在底层硬盘中使用”安全附加”行为. 之前提到SQLite会假设当数据追加到文件中时, 文件先增大体积, 再填写内容. 所以若在两者中间发生断电, 文件会含有非法的”垃圾”数据. VFS的xDeviceCharacteristics方法可能会表明文件系统支持”安全附加”语义, 这意味着文件大小的增加会在内容写入之后发生, 这保证了即使断电数据库文件中不会有垃圾数据.<br>当安全附加语义在文件系统中被声明时, SQLite会将回滚日志文件头部的页面计数器永久置为-1, 这个值告诉其他想要回滚这个日志的进程, 页面的数量应该从日志文件的体积中计算得出. -1这个值不会被改变, 所以在一次提交过程中, 我们节约一个flush操作和日志文件首个页面的扇区写入. 并且当一个扇区溢出时, 我们不必将一个新的日志文件头部追加到另一个日志文件的尾部；我们可以直接将新的页面追加到已存在的日志文件的尾部. </p>
 <h3 id="7-6-持久性回滚日志文件"><a href="#7-6-持久性回滚日志文件" class="headerlink" title="7.6 持久性回滚日志文件"></a>7.6 持久性回滚日志文件</h3><p>在许多操作系统中, 删除文件是很消耗时间的一件事. 作为优化, SQlite可以配置来避免3.11中的删除操作, 可以在提交事务时不删除日志文件, 而是将长度截断为0字节, 或将头部填充为0. 将长度截断为0节省了对文件所在目录的修改, 因为文件依然在该目录中. 填充文件头部的额外好处就是不必更新文件长度, 而且不必处理新释放的磁盘扇区. 此外, 在下一次事务中, 日志文件可以直接覆盖原来的内容, 而不是追加到文件末尾. 重写的速度往往比追加快得多.<br>SQLite可以通过使用journal_mode PRAGMA来设置”PERSIST”日志模式, 从而使得提交事务可通过重写日志头部为0, 而不是删除日志文件：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA jounal_mode = PERSIST;</span><br></pre></td></tr></table></figure>
-
 <p>持久性日志模式为我们提供了一种显而易见的性能提升方式. 缺点就是日志文件会在事务提交后的很久一直停留在硬盘中, 占用硬盘的空间并弄乱文件目录. 唯一一种删除持久性日志文件的方法就是将日志模式设置为DELETE：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA journal_mode=DELETE;</span><br><span class="line">BEGIN EXCLUSIVE;</span><br><span class="line">COMMIT;</span><br></pre></td></tr></table></figure>
-
 <p>由于删除的日志文件可能为hot, 所以突然的删除可能会导致对应的数据库文件崩溃. 从3.6.4开始, TRUNCATE日志模式也启动了：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA journal_mode=TRUNCATE;</span><br></pre></td></tr></table></figure>
-
 <p>在截断日志模式中, 事务的提交通过将日志文件的长度截断为0, 而不是删除日志文件(DELETE模式)或填充0(PERSIST模式). 截断模式具有PERSIST模式中拥有日志文件的文件夹和数据库都不需要更新的优点. 因此对一个文件的截断比删除要快得多. 截断还有一个额外的好处, 它不用后面跟着一个系统调用来将修改的信息同步到硬盘种. 在现代的文件系统中, 截断是一个原子性的同步操作, 并且我们认为截断在面临断电时更安全. 如果你不确定你的文件系统中截断操作是否是原子性和同步性的, 并且断电和系统崩溃时你很在意数据库的安全性, 那么要考虑使用其他模式. </p>
 <h2 id="8-测试原子提交行为"><a href="#8-测试原子提交行为" class="headerlink" title="8. 测试原子提交行为"></a>8. 测试原子提交行为</h2><p>SQLite的开发者对于数据库面对断电和系统崩溃是很有自信的, 因为自动化测试流程对于SQLite从模拟的断电中恢复做了大量检查, 我们将之称为”崩溃测试”(crash tests).<br>SQLite中的崩溃测试使用了一种修正的VFS, 它可以模拟发生断电或操作系统崩溃导致的文件系统损伤. 用于崩溃测试的VFS可模拟不完整的磁盘写入, 由于写入中断导致的页面被充满垃圾数据, 或没有按顺序写入, 发生在测试环境中的不同情况. 崩溃测试不断地执行事务, 更改断电的时间和数据库损伤的位置. 每一次模拟崩溃后斗湖重新打开数据库并确保事务要么发生完毕, 要不一点没变, 总结起来就是保证数据库的完整统一的状态.<br>SQLite的崩溃测试发现了恢复机制中的许多微小bug. 其中一些bug是不易觉察的, 即使使用代码审查和分析技术也不容易找到这些bug. 因此SQLite的开发者对于那些没有崩溃测试系统的数据库系统含有不为人知的bug很有自信, 这些bug很可能在某次断电或系统崩溃后导致数据库的崩溃. </p>
 <h2 id="9-一些能导致崩溃的事情"><a href="#9-一些能导致崩溃的事情" class="headerlink" title="9. 一些能导致崩溃的事情"></a>9. 一些能导致崩溃的事情</h2><p>SQLite的原子提交机制被证明是很健壮的, 但还是有可能被一些极具创新性的对手或不完整的操作系统实现坑. 这一节讲述了SQLite会在哪些情况下因为断电或系统崩溃导致数据库崩溃. </p>
 <h3 id="9-1-缺乏锁的实现"><a href="#9-1-缺乏锁的实现" class="headerlink" title="9.1 缺乏锁的实现"></a>9.1 缺乏锁的实现</h3><p>SQLite通过同一时间只有一个进程和数据库连接来修改数据库信息. 文件系统的锁机制应用在VFS层中, 并且在每个操作系统中锁机制不同. SQLite需要保证锁机制的应用是正确的. 如果有两个或多个进程可以同时写一个数据库文件, 那么必然会造成严重损害.<br>我们接受到了一些报告, Windows网络文件系统和NFS会有锁机制的缺失. 我们不能验证这些报告, 但是锁在网络文件系统中的确很难实现, 所以我们没有理由怀疑它们. 首先你应该避免使用网络文件系统, 因为性能很差. 如果你不得不使用一个锁机制不健全的网络文件系统来存储SQLite数据库文件, 那么最好采用其他的锁机制来避免同时对一个数据库的写入.<br>苹果Mac OS X预装的SQLite版本已经扩展了一种可以在网络文件系统工作的可选锁策略. 只要所有的进程用相同的方式来访问数据库文件, 那么苹果上的扩展是很有效的. 不幸的是, 这些锁机制并不互相排斥, 如果一个进行通过AFP锁, 而另一个进程通过dot-file锁访问文件, 那么两个进程可能同时修改一个数据库, 因为AFP锁和dot-file锁并不互相排斥. </p>
 <h3 id="9-2-不完整的硬盘刷新"><a href="#9-2-不完整的硬盘刷新" class="headerlink" title="9.2 不完整的硬盘刷新"></a>9.2 不完整的硬盘刷新</h3><p>SQLite在Unix中使用fsync()系统调用, 在Win32中使用FlushFileBuffers()系统调用来保持系统缓存和硬盘上的同步, 就像3.7和3.10一样. 不幸的是, 在大多数系统中, 这些接口不能像广告中一样工作. 我们听说可以在Windows版本中修改注册表来完全关闭FlushFileBuffers()的功能. 在Linux的早期版本中, 文件系统中的fsync()是空操作. 即使FlushFileBuffers()和fsync()都工作, IDE磁盘控制会撒谎说数据已经写入磁盘, 其实依旧在已更改的磁盘控制缓存中.<br>在Mac中, 你可以设置pragma：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA fullfsync=ON;</span><br></pre></td></tr></table></figure>
-
 <p>在Mac中设置fullsync可以保证数据在刷新时进入磁盘中, 但fullsync的应用会涉及到重新设置硬盘控制器. 并不只是让自身变慢, 还会让不相关的硬盘IO操作变慢, 所以这一应用并不推荐. </p>
 <h3 id="9-3-局部文件删除"><a href="#9-3-局部文件删除" class="headerlink" title="9.3 局部文件删除"></a>9.3 局部文件删除</h3><p>SQLite假设从用户进程的角度来看, 文件删除是原子操作. 如果在删除文件的中途断电, 那么在恢复电力后, SQLite希望看到以下两种情况之一：要么完整的数据还在, 要么文件全部被删除. 如果不是上述情况, 那么事务就不是原子性的. </p>
 <h3 id="9-4-垃圾写入文件中"><a href="#9-4-垃圾写入文件中" class="headerlink" title="9.4 垃圾写入文件中"></a>9.4 垃圾写入文件中</h3><p>SQLite数据库文件都是普通的磁盘文件, 它们都可以被用户进程访问和写入. 流氓进程也可以打开SQLite数据库并填充垃圾数据. 垃圾数据也可能是由于操作系统或硬盘控制器的bug导致其进入SQLite数据库, 尤其是断电引起的bug. SQLite对此无能为力. </p>

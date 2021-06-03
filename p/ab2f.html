@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. Introduction语法正确代码仍可能包含严重错误, 导致编译无法完成, 这就需要compiler对程序的了解必须超越语法这个层次, 并建立一个庞大的知识库. 为此, complier需要跟踪每个值的流动, 值的类型, 程序与外部设备的交互, 程序本身的结构, 这种技术被称为context-sensitive analysis, 或称为semantic elaboration.为从语法之">
-<meta name="keywords" content="Compiler">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Context Sensitive Analysis (1)">
 <meta property="og:url" content="https://zaf1ro.github.io/p/ab2f.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. Introduction语法正确代码仍可能包含严重错误, 导致编译无法完成, 这就需要compiler对程序的了解必须超越语法这个层次, 并建立一个庞大的知识库. 为此, complier需要跟踪每个值的流动, 值的类型, 程序与外部设备的交互, 程序本身的结构, 这种技术被称为context-sensitive analysis, 或称为semantic elaboration.为从语法之">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2020-03-27T16:11:08.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2020-03-17T13:06:40.000Z">
+<meta property="article:modified_time" content="2020-03-27T16:11:08.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Compiler">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Context Sensitive Analysis (1)">
-<meta name="twitter:description" content="1. Introduction语法正确代码仍可能包含严重错误, 导致编译无法完成, 这就需要compiler对程序的了解必须超越语法这个层次, 并建立一个庞大的知识库. 为此, complier需要跟踪每个值的流动, 值的类型, 程序与外部设备的交互, 程序本身的结构, 这种技术被称为context-sensitive analysis, 或称为semantic elaboration.为从语法之">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Context Sensitive Analysis (1) - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Context Sensitive Analysis (1) - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -235,7 +235,7 @@ Context Sensitive Analysis (1) - Zaf1ro's Blog
 </tr>
 </tbody></table>
 <p>如果在某种语言中, 编译时无法确定类型, 则一部分检查可推迟到运行时进行. 但运行时检查会影响代码的运行效率, 为此需要在安全性和开销之间做出平衡. 因为, 每个值不仅需要value字段, 还需要tag字段, 用于表示值类型. 但随着tag的引入, 每个值所占空间也变大, 即在内存中需要更多空间. 若变量存储在register中, 则其value和tag都需要分配register. tag也需要初始化, 读, 写, 比较等操作, 所有这些操作都增加了加法的开销. 以下是运行时类型检查的一个例子:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// partial code for &quot;$a+b \Rightarrow c$&quot;</span><br><span class="line">if (tag(a) = integer) then</span><br><span class="line">  if (tag(b) = integer) then</span><br><span class="line">    value(c) = value(a) + value(b);</span><br><span class="line">    tag(c) = integer;</span><br><span class="line">  else if (tag(b) = real) then</span><br><span class="line">    temp = ConvertToReal(a);</span><br><span class="line">    value(c) = temp + value(b);</span><br><span class="line">    tag(c) = real;</span><br><span class="line">  else if (tag(b) = $\cdots$) then</span><br><span class="line">    // handle all other types $\cdots$</span><br><span class="line">  else</span><br><span class="line">    signal runtime type fault</span><br><span class="line">else if (tag(a) = real) then</span><br><span class="line">  if (tag(b) = integer) then</span><br><span class="line">    temp = ConvertToReal(b);</span><br><span class="line">    value(c) = value(a) + temp;</span><br><span class="line">    tag(c) = real;</span><br><span class="line">  else if (tag(b) = real) then</span><br><span class="line">    value(c) = value(a) + value(b);</span><br><span class="line">    tag(c) = real;</span><br><span class="line">  else if (tag(b) = $\cdots$) then</span><br><span class="line">    // handle all other types $\cdots$</span><br><span class="line">  else</span><br><span class="line">    signal runtime type fault</span><br><span class="line">else if (tag(a) = $\cdots$) then</span><br><span class="line">  // handle all other types $\cdots$</span><br><span class="line">else</span><br><span class="line">  signal illegal tag value;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">// partial code for &quot;$a+b \Rightarrow c$&quot;</span><br><span class="line">if (tag(a) = integer) then</span><br><span class="line">  if (tag(b) = integer) then</span><br><span class="line">    value(c) = value(a) + value(b);</span><br><span class="line">    tag(c) = integer;</span><br><span class="line">  else if (tag(b) = real) then</span><br><span class="line">    temp = ConvertToReal(a);</span><br><span class="line">    value(c) = temp + value(b);</span><br><span class="line">    tag(c) = real;</span><br><span class="line">  else if (tag(b) = $\cdots$) then</span><br><span class="line">    // handle all other types $\cdots$</span><br><span class="line">  else</span><br><span class="line">    signal runtime type fault</span><br><span class="line">else if (tag(a) = real) then</span><br><span class="line">  if (tag(b) = integer) then</span><br><span class="line">    temp = ConvertToReal(b);</span><br><span class="line">    value(c) = value(a) + temp;</span><br><span class="line">    tag(c) = real;</span><br><span class="line">  else if (tag(b) = real) then</span><br><span class="line">    value(c) = value(a) + value(b);</span><br><span class="line">    tag(c) = real;</span><br><span class="line">  else if (tag(b) = $\cdots$) then</span><br><span class="line">    // handle all other types $\cdots$</span><br><span class="line">  else</span><br><span class="line">    signal runtime type fault</span><br><span class="line">else if (tag(a) = $\cdots$) then</span><br><span class="line">  // handle all other types $\cdots$</span><br><span class="line">else</span><br><span class="line">  signal illegal tag value;</span><br></pre></td></tr></table></figure>
 
 <h3 id="2-2-Type-Checking"><a href="#2-2-Type-Checking" class="headerlink" title="2.2 Type Checking"></a>2.2 Type Checking</h3><p>类型系统可分为四个组成部分: 基础类型, 也称为内建类型; 根据现有类型构建的新类型规则; 用于确定两种类型是否等价的规则; 为表达式推断类型的规则. </p>
 <h4 id="2-2-1-Base-Type"><a href="#2-2-1-Base-Type" class="headerlink" title="2.2.1 Base Type"></a>2.2.1 Base Type</h4><p>大多数语言都提供了基础类型, 包括: number, character和boolean. </p>
@@ -246,23 +246,15 @@ Context Sensitive Analysis (1) - Zaf1ro's Blog
 </ol>
 <h4 id="2-2-2-Compound-and-Constructed-Types"><a href="#2-2-2-Compound-and-Constructed-Types" class="headerlink" title="2.2.2 Compound and Constructed Types"></a>2.2.2 Compound and Constructed Types</h4><p>虽然语言对硬件提供了足够的抽象类型, 但不足以表示程序所需要的信息. 程序通常需要处理更为复杂的数据结构, 如graph, tree, table, array, record, list, stack等, 这些数据结构由一个或多个对象组成, 每个对象有自身的类型. </p>
 <ol>
-<li><p>Array: 数组是使用最广泛的聚合类型. 数组表示多个同一类型的对象, 每个对象拥有不同的名字. 例如: C语言中的<strong>int a[100][200]</strong>, 表示为$100 \times 200 = 20,000$个整数分配存储空间, 并确保这些整数可通过名字<strong>a</strong>访问到, 每个下标分别表示不同的存储位置. </p>
-</li>
-<li><p>String: 串和数组有相同属性, C语言就是用字符数组来实现字符串. 但两者存在一些差异: 对于串的操作, 如连接, 转换和计算长度, 对于数组则不一定有对应操作.</p>
-</li>
-<li><p>Enumerate: 枚举类型允许创建包含常数值的集合, 以C语言为例, 可声明enum WeekDay {Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday}. Compiler会为枚举类型中的每个成员映射不同的值, 枚举类型的各个成员是有序的, 因此可以用运算符比较同一枚举类型中的成员, 如: Monday &lt; Tuesday; 但比较不同枚举类型的成员则失去意义, 有些语言也会限制比较行为, 使其只能作用于同一个枚举类型的成员.</p>
-</li>
-<li><p>Structures and Variants<br>Structure(结构), 也称为record(记录), 可将多个任意类型的对象聚合在一起. 结构的成员需要明确标注名称, 以C语言为例, 以下是一个tree中节点结构的声明, 节点可能有一个子节点, 也可能有两个子节点:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node1</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">Node1</span> *<span class="title">left</span>;</span></span><br><span class="line">  <span class="keyword">unsigned</span> Operator;</span><br><span class="line">  <span class="keyword">int</span> Value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node2</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">Node2</span> *<span class="title">left</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">Node2</span> *<span class="title">right</span>;</span></span><br><span class="line">  <span class="keyword">unsigned</span> Operator;</span><br><span class="line">  <span class="keyword">int</span> Value</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>结构的类型可表示为其中所有成员类型的有序乘积. Node1的类型可表示为$(\text{Node1*}) \times \text{unsigned} \times \text{int}$, Node2的类型可表示为$(\text{Node2*} \times \text{Node2*} \times \text{unsigned} \times \text{int})$. Node1作为一种程序员创造的新类型, 也具备基础类型的属性, 例如: 指向Node1类型的指针递增时, 会移动Node1类型大小的空间; 可将任意指针转换为Node1*类型</p>
-</li>
-<li><p>Pointer<br>指针是抽象的内存地址, 程序员可通过指针来操作任意数据类型. 指针允许程序保存一个地址, 而后使用该指针来表示地址所在的对象. 一般来说, 创建对象的同时会生成指针, 如C语言的malloc和Java的new; 一些语言也提供获取对象地址的方法, 如C语言的&amp;运算符.<br>为防止程序员使用<strong>T</strong>类型的指针引用<strong>S</strong>类型的对象, 一些语言会限制不同类型指针和对象之间的引用: 若指针的类型为integer, 则指向的对象类型必须为integer; 若指向boolean, 则造成类型错误. 创建新对象也应返回一个具有适当类型的对象, 例如: Java的new会返回一个类型化的对象, 而C语言的malloc会返回一个void类型的指针, 需要程序员进行类型转换.<br>一些语言允许直接操作指针, 比如: 指针的算术运算, 包括递增和递减; 允许程序创建新的指针, 这些操作都会造成安全隐患.</p>
-</li>
+<li>Array: 数组是使用最广泛的聚合类型. 数组表示多个同一类型的对象, 每个对象拥有不同的名字. 例如: C语言中的<strong>int a[100][200]</strong>, 表示为$100 \times 200 = 20,000$个整数分配存储空间, 并确保这些整数可通过名字<strong>a</strong>访问到, 每个下标分别表示不同的存储位置. </li>
+<li>String: 串和数组有相同属性, C语言就是用字符数组来实现字符串. 但两者存在一些差异: 对于串的操作, 如连接, 转换和计算长度, 对于数组则不一定有对应操作.</li>
+<li>Enumerate: 枚举类型允许创建包含常数值的集合, 以C语言为例, 可声明enum WeekDay {Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday}. Compiler会为枚举类型中的每个成员映射不同的值, 枚举类型的各个成员是有序的, 因此可以用运算符比较同一枚举类型中的成员, 如: Monday &lt; Tuesday; 但比较不同枚举类型的成员则失去意义, 有些语言也会限制比较行为, 使其只能作用于同一个枚举类型的成员.</li>
+<li>Structures and Variants<br>Structure(结构), 也称为record(记录), 可将多个任意类型的对象聚合在一起. 结构的成员需要明确标注名称, 以C语言为例, 以下是一个tree中节点结构的声明, 节点可能有一个子节点, 也可能有两个子节点:<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node1</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">Node1</span> *<span class="title">left</span>;</span></span><br><span class="line">  <span class="keyword">unsigned</span> Operator;</span><br><span class="line">  <span class="keyword">int</span> Value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node2</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">Node2</span> *<span class="title">left</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">Node2</span> *<span class="title">right</span>;</span></span><br><span class="line">  <span class="keyword">unsigned</span> Operator;</span><br><span class="line">  <span class="keyword">int</span> Value</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+结构的类型可表示为其中所有成员类型的有序乘积. Node1的类型可表示为$(\text{Node1*}) \times \text{unsigned} \times \text{int}$, Node2的类型可表示为$(\text{Node2*} \times \text{Node2*} \times \text{unsigned} \times \text{int})$. Node1作为一种程序员创造的新类型, 也具备基础类型的属性, 例如: 指向Node1类型的指针递增时, 会移动Node1类型大小的空间; 可将任意指针转换为Node1*类型</li>
+<li>Pointer<br>指针是抽象的内存地址, 程序员可通过指针来操作任意数据类型. 指针允许程序保存一个地址, 而后使用该指针来表示地址所在的对象. 一般来说, 创建对象的同时会生成指针, 如C语言的malloc和Java的new; 一些语言也提供获取对象地址的方法, 如C语言的&amp;运算符.<br>为防止程序员使用<strong>T</strong>类型的指针引用<strong>S</strong>类型的对象, 一些语言会限制不同类型指针和对象之间的引用: 若指针的类型为integer, 则指向的对象类型必须为integer; 若指向boolean, 则造成类型错误. 创建新对象也应返回一个具有适当类型的对象, 例如: Java的new会返回一个类型化的对象, 而C语言的malloc会返回一个void类型的指针, 需要程序员进行类型转换.<br>一些语言允许直接操作指针, 比如: 指针的算术运算, 包括递增和递减; 允许程序创建新的指针, 这些操作都会造成安全隐患.</li>
 </ol>
 <h4 id="2-2-3-Type-Equivalence"><a href="#2-2-3-Type-Equivalence" class="headerlink" title="2.2.3 Type Equivalence"></a>2.2.3 Type Equivalence</h4><p>对于任何一个类型系统, 都需要一个关键组件: 判断两个类型声明是否等价. 以C语言中的两个自定义类型为例:</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Tree</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">Tree</span> *<span class="title">left</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">Tree</span> *<span class="title">right</span>;</span></span><br><span class="line">  <span class="keyword">int</span> value</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">STree</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">STree</span> *<span class="title">left</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">STree</span> *<span class="title">right</span>;</span></span><br><span class="line">  <span class="keyword">int</span> value</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>不同语言对于以上两个类型声明是否等价会有不同的答案, 一般来说, 存在两种等价性判断机制:</p>
 <ol>
 <li>name equivalence: 若两个声明的名称相同, 则两者等价. 若采用该方法, 则<strong>Tree</strong>和<strong>STree</strong>不等价. 理论上, 程序员可为所有类型取不同的名字, 但随着程序规模, 作者数量, 代码文件长度的增加, 维护名字一致性变得困难.</li>
@@ -272,12 +264,11 @@ Context Sensitive Analysis (1) - Zaf1ro's Blog
 <h4 id="2-2-5-Declaration-and-Inference"><a href="#2-2-5-Declaration-and-Inference" class="headerlink" title="2.2.5 Declaration and Inference"></a>2.2.5 Declaration and Inference</h4><p>大部分语言都规定: declare before use(先声明后使用), 每个变量都必须有明确定义的类型. 这也要求compiler需要一种方式标注每个常量的类型, 常见的方法有两种:</p>
 <ol>
 <li>常量类型本身包含类型: 2是integer, 2.0是floating-point</li>
-<li>从常量的上下文来推断类型: <strong>sin(2)</strong>中的2应为floating-point, 而<strong>x=2</strong>中则根据x的类型来推断2的类型</li>
+<li>从常量的上下文来推断类型: <strong>sin(2)<strong>中的2应为floating-point, 而</strong>x=2</strong>中则根据x的类型来推断2的类型</li>
 </ol>
 <h4 id="2-2-6-Infer-Types-for-Expressions"><a href="#2-2-6-Infer-Types-for-Expressions" class="headerlink" title="2.2.6 Infer Types for Expressions"></a>2.2.6 Infer Types for Expressions</h4><p>类型推断的目的在于为程序中每个表达式分配一个类型. 为了让parse tree中的每个子节点都被分配类型, 需要声明每个变量, 为所有常量推断类型, 获得所有函数的类型信息. 理论上, compiler可按照post-order来遍历parse tree, 并为每个表达式分配一个类型. 若存在违反类型推断规则的语句, 则报错; 若语言本身无法进行类型推断, 则需要将类型推断推迟到运行时.</p>
 <h4 id="2-2-7-Interprocedural-Aspects-pof-Type-Inference"><a href="#2-2-7-Interprocedural-Aspects-pof-Type-Inference" class="headerlink" title="2.2.7 Interprocedural Aspects pof Type Inference"></a>2.2.7 Interprocedural Aspects pof Type Inference</h4><p>表达式的类型推断依赖于其他过程, 即使是最简单的类型系统, 表达式也会包含函数调用. Compiler必须检查每个调用, 确保actual parameter和formal parameter类型兼容, 并确保返回值类型, 以供下一步推断使用.<br>为理解函数调用过程, compiler需为每个函数分配一个type signature(类型签名). 以C语言为例, strlen()的操作数类型为char*, 返回值类型为int, 其function prototype(函数原型)如下:</p>
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">strlen</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *s)</span></span>;</span><br></pre></td></tr></table></figure>
-
 <p>该原型声明strlen可接受一个类型为char*的不可变参数, 并返回一个非负integer. 为执行准确的类型推断, compiler需获得每个函数的type signature, 以下是几种常见的获取方式:</p>
 <ol>
 <li>取消separate compilation(分离编译), 让整个程序作为一个单元来编译</li>

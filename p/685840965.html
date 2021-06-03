@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. DescriptionGiven a non-negative integer represented as non-empty a singly linked list of digits, plus one to the integer.You may assume the integer do not contain any leading zero, except the numbe">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Plus One Linked List">
 <meta property="og:url" content="https://zaf1ro.github.io/p/685840965.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. DescriptionGiven a non-negative integer represented as non-empty a singly linked list of digits, plus one to the integer.You may assume the integer do not contain any leading zero, except the numbe">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T18:49:28.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-03-01T19:57:28.000Z">
+<meta property="article:modified_time" content="2019-11-11T18:49:28.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Plus One Linked List">
-<meta name="twitter:description" content="1. DescriptionGiven a non-negative integer represented as non-empty a singly linked list of digits, plus one to the integer.You may assume the integer do not contain any leading zero, except the numbe">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Plus One Linked List - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Plus One Linked List - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -135,11 +135,12 @@ Plus One Linked List - Zaf1ro's Blog
     <div class="post-content">
       <h2 id="1-Description"><a href="#1-Description" class="headerlink" title="1. Description"></a>1. Description</h2><p>Given a non-negative integer represented as non-empty a singly linked list of digits, plus one to the integer.<br>You may assume the integer do not contain any leading zero, except the number 0 itself.<br>The digits are stored such that the most significant digit is at the head of the list.</p>
 <p>Example:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input:</span><br><span class="line">1-&gt;2-&gt;3</span><br><span class="line"></span><br><span class="line">Output:</span><br><span class="line">1-&gt;2-&gt;4</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input:</span><br><span class="line">1-&gt;2-&gt;3</span><br><span class="line"></span><br><span class="line">Output:</span><br><span class="line">1-&gt;2-&gt;4</span><br></pre></td></tr></table></figure>
+
+
 
 <h2 id="2-DFS"><a href="#2-DFS" class="headerlink" title="2. DFS"></a>2. DFS</h2><p>思路: 先深度遍历到最后一个节点, 进行+1操作. 若需要进位则通知上一节点进行+1操作. 若到达第一节点后仍需进位, 则设置一个新节点为1, 并作为新的第一节点</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * public class ListNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   ListNode next;</span></span><br><span class="line"><span class="comment"> *   ListNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">helper</span><span class="params">(ListNode head)</span> </span>&#123;</span><br><span class="line">    <span class="comment">/* reach the last node, notice the last node +1 */</span></span><br><span class="line">    <span class="keyword">if</span> (head == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (helper(head.next)) &#123;</span><br><span class="line">      head.val++;</span><br><span class="line">      <span class="comment">/* a carry, notice the previous node +1 */</span></span><br><span class="line">      <span class="keyword">if</span> (head.val &gt; <span class="number">9</span>) &#123; </span><br><span class="line">        head.val = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> ListNode <span class="title">plusOne</span><span class="params">(ListNode head)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (helper(head)) &#123; <span class="comment">/* 999 -&gt; 1000 */</span></span><br><span class="line">      ListNode dummy = <span class="keyword">new</span> ListNode(<span class="number">1</span>);</span><br><span class="line">      dummy.next = head;</span><br><span class="line">      <span class="keyword">return</span> dummy;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> head;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 

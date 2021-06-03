@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -37,18 +37,18 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/3792814616.html">
 
 
-<meta name="description" content="1. Class文件与JDK的版本   JDK版本 Class文件版本(major.minor)    1.0 45.3   1.1 45.3   1.2 46.0   1.3 47.0   1.4 48.0   5 49.0   6 50.0   7 51.0   8 52.0   2. Java虚拟机 必须遵循Java虚拟机规范 多种实现, 例如: HotSpot, J9, JRockit 必">
-<meta name="keywords" content="Java">
+<meta name="description" content="1. Class文件与JDK的版本   JDK版本 Class文件版本(major.minor)    1.0 45.3   1.1 45.3   1.2 46.0   1.3 47.0   1.4 48.0   5 49.0   6 50.0   7 51.0   8 52.0   2. Java虚拟机 必须遵循Java虚拟机规范 多种实现, 例如: HotSpot, J9, JRockit">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM (Part 2)">
 <meta property="og:url" content="https://zaf1ro.github.io/p/3792814616.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
-<meta property="og:description" content="1. Class文件与JDK的版本   JDK版本 Class文件版本(major.minor)    1.0 45.3   1.1 45.3   1.2 46.0   1.3 47.0   1.4 48.0   5 49.0   6 50.0   7 51.0   8 52.0   2. Java虚拟机 必须遵循Java虚拟机规范 多种实现, 例如: HotSpot, J9, JRockit 必">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-09T01:46:04.000Z">
+<meta property="og:description" content="1. Class文件与JDK的版本   JDK版本 Class文件版本(major.minor)    1.0 45.3   1.1 45.3   1.2 46.0   1.3 47.0   1.4 48.0   5 49.0   6 50.0   7 51.0   8 52.0   2. Java虚拟机 必须遵循Java虚拟机规范 多种实现, 例如: HotSpot, J9, JRockit">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-11-07T13:58:48.000Z">
+<meta property="article:modified_time" content="2019-11-09T01:46:04.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Java">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="JVM (Part 2)">
-<meta name="twitter:description" content="1. Class文件与JDK的版本   JDK版本 Class文件版本(major.minor)    1.0 45.3   1.1 45.3   1.2 46.0   1.3 47.0   1.4 48.0   5 49.0   6 50.0   7 51.0   8 52.0   2. Java虚拟机 必须遵循Java虚拟机规范 多种实现, 例如: HotSpot, J9, JRockit 必">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 JVM (Part 2) - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -77,7 +77,7 @@ JVM (Part 2) - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Class文件与JDK的版本"><span class="toc-text">1. Class文件与JDK的版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Java虚拟机"><span class="toc-text">2. Java虚拟机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Java虚拟机字节码"><span class="toc-text">3. Java虚拟机字节码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-基于栈-VS-基于寄存器"><span class="toc-text">4. 基于栈 VS 基于寄存器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Class文件结构"><span class="toc-text">5. Class文件结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-constant-pool结构"><span class="toc-text">5.1 constant_pool结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-access-flags"><span class="toc-text">5.2 access_flags:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Constant-Pool"><span class="toc-text">5.3 Constant Pool</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Frames-栈帧"><span class="toc-text">6. Frames(栈帧)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-功能"><span class="toc-text">6.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-组合部分"><span class="toc-text">6.2 组合部分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-其他"><span class="toc-text">6.3 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Local-Variables"><span class="toc-text">7. Local Variables</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-功能"><span class="toc-text">7.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-其他"><span class="toc-text">7.2 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Operand-Stacks"><span class="toc-text">8. Operand Stacks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-功能"><span class="toc-text">8.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-其他"><span class="toc-text">8.2 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Dynamic-Linking"><span class="toc-text">9. Dynamic Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-普通函数的调用"><span class="toc-text">10. 普通函数的调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Synchronization-同步"><span class="toc-text">11. Synchronization(同步)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-运行时数据区域"><span class="toc-text">12. 运行时数据区域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-程序计数器-Program-Counter-Register"><span class="toc-text">12.1 程序计数器(Program Counter Register)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-Java虚拟机栈-Java-Virtual-Machine-Stacks"><span class="toc-text">12.2 Java虚拟机栈(Java Virtual Machine Stacks)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-本地方法栈-Native-Method-Stack"><span class="toc-text">12.3 本地方法栈(Native Method Stack)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-4-Heap-堆"><span class="toc-text">12.4 Heap(堆)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-5-方法区-Method-Area"><span class="toc-text">12.5 方法区(Method Area)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-6-运行时常量池-Run-time-Constant-Pool"><span class="toc-text">12.6 运行时常量池(Run-time Constant Pool)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-7-直接内存"><span class="toc-text">12.7 直接内存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-JVM的数据类型"><span class="toc-text">13. JVM的数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-Primitive-types"><span class="toc-text">13.1 Primitive types</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-reference-types"><span class="toc-text">13.2 reference types</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-没有分配到堆的对象实例"><span class="toc-text">14. 没有分配到堆的对象实例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-四种引用类型"><span class="toc-text">15. 四种引用类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-强引用-Strong-Reference"><span class="toc-text">15.1 强引用(Strong Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-软引用-Soft-Reference"><span class="toc-text">15.2 软引用(Soft Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-3-弱引用-Weak-Reference"><span class="toc-text">15.3 弱引用(Weak Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-4-虚引用-Phantom-Reference"><span class="toc-text">15.4 虚引用(Phantom Reference)</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Class%E6%96%87%E4%BB%B6%E4%B8%8EJDK%E7%9A%84%E7%89%88%E6%9C%AC"><span class="toc-text">1. Class文件与JDK的版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Java%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-text">2. Java虚拟机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">3. Java虚拟机字节码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%9F%BA%E4%BA%8E%E6%A0%88-VS-%E5%9F%BA%E4%BA%8E%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">4. 基于栈 VS 基于寄存器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc-text">5. Class文件结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-constant-pool%E7%BB%93%E6%9E%84"><span class="toc-text">5.1 constant_pool结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-access-flags"><span class="toc-text">5.2 access_flags:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Constant-Pool"><span class="toc-text">5.3 Constant Pool</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Frames-%E6%A0%88%E5%B8%A7"><span class="toc-text">6. Frames(栈帧)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%8A%9F%E8%83%BD"><span class="toc-text">6.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E7%BB%84%E5%90%88%E9%83%A8%E5%88%86"><span class="toc-text">6.2 组合部分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%85%B6%E4%BB%96"><span class="toc-text">6.3 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Local-Variables"><span class="toc-text">7. Local Variables</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%8A%9F%E8%83%BD"><span class="toc-text">7.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%85%B6%E4%BB%96"><span class="toc-text">7.2 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Operand-Stacks"><span class="toc-text">8. Operand Stacks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E5%8A%9F%E8%83%BD"><span class="toc-text">8.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%85%B6%E4%BB%96"><span class="toc-text">8.2 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Dynamic-Linking"><span class="toc-text">9. Dynamic Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%99%AE%E9%80%9A%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8"><span class="toc-text">10. 普通函数的调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Synchronization-%E5%90%8C%E6%AD%A5"><span class="toc-text">11. Synchronization(同步)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F"><span class="toc-text">12. 运行时数据区域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8-Program-Counter-Register"><span class="toc-text">12.1 程序计数器(Program Counter Register)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88-Java-Virtual-Machine-Stacks"><span class="toc-text">12.2 Java虚拟机栈(Java Virtual Machine Stacks)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88-Native-Method-Stack"><span class="toc-text">12.3 本地方法栈(Native Method Stack)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-4-Heap-%E5%A0%86"><span class="toc-text">12.4 Heap(堆)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-5-%E6%96%B9%E6%B3%95%E5%8C%BA-Method-Area"><span class="toc-text">12.5 方法区(Method Area)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-6-%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0-Run-time-Constant-Pool"><span class="toc-text">12.6 运行时常量池(Run-time Constant Pool)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-7-%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="toc-text">12.7 直接内存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-JVM%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-text">13. JVM的数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-Primitive-types"><span class="toc-text">13.1 Primitive types</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-reference-types"><span class="toc-text">13.2 reference types</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E6%B2%A1%E6%9C%89%E5%88%86%E9%85%8D%E5%88%B0%E5%A0%86%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%AE%9E%E4%BE%8B"><span class="toc-text">14. 没有分配到堆的对象实例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-%E5%9B%9B%E7%A7%8D%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="toc-text">15. 四种引用类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-%E5%BC%BA%E5%BC%95%E7%94%A8-Strong-Reference"><span class="toc-text">15.1 强引用(Strong Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-%E8%BD%AF%E5%BC%95%E7%94%A8-Soft-Reference"><span class="toc-text">15.2 软引用(Soft Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-3-%E5%BC%B1%E5%BC%95%E7%94%A8-Weak-Reference"><span class="toc-text">15.3 弱引用(Weak Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-4-%E8%99%9A%E5%BC%95%E7%94%A8-Phantom-Reference"><span class="toc-text">15.4 虚引用(Phantom Reference)</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -102,7 +102,7 @@ JVM (Part 2) - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -179,33 +179,41 @@ JVM (Part 2) - Zaf1ro's Blog
 </tbody></table>
 <h2 id="2-Java虚拟机"><a href="#2-Java虚拟机" class="headerlink" title="2. Java虚拟机"></a>2. Java虚拟机</h2><ol>
 <li>必须遵循Java虚拟机规范</li>
-<li>多种实现, 例如: HotSpot, J9, JRockit<ul>
+<li>多种实现, 例如: HotSpot, J9, JRockit</li>
+</ol>
+<ul>
 <li>必须符合JVM规范</li>
 <li>JVM规范之外的细节可自行实现</li>
 <li>必须通过JCK测试才能成为Java VM</li>
 </ul>
-</li>
+<ol start="3">
 <li>只有符合规范的Class文件才能执行, 否则报错</li>
 <li>可支持其他语言, 例如: Scala、Clojure、Groovy、Fantom、Fortress、Nice、Jython、JRuby、Rhino、Jaskel</li>
 </ol>
 <h2 id="3-Java虚拟机字节码"><a href="#3-Java虚拟机字节码" class="headerlink" title="3. Java虚拟机字节码"></a>3. Java虚拟机字节码</h2><ol>
 <li>相当于传统编译器的中间代码(例如C++编译器优化时生成的中间代码)</li>
-<li>基于栈的指令集体系结构<ul>
+<li>基于栈的指令集体系结构</li>
+</ol>
+<ul>
 <li>代码紧凑</li>
 <li>方便实现高移植性的解释器</li>
 <li>相对于基于寄存器的体系结构来说速度上较慢</li>
 </ul>
-</li>
+<ol start="3">
 <li>指令不定长(1-4字节)</li>
-<li>设计目标<ul>
+<li>设计目标</li>
+</ol>
+<ul>
 <li>易于校验</li>
 <li>易于编译</li>
 <li>易于解释执行</li>
 <li>易于移植</li>
 <li>包含大量类型信息</li>
 </ul>
-</li>
-<li>指令类别<ul>
+<ol start="5">
+<li>指令类别</li>
+</ol>
+<ul>
 <li>局部变量读/写</li>
 <li>算数与类型转换</li>
 <li>条件/无条件跳转</li>
@@ -214,29 +222,27 @@ JVM (Part 2) - Zaf1ro's Blog
 <li>方法调用</li>
 <li>栈操作(操作数栈)</li>
 </ul>
-</li>
-</ol>
 <h2 id="4-基于栈-VS-基于寄存器"><a href="#4-基于栈-VS-基于寄存器" class="headerlink" title="4. 基于栈 VS 基于寄存器"></a>4. 基于栈 VS 基于寄存器</h2><ol>
-<li><p>保存临时值的位置不同</p>
+<li>保存临时值的位置不同</li>
+</ol>
 <ul>
 <li>基于栈: 将临时值保存在栈上</li>
 <li>基于寄存器: 将临时值保存在寄存器上</li>
 </ul>
-</li>
-<li><p>代码所占的体积不同</p>
+<ol start="2">
+<li>代码所占的体积不同</li>
+</ol>
 <ul>
 <li>基于栈: 代码紧凑, 单个条目体积小, 但条目数多</li>
-<li>基于寄存器: 代码较大, 但条目数少<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 实现20+7 */</span></span><br><span class="line"><span class="comment">/* Stack-Based */</span></span><br><span class="line">POP <span class="number">20</span></span><br><span class="line">POP <span class="number">7</span></span><br><span class="line">ADD <span class="number">20</span>, <span class="number">7</span>, result</span><br><span class="line">PUSH result</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Register-Based */</span></span><br><span class="line">ADD R1, R2, R3</span><br></pre></td></tr></table></figure>
-</li>
+<li>基于寄存器: 代码较大, 但条目数少<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 实现20+7 */</span></span><br><span class="line"><span class="comment">/* Stack-Based */</span></span><br><span class="line">POP <span class="number">20</span></span><br><span class="line">POP <span class="number">7</span></span><br><span class="line">ADD <span class="number">20</span>, <span class="number">7</span>, result</span><br><span class="line">PUSH result</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Register-Based */</span></span><br><span class="line">ADD R1, R2, R3</span><br></pre></td></tr></table></figure></li>
 </ul>
-</li>
-<li><p>栈的名称在不同的虚拟机中有所不同</p>
+<ol start="3">
+<li>栈的名称在不同的虚拟机中有所不同</li>
+</ol>
 <ul>
 <li>HotSpot中成为”表达式栈”(expression stack)</li>
 <li>JVM中称为”操作数栈”(operand stack)</li>
 </ul>
-</li>
-</ol>
 <h2 id="5-Class文件结构"><a href="#5-Class文件结构" class="headerlink" title="5. Class文件结构"></a>5. Class文件结构</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">  u4 magic;                 <span class="comment">/* 0xCAFEBABE, magic number */</span></span><br><span class="line">  u2 minor_version;         <span class="comment">/* 大版本号 */</span></span><br><span class="line">  u2 major_version;         <span class="comment">/* 小版本号 */</span></span><br><span class="line">  u2 constant_pool_count;   <span class="comment">/* constant_pool中的entry数量+1 */</span> </span><br><span class="line">  cp_info constant_pool [constant_pool_count-<span class="number">1</span>];  <span class="comment">/* 包含String, 类和接口名, field名称和其他constant. index范围: [1 - constant_pool_count-1] */</span></span><br><span class="line">  u2 access_flags;          <span class="comment">/* 标记该Class/Interface的访问权限, 如果为ACC_INTERFACE则说明是interface, 否则为class */</span></span><br><span class="line">  u2 this_class;            <span class="comment">/* 一个index, 表示constant_pool中的CONSTANT_Class_info */</span></span><br><span class="line">  u2 super_class;           <span class="comment">/* 0或者是constant_pool中的一个index */</span></span><br><span class="line">  u2 interfaces_count;      <span class="comment">/* 直接实现的interface数量(对于class和interface都有) */</span></span><br><span class="line">  u2 interfaces[interfaces_count];  <span class="comment">/* interface在constant_pool中的index */</span></span><br><span class="line">  u2 fields_count;          <span class="comment">/* fields中fields_count的数量 */</span></span><br><span class="line">  field_info fields[fields_count];  <span class="comment">/* 包含fields_count个field_info */</span></span><br><span class="line">  u2 methods_count;         <span class="comment">/* method_info的数量 */</span></span><br><span class="line">  method_info methods[methods_count]; <span class="comment">/* 包含methods_count个method_info */</span></span><br><span class="line">  u2 attributes_count;      <span class="comment">/* attribute_info的数量 */</span></span><br><span class="line">  attribute_info attributes[attributes_count];  <span class="comment">/* 包含attributes_count个attribute_info */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h3 id="5-1-constant-pool结构"><a href="#5-1-constant-pool结构" class="headerlink" title="5.1 constant_pool结构"></a>5.1 constant_pool结构</h3><ul>
@@ -251,9 +257,7 @@ JVM (Part 2) - Zaf1ro's Blog
 </li>
 </ul>
 <h3 id="5-2-access-flags"><a href="#5-2-access-flags" class="headerlink" title="5.2 access_flags:"></a>5.2 access_flags:</h3><ul>
-<li>access_flags占两字节(16位), 各个访问权限占其中的一位. 例如:<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* access_flags: 0x0600 = ACC_INTERFACE(0x020) + ACC_ABSTRACT(0x0400) </span></span><br><span class="line"><span class="comment"> * 由于ACC_INTERFACE表示这是一个interface, 所以必然有ACC_ABSTRACT.</span></span><br><span class="line"><span class="comment"> * 必然不能有ACC_FINAL, ACC_SUPER, ACC_ENUM</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">TestInterface</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* access_flags: 0x0021 = ACC_PUBLIC(0x0001) + ACC_SUPER(0x0020) */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* ACC_SUPER只是为了向前兼容性, JVM并不处理该flag */</span></span><br></pre></td></tr></table></figure>
-
-</li>
+<li>access_flags占两字节(16位), 各个访问权限占其中的一位. 例如:<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* access_flags: 0x0600 = ACC_INTERFACE(0x020) + ACC_ABSTRACT(0x0400) </span></span><br><span class="line"><span class="comment"> * 由于ACC_INTERFACE表示这是一个interface, 所以必然有ACC_ABSTRACT.</span></span><br><span class="line"><span class="comment"> * 必然不能有ACC_FINAL, ACC_SUPER, ACC_ENUM</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">TestInterface</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* access_flags: 0x0021 = ACC_PUBLIC(0x0001) + ACC_SUPER(0x0020) */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* ACC_SUPER只是为了向前兼容性, JVM并不处理该flag */</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="5-3-Constant-Pool"><a href="#5-3-Constant-Pool" class="headerlink" title="5.3 Constant Pool"></a>5.3 Constant Pool</h3><ul>
 <li>CONSTANT_Class_info<ul>
@@ -474,17 +478,16 @@ JVM (Part 2) - Zaf1ro's Blog
 <li>逃逸分析下, 如果某个对象只存在于某个方法和线程内, 那么说明该对象可分配在栈上. 因为该对象是局部性的</li>
 </ol>
 <h2 id="15-四种引用类型"><a href="#15-四种引用类型" class="headerlink" title="15. 四种引用类型"></a>15. 四种引用类型</h2><h3 id="15-1-强引用-Strong-Reference"><a href="#15-1-强引用-Strong-Reference" class="headerlink" title="15.1 强引用(Strong Reference)"></a>15.1 强引用(Strong Reference)</h3><p>GC永不会回收的引用对象(即使内存不足报错), 除非引用改为null</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String r0 = <span class="keyword">new</span> String(<span class="string">"123"</span>);</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r0);   <span class="comment">// 123</span></span><br><span class="line">r0 = <span class="keyword">null</span>;</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r0);   <span class="comment">// null</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String r0 = <span class="keyword">new</span> String(<span class="string">&quot;123&quot;</span>);</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r0);   <span class="comment">// 123</span></span><br><span class="line">r0 = <span class="keyword">null</span>;</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r0);   <span class="comment">// null</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="15-2-软引用-Soft-Reference"><a href="#15-2-软引用-Soft-Reference" class="headerlink" title="15.2 软引用(Soft Reference)"></a>15.2 软引用(Soft Reference)</h3><p>用于描述有用但非必需的对象, 缓存不足时进行GC. 适合用于创建缓存, 例如网页缓存.</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">SoftReference&lt;String&gt; r = <span class="keyword">new</span> SoftReference(<span class="keyword">new</span> String(<span class="string">"bcd"</span>));</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r.get());  <span class="comment">// bcd</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">SoftReference&lt;String&gt; r = <span class="keyword">new</span> SoftReference(<span class="keyword">new</span> String(<span class="string">&quot;bcd&quot;</span>));</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r.get());  <span class="comment">// bcd</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="15-3-弱引用-Weak-Reference"><a href="#15-3-弱引用-Weak-Reference" class="headerlink" title="15.3 弱引用(Weak Reference)"></a>15.3 弱引用(Weak Reference)</h3><p>强度比软引用更弱, 只能生存到下一次GC之前. 但由于GC线程的优先级很低, 所以可以作为级别较低的缓存, 例如Tomcat的LRU缓存. 可被强引用拯救被GC的命运</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">WeakReference&lt;String&gt; r = <span class="keyword">new</span> WeakReference(<span class="keyword">new</span> String(<span class="string">"abc"</span>));</span><br><span class="line">String test = r.get();</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r.get()); <span class="comment">// 如果没有test引用则返回null, 但由于test强引用, 因而使得r所指向的对象躲过GC</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">WeakReference&lt;String&gt; r = <span class="keyword">new</span> WeakReference(<span class="keyword">new</span> String(<span class="string">&quot;abc&quot;</span>));</span><br><span class="line">String test = r.get();</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r.get()); <span class="comment">// 如果没有test引用则返回null, 但由于test强引用, 因而使得r所指向的对象躲过GC</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="15-4-虚引用-Phantom-Reference"><a href="#15-4-虚引用-Phantom-Reference" class="headerlink" title="15.4 虚引用(Phantom Reference)"></a>15.4 虚引用(Phantom Reference)</h3><p>最弱的引用关系. 无法通过虚引用得到一个对象实例, 且完全不会对生存时间构成影响, 也不会被强引用拯救被GC的命运. 可用于两点: 不用担心析构问题, 因为虚引用的对象在GC中必被销毁; 可知道对象何时被析构</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ReferenceQueue rq = <span class="keyword">new</span> ReferenceQueue();</span><br><span class="line">PhantomReference&lt;String&gt; r = <span class="keyword">new</span> PhantomReference(<span class="keyword">new</span> String(<span class="string">"def"</span>), rq);</span><br><span class="line">System.out.println(r.get());  <span class="comment">// null</span></span><br></pre></td></tr></table></figure>
-
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ReferenceQueue rq = <span class="keyword">new</span> ReferenceQueue();</span><br><span class="line">PhantomReference&lt;String&gt; r = <span class="keyword">new</span> PhantomReference(<span class="keyword">new</span> String(<span class="string">&quot;def&quot;</span>), rq);</span><br><span class="line">System.out.println(r.get());  <span class="comment">// null</span></span><br></pre></td></tr></table></figure>
 
     </div>
 

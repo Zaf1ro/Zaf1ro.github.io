@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. Convert Sorted List to Binary Search Tree1.1 DescriptionGiven an array where elements are sorted in ascending order, convert it to a height balanced BST.For this problem, a height-balanced binary t">
-<meta name="keywords" content="Algorithm">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Convert Sorted Array to Binary Search Tree">
 <meta property="og:url" content="https://zaf1ro.github.io/p/3340978156.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. Convert Sorted List to Binary Search Tree1.1 DescriptionGiven an array where elements are sorted in ascending order, convert it to a height balanced BST.For this problem, a height-balanced binary t">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2019-11-11T20:45:17.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-02-13T18:25:40.000Z">
+<meta property="article:modified_time" content="2019-11-11T20:45:17.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Convert Sorted Array to Binary Search Tree">
-<meta name="twitter:description" content="1. Convert Sorted List to Binary Search Tree1.1 DescriptionGiven an array where elements are sorted in ascending order, convert it to a height balanced BST.For this problem, a height-balanced binary t">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Convert Sorted Array to Binary Search Tree - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Convert Sorted Array to Binary Search Tree - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -134,19 +134,20 @@ Convert Sorted Array to Binary Search Tree - Zaf1ro's Blog
 
     <div class="post-content">
       <h2 id="1-Convert-Sorted-List-to-Binary-Search-Tree"><a href="#1-Convert-Sorted-List-to-Binary-Search-Tree" class="headerlink" title="1. Convert Sorted List to Binary Search Tree"></a>1. Convert Sorted List to Binary Search Tree</h2><h3 id="1-1-Description"><a href="#1-1-Description" class="headerlink" title="1.1 Description"></a>1.1 Description</h3><p>Given an array where elements are sorted in ascending order, convert it to a height balanced BST.<br>For this problem, a height-balanced binary tree is defined as a binary tree in which the depth of the two subtrees of every node never differ by more than 1.<br>Example:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Given the sorted array: [-10,-3,0,5,9],</span><br><span class="line"></span><br><span class="line">One possible answer is: [0,-3,9,-10,null,5], which represents the following height balanced BST:</span><br><span class="line">      0</span><br><span class="line">     / \</span><br><span class="line">   -3   9</span><br><span class="line">   /   /</span><br><span class="line"> -10  5</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Given the sorted array: [-10,-3,0,5,9],</span><br><span class="line"></span><br><span class="line">One possible answer is: [0,-3,9,-10,null,5], which represents the following height balanced BST:</span><br><span class="line">      0</span><br><span class="line">     / \</span><br><span class="line">   -3   9</span><br><span class="line">   /   /</span><br><span class="line"> -10  5</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-2-Binary-Search-Solution"><a href="#1-2-Binary-Search-Solution" class="headerlink" title="1.2 Binary Search Solution"></a>1.2 Binary Search Solution</h3><p>思路: 由于是有序数组, 所以只要二分法取中值作为根节点即可. 不断二分直到将数组中所有元素都加入到树中</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"> * public class TreeNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   TreeNode left;</span></span><br><span class="line"><span class="comment"> *   TreeNode right;</span></span><br><span class="line"><span class="comment"> *   TreeNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> TreeNode <span class="title">helper</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> left, <span class="keyword">int</span> right)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (left &gt; right) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">int</span> mid = left + ((right - left) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">    TreeNode node = <span class="keyword">new</span> TreeNode(nums[mid]);</span><br><span class="line">    node.left = helper(nums, left, mid - <span class="number">1</span>);</span><br><span class="line">    node.right = helper(nums, mid + <span class="number">1</span>, right);</span><br><span class="line">    <span class="keyword">return</span> node;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> TreeNode <span class="title">sortedArrayToBST</span><span class="params">(<span class="keyword">int</span>[] nums)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> helper(nums, <span class="number">0</span>, nums.length - <span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+
+
 <h2 id="2-Convert-Sorted-LinkedList-to-Binary-Search-Tree"><a href="#2-Convert-Sorted-LinkedList-to-Binary-Search-Tree" class="headerlink" title="2. Convert Sorted LinkedList to Binary Search Tree"></a>2. Convert Sorted LinkedList to Binary Search Tree</h2><h3 id="2-1-Description"><a href="#2-1-Description" class="headerlink" title="2.1 Description"></a>2.1 Description</h3><p>Given a singly linked list where elements are sorted in ascending order, convert it to a height balanced BST.</p>
 <p>For this problem, a height-balanced binary tree is defined as a binary tree in which the depth of the two subtrees of every node never differ by more than 1.</p>
 <p>Example:<br>Given the sorted linked list: [-10,-3,0,5,9],<br>One possible answer is: [0,-3,9,-10,null,5], which represents the following height balanced BST:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">     0</span><br><span class="line">    / \</span><br><span class="line">  -3   9</span><br><span class="line">  /   /</span><br><span class="line">-10  5</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">     0</span><br><span class="line">    / \</span><br><span class="line">  -3   9</span><br><span class="line">  /   /</span><br><span class="line">-10  5</span><br></pre></td></tr></table></figure>
 
 <h3 id="2-2-Binary-Search-Solution"><a href="#2-2-Binary-Search-Solution" class="headerlink" title="2.2 Binary Search Solution"></a>2.2 Binary Search Solution</h3><p>思路: 与上一题相同, 但无法通过索引来取得中值, 只能通过慢指针和快指针来找到中值.</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * public class ListNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   ListNode next;</span></span><br><span class="line"><span class="comment"> *   ListNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"> * public class TreeNode &#123;</span></span><br><span class="line"><span class="comment"> *   int val;</span></span><br><span class="line"><span class="comment"> *   TreeNode left;</span></span><br><span class="line"><span class="comment"> *   TreeNode right;</span></span><br><span class="line"><span class="comment"> *   TreeNode(int x) &#123; val = x; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> TreeNode <span class="title">helper</span><span class="params">(ListNode head, ListNode tail)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (head == tail) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    ListNode slow = head;</span><br><span class="line">    ListNode fast = head;</span><br><span class="line">    <span class="keyword">while</span> (fast != tail &amp;&amp; fast.next != tail) &#123;</span><br><span class="line">      slow = slow.next;</span><br><span class="line">      fast = fast.next.next;</span><br><span class="line">    &#125;</span><br><span class="line">    TreeNode root = <span class="keyword">new</span> TreeNode(slow.val);</span><br><span class="line">    root.left = helper(head, slow);</span><br><span class="line">    root.right = helper(slow.next, tail);</span><br><span class="line">    <span class="keyword">return</span> root;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="keyword">public</span> TreeNode <span class="title">sortedListToBST</span><span class="params">(ListNode head)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (head == <span class="keyword">null</span>) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">return</span> helper(head, <span class="keyword">null</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
     </div>
 

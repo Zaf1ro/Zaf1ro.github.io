@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -38,17 +38,17 @@
 
 
 <meta name="description" content="1. Definition当与domain experter交流需求时, 总会出现一些概念或实体, 且需要有标志来辨别其唯一性, 如顾客, 订单, 商品. 上述物品不能根据他们的属性所区分(如: 年龄, 金额, 类别), 只能由一个专属的身份标识(Identity)来辨识.Identity就是Entity的最大特征, entity的属性值可以相同或不同, 但每个entity都必须有唯一的ident">
-<meta name="keywords" content="Microservices">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Entity">
 <meta property="og:url" content="https://zaf1ro.github.io/p/1f4.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
 <meta property="og:description" content="1. Definition当与domain experter交流需求时, 总会出现一些概念或实体, 且需要有标志来辨别其唯一性, 如顾客, 订单, 商品. 上述物品不能根据他们的属性所区分(如: 年龄, 金额, 类别), 只能由一个专属的身份标识(Identity)来辨识.Identity就是Entity的最大特征, entity的属性值可以相同或不同, 但每个entity都必须有唯一的ident">
-<meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2021-04-26T18:58:35.000Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-04-22T14:56:30.000Z">
+<meta property="article:modified_time" content="2021-04-26T18:58:35.000Z">
+<meta property="article:author" content="Zaf1ro">
+<meta property="article:tag" content="Microservices">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Entity">
-<meta name="twitter:description" content="1. Definition当与domain experter交流需求时, 总会出现一些概念或实体, 且需要有标志来辨别其唯一性, 如顾客, 订单, 商品. 上述物品不能根据他们的属性所区分(如: 年龄, 金额, 类别), 只能由一个专属的身份标识(Identity)来辨识.Identity就是Entity的最大特征, entity的属性值可以相同或不同, 但每个entity都必须有唯一的ident">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -61,7 +61,7 @@
     <title>
 Entity - Zaf1ro's Blog
 </title>
-  </head>
+  <meta name="generator" content="Hexo 5.4.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
@@ -102,7 +102,7 @@ Entity - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="external nofollow noopener noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -144,8 +144,7 @@ Entity - Zaf1ro's Blog
 </ul>
 <p>系统中Entity的种类越多, 系统的复杂度越高, 因此需尽量减少Entity的使用. 举个例子, 当设计一个场馆的售票系统时, 场馆的<strong>座位</strong>可以作为entity, Entity的ID可用其位置(第几排第几列)作为唯一标示, 这样用户可购买对号座; 但如果场馆的座位并不需要预定, 而是用户先进先得, 那就不需要将座位当做entity, 只需记录座位的数量.</p>
 <h2 id="3-Example"><a href="#3-Example" class="headerlink" title="3. Example"></a>3. Example</h2><p>以下是Entity的abstract class(written in TypeScript):</p>
-<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> Entity&lt;Id, Props&gt; &#123;</span><br><span class="line">  readonly id: Id;</span><br><span class="line">  <span class="keyword">protected</span> props: Props;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">constructor</span>(<span class="params">id: Id, props: Props</span>) &#123;</span><br><span class="line">    <span class="keyword">this</span>.id = id;</span><br><span class="line">    <span class="keyword">this</span>.props = props;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> equals(obj?: Entity&lt;Id, Props&gt;): <span class="built_in">boolean</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Entity</span>&lt;<span class="title">Id</span>, <span class="title">Props</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">readonly</span> id: Id;</span><br><span class="line">  <span class="keyword">protected</span> props: Props;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="function"><span class="title">constructor</span>(<span class="params">id: Id, props: Props</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.id = id;</span><br><span class="line">    <span class="built_in">this</span>.props = props;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">abstract</span> equals(obj?: Entity&lt;Id, Props&gt;): <span class="built_in">boolean</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>上述代码中, <strong>equals</strong>函数用于判断两个entity是否表示同一物品.</p>
 <h2 id="4-Identity"><a href="#4-Identity" class="headerlink" title="4. Identity"></a>4. Identity</h2><p>Entity的Identity有多种产生方式:</p>
 <ul>
@@ -161,8 +160,7 @@ Entity - Zaf1ro's Blog
 <li>找到关键行为与对应的业务规则, 按照Ubiquitous Language</li>
 </ol>
 <p>例如, 我们有一个User class, 其需要两个属性: 姓名和地址, 且这两个属性都可以被更改, 但修改姓名时有个前途: 该User必须处于一个有效状态, 而不是已注销状态, 且姓名不能少于两个character.</p>
-<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">interface</span> AddressProps &#123;</span><br><span class="line">  city: <span class="built_in">string</span>;</span><br><span class="line">  county: <span class="built_in">string</span>;</span><br><span class="line">  street: <span class="built_in">string</span>;</span><br><span class="line">  detail: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">class</span> Address <span class="keyword">extends</span> ValueObject&lt;AddressProps&gt; &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> UserProps &#123;</span><br><span class="line">  name: <span class="built_in">string</span>;</span><br><span class="line">  active: <span class="built_in">boolean</span>;</span><br><span class="line">  address: Address;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> User <span class="keyword">extends</span> Entity&lt;<span class="built_in">string</span>, UserProps&gt; &#123;</span><br><span class="line">  changeName(name: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="comment">// check the length of username</span></span><br><span class="line">    <span class="keyword">if</span> (name.length &lt; <span class="string">'2'</span>) &#123;</span><br><span class="line">      <span class="comment">// error handling</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.props.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  changeAddress(address: Address): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">this</span>.address = <span class="keyword">this</span>.address.update(address);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span> createUser(parmas: &#123;</span><br><span class="line">    id: <span class="built_in">string</span>;</span><br><span class="line">    name: <span class="built_in">string</span>;</span><br><span class="line">    address: Address;</span><br><span class="line">  &#125;): [<span class="built_in">string</span>, User] &#123;</span><br><span class="line">    <span class="comment">// check the length of username</span></span><br><span class="line">    <span class="keyword">if</span> (name.length &lt; <span class="string">'2'</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> [<span class="string">'Name length should be less than 2'</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [</span><br><span class="line">      <span class="literal">undefined</span>,</span><br><span class="line">      <span class="keyword">new</span> User(params.id, &#123;</span><br><span class="line">        name: params.name,</span><br><span class="line">        active: <span class="literal">true</span>,</span><br><span class="line">        address: params.address</span><br><span class="line">      &#125;)</span><br><span class="line">    ];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> equals(obj?: Entity&lt;<span class="built_in">string</span>, UserProps&gt;): <span class="built_in">boolean</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">interface</span> AddressProps &#123;</span><br><span class="line">  <span class="attr">city</span>: <span class="built_in">string</span>;</span><br><span class="line">  county: <span class="built_in">string</span>;</span><br><span class="line">  street: <span class="built_in">string</span>;</span><br><span class="line">  detail: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Address</span> <span class="keyword">extends</span> <span class="title">ValueObject</span>&lt;<span class="title">AddressProps</span>&gt; </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">interface</span> UserProps &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  active: <span class="built_in">boolean</span>;</span><br><span class="line">  address: Address;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">extends</span> <span class="title">Entity</span>&lt;<span class="title">string</span>, <span class="title">UserProps</span>&gt; </span>&#123;</span><br><span class="line">  changeName(name: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="comment">// check the length of username</span></span><br><span class="line">    <span class="keyword">if</span> (name.length &lt; <span class="string">&#x27;2&#x27;</span>) &#123;</span><br><span class="line">      <span class="comment">// error handling</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="built_in">this</span>.props.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  changeAddress(address: Address): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.address = <span class="built_in">this</span>.address.update(address);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span> createUser(parmas: &#123;</span><br><span class="line">    <span class="attr">id</span>: <span class="built_in">string</span>;</span><br><span class="line">    name: <span class="built_in">string</span>;</span><br><span class="line">    address: Address;</span><br><span class="line">  &#125;): [<span class="built_in">string</span>, User] &#123;</span><br><span class="line">    <span class="comment">// check the length of username</span></span><br><span class="line">    <span class="keyword">if</span> (name.length &lt; <span class="string">&#x27;2&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> [<span class="string">&#x27;Name length should be less than 2&#x27;</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> [</span><br><span class="line">      <span class="literal">undefined</span>,</span><br><span class="line">      <span class="keyword">new</span> User(params.id, &#123;</span><br><span class="line">        <span class="attr">name</span>: params.name,</span><br><span class="line">        <span class="attr">active</span>: <span class="literal">true</span>,</span><br><span class="line">        <span class="attr">address</span>: params.address</span><br><span class="line">      &#125;)</span><br><span class="line">    ];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> equals(obj?: Entity&lt;<span class="built_in">string</span>, UserProps&gt;): <span class="built_in">boolean</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 
