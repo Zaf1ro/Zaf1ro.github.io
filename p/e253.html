@@ -37,18 +37,20 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/e253.html">
 
 
-<meta name="description" content="To consistently produce quality blogposts. Keep learning">
+<meta name="description" content="现在很多应用都是data-intensive(数据密集型), 而不是compute-intensive(计算密集型). CPU算力已不再是限制应用的原因之一, 更多的问题出现在数据的规模, 数据的复杂度, 和数据更改的速度.一个数据密集型应用通常由多个standard building block(标准组件)组成, 这些组件提供了所需的功能. 举个例子, 很多应用都会用到如下组件:  存储数据,">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Reliable, Scalable, and Maintainable Applications">
 <meta property="og:url" content="https://zaf1ro.github.io/p/e253.html">
 <meta property="og:site_name" content="Zaf1ro&#39;s Blog">
-<meta property="og:description" content="To consistently produce quality blogposts. Keep learning">
+<meta property="og:description" content="现在很多应用都是data-intensive(数据密集型), 而不是compute-intensive(计算密集型). CPU算力已不再是限制应用的原因之一, 更多的问题出现在数据的规模, 数据的复杂度, 和数据更改的速度.一个数据密集型应用通常由多个standard building block(标准组件)组成, 这些组件提供了所需的功能. 举个例子, 很多应用都会用到如下组件:  存储数据,">
 <meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/chapter-1-1.png">
 <meta property="article:published_time" content="2021-06-05T15:01:22.000Z">
-<meta property="article:modified_time" content="2021-06-05T15:02:35.841Z">
+<meta property="article:modified_time" content="2021-06-15T20:27:02.283Z">
 <meta property="article:author" content="Zaf1ro">
 <meta property="article:tag" content="Syetem Design">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/chapter-1-1.png">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
@@ -77,7 +79,7 @@ Reliable, Scalable, and Maintainable Applications - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Thinking-About-Data-Systems"><span class="toc-text">1. Thinking About Data Systems</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Reliability"><span class="toc-text">2. Reliability</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hardware-Faults"><span class="toc-text">2.1 Hardware Faults</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Software-Errors"><span class="toc-text">2.2 Software Errors</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Human-Errors"><span class="toc-text">2.3 Human Errors</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-How-Important-Is-Reliability"><span class="toc-text">2.4 How Important Is Reliability?</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -133,7 +135,50 @@ Reliable, Scalable, and Maintainable Applications - Zaf1ro's Blog
     </header>
 
     <div class="post-content">
-      
+      <p>现在很多应用都是<strong>data-intensive</strong>(数据密集型), 而不是<strong>compute-intensive</strong>(计算密集型). CPU算力已不再是限制应用的原因之一, 更多的问题出现在数据的规模, 数据的复杂度, 和数据更改的速度.<br>一个数据密集型应用通常由多个standard building block(标准组件)组成, 这些组件提供了所需的功能. 举个例子, 很多应用都会用到如下组件:</p>
+<ul>
+<li>存储数据, 以便自己或其他应用可以事后访问该数据(database)</li>
+<li>记录一个开销昂贵的操作的结果, 以加快读取速度(cache)</li>
+<li>允许用户通过keyword搜索数据, 或通过filter过滤数据(search index)</li>
+<li>向其他应用发送消息, 让数据实现异步处理(stream processing)</li>
+<li>定期处理大量累积的数据(batch processing)</li>
+</ul>
+<p>如果上述听起来太显而易见, 正说明data system(数据系统)是一种很成功的抽象. 我们虽然一直在使用它, 但从未思考太多. 当创建一个应用时, 绝大多数工程师不会从头写一个新的数据存储引擎, 因为现有的数据系统已经可以完美地完成任务.<br>但现实总是复杂的. 由于不同的应用有不同的要求, 因此各种数据系统具有不同的特性. 实现cache的方式有很多, 实现search index的方式也有很多. 当创建一个应用时, 我们需要明白哪个工具最匹配应用的需求. 并且, 当单个工具无法满足需求时, 将多个工具组合就成了一件困难的事情.<br>我们将探究数据系统的原理和实践, 以及如何使用这些工具来创建数据密集型应用. 我们还将区分不同工具的共同点, 不同处, 以及他们如何实现各自的特性. 本章将讨论我们正在努力实现的基本目标: 一个reliable(可靠性), scalable(可拓展性), maintainable(可维护性)的数据系统. 我们将解释这些词代表了什么, 概述一些思考它们的方法. </p>
+<h2 id="1-Thinking-About-Data-Systems"><a href="#1-Thinking-About-Data-Systems" class="headerlink" title="1. Thinking About Data Systems"></a>1. Thinking About Data Systems</h2><p>我们通常认为database, queue, cache等, 是不同类型的工具. 虽然database和message queue有一些表面上共同之处: 它们都可用于存储数据. 但其实它们有不同的数据访问方式, 这决定了不同的性能特性, 因此也有不同的实现.<br>所以我们为何将这些工具统一称为<strong>data system</strong>? 最近几年出现了很多新的数据存储和处理工具. 它们都针对不同的使用场景做出优化, 也不能再被归为传统类型. 举个例子, database也可以作为message queue(Redis), message queue也可以拥有类似数据库的持久性保证(Apache Kafka). 不同类别的边界变得越加模糊.<br>其次, 越来越多的应用都不满足于只用一个工具来实现数据处理和存储. 相反, 任务会被拆分为多个小任务, 这些小任务可以通过单一工具完成, 并通过应用代码将它们缝合起来. 举个例子, 如果将cache layer(缓存层, 使用Memcached或其他工具), 或full-text search server(全文搜索服务器, 如Elasticsearch或Solr)从主数据中分离出来, 那么应用代码就需要负责同步主数据库和cache/index的数据. 下图为一种可能的架构图, 其中数据系统包含多个组件:<br><img src="/images/System-Design/chapter-1-1.png" alt="One possible architecture for a data system that combines several components"></p>
+<p>当你将多个工具结合在一起并提供服务时, 服务的接口或API通常向client隐藏技术细节. 现在你可以使用多个较小的通用组件来创建一个全新的专用数据系统. 这个复合的数据系统应提供一些保证, 例如: cache应可以被修改和无效化, 以保证外部client看到一致的结果.<br>设计数据系统或服务时, 难免出现很多问题. 当系统内部出现错误时, 如何确保数据的正确性和完整性? 当部分系统被降级时, 如果确保一直为client提供优秀的性能? 如何处理增长的负载? 一个好的API是什么样子?<br>设计一个数据系统有很多影响因素, 包括开发人员的技术, 工作经历, 系统依赖, 交付时间, 上级对不同类型风险的容忍度, 监管限制等. 上述因素会因不同情况而变得大不相同. 我们只关注三个领域:</p>
+<ul>
+<li>Reliability(可靠性): 即使遇到一些困境(硬件或软件故障, 或人为失误), 系统仍能保持正确地运行(以所需的性能水平执行正确的功能).</li>
+<li>Scalability(可拓展性): 随着系统规模的增长(数据量, 流量或复杂度的增长), 系统仍有方法处理这种增长.</li>
+<li>Maintainability(可维护性): 不同的人在系统上都能以高效率在系统上工作(既要维持当前的功能, 也要为系统添加新功能).</li>
+</ul>
+<h2 id="2-Reliability"><a href="#2-Reliability" class="headerlink" title="2. Reliability"></a>2. Reliability</h2><p>每个人对Reliability都有不同的理解. 对于软件开发, Reliability应满足以下期望:</p>
+<ul>
+<li>应用能满足用户的需求</li>
+<li>应用能容忍用户犯错或以非常规方式使用</li>
+<li>应用能在预期的负荷和数据量下, 性能满足要求</li>
+<li>应用能防止未经授权的访问和滥用</li>
+</ul>
+<p>若上述都能得到满足, 则可理解为Reliability. 出错的部分成为<strong>fault</strong>(故障); 若系统能预料并应对fault, 称为fault-tolerant(容错)或resilient(弹性的), 前者有一定的误导性, 会让人觉得系统能承受任何故障, 实际上并不可能. 系统只能容忍特定类型的故障.<br>注意, fault并不等同于failure(崩溃). fault通常定义为系统的某一组件偏离其标准; failure是系统作为一个整体停止向用户提供服务. 永远无法将fault的发生概率降为0, 从而需要设计一种容错机制防止fault造成failure.<br>可通过人为地触发fault来增加fault发生的概率, 比如随机kill某个进程. 之所以系统中存在许多bug, 就是因为没有很好的错误处理. 通过人为制造fault, 可以测试并确保容错机制正确工作. Netflix的Chaos Monkey就是其中一种制造fault的方式.<br>虽然我们倾向于容错而不是防止出错, 但预防总比治疗好. 安全问题就属于这类问题, 例如, 当攻击者控制系统并获取敏感数据时, 事情就变得无法挽回. </p>
+<h3 id="2-1-Hardware-Faults"><a href="#2-1-Hardware-Faults" class="headerlink" title="2.1 Hardware Faults"></a>2.1 Hardware Faults</h3><p>硬件故障往往是人类认为总容易导致系统崩溃的因素. 硬盘崩溃, RAM报错, 电网停电, 意外拔掉网线. 数据中心的工作人员几乎每天都能遇到上述情况.<br>硬盘的平均失效时间为10到50年. 因此, 如果一个存储集群有10000个磁盘, 平均每天会有一个磁盘失效. 为降低系统崩溃的概率, 第一反应是为单个硬件增加冗余度. 例如: 磁盘可以组成RAID, 服务器可拥有双电源和热插拔CPU, 数据中心可有自己的电池和柴油发电机. 当某个组件崩溃时, 其他冗余部件可替代, 而这期间可替换损坏的部件. 这种方法不能完全杜绝硬件故障引起的崩溃, 但其很容易理解, 且通常能保证机器多年运行不间断.<br>直到最近, 由于单个机器故障的概率十分罕见, 硬件组件的冗余已经可以满足大多数应用. 只要我们能快速备份到新的机器, 故障时间对于大多数应用都不是很严重. 因此, 对于要求高可用性的应用来说, 多机器冗余是必须的.<br>然而, 随着数据量和计算量要求的不断增加, 更多的应用开始使用大规模的机器, 这会导致硬件故障的发生率变高. 此外, 在一些云平台上, 例如Amazon Web Services(AWS), 虚拟机实例会在毫无预警的情况下变得不可用, 这是因为平台优先考虑灵活度和弹性, 而不是单机的可靠性.<br>因此通过优先使用软件容错技术, 并搭配硬件冗余, 可容忍整机丢失的情况. 这种系统还具有操作优势: 如果想重启机器, 单服务器系统需要一个预定的停机时间(例如安装系统安全补丁), 而容许整机故障的系统不需要停机时间也能修补节点.</p>
+<h3 id="2-2-Software-Errors"><a href="#2-2-Software-Errors" class="headerlink" title="2.2 Software Errors"></a>2.2 Software Errors</h3><p>通常认为硬件故障是独立随机的: 单个机器的磁盘损坏并不会导致其他机器的磁盘受影响. 硬件间可能存在弱相关性(由于某些原因导致机房的温度上升), 但几乎不可能同时出现大面积硬件故障的情况.<br>另一类故障是系统错误. 这类故障更加难以预测, 因为它们可能是跨节点的, 比起无相关性的硬件故障, 这类故障更能导致多个系统崩溃, 例如:</p>
+<ul>
+<li>当给定一个错误输入时, 由于软件bug, 导致应用服务器中的每个实例崩溃. 例如, 2012年6月30日的闰秒会触发Linux Kernel中的一个bug, 导致应用崩溃</li>
+<li>某些失控进程耗尽某些共享资源(CPU时间, 内存, 磁盘空间, 或网络带宽)</li>
+<li>系统所依赖的服务变慢, 无响应, 或回复错误响应</li>
+<li>级联故障, 某个组件中的一个小故障触发另一个组件中的故障, 最终导致越来越多的故障</li>
+</ul>
+<p>导致软件崩溃的bug通常会潜伏很久, 直到某个特殊情况下被触发. 这种情况下意味着, 软件对其环境做出了某种假设: 这种假设一般情况下是正确的, 但在特殊情况下不再成立.<br>对于软件中的系统故障, 没有一个快速解决的方案, 但有很多小方法: 仔细考虑系统中的假设和交互; 彻底的测试; 进程隔离; 允许进程崩溃和重启; 测量, 监控并分析生产环境中的系统行为. 如果系统能提供一些保证(例如, 在一个消息队列中, 传入的消息数等同于传出的消息数), 就能在运行时不断检查自身, 并在发现差异时预警.</p>
+<h3 id="2-3-Human-Errors"><a href="#2-3-Human-Errors" class="headerlink" title="2.3 Human Errors"></a>2.3 Human Errors</h3><p>软件系统由人类设计并创建, 系统的维护也由人类执行. 但人是不靠谱的, 举个例子, 一项针对大型互联网服务的研究表明, 配置错误是导致崩溃的主要原因, 硬件错误只占到10%到25%. 那么如何让系统更加可控? 以下是几种方法:</p>
+<ul>
+<li>以最小化出错的方式来设计系统. 精心设计的抽象, API, 管理界面都可以让人类更容易的做出正确操作, 并减少错误操作的出现概率. 然而, 如果接口过于严格, 人们就会选择绕过它, 否定其好处, 因此需要找到一个平衡点.</li>
+<li>将<strong>人们经常犯错的地方</strong>和<strong>经常导致崩溃的地方</strong>分离. 提供一个功能齐全的non-production版沙盒环境, 人们可以在其中使用真实的数据探索和测试, 而不会影响到真实用户.</li>
+<li>对各个级别进行彻底测试, 从<strong>单元测试</strong>, 到<strong>系统集成测试</strong>, 再到<strong>手动测试</strong>. 自动化测试被广泛应用, 易于理解, 并能很好的覆盖极端情况. </li>
+<li>允许从人为错误中快速恢复, 以减小崩溃带来的影响. 举个例子, 快速回滚配置更改, 回滚新代码, 并提供工具来重新计算数据</li>
+<li>设置详细且清晰的监控, 例如性能指标和错误率. 其他工程学科中称为telemetry(遥测, 一旦火箭离开地面, 遥测负责跟踪发生的一切, 并帮我们理解错误). 监控会向我们展示一些预警信号, 并允许我们检查系统是否违反某些假设或限制. 当错误发生时, 指标数据对于诊断问题十分重要.</li>
+<li>实行良好的管理和培训</li>
+</ul>
+<h3 id="2-4-How-Important-Is-Reliability"><a href="#2-4-How-Important-Is-Reliability" class="headerlink" title="2.4 How Important Is Reliability?"></a>2.4 How Important Is Reliability?</h3><p>Reliability(可靠性)不光适用于核电站和空中交通管理软件, 很多其他应用也需要可靠地运行. 商业应用中的bug会导致生产率下降(也可能导致法律风险), 电子商务网站的崩溃会有巨大收入损失和名誉受损. 即使在一些”非关键”的应用上, 我们也需对用户负责. 若一个父母将所有他们和孩子的照片全部存在你的相片应用中. 当数据库损坏时他们会是怎样的心情? 他们又如何知道从备份中恢复? 在某些情况下, 我们可能会选择牺牲可靠性来降低开发成本或运营成本(例如为未证实的市场开发一个初始版本的应用), 但我们应对捷径保持警惕.</p>
+
     </div>
 
     <footer class="post-footer">
