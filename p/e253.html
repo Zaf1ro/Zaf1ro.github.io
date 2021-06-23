@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-">
   <head>
     
 <meta charset="utf-8">
@@ -25,7 +25,7 @@
 
 
 
-  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+  <link rel="alternate" href="/default" title="Blog">
 
 
 
@@ -41,12 +41,15 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="Reliable, Scalable, and Maintainable Applications">
 <meta property="og:url" content="https://zaf1ro.github.io/p/e253.html">
-<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:site_name" content="Blog">
 <meta property="og:description" content="现在很多应用都是data-intensive(数据密集型), 而不是compute-intensive(计算密集型). CPU算力已不再是限制应用的原因之一, 更多的问题出现在数据的规模, 数据的复杂度, 和数据更改的速度.一个数据密集型应用通常由多个standard building block(标准组件)组成, 这些组件提供了所需的功能. 举个例子, 很多应用都会用到如下组件:  存储数据,">
 <meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/chapter-1-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/chapter-1-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/chapter-1-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/chapter-1-4.png">
 <meta property="article:published_time" content="2021-06-05T15:01:22.000Z">
-<meta property="article:modified_time" content="2021-06-15T20:27:02.283Z">
+<meta property="article:modified_time" content="2021-06-23T14:21:19.739Z">
 <meta property="article:author" content="Zaf1ro">
 <meta property="article:tag" content="Syetem Design">
 <meta name="twitter:card" content="summary">
@@ -61,7 +64,7 @@
 
 
     <title>
-Reliable, Scalable, and Maintainable Applications - Zaf1ro's Blog
+Reliable, Scalable, and Maintainable Applications - Blog
 </title>
   <meta name="generator" content="Hexo 5.4.0"></head>
 
@@ -70,7 +73,7 @@ Reliable, Scalable, and Maintainable Applications - Zaf1ro's Blog
     <div id="third">
       <div id="sidebar-title">
         <h1 id="sidebar-title-text">
-            <a href="/." class="logo">Zaf1ro's Blog</a>
+            <a href="/." class="logo">Blog</a>
         </h1>
       </div>
       <div id="google-search">
@@ -79,7 +82,7 @@ Reliable, Scalable, and Maintainable Applications - Zaf1ro's Blog
       </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Thinking-About-Data-Systems"><span class="toc-text">1. Thinking About Data Systems</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Reliability"><span class="toc-text">2. Reliability</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hardware-Faults"><span class="toc-text">2.1 Hardware Faults</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Software-Errors"><span class="toc-text">2.2 Software Errors</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Human-Errors"><span class="toc-text">2.3 Human Errors</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-How-Important-Is-Reliability"><span class="toc-text">2.4 How Important Is Reliability?</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Thinking-About-Data-Systems"><span class="toc-text">1. Thinking About Data Systems</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Reliability"><span class="toc-text">2. Reliability</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hardware-Faults"><span class="toc-text">2.1 Hardware Faults</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Software-Errors"><span class="toc-text">2.2 Software Errors</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Human-Errors"><span class="toc-text">2.3 Human Errors</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-How-Important-Is-Reliability"><span class="toc-text">2.4 How Important Is Reliability?</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Scalability"><span class="toc-text">3. Scalability</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Describing-Load"><span class="toc-text">3.1 Describing Load</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Describing-Performance"><span class="toc-text">3.2 Describing Performance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Approaches-for-Coping-with-Load"><span class="toc-text">3.3 Approaches for Coping with Load</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -178,6 +181,32 @@ Reliable, Scalable, and Maintainable Applications - Zaf1ro's Blog
 <li>实行良好的管理和培训</li>
 </ul>
 <h3 id="2-4-How-Important-Is-Reliability"><a href="#2-4-How-Important-Is-Reliability" class="headerlink" title="2.4 How Important Is Reliability?"></a>2.4 How Important Is Reliability?</h3><p>Reliability(可靠性)不光适用于核电站和空中交通管理软件, 很多其他应用也需要可靠地运行. 商业应用中的bug会导致生产率下降(也可能导致法律风险), 电子商务网站的崩溃会有巨大收入损失和名誉受损. 即使在一些”非关键”的应用上, 我们也需对用户负责. 若一个父母将所有他们和孩子的照片全部存在你的相片应用中. 当数据库损坏时他们会是怎样的心情? 他们又如何知道从备份中恢复? 在某些情况下, 我们可能会选择牺牲可靠性来降低开发成本或运营成本(例如为未证实的市场开发一个初始版本的应用), 但我们应对捷径保持警惕.</p>
+<h2 id="3-Scalability"><a href="#3-Scalability" class="headerlink" title="3. Scalability"></a>3. Scalability</h2><p>即使一个系统今天稳定的工作, 并不意味着其在未来能稳定地工作. 其中一个原因就是负载增加: 也许系统的同时在线人数从10,000涨到100,000, 或从一百万涨到一千万, 或处理比之前多得多的数据量. Scalability(可拓展性)是我们用于描述系统应对负载增加的能力. 注意, scalability并不是一个一维标签: “X具有可拓展性”, “Y没有可拓展性”, 这种话是没有意义的. 考虑scalability意味着考虑以下问题:</p>
+<ul>
+<li>如果系统以某种方式增长,. 我们如何应对这种增长</li>
+<li>我们如果为额外的负载增加计算资源</li>
+</ul>
+<h3 id="3-1-Describing-Load"><a href="#3-1-Describing-Load" class="headerlink" title="3.1 Describing Load"></a>3.1 Describing Load</h3><p>首先我们需要描述系统的当前负载, 然后讨论增长问题(负载翻倍会发生什么). 我们可以用一些数字来描述负载, 称为load parameter(负载参数). 参数的选择取决于系统的架构: 可能是网络服务器的每秒请求数, 数据库的读写比, 聊天室内同时活跃的用户数, 缓存的命中率, 或其他东西. 或许平均情况对你很重要, 或许系统瓶颈取决于少数极端情况.<br>为了能更清晰地了解这个概念, 以Twitter为例, 数据发布于2012年11月. 以下是Twitter的两个主要操作:</p>
+<ul>
+<li>Post tweet: 一个用户可向其follower发送信息(平均每秒4.6k个请求, 峰值时每秒12k请求)</li>
+<li>Home timeline: 用户浏览其follow的tweet(每秒300k请求)</li>
+</ul>
+<p>每秒12,000次的写入处理起来比较简单. 然而, Twitter的规模化挑战主要不是因为tweet量, 而是fan-out(扇出): 每个用户都会关注很多人, 每个人也会被很多人关注. 实现这种两种操作大致有两种方式:</p>
+<ol>
+<li>发送tweet只是简单地将新tweet存入tweet集合中. 当用户请求home timeline时, 查找他们关注的所有人, 找到他们发送的所有tweet, 合并tweet. 在关系型数据库中查询如下:<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> tweets.<span class="operator">*</span>, users.<span class="operator">*</span> <span class="keyword">FROM</span> tweets</span><br><span class="line">  <span class="keyword">JOIN</span> users <span class="keyword">ON</span> tweets.sender_id <span class="operator">=</span> users.id</span><br><span class="line">  <span class="keyword">JOIN</span> follows <span class="keyword">ON</span> follows.followee_id <span class="operator">=</span> users.id</span><br><span class="line">  <span class="keyword">WHERE</span> follows.follower_id <span class="operator">=</span> <span class="built_in">current_user</span></span><br></pre></td></tr></table></figure></li>
+<li>为每个用户维护各自的home timeline, 类似于为每个收件人准备一个tweet的邮箱. 当某个用户发布tweet时, 查询所有他的follower, 并将该tweet放入到他们home timeline cache中. 这时, 读取home timeline的请求就很简单, 因为结果已被预先计算好. </li>
+</ol>
+<p><img src="/images/System-Design/chapter-1-2.png" alt="Simple relational schema for implementing a Twitter home timeline"><br><img src="/images/System-Design/chapter-1-3.png" alt="Twitter’s data pipeline for delivering tweets to followers, with load parameters"></p>
+<p>Twitter的第一个版本使用第一种方法, 但系统难以跟上home timeline查询负载的增加, 因此公司转而使用第二个方法. 该方法效果更好, 因为<strong>tweet发布速率</strong>低于<strong>home timeline读取速率</strong>两个数量级. 因此最好多做一些写入操作, 少一些读取时间.<br>然而, 第二种方法的缺点在于, 发布一个tweet需要做许多额外工作. 平均而言, 一条tweet需要推送给75个follower, 每秒4.6k个tweet则需要向home timeline cache中每秒写入345k次. 但这一平均值掩盖了以事实, 每个用户的follower数量差异巨大, 有些用户拥有三千万个follower, 这意味着该用户每次发布tweet都需要进行三千万次写入. Twitter还需要五秒内向所有follower推送新的tweet.<br>在twitter的例子中, 由于每个用户的follower分布决定了fan-out负载, 该变量就是讨论scalability的key load parameter. 不同应用有不同的特性, 但你可以使用类似的原则来推断复杂.<br>Twitter现在已经稳步实现第二种方法, 并逐步转向两种方法的混合. 大多数用户的tweet会写入到home timeline cache, 一小部分拥有大量粉丝的用户发tweet时不会写入cache. 当用户读取home timeline是, 会分别获取已关注的所有名人的tweet, 再与用户的home timeline合并. 这种混合方式可以提供持久的高性能.</p>
+<h3 id="3-2-Describing-Performance"><a href="#3-2-Describing-Performance" class="headerlink" title="3.2 Describing Performance"></a>3.2 Describing Performance</h3><p>一旦你能描述系统中的负载, 就可以研究当负载增加时会发生什么. 以下是两种角度:</p>
+<ul>
+<li>当你提高复杂参数, 并让系统资源(CPU, 内存, 网络带宽等)保持不变, 系统的性能会收到什么影响</li>
+<li>当你提高负载参数, 你需要增加多少资源来保持性能不变</li>
+</ul>
+<p>上述两个问题都要求性能数据, 因此我们需要先描述一下系统的性能. 在批处理系统中, 例如Hadoop, 我们通常考虑<strong>throughput</strong>(吞吐量), 也就是每秒处理的记录数, 或特定规模数据集上一项任务运行的时长. 对于在线系统, 服务的<strong>response time</strong>(响应时间)很重要, 也就是client发送请求和接收到回复之间的间隔.<br>即使每次发送相同的请求, 每个请求的响应时间也不同. 实际上, 系统在处理各种请求时, 响应时间各有不同. 因此我们不能将响应时间看作一个数值, 而是当做一个值的分布.</p>
+<p><img src="/images/System-Design/chapter-1-4.png" alt="Illustrating mean and percentiles: response times for a sample of 100 requests to a service."></p>
+<p>上图中每个灰色柱表示一次请求, 其高度表示请求处理的时间. 大多数请求很非常快, 但偶尔会有需要更长时间的异常值. 或许处理慢的请求更昂贵, 比如说, 需要处理更多数据. 但某些情况下, 你认为请求应使用相同时间, 实际上却并不是: 上下文切换到后台进程, 网络丢包和TCP重传, 垃圾回收导致的时停, 读取时遭遇磁盘的page fault, 服务器机架的机械振动等诸多原因.<br>通常报表都会写平均响应时间(严格来说, “平均”并不之任何特定的公式, 通常理解为算数平均值: 给定n个值, 将所有值相加并除以n). 但如果你想知道真实的响应时间, 均值并不是一个很好的指标, 因为它不会告诉你有多少用户遭受到高延迟.<br>通常使用<strong>percentiles</strong>(百分位数). 如果你将所有响应时间从低到高排序, 其median(中位数)就是中间的数值: 举个例子, 如果你的中位数是200ms, 意味着一半请求的响应低于200ms, 还有一半高于200ms.<br>如果想知道真实场景中用户的等待时间, 中位数是一个很好的标准: 一半用户请求的响应时间小于中位数, 一般用户请求的响应时间大于中位数. 中位数也称为50%百分位数, 缩写为<strong>p50</strong>. 注意, 中位数只关乎于单个请求, 如果用户发出多个请求, 则至少有50%的概率其中一个请求比中位数慢.<br>为了弄清楚异常值有多么糟糕, 我们可以设置更高的百分位数: 第95百分位数, 第99百分位数, 第99.9百分位数(缩写为p95, p99, p999). 这些响应时间表示快于95%, 99%, 或99%的响应时间的阈值. 举个例子, 假设第95百分位数回复时间为1.5秒, 意味着95%的响应时间小于1.5秒, 100个请求里有5个响应时间超过1.5秒.<br>响应时间的高百分比(也称为tail latency, 尾部延迟)非常重要, 因为该值直接影响用户的服务体验. 举个例子, Amazon以p999作为响应时间为准, 因为响应最慢的客户往往也是数据最多的客户, 也就是最有价值的客户. 通过让网站快速响应可以提高用户的好感: Amazon发现, 每提高100ms延迟, 销量就会减少1%; 也有一些报告说, 每慢1秒, 用户满意度减少16%.<br>另一方面, 优化第99.99百分位数被认为成本过高, 并且无法为Amazon产生足够的效益. 减少十分高百分位的响应时间十分困难, 因为其很容易收到随机事件的影响, 收益也会减少. 举个例子, 百分位数经常用于service level objectives(SLOs, 服务级别标准)和service level agreement(SLAs, 服务界别协议), 这两者用户定义服务预期性能和可用性. SLA可能会声明: 如果响应时间的中位数小于200ms, 且p99小于1s, 则说明服务可用. 这些指数为client设置了期望值, 允许用户在SLA未达标时申请退款.<br>Queue delay(排队延迟)通常占了高百分位数响应时间的很大一部分. 由于服务器只能并行处理少量事务(例如, 限于CPU核数), 因此只要少量满速请求就能让后面的请求阻塞, 也称为head-of-line blocking(头部阻塞). 即使后面的请求能够被服务器快速处理, 由于需要等待之前的请求被处理, 对于client来说响应时间还是很长. 因此从client端测量响应时间很重要.<br>当为了测试系统可拓展性而人工产生负载时, 产生负载的client要独立于响应时间不断发送请求. 如果client在发送下一个请求时需要等待上一个请求完成, 则会产生人为排队的效果, 使得测试的队列比真实情况更短.</p>
+<h3 id="3-3-Approaches-for-Coping-with-Load"><a href="#3-3-Approaches-for-Coping-with-Load" class="headerlink" title="3.3 Approaches for Coping with Load"></a>3.3 Approaches for Coping with Load</h3><p>我们已经讨论过用于描述负载的参数, 和用于衡量性能的指标. 现在开始讨论可拓展性: 当负载参数增加时, 如何保持高性能.<br>适用某一级别负载的架构不大可能应付其10倍的负载. 如果你正在快速扩张的业务中, 每当系统负载上升一个数量级, 都需要考虑重新设计架构, 甚至更频繁. 人们经常将拓展二分为<strong>scaling up</strong>(纵向拓展, veritical scaling, 也称为垂直拓展, 转移到性能更强的机器)和<strong>scaling out</strong>(横向拓展, horizontal scaling, 也称为水平拓展, 将负载分摊到多个小机器上). 将负载分摊到多个机器也称为<strong>shared-nothing</strong>(无共享)架构. 将系统放在一个机器上会更加简单, 但高端机器更贵, 因此水平拓展在所难免. 事实上, 好的架构通常会混合使用多个方法: 举个例子, 使用几个性能相对强劲的机器可能会比多个虚拟机更简单, 更便宜.<br>有些系统是elastic(弹性的), 表示当检测负载增加时, 会自动添加计算资源, 其他系统则需要手动拓展(人工计算容量并决定是否向系统添加机器). 对于负载难以预测的系统, 弹性十分重要, 但手动拓展系统往往更加简单, 意外操作也更少.<br>将stateless service(无状态服务)部署在多台机器上比较简单, 将有状态的数据系统从单个节点变成分布式配置需要引入额外复杂度. 因此, 通用做法是将数据库放在单个节点上, 直到纵向拓展的费用或者高可用性迫使系统转向分布式. 由于分布式系统的工具和抽象越来越好, 对于某些应用, 上述方法可能会改变. 未来可能会将分布式数据系统当做默认选项, 即使应用不需要处理大量的数据或流量.<br>大规模运行的系统往往有自己的专属架构, 不存在一种通用的, 一刀切的可拓展架构. 系统的瓶颈可能是数据的读取, 写入, 存储, 数据的复杂度, 响应时间的要求, 访问模式, 或上述多个因素. 例如, 一个需要每秒处理100,000个请求的系统, 每个请求2kB大小的系统, 和一个每分钟处理3个请求, 每个请求2GB大小的系统, 这两个系统虽然吞吐量相同, 但设计上完全不同.<br>一个适用于特定应用的系统架构总是围绕着某些假设构建: 负载参数. 如果假设是错误的, 则拓展是无效的, 甚至导致系统效率下降. 在初创公司或未经验证的产品中, 快速添加产品功能通常比拓展负载重要. 即使每个架构只针对特定应用, 但这些可拓展架构是由很多通用的组件组成, 并由一些常规的模式构成.</p>
 
     </div>
 
