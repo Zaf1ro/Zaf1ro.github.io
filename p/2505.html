@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -8,78 +8,75 @@
 
 
 
-  <meta name="description" content="Daemon Processes and the inetd Superserver">
+  <meta name="description" content="Daemon Processes and the inetd Superserver"/>
 
 
 
 
-  <meta name="keywords" content="UNP,">
+  <meta name="keywords" content="Network," />
 
 
-<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
-<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
 
-<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/2505.html">
-<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/2505.html">
-
-
-
-
-  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/2505.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/2505.html" />
 
 
 
 
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+  <link rel="alternate" href="/default" title="Zaf1ro" >
 
 
 
-<link rel="canonical" href="https://zaf1ro.github.io/p/2505.html">
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
 
 
-<meta name="description" content="1. IntroductionDaemon是一种运行在后台且不与任何controlling terminal绑定的进程. Unix通常会在后台运行多个daemon, 用于执行administrative task. 由于缺少controlling terminal, daemon通常由system initialization script启动; 但如果daemon由shell prompt启动,">
-<meta name="keywords" content="UNP">
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/2505.html"/>
+
+
+<meta name="description" content="1. IntroductionDaemon是一种运行在后台且不与任何controlling terminal绑定的进程. UNIX通常会在后台运行多个daemon, 用于执行administrative task. 由于缺少controlling terminal, daemon通常由system initialization script启动; 但如果daemon由shell prompt启动,">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Daemon Processes and the inetd Superserver">
 <meta property="og:url" content="https://zaf1ro.github.io/p/2505.html">
-<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
-<meta property="og:description" content="1. IntroductionDaemon是一种运行在后台且不与任何controlling terminal绑定的进程. Unix通常会在后台运行多个daemon, 用于执行administrative task. 由于缺少controlling terminal, daemon通常由system initialization script启动; 但如果daemon由shell prompt启动,">
-<meta property="og:locale" content="zh">
-<meta property="og:image" content="https://zaf1ro.github.io/images/UNP/daemon-proc-1.gif">
-<meta property="og:image" content="https://zaf1ro.github.io/images/UNP/daemon-proc-2.gif">
-<meta property="og:image" content="https://zaf1ro.github.io/images/UNP/daemon-proc-3.gif">
-<meta property="og:image" content="https://zaf1ro.github.io/images/UNP/daemon-proc-4.gif">
-<meta property="og:updated_time" content="2020-01-03T03:53:37.000Z">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionDaemon是一种运行在后台且不与任何controlling terminal绑定的进程. UNIX通常会在后台运行多个daemon, 用于执行administrative task. 由于缺少controlling terminal, daemon通常由system initialization script启动; 但如果daemon由shell prompt启动,">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/13-5-steps-of-inetd.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/13-5-inetd-when-req-arrive.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/13-5-inetd-in-child-proc.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/13-5-inetd-after-dup2.gif">
+<meta property="article:published_time" content="2020-01-01T15:20:30.000Z">
+<meta property="article:modified_time" content="2024-01-03T17:00:07.497Z">
+<meta property="article:tag" content="Network">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Daemon Processes and the inetd Superserver">
-<meta name="twitter:description" content="1. IntroductionDaemon是一种运行在后台且不与任何controlling terminal绑定的进程. Unix通常会在后台运行多个daemon, 用于执行administrative task. 由于缺少controlling terminal, daemon通常由system initialization script启动; 但如果daemon由shell prompt启动,">
-<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNP/daemon-proc-1.gif">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/13-5-steps-of-inetd.gif">
 
 
-<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
 
-
-  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
 
 
 
     <title>
-Daemon Processes and the inetd Superserver - Zaf1ro's Blog
+Daemon Processes and the inetd Superserver - Zaf1ro
 </title>
-  </head>
+  <meta name="generator" content="Hexo 6.3.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
     <div id="third">
       <div id="sidebar-title">
         <h1 id="sidebar-title-text">
-            <a href="/." class="logo">Zaf1ro's Blog</a>
+            <a href="/." class="logo">Home</a>
         </h1>
       </div>
       <div id="google-search">
-        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
-        <div class="gcse-search"></div>
-      </div>
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
       
   <div id="toc">
     <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-syslogd-Daemon"><span class="toc-text">2. syslogd Daemon</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-syslog-Function"><span class="toc-text">3. syslog Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-daemon-init-Function"><span class="toc-text">4. daemon_init Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-inetd-Daemon"><span class="toc-text">5. inetd Daemon</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-daemon-inetd-Function"><span class="toc-text">6. daemon_inetd Function</span></a></li></ol>
@@ -93,12 +90,11 @@ Daemon Processes and the inetd Superserver - Zaf1ro's Blog
   
   <button class="nav-mobile-button on-post" id="sidebarCollapse">
   
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
   </button>
   
   
+
 
   <nav id="nav-top">
     
@@ -107,7 +103,7 @@ Daemon Processes and the inetd Superserver - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -138,32 +134,31 @@ Daemon Processes and the inetd Superserver - Zaf1ro's Blog
     </header>
 
     <div class="post-content">
-      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Daemon是一种运行在后台且不与任何controlling terminal绑定的进程. Unix通常会在后台运行多个daemon, 用于执行administrative task. 由于缺少controlling terminal, daemon通常由system initialization script启动; 但如果daemon由shell prompt启动, 则需要与controll terminal解绑来避免job control, terminal session management和输出到terminal的信息.<br>以下是启动一个daemon的方法:</p>
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Daemon是一种运行在后台且不与任何controlling terminal绑定的进程. UNIX通常会在后台运行多个daemon, 用于执行administrative task. 由于缺少controlling terminal, daemon通常由system initialization script启动; 但如果daemon由shell prompt启动, 则需要与controll terminal解绑来避免job control, terminal session management和输出到terminal的信息.<br>以下是启动一个daemon的方法:</p>
 <ol>
-<li>系统启动时, 可通过system initialization script启动daemon. 这些script通常放置在<strong>/etc</strong>或<strong>/etc/rc</strong>中. Daemon具有superuser权限. </li>
-<li><strong>inetd</strong>作为superserver, 是一个会在系统启动时运行的daemon, 用于为其他service提供网络服务. inetd会一直监听网络请求(Telnet, FTP等), 收到请求后唤醒相应的server(Telnet server, FTP server等).</li>
-<li>cron作为一个系统启动时就开始运行的daemon, 用于在规定的时间运行特定程序, 被启动的程序也会以daemon的形式运行.</li>
-<li>Daemon可以通过user terminal启动, 一般用于测试或重启daemon</li>
+<li>系统启动时, 可通过system initialization script启动daemon. 这些script通常放置在<code>/etc</code>或<code>/etc/rc</code>中. Daemon具有superuser权限. </li>
+<li><code>inetd</code>作为superserver, 是系统启动时运行的一个daemon, 用于为其他service提供网络服务. <code>inetd</code>会一直监听网络请求(Telnet, FTP等), 收到请求后唤醒相应的server(Telnet server, FTP server等).</li>
+<li><code>cron</code>作为一个系统启动时就开始运行的daemon, 用于在规定的时间运行特定程序, 被启动的程序也会以daemon的形式运行.</li>
+<li>Daemon可通过user terminal启动, 一般用于测试或重启daemon</li>
 </ol>
-<p>由于daemon没有controlling terminal, 所以需要其他方法来输出信息. syslog()通过将信息发送给syslogd daemon可实现信息输出. </p>
+<p>由于daemon没有controlling terminal, 所以需要其他方法来输出信息. 可通过<code>syslog()</code>将信息发送给syslogd daemon, 实现信息输出. </p>
 <h2 id="2-syslogd-Daemon"><a href="#2-syslogd-Daemon" class="headerlink" title="2. syslogd Daemon"></a>2. syslogd Daemon</h2><p>System administrator需要处理系统中不同service产生的不同message, 例如: FTP server接收到connection的通知信息, hardware failure的错误信息, DNS server回复的统计信息. 由于不同信息的优先级不同, 处理方式不同, 需要将各个信息传递到不同的地方. Syslogd daemon就是用于处理这些信息:</p>
 <ol>
-<li>Syslogd daemon会创建一个Unix domain socket名为<strong>/dev/log</strong>, 监听port 514并接收service或其他host发来的信息. </li>
-<li><strong>syslog.conf</strong>文件作为syslogd daemon的配置文件, 用于对信息进行分类, 通常放置在<strong>/etc/syslog.conf</strong>. 接收到的日志信息一般会被重定向到以下地方:<ol>
+<li>Syslogd daemon会创建一个UNIX domain socket名为<code>/dev/log</code>, 监听port 514并接收service或其他host发来的信息. </li>
+<li><code>syslog.conf</code>文件作为syslogd daemon的配置文件, 用于分类信息, 通常放置在<code>/etc/syslog.conf</code>. 接收到的日志信息通常重定向到以下地方:<ul>
 <li>system console</li>
 <li>特定user</li>
 <li>log file</li>
 <li>其他host上的syslogd daemon</li>
 <li>直接抛弃.</li>
-</ol>
+</ul>
 </li>
-<li>Syslog可以处理kernel传来的信息, 但不是直接写入/dev/log, 而是由其他daemon(klogd)处理</li>
+<li>Syslog可以处理kernel传来的信息, 但不是直接写入<code>/dev/log</code>, 而是由其他daemon(klogd)处理</li>
 </ol>
-<p>进程可通过创建Unix domain datagram socket向syslogd所绑定的pathname发送信息, 也可调用syslog()发送信息. 一些新的系统中取消了UDP socket传递信息的方式, 因为可能导致系统遭受denial-of-service attack.</p>
-<h2 id="3-syslog-Function"><a href="#3-syslog-Function" class="headerlink" title="3. syslog Function"></a>3. syslog Function</h2><p>由于daemon没有controlling terminal, 所以无法调用fprintf()输出错误信息, 需要调用syslog()输出log message:</p>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;syslog.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief send message to the system logger</span></span><br><span class="line"><span class="comment"> * @param priority: formed by `facility` and `level`</span></span><br><span class="line"><span class="comment"> * @param message: log message, %m will be replaced by errno</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">syslog</span><span class="params">(<span class="keyword">int</span> priority, <span class="keyword">const</span> <span class="keyword">char</span> *message, ...)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<p>当application调用syslog()时, 会创建一个Unix domain datagram并向syslogd daemon创建的pathname发起connect(). 以下是log message的level value:</p>
+<p>进程可通过创建UNIX domain datagram socket向syslogd所绑定的pathname发送信息, 也可调用<code>syslog()</code>发送信息. 一些新的系统中取消了UDP socket传递信息的方式, 因为可能导致系统遭受denial-of-service attack.</p>
+<h2 id="3-syslog-Function"><a href="#3-syslog-Function" class="headerlink" title="3. syslog Function"></a>3. syslog Function</h2><p>由于daemon没有controlling terminal, 所以<code>fprintf()</code>无法输出错误信息, 需调用<code>syslog()</code>输出log message:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;syslog.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief send message to the system logger</span></span><br><span class="line"><span class="comment"> * @param priority: formed by `facility` and `level`</span></span><br><span class="line"><span class="comment"> * @param message: log message, %m will be replaced by errno</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">syslog</span><span class="params">(<span class="type">int</span> priority, <span class="type">const</span> <span class="type">char</span> *message, ...)</span>;</span><br></pre></td></tr></table></figure>
+<p>当application调用<code>syslog()</code>时, 会创建一个UNIX domain datagram, 并向syslogd daemon创建的pathname发起<code>connect()</code>. 以下是log message的level value:</p>
 <table>
 <thead>
 <tr>
@@ -223,11 +218,11 @@ Daemon Processes and the inetd Superserver - Zaf1ro's Blog
 </thead>
 <tbody><tr>
 <td align="center">LOG_AUTH</td>
-<td align="center">Security / authorization messages</td>
+<td align="center">Security &#x2F; authorization messages</td>
 </tr>
 <tr>
 <td align="center">LOG_AUTHPRIV</td>
-<td align="center">Security / authorization messages (private)</td>
+<td align="center">Security &#x2F; authorization messages (private)</td>
 </tr>
 <tr>
 <td align="center">LOG_CRON</td>
@@ -302,9 +297,8 @@ Daemon Processes and the inetd Superserver - Zaf1ro's Blog
 <td align="center">UUCP system</td>
 </tr>
 </tbody></table>
-<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;syslog.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open or reopen a connection to syslog in preparation </span></span><br><span class="line"><span class="comment"> *        for submitting messages</span></span><br><span class="line"><span class="comment"> * @param ident: typically set to the program name</span></span><br><span class="line"><span class="comment"> * @param option: control the operation of openlog()</span></span><br><span class="line"><span class="comment"> * @param facility: specify what type of program is logging the </span></span><br><span class="line"><span class="comment"> *        message</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">openlog</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *ident, <span class="keyword">int</span> option, <span class="keyword">int</span> facility)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief close the descriptor being used to write to the system</span></span><br><span class="line"><span class="comment"> *        logger</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">closelog</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<p>以下是openlog()中所有option value:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;syslog.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open or reopen a connection to syslog in preparation </span></span><br><span class="line"><span class="comment"> *        for submitting messages</span></span><br><span class="line"><span class="comment"> * @param ident: typically set to the program name</span></span><br><span class="line"><span class="comment"> * @param option: control the operation of openlog()</span></span><br><span class="line"><span class="comment"> * @param facility: specify what type of program is logging the </span></span><br><span class="line"><span class="comment"> *        message</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">openlog</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *ident, <span class="type">int</span> option, <span class="type">int</span> facility)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief close the descriptor being used to write to the system</span></span><br><span class="line"><span class="comment"> *        logger</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">closelog</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下是<code>openlog()</code>中所有option value:</p>
 <table>
 <thead>
 <tr>
@@ -329,53 +323,53 @@ Daemon Processes and the inetd Superserver - Zaf1ro's Blog
 <td align="center">Log the Process ID with each message</td>
 </tr>
 </tbody></table>
-<h2 id="4-daemon-init-Function"><a href="#4-daemon-init-Function" class="headerlink" title="4. daemon_init Function"></a>4. daemon_init Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">daemon_init</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pname, <span class="keyword">int</span> facility)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> i;</span><br><span class="line">  <span class="keyword">pid_t</span> pid;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* terminate the parent to disassociate from shell command */</span></span><br><span class="line">  <span class="keyword">if</span> ((pid = fork()) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"fork error\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pid) <span class="comment">// parent</span></span><br><span class="line">    _exit(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* child 1 is not a process group leader but gets own PID */</span></span><br><span class="line">  <span class="keyword">if</span> (setsid() &lt; <span class="number">0</span>) &#123; <span class="comment">/* become the session leader of new session */</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"setsid error\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* ignore the SIGHUP signal to avoid all processes in the</span></span><br><span class="line"><span class="comment">   * session receive the signal when session leader terminates */</span></span><br><span class="line">  signal(SIGHUP, SIG_IGN);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* child 2 won't be a session leader, so it cannot acquire</span></span><br><span class="line"><span class="comment">   * a controlling terminal */</span></span><br><span class="line">  <span class="keyword">if</span> ((pid = fork()) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pid)</span><br><span class="line">    _exit(<span class="number">0</span>);  <span class="comment">// child 1 terminateds</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// daemon_proc = 1; // for err_xxx() functions</span></span><br><span class="line">  chdir(<span class="string">"/"</span>); <span class="comment">/* change working directory to the root directory */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* close all file descriptors */</span></span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; MAXFD; i++) &#123;</span><br><span class="line">    close(i);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* redirect stdin, stdout and stderr to /dev/null */</span></span><br><span class="line">  open(<span class="string">"/dev/null"</span>, O_RDONLY);</span><br><span class="line">  open(<span class="string">"/dev/null"</span>, O_WRONLY);</span><br><span class="line">  open(<span class="string">"/dev/null"</span>, O_RDWR);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* open a conection to syslog */</span></span><br><span class="line">  openlog(pname, LOG_PID, facility);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="4-daemon-init-Function"><a href="#4-daemon-init-Function" class="headerlink" title="4. daemon_init Function"></a>4. daemon_init Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">daemon_init</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pname, <span class="type">int</span> facility)</span> &#123;</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  <span class="type">pid_t</span> pid;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* terminate the parent to disassociate from shell command */</span></span><br><span class="line">  <span class="keyword">if</span> ((pid = fork()) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;fork error\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pid) <span class="comment">// parent</span></span><br><span class="line">    _exit(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* child 1 is not a process group leader but gets own PID */</span></span><br><span class="line">  <span class="keyword">if</span> (setsid() &lt; <span class="number">0</span>) &#123; <span class="comment">/* become the session leader of new session */</span></span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;setsid error\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* ignore the SIGHUP signal to avoid all processes in the</span></span><br><span class="line"><span class="comment">   * session receive the signal when session leader terminates */</span></span><br><span class="line">  signal(SIGHUP, SIG_IGN);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* child 2 won&#x27;t be a session leader, so it cannot acquire</span></span><br><span class="line"><span class="comment">   * a controlling terminal */</span></span><br><span class="line">  <span class="keyword">if</span> ((pid = fork()) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pid)</span><br><span class="line">    _exit(<span class="number">0</span>);  <span class="comment">// child 1 terminateds</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// daemon_proc = 1; // for err_xxx() functions</span></span><br><span class="line">  chdir(<span class="string">&quot;/&quot;</span>); <span class="comment">/* change working directory to the root directory */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* close all file descriptors */</span></span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; MAXFD; i++) &#123;</span><br><span class="line">    close(i);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* redirect stdin, stdout and stderr to /dev/null */</span></span><br><span class="line">  open(<span class="string">&quot;/dev/null&quot;</span>, O_RDONLY);</span><br><span class="line">  open(<span class="string">&quot;/dev/null&quot;</span>, O_WRONLY);</span><br><span class="line">  open(<span class="string">&quot;/dev/null&quot;</span>, O_RDWR);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* open a conection to syslog */</span></span><br><span class="line">  openlog(pname, LOG_PID, facility);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="5-inetd-Daemon"><a href="#5-inetd-Daemon" class="headerlink" title="5. inetd Daemon"></a>5. inetd Daemon</h2><p>Unix系统中会有多个servers等待client发送请求, 例如: FTP, Rlogin, TFTP等. 4.3BSD之前, 每个server都会在系统启动时作为daemon进程运行, 收到client请求后调用fork()处理, 但这么做有2个缺陷:</p>
+
+<h2 id="5-inetd-Daemon"><a href="#5-inetd-Daemon" class="headerlink" title="5. inetd Daemon"></a>5. inetd Daemon</h2><p>UNIX系统中会有多个servers等待client发送请求, 例如: FTP, Rlogin, TFTP等. 4.3BSD之前, 每个server都会在系统启动时作为daemon进程运行, 收到client请求后调用<code>fork()</code>处理, 但这么做存在以下缺陷:</p>
 <ol>
-<li>每个daemon存在大量重复代码, 例如: 创建socket, 调用bind()绑定server port等</li>
-<li>每个daemon都占用process table中的slot, 但daemon绝大多数时间处于睡眠状态</li>
+<li>每个daemon存在大量重复代码, 如创建socket, 调用<code>bind()</code>绑定server port等</li>
+<li>每个daemon占用process table的slot, 但绝大多数时间都处于睡眠状态</li>
 </ol>
-<p>4.3BSD提出了Internet superserver: inetd daemon. 该daemon主要解决了两个问题:</p>
+<p>4.3BSD提出internet superserver: inetd daemon. 该daemon解决了两个问题:</p>
 <ol>
 <li>省去每个server进程切换为daemon process的过程</li>
 <li>省去每个server等待client请求, 只需要inetd一个进程等待即可</li>
 </ol>
-<p>inetd的配置文件一般位于<strong>/etc/inetd.conf</strong>, 文件中每一行包含server的所有信息:</p>
+<p>inetd的配置文件一般位于<code>/etc/inetd.conf</code>, 文件中每一行包含server的所有信息:</p>
 <ul>
-<li>service-name: 必须出现在<strong>/etc/services</strong>中</li>
+<li>service-name: 必须出现在<code>/etc/services</code>中</li>
 <li>socket-type: TCP或UDP</li>
-<li>protocol: 必须出现在<strong>/etc/protocols</strong>中</li>
-<li>wait-flag: TCP使用<strong>nowait</strong>, UDP使用<strong>wait</strong></li>
-<li>login-name: 必须出现在<strong>/etc/passwd</strong>中</li>
+<li>protocol: 必须出现在<code>/etc/protocols</code>中</li>
+<li>wait-flag: TCP使用<code>nowait</code>, UDP使用<code>wait</code></li>
+<li>login-name: 必须出现在<code>/etc/passwd</code>中</li>
 <li>server-program: exec执行所需的pathname</li>
 <li>server-program-arguments: exec执行所需的arguments</li>
 </ul>
-<p>以下是inetd.conf的一些例子:</p>
+<p>以下是<code>inetd.conf</code>的一些例子:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">ftp     stream  tcp  nowait  root  /usr/bin/ftpd     ftpd -1</span><br><span class="line">telnet  stream  tcp  nowait  root  /usr/bin/telnetd  telnetd</span><br><span class="line">login   stream  tcp  nowait  root  /usr/bin/rlogind  rlogind -s</span><br></pre></td></tr></table></figure>
 
-<p>以下是inetd执行的步骤:<br><img src="/images/UNP/daemon-proc-1.gif" alt="Steps performed by inetd"></p>
+<p>以下是inetd执行的步骤:<br><img src="/images/Network/UNP/13-5-steps-of-inetd.gif" alt="Steps performed by inetd"></p>
 <ol>
-<li>启动时, 会读取<strong>/etc/inetd.conf</strong>文件信息, 并为所以service创建socket, 每个新建的socket会被添加到select()中.</li>
-<li>对service-name和protocol调用getservbyname()可获取TCP和UDP port, 并调用bind()为socket绑定wildcard IP address个port number</li>
-<li>对于TCP socket, 需要调用listen()接收client请求</li>
-<li>inetd大部分时间处于sleep状态, 只有socket处于readable状态时, select()才会接触阻塞</li>
-<li>select()返回后, inetd daemon会调用fork()生成child process来处理请求. child process会关闭除socket descriptor之外所有descriptor; 调用dup2()复制descriptor 0, 1, 2; 关闭socket descriptor, 这样开启的只有descriptor 0, 1, 2; 调用getpwnam()获取login-name相应的password file entry; 若login-name不为root, 则调用setgid()和setuid, 以为child process的PID为0.</li>
-<li>若为stream socket, 需要关闭socket. parent process再次调用select()等待socket可读.</li>
+<li>启动时, 会读取<code>/etc/inetd.conf</code>文件信息, 并为所以service创建socket, 每个新建的socket会被添加到<code>select()</code>中.</li>
+<li>对service-name和protocol调用<code>getservbyname()</code>可获取TCP和UDP port, 并调用<code>bind()</code>为socket绑定wildcard IP address个port number</li>
+<li>对于TCP socket, 需要调用<code>listen()</code>接收client请求</li>
+<li>inetd大部分时间处于sleep状态, 只有socket处于readable状态时, <code>select()</code>才会接触阻塞</li>
+<li><code>select()</code>返回后, inetd daemon会调用<code>fork()</code>生成child process来处理请求. child process会关闭除socket descriptor之外所有descriptor; 调用<code>dup2()</code>复制descriptor 0, 1, 2; 关闭socket descriptor, 这样开启的只有descriptor 0, 1, 2; 调用<code>getpwnam()</code>获取login username对应的password file entry; 若username不为root, 则调用<code>setgid()</code>和<code>setuid()</code>, 将child process的UID和GID改为0.</li>
+<li>若为stream socket, 需要关闭socket. parent process再次调用<code>select()</code>等待socket可读.</li>
 </ol>
-<p>假设inetd正在运行, 收到一个FTP client请求:<br><img src="/images/UNP/daemon-proc-2.gif" alt="inetd descriptors when connection request arrives for TCP port 21"></p>
-<p>inetd收到请求后, 调用fork()创建新的进程, 并与所有listening socket断开:<br><img src="/images/UNP/daemon-proc-3.gif" alt="inetd descriptors in child"></p>
-<p>之后child process开始复制descriptor 0, 1, 2, 并关闭connected socket:<br><img src="/images/UNP/daemon-proc-4.gif" alt="inetd descriptors after dup2"></p>
-<p>最后child process调用exec执行真正的server程序, server可通过descriptor 0, 1, 2与client通信. 以上场景基于<strong>nowait</strong>, 意味着接收另一个service的connection之前, inetd不需要等待一段时间再终止child process. <strong>wait</strong> flag可改变parent process的执行步骤:</p>
+<p>假设inetd正在运行, 收到一个FTP client请求:<br><img src="/images/Network/UNP/13-5-inetd-when-req-arrive.gif" alt="inetd descriptors when connection request arrives for TCP port 21"></p>
+<p>inetd收到请求后, 调用<code>fork()</code>创建新的进程, 并与所有listening socket断开:<br><img src="/images/Network/UNP/13-5-inetd-in-child-proc.gif" alt="inetd descriptors in child"></p>
+<p>之后child process开始复制descriptor 0, 1, 2, 并关闭connected socket:<br><img src="/images/Network/UNP/13-5-inetd-after-dup2.gif" alt="inetd descriptors after dup2"></p>
+<p>最后child process调用exec执行真正的server程序, server可通过descriptor 0, 1, 2与client通信. 以上场景基于<code>nowait</code>, 意味着接收另一个service的connection之前, inetd不需要等待一段时间再终止child process. <code>wait</code> flag可改变parent process的执行步骤:</p>
 <ol>
-<li>调用fork()返回后, parent process会保存child process的PID. 得知child process终止运行后, 运行waitpid()回收.</li>
-<li>parent process会使用FD_CLR讲child process所使用的socket从select()中移除, 直到child process停止运行.</li>
-<li>当child process终止运行时, 其parent process会受到SIGCHLD signal, parent process可通过signal handler获取child process的PID, 并恢复select()对socket的监听.</li>
+<li>调用<code>fork()</code>返回后, parent process会保存child process的PID. 得知child process终止运行后, 运行<code>waitpid()</code>回收.</li>
+<li>parent process会使用FD_CLR讲child process所使用的socket从<code>select()</code>中移除, 直到child process停止运行.</li>
+<li>当child process终止运行时, 其parent process会受到SIGCHLD signal, parent process可通过signal handler获取child process的PID, 并恢复<code>select()</code>对socket的监听.</li>
 </ol>
-<p>之所以当datagram server存在连接时将socket从select()中移除, 就是为了防止inetd中select()不断检测socket的可读性: 对于TCP server, 当select()检测到socket可读时会让listening socket创建连接, 并通过connected socket处理请求; 但对于datagram socket,  由于不存在连接一说, 所以inetd调用fork()后的child process依旧使用原来的socket. 假设inetd没有关闭select()对socket可读性的监听, 且fork()执行后parent process首先执行, 则会再次检测到该socket可读, 并再次调用fork(). 为避免循环检测socket可读性, 必须在fork()前停止对socket可读性的监听; child process运行结束后向parent process发送SIGCHLD signal, 因此parent process会恢复select()对datagram socket的可读性监听. </p>
-<h2 id="6-daemon-inetd-Function"><a href="#6-daemon-inetd-Function" class="headerlink" title="6. daemon_inetd Function"></a>6. daemon_inetd Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;syslog.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> daemon_proc; <span class="comment">/* defined in error.c */</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">daemon_inetd</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pname, <span class="keyword">int</span> facility)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  daemon_proc = <span class="number">1</span>; <span class="comment">/* for our err_XXX() functions */</span></span><br><span class="line">  openlog(pname, LOG_PID, facility);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>相对于daemon_init(), daemon_inetd()使用inetd将进程变为daemon, 并通过设置<strong>daemon_proc</strong> flag实现error message的输出.</p>
+<p>之所以当datagram server存在连接时将socket从<code>select()</code>中移除, 就是为了防止inetd中<code>select()</code>不断检测socket的可读性: 对于TCP server, 当<code>select()</code>检测到socket可读时会让listening socket创建连接, 并通过connected socket处理请求; 但对于datagram socket, 由于不存在连接一说, 所以inetd调用<code>fork()</code>后的child process依旧使用原来的socket. 假设inetd没有关闭<code>select()</code>对socket可读性的监听, 且<code>fork()</code>执行后parent process首先执行, 则会再次检测到该socket可读, 并再次调用<code>fork()</code>. 为避免循环检测socket可读性, 必须在<code>fork()</code>前停止对socket可读性的监听; child process运行结束后向parent process发送<code>SIGCHLD</code> signal, 因此parent process会恢复<code>select()</code>对datagram socket的可读性监听. </p>
+<h2 id="6-daemon-inetd-Function"><a href="#6-daemon-inetd-Function" class="headerlink" title="6. daemon_inetd Function"></a>6. daemon_inetd Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;syslog.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">extern</span> <span class="type">int</span> daemon_proc; <span class="comment">/* defined in error.c */</span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">daemon_inetd</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pname, <span class="type">int</span> facility)</span></span><br><span class="line">&#123;</span><br><span class="line">  daemon_proc = <span class="number">1</span>; <span class="comment">/* for our err_XXX() functions */</span></span><br><span class="line">  openlog(pname, LOG_PID, facility);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>相对于<code>daemon_init()</code>, <code>daemon_inetd()</code>使用inetd将进程变为daemon, 并通过设置<code>daemon_proc</code> flag实现error message的输出.</p>
 
     </div>
 
@@ -383,7 +377,7 @@ Daemon Processes and the inetd Superserver - Zaf1ro's Blog
       
       <div class="post-tags">
         
-          <a href="/tags/UNP/">UNP</a>
+          <a href="/tags/Network/">Network</a>
         
       </div>
       
@@ -412,7 +406,10 @@ Daemon Processes and the inetd Superserver - Zaf1ro's Blog
   </article>
 
   </div>
-  <script type="text/x-mathjax-config">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+<script type="text/x-mathjax-config">
 MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
 </script>
 
@@ -424,9 +421,6 @@ MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["
 <script type="text/x-mathjax-config">
 MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
 MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
-</script>
-
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
 
 
@@ -466,18 +460,14 @@ MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
 
 
     
-  
-
 
 
 
 
   
-    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
   
 
-  
-    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
   
 
     
@@ -492,7 +482,7 @@ $(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.regi
 <script type="text/javascript">
 var themeConfig = {
   fancybox: {
-    enable: true
+    enable: false
   },
 };
 </script>

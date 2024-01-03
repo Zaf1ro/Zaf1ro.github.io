@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
-  <head><meta name="generator" content="Hexo 3.9.0">
+  <head>
     
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -8,81 +8,78 @@
 
 
 
-  <meta name="description" content="Parser (1)">
+  <meta name="description" content="Parser (1)"/>
 
 
 
 
-  <meta name="keywords" content="Compiler,">
+  <meta name="keywords" content="Compiler," />
 
 
-<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok">
-<meta name="baidu-site-verification" content="XJoPG7ad2Z">
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
 
-<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/52ae.html">
-<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/52ae.html">
-
-
-
-
-  <link rel="alternate" href="/default" title="Zaf1ro's Blog">
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/52ae.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/52ae.html" />
 
 
 
 
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1">
+  <link rel="alternate" href="/default" title="Zaf1ro" >
 
 
 
-<link rel="canonical" href="https://zaf1ro.github.io/p/52ae.html">
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/52ae.html"/>
 
 
 <meta name="description" content="1. IntroductionParser作为front-end的第二部分, 负责判断输入的字符串是否为合法程序, 若不合法, 则向用户回报错误和诊断信息. 经过scanner的处理后, parser接收到的不光是一个个字符串, 还有每个字符串对应的词类. 为了分析任意语句是否符合有效, 需要一种形式化机制来做出明确判断, 这就需要将source language限制为context-free l">
-<meta name="keywords" content="Compiler">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Parser (1)">
 <meta property="og:url" content="https://zaf1ro.github.io/p/52ae.html">
-<meta property="og:site_name" content="Zaf1ro&#39;s Blog">
+<meta property="og:site_name" content="Zaf1ro">
 <meta property="og:description" content="1. IntroductionParser作为front-end的第二部分, 负责判断输入的字符串是否为合法程序, 若不合法, 则向用户回报错误和诊断信息. 经过scanner的处理后, parser接收到的不光是一个个字符串, 还有每个字符串对应的词类. 为了分析任意语句是否符合有效, 需要一种形式化机制来做出明确判断, 这就需要将source language限制为context-free l">
-<meta property="og:locale" content="zh">
+<meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-1.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-2.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-3.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-4.png">
-<meta property="og:updated_time" content="2020-02-29T17:40:50.000Z">
+<meta property="article:published_time" content="2020-02-11T16:55:10.000Z">
+<meta property="article:modified_time" content="2024-01-03T17:00:04.588Z">
+<meta property="article:tag" content="Compiler">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Parser (1)">
-<meta name="twitter:description" content="1. IntroductionParser作为front-end的第二部分, 负责判断输入的字符串是否为合法程序, 若不合法, 则向用户回报错误和诊断信息. 经过scanner的处理后, parser接收到的不光是一个个字符串, 还有每个字符串对应的词类. 为了分析任意语句是否符合有效, 需要一种形式化机制来做出明确判断, 这就需要将source language限制为context-free l">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/Compiler/3-1.png">
 
 
-<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1">
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
 
-
-  <link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css">
 
 
 
     <title>
-Parser (1) - Zaf1ro's Blog
+Parser (1) - Zaf1ro
 </title>
-  </head>
+  <meta name="generator" content="Hexo 6.3.0"></head>
 
   <body>
   <nav id="sidebar" class="active on-post">
     <div id="third">
       <div id="sidebar-title">
         <h1 id="sidebar-title-text">
-            <a href="/." class="logo">Zaf1ro's Blog</a>
+            <a href="/." class="logo">Home</a>
         </h1>
       </div>
       <div id="google-search">
-        <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
-        <div class="gcse-search"></div>
-      </div>
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Expressing-Syntax"><span class="toc-text">2. Expressing Syntax</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Why-Not-Regulaer-Expression"><span class="toc-text">2.1 Why Not Regulaer Expression?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Context-Free-Grammars"><span class="toc-text">2.2 Context-Free Grammars</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-More-Complex-Examples"><span class="toc-text">2.3 More Complex Examples</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Encode-Meaning-into-Structure"><span class="toc-text">2.4 Encode Meaning into Structure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Discover-a-Derivation-for-an-Input-String"><span class="toc-text">2.5 Discover a Derivation for an Input String</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Top-Down-Parsing"><span class="toc-text">3. Top-Down Parsing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Transgform-a-Grammar-for-Top-Down-Parsing"><span class="toc-text">3.1 Transgform a Grammar for Top-Down Parsing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Top-Down-Recursive-Descent-Parser"><span class="toc-text">3.2 Top-Down Recursive-Descent Parser</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Table-Driven-LL-1-Parser"><span class="toc-text">3.3 Table-Driven LL(1) Parser</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Expressing-Syntax"><span class="toc-text">2. Expressing Syntax</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Why-Not-Regulaer-Expression"><span class="toc-text">2.1 Why Not Regulaer Expression?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Context-Free-Grammars"><span class="toc-text">2.2 Context-Free Grammars</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-More-Complex-Examples"><span class="toc-text">2.3 More Complex Examples</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Encode-Meaning-into-Structure"><span class="toc-text">2.4 Encode Meaning into Structure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Discover-a-Derivation-for-an-Input-String"><span class="toc-text">2.5 Discover a Derivation for an Input String</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Top-Down-Parsing"><span class="toc-text">3. Top-Down Parsing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Transgform-a-Grammar-for-Top-Down-Parsing"><span class="toc-text">3.1 Transgform a Grammar for Top-Down Parsing</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-A-Top-Down-Parser-with-Oracular-Choice"><span class="toc-text">3.1.1 A Top-Down Parser with Oracular Choice</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-Eliminate-Left-Recursion"><span class="toc-text">3.1.2 Eliminate Left Recursion</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-Backtrack-Free-Parsing"><span class="toc-text">3.1.3 Backtrack-Free Parsing</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-4-Left-Factoring-to-Eliminate-Backtracking"><span class="toc-text">3.1.4 Left-Factoring to Eliminate Backtracking</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Top-Down-Recursive-Descent-Parser"><span class="toc-text">3.2 Top-Down Recursive-Descent Parser</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Table-Driven-LL-1-Parser"><span class="toc-text">3.3 Table-Driven LL(1) Parser</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -93,12 +90,11 @@ Parser (1) - Zaf1ro's Blog
   
   <button class="nav-mobile-button on-post" id="sidebarCollapse">
   
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
-    <span class="icon-bar"></span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
   </button>
   
   
+
 
   <nav id="nav-top">
     
@@ -107,7 +103,7 @@ Parser (1) - Zaf1ro's Blog
       
         
           <li class="menu-item">
-            <a href="https://github.com/Zaf1ro" rel="external nofollow noopener noreferrer" target="_blank">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
               
               
                 Github
@@ -140,12 +136,10 @@ Parser (1) - Zaf1ro's Blog
     <div class="post-content">
       <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Parser作为front-end的第二部分, 负责判断输入的字符串是否为合法程序, 若不合法, 则向用户回报错误和诊断信息. 经过scanner的处理后, parser接收到的不光是一个个字符串, 还有每个字符串对应的词类. 为了分析任意语句是否符合有效, 需要一种形式化机制来做出明确判断, 这就需要将source language限制为context-free language(CFG, 上下文无关语言). 并存在两种解析CFG的算法: LL(1)和LR(1). 假设programming language定义的语法为<strong>G</strong>, 若某个字符串<strong>s</strong>属于<strong>G</strong>, 则说明可以用<strong>G</strong>推导出<strong>s</strong>. Parser的任务就是将<strong>s</strong>不断推导为<strong>G</strong>的合法语句.</p>
 <h2 id="2-Expressing-Syntax"><a href="#2-Expressing-Syntax" class="headerlink" title="2. Expressing Syntax"></a>2. Expressing Syntax</h2><p>为检查语法, 需要一种符号表示法来描述描述语法. Scanner使用RE来表示来描述合法字符串, 但RE并不能用于描述语法.</p>
-<h3 id="2-1-Why-Not-Regulaer-Expression"><a href="#2-1-Why-Not-Regulaer-Expression" class="headerlink" title="2.1 Why Not Regulaer Expression?"></a>2.1 Why Not Regulaer Expression?</h3><p>假设现在需要识别由变量, $+, -, \times, /$组成的代数表达式, 可写作如下RE:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$[a \cdots z]([a \cdots z]|[0 \cdots 9])^&#123;*&#125;((+|-|\times|\div)[a \cdots z]([a \cdots z]|[0 \cdots 9])^&#123;*&#125;)^&#123;*&#125;$</span><br></pre></td></tr></table></figure>
-
+<h3 id="2-1-Why-Not-Regulaer-Expression"><a href="#2-1-Why-Not-Regulaer-Expression" class="headerlink" title="2.1 Why Not Regulaer Expression?"></a>2.1 Why Not Regulaer Expression?</h3><p>假设现在需要识别由变量, $+, -, \times, &#x2F;$组成的代数表达式, 可写作如下RE:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$[a \cdots z]([a \cdots z]|[0 \cdots 9])^&#123;*&#125;((+|-|\times|\div)[a \cdots z]([a \cdots z]|[0 \cdots 9])^&#123;*&#125;)^&#123;*&#125;$</span><br></pre></td></tr></table></figure>
 <p>该RE可以匹配$a + b \times c$和$fee \div fie \times \div$. 但RE没有注明操作符的优先级, 理论上$\times$和$\div$的优先级应比$+$和$-$优先级高. 并且, 该RE还未加入括号的显示, 这里使用$\underline{(}$和$\underline{)}$来表示括号符号. 加上括号后的RE如下:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$(\underline&#123;(&#125;|\epsilon)[a \cdots z]([a \cdots z]|[0 \cdots 9])^&#123;*&#125;((+|-|\times|\div)[a \cdots z]([a \cdots z]|[0 \cdots 9])^&#123;*&#125;)^&#123;*&#125;(\underline&#123;)&#125;|\epsilon)^&#123;*&#125;$</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$(\underline&#123;(&#125;|\epsilon)[a \cdots z]([a \cdots z]|[0 \cdots 9])^&#123;*&#125;((+|-|\times|\div)[a \cdots z]([a \cdots z]|[0 \cdots 9])^&#123;*&#125;)^&#123;*&#125;(\underline&#123;)&#125;|\epsilon)^&#123;*&#125;$</span><br></pre></td></tr></table></figure>
 <p>上述RE可以匹配任何正确的带括号的表达式, 例如: $(a + b) \times c$. 但它并不能匹配语法上不正确的表达式, 例如: $a + (b \times c$或$a + b) \times c$, 因为RE无法计数, 无法匹配成对结构的语法.</p>
 <h3 id="2-2-Context-Free-Grammars"><a href="#2-2-Context-Free-Grammars" class="headerlink" title="2.2 Context-Free Grammars"></a>2.2 Context-Free Grammars</h3><p>一般来说, parser使用CFG来表示语法. 假设一个CFG名为<strong>G</strong>作为一组语法规则, 描述语句是如何形成的. 从G导出的所有语句组成<strong>G定义的语言</strong>, 记作$L(G)$. 举个语法例子:<br>$$<br>\textit{SheepNoise} \rightarrow \text{baa} \ \textit{SheepNoise} \ | \ \text{baa}<br>$$</p>
 <p>上述语法存在两条规则, 称为production(产生式):</p>
@@ -166,8 +160,7 @@ Parser (1) - Zaf1ro's Blog
 <li>使用规则1重写SheepNoise后, 符号串替换为$\text{baa} \ \textit{SheepNoise}$, 这时符号串中仍有一个nonterminal symbol, 可再次用规则2替换, 得到$\text{baa baa}$</li>
 </ol>
 <h3 id="2-3-More-Complex-Examples"><a href="#2-3-More-Complex-Examples" class="headerlink" title="2.3 More Complex Examples"></a>2.3 More Complex Examples</h3><p>以括号表达式为例, 其语法规则如下:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Expr&#125; \rightarrow \underline&#123;(&#125; \textit&#123;Expr&#125; \underline&#123;)&#125;$</span><br><span class="line">2      $| \ \textit&#123;Expr&#125; \ \textit&#123;Op&#125; \ \text&#123;name&#125;$</span><br><span class="line">3      $| \ \text&#123;name&#125;$</span><br><span class="line">4 $\textit&#123;Op&#125; \rightarrow +$</span><br><span class="line">5     $| \ -$</span><br><span class="line">6     $| \ \times$</span><br><span class="line">7     $| \ \div$</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Expr&#125; \rightarrow \underline&#123;(&#125; \textit&#123;Expr&#125; \underline&#123;)&#125;$</span><br><span class="line">2      $| \ \textit&#123;Expr&#125; \ \textit&#123;Op&#125; \ \text&#123;name&#125;$</span><br><span class="line">3      $| \ \text&#123;name&#125;$</span><br><span class="line">4 $\textit&#123;Op&#125; \rightarrow +$</span><br><span class="line">5     $| \ -$</span><br><span class="line">6     $| \ \times$</span><br><span class="line">7     $| \ \div$</span><br></pre></td></tr></table></figure>
 <p>假设输入语句为$(a+b)\times c$, 可使用(2,6,1,2,4,3)的规则顺序来推导:</p>
 <table>
 <thead>
@@ -244,8 +237,7 @@ Parser (1) - Zaf1ro's Blog
 </tr>
 </tbody></table>
 <p>无论是最左还是最右, 都是使用同一组规则. 对最右端(或最左端)nonterminal symbol的推导存在多种重写结果时, 称为<strong>ambiguous grammer</strong>(二义性语法). 二义性语法会生成多个parse tree, 也就导致compiler无法肯定一个语句的语义, 也无法将其转换为一个确定的代码序列. 例如:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Statement&#125; \rightarrow \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;Statement&#125; \ \text&#123;else&#125; \ \textit&#123;Statement&#125;$</span><br><span class="line">2         $| \ \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;Statement&#125;$</span><br><span class="line">3         $| \ \textit&#123;Assignment&#125;$</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Statement&#125; \rightarrow \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;Statement&#125; \ \text&#123;else&#125; \ \textit&#123;Statement&#125;$</span><br><span class="line">2         $| \ \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;Statement&#125;$</span><br><span class="line">3         $| \ \textit&#123;Assignment&#125;$</span><br></pre></td></tr></table></figure>
 <p>假设输入代码为$\text{if} \ \textit{Expr}_1 \ \text{then} \ \text{if} \ \textit{Expr}_2 \ \text{then} \ \textit{Assignment}_1 \ \text{else} \ \textit{Assignment}_2$, 最右推导有两种结果: </p>
 <ol>
 <li><p>将$\textit{Assignment}_2$与内层的$\text{if}$配对, 当$\textit{Expr}_1$为true且$\textit{Expr}_2$为false时执行$\textit{Assignment}_2$<br><img src="/images/Compiler/3-2.png" alt="rightmost derivation 1"></p>
@@ -254,12 +246,11 @@ Parser (1) - Zaf1ro's Blog
 </li>
 </ol>
 <p>为消除这种二义性, 可引入一条新的规则来规定哪个if控制特定的else子句:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Statement&#125; \rightarrow \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;Statement&#125;$</span><br><span class="line">2         $| \ \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;WithElse&#125; \ \text&#123;else&#125; \ \textit&#123;Statement&#125;$</span><br><span class="line">3         $| \ \textit&#123;Assignment&#125;$</span><br><span class="line">4 $\textit&#123;WithElse&#125; \rightarrow \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;WithElse&#125; \ \text&#123;else&#125; \ \textit&#123;WithElse&#125;$</span><br><span class="line">5         $| \ \textit&#123;Assignment&#125;$</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Statement&#125; \rightarrow \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;Statement&#125;$</span><br><span class="line">2         $| \ \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;WithElse&#125; \ \text&#123;else&#125; \ \textit&#123;Statement&#125;$</span><br><span class="line">3         $| \ \textit&#123;Assignment&#125;$</span><br><span class="line">4 $\textit&#123;WithElse&#125; \rightarrow \text&#123;if&#125; \ \textit&#123;Expr&#125; \ \text&#123;then&#125; \ \textit&#123;WithElse&#125; \ \text&#123;else&#125; \ \textit&#123;WithElse&#125;$</span><br><span class="line">5         $| \ \textit&#123;Assignment&#125;$ </span><br></pre></td></tr></table></figure>
 <p>上述语法限制了$\text{then}$后的语法结构, 确保每个$\text{else}$都匹配到唯一$\text{if}$. 也有一些语言重新设计了<strong>if-then-else</strong>结构, 引入<strong>elseif</strong>和<strong>endif</strong>.</p>
 <h3 id="2-4-Encode-Meaning-into-Structure"><a href="#2-4-Encode-Meaning-into-Structure" class="headerlink" title="2.4 Encode Meaning into Structure"></a>2.4 Encode Meaning into Structure</h3><p>Parser使用的语法结构与语言的语义有直接联系, 以$a + b \times c$为例, 其最右推导的parse tree为:<br><img src="/images/Compiler/3-4.png" alt="parse tree of a+bxc"></p>
 <p>表达式的求值可以看作是parse tree的后序遍历, 先计算$a+b$, 在将其结果乘以c. 为纠正运算优先级的问题, 可在语法中多添加几个层次, 优先处理$()$, 然后处理$\times \div$, 最后处理$+-$. 表达式语法如下:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">0 $\textit&#123;Goal&#125; \rightarrow \textit&#123;Expr&#125;$</span><br><span class="line">1 $\textit&#123;Expr&#125; \rightarrow \textit&#123;Expr&#125; + \textit&#123;Term&#125;$</span><br><span class="line">2      $| \ \textit&#123;Expr&#125; - \textit&#123;Term&#125;$</span><br><span class="line">3      $| \ \textit&#123;Term&#125;$</span><br><span class="line">4 $\textit&#123;Term&#125; \rightarrow \textit&#123;Term&#125; \times \textit&#123;Factor&#125;$</span><br><span class="line">5      $| \ \textit&#123;Term&#125; \div \textit&#123;Factor&#125;$</span><br><span class="line">6      $| \ \textit&#123;Factor&#125;$</span><br><span class="line">7 $\textit&#123;Factor&#125; \rightarrow \underline&#123;(&#125; \textit&#123;Expr&#125; \underline&#123;)&#125;$</span><br><span class="line">8      $| \ \text&#123;num&#125;$</span><br><span class="line">9      $| \ \text&#123;name&#125;$</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">0 $\textit&#123;Goal&#125; \rightarrow \textit&#123;Expr&#125;$</span><br><span class="line">1 $\textit&#123;Expr&#125; \rightarrow \textit&#123;Expr&#125; + \textit&#123;Term&#125;$</span><br><span class="line">2      $| \ \textit&#123;Expr&#125; - \textit&#123;Term&#125;$</span><br><span class="line">3      $| \ \textit&#123;Term&#125;$</span><br><span class="line">4 $\textit&#123;Term&#125; \rightarrow \textit&#123;Term&#125; \times \textit&#123;Factor&#125;$</span><br><span class="line">5      $| \ \textit&#123;Term&#125; \div \textit&#123;Factor&#125;$</span><br><span class="line">6      $| \ \textit&#123;Factor&#125;$</span><br><span class="line">7 $\textit&#123;Factor&#125; \rightarrow \underline&#123;(&#125; \textit&#123;Expr&#125; \underline&#123;)&#125;$</span><br><span class="line">8      $| \ \text&#123;num&#125;$</span><br><span class="line">9      $| \ \text&#123;name&#125;$</span><br></pre></td></tr></table></figure>
 
 <h3 id="2-5-Discover-a-Derivation-for-an-Input-String"><a href="#2-5-Discover-a-Derivation-for-an-Input-String" class="headerlink" title="2.5 Discover a Derivation for an Input String"></a>2.5 Discover a Derivation for an Input String</h3><p>上述推导用CFG推导出$L(G)$中的语句, 与此相反, compiler必须为输入字符串给出一个推导, 这一过程被称为parsing(语法分析). Scanner会为输入字符串中的每个单词标注<strong>词类</strong>, 例如: $a + b \times c$, scanner会输出$\langle name, a \rangle + \langle name, b \rangle \times \langle name, c \rangle$. Parse tree的根节点是已知的, 而parse tree中的叶子节点就是每个输入单词, parser要做的就是找到叶子节点和根节点之间的语法关联, 以下是两种构建parse tree的方法:</p>
 <ol>
@@ -272,16 +263,13 @@ Parser (1) - Zaf1ro's Blog
 <li>parse tree中叶子节点与输入流不匹配</li>
 </ol>
 <p>第一种情况说明语法分析成功; 第二种情况则存在两种情况: 语法分析中选择了错误的production, 这时可回溯并选择不同的production; 也可能因为输入流不是有效语句, 需要向用户报告错误. Top-down parser之所以能高效地运行, 得益于CFG不需要回溯也可完成语法分析. 通过一些转换, 可将任意语法转换为适当的形式来进行无回溯的自顶向下语法分析. 以下是top-down parser使用最左推导的具体算法:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">root $\leftarrow$ node for the start symbol, S ;</span><br><span class="line">focus $\leftarrow$ root;</span><br><span class="line">push(null);</span><br><span class="line">word $\leftarrow$ NextWord( );</span><br><span class="line">while (true) do;</span><br><span class="line">  if (focus is a nonterminal)</span><br><span class="line">    pick rule to expand focus ($A \rightarrow &#123;\beta&#125;_1, &#123;\beta&#125;_2, \ldots, &#123;\beta&#125;_n$);</span><br><span class="line">    build nodes for $&#123;\beta&#125;_1, &#123;\beta&#125;_2, \ldots, &#123;\beta&#125;_n$ as children of focus;</span><br><span class="line">    push($&#123;\beta&#125;_n, &#123;\beta&#125;_&#123;n-1&#125;, \ldots, &#123;\beta&#125;_2$);</span><br><span class="line">    focus $\leftarrow$ $&#123;\beta&#125;_1$;</span><br><span class="line">  end;</span><br><span class="line">  else if (word matches focus)</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    focus $\leftarrow$ pop()</span><br><span class="line">  end;</span><br><span class="line">  else if (word = eof and focus = null)</span><br><span class="line">    accept the input and return root;</span><br><span class="line">  else </span><br><span class="line">    backtrack;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">root $\leftarrow$ node for the start symbol, S ;</span><br><span class="line">focus $\leftarrow$ root;</span><br><span class="line">push(null);</span><br><span class="line">word $\leftarrow$ NextWord( );</span><br><span class="line">while (true) do;</span><br><span class="line">  if (focus is a nonterminal)</span><br><span class="line">    pick rule to expand focus ($A \rightarrow &#123;\beta&#125;_1, &#123;\beta&#125;_2, \ldots, &#123;\beta&#125;_n$);</span><br><span class="line">    build nodes for $&#123;\beta&#125;_1, &#123;\beta&#125;_2, \ldots, &#123;\beta&#125;_n$ as children of focus;</span><br><span class="line">    push($&#123;\beta&#125;_n, &#123;\beta&#125;_&#123;n-1&#125;, \ldots, &#123;\beta&#125;_2$);</span><br><span class="line">    focus $\leftarrow$ $&#123;\beta&#125;_1$;</span><br><span class="line">  end;</span><br><span class="line">  else if (word matches focus)</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    focus $\leftarrow$ pop()</span><br><span class="line">  end;</span><br><span class="line">  else if (word = eof and focus = null)</span><br><span class="line">    accept the input and return root;</span><br><span class="line">  else </span><br><span class="line">    backtrack;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
 <p>该parser的主要部分是while循环, 遵循前序遍历规则, 不断对parse tree中的最左叶子节点进行判断:</p>
 <ol>
 <li>若最左叶子节点为nonterminal symbol, 则根据语法规则选择一个production展开</li>
-<li>若最左叶子节点为terminal symbol, 则与输入流中的单词匹配:<ol>
+<li>若最左叶子节点为terminal symbol, 则与输入流中的单词匹配:</li>
 <li>匹配成功: 继续判断下一个叶子节点</li>
 <li>匹配失败: 向上回溯, 尝试使用其他production; 若规则都试过, 则再向上回溯.</li>
-</ol>
-</li>
 </ol>
 <h3 id="3-1-Transgform-a-Grammar-for-Top-Down-Parsing"><a href="#3-1-Transgform-a-Grammar-for-Top-Down-Parsing" class="headerlink" title="3.1 Transgform a Grammar for Top-Down Parsing"></a>3.1 Transgform a Grammar for Top-Down Parsing</h3><p>Top-down parser的效率依赖于是否正确选择production, 如果parser总是能选择正确的production, 则十分高效. 一旦做出错误选择, 则效率直线下降. 甚至在某些情况下, parser会陷入死循环而无法终止. </p>
 <h4 id="3-1-1-A-Top-Down-Parser-with-Oracular-Choice"><a href="#3-1-1-A-Top-Down-Parser-with-Oracular-Choice" class="headerlink" title="3.1.1 A Top-Down Parser with Oracular Choice"></a>3.1.1 A Top-Down Parser with Oracular Choice</h4><p>以$a+b \times c$为例, 假设parser每次都能选择正确的production, 则语法分析过程如下:</p>
@@ -396,17 +384,13 @@ Parser (1) - Zaf1ro's Blog
 </tr>
 </tbody></table>
 <p>之所以出现这种问题, 因为语法规则中存在<strong>直接左递归</strong>, 也就是说, nonterminal symbol推导出的production中第一个符号为自身, 最左推导会不断自身循环. 可使用<strong>右递归</strong>重新表示. 以下面语法为例:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$\textit&#123;Fee&#125; \rightarrow \textit&#123;Fee&#125; \ \alpha$</span><br><span class="line">    $| \ \beta$</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$\textit&#123;Fee&#125; \rightarrow \textit&#123;Fee&#125; \ \alpha$</span><br><span class="line">    $| \ \beta$</span><br></pre></td></tr></table></figure>
 <p>使用右递归重写后:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$\textit&#123;Fee&#125; \rightarrow \beta \ \textit&#123;Fee&apos;&#125;$</span><br><span class="line">$\textit&#123;Fee&apos;&#125; \rightarrow \alpha \ \textit&#123;Fee&apos;&#125;$</span><br><span class="line">     $| \ \epsilon$</span><br></pre></td></tr></table></figure>
-
-<p>这里引入了一个新的nonterminal symbol, 名为$\textit{Fee’}$, 不仅将递归转移到$\textit{Fee}’$上, 还添加了新语法规则$\textit{Fee}’ \rightarrow \epsilon$. 其中$epsilon$表示空串, parser在遇到$\epsilon$后会直接前移到下一个节点. 算术运算符的语法规则使用右递归重写后如下:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">0  $\textit&#123;Goal&#125; \rightarrow \textit&#123;Expr&#125;$</span><br><span class="line">1  $\textit&#123;Expr&#125; \rightarrow \textit&#123;Term&#125; \ \textit&#123;Expr&apos;&#125;$</span><br><span class="line">2  $\textit&#123;Expr&apos;&#125; \rightarrow + \ \textit&#123;Term&#125; \ \textit&#123;Expr&apos;&#125;$</span><br><span class="line">3  $\textit&#123;Expr&apos;&#125; \rightarrow - \ \textit&#123;Term&#125; \ \textit&#123;Expr&apos;&#125;$</span><br><span class="line">4       $| \ \epsilon$</span><br><span class="line">5  $\textit&#123;Term&#125; \rightarrow \textit&#123;Factor&#125; \ \textit&#123;Term&apos;&#125;$</span><br><span class="line">6  $\textit&#123;Term&apos;&#125; \rightarrow \times \ \textit&#123;Factor&#125; \ \textit&#123;Term&apos;&#125;$</span><br><span class="line">7  $\textit&#123;Term&apos;&#125; \rightarrow \div \ \textit&#123;Factor&#125; \ \textit&#123;Term&apos;&#125;$</span><br><span class="line">8       $| \ \epsilon$</span><br><span class="line">9  $\textit&#123;Factor&#125; \rightarrow \underline&#123;(&#125; \ \textit&#123;Expr&#125; \ \underline&#123;)&#125;$</span><br><span class="line">10      $| \ \text&#123;num&#125;$</span><br><span class="line">11      $| \ \text&#123;name&#125;$</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$\textit&#123;Fee&#125; \rightarrow \beta \ \textit&#123;Fee&#x27;&#125;$</span><br><span class="line">$\textit&#123;Fee&#x27;&#125; \rightarrow \alpha \ \textit&#123;Fee&#x27;&#125;$</span><br><span class="line">     $| \ \epsilon$</span><br></pre></td></tr></table></figure>
+<p>这里引入了一个新的nonterminal symbol, 名为$\textit{Fee&#39;}$, 不仅将递归转移到$\textit{Fee}&#39;$上, 还添加了新语法规则$\textit{Fee}&#39; \rightarrow \epsilon$. 其中$epsilon$表示空串, parser在遇到$\epsilon$后会直接前移到下一个节点. 算术运算符的语法规则使用右递归重写后如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">0  $\textit&#123;Goal&#125; \rightarrow \textit&#123;Expr&#125;$</span><br><span class="line">1  $\textit&#123;Expr&#125; \rightarrow \textit&#123;Term&#125; \ \textit&#123;Expr&#x27;&#125;$</span><br><span class="line">2  $\textit&#123;Expr&#x27;&#125; \rightarrow + \ \textit&#123;Term&#125; \ \textit&#123;Expr&#x27;&#125;$</span><br><span class="line">3  $\textit&#123;Expr&#x27;&#125; \rightarrow - \ \textit&#123;Term&#125; \ \textit&#123;Expr&#x27;&#125;$</span><br><span class="line">4       $| \ \epsilon$</span><br><span class="line">5  $\textit&#123;Term&#125; \rightarrow \textit&#123;Factor&#125; \ \textit&#123;Term&#x27;&#125;$</span><br><span class="line">6  $\textit&#123;Term&#x27;&#125; \rightarrow \times \ \textit&#123;Factor&#125; \ \textit&#123;Term&#x27;&#125;$</span><br><span class="line">7  $\textit&#123;Term&#x27;&#125; \rightarrow \div \ \textit&#123;Factor&#125; \ \textit&#123;Term&#x27;&#125;$</span><br><span class="line">8       $| \ \epsilon$</span><br><span class="line">9  $\textit&#123;Factor&#125; \rightarrow \underline&#123;(&#125; \ \textit&#123;Expr&#125; \ \underline&#123;)&#125;$</span><br><span class="line">10      $| \ \text&#123;num&#125;$</span><br><span class="line">11      $| \ \text&#123;name&#125;$</span><br></pre></td></tr></table></figure>
 <p>重写后的语法规则避免了直接左递归, 但对于拥有大量规则的语法来说, 无法通过手动重写语法来避免<strong>间接左递归</strong>, 例如: $\alpha \rightarrow \beta, \beta \rightarrow \gamma, \gamma \rightarrow \alpha\delta$, 相当于$\alpha \rightarrow \alpha\delta$. 因此需要一种系统化的方法消除语法中所有左递归: forward substitution, 代码如下:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">impose an order on the nonterminals,$A_1, A_2, \cdots, A_n$</span><br><span class="line">for i $\leftarrow$ 1 to n do;</span><br><span class="line">  for j $\leftarrow$ 1 to i - 1 do;</span><br><span class="line">    if $\exists$ a production $A_i \rightarrow A_j\gamma$</span><br><span class="line">      replace $A_i \rightarrow A_j\gamma$ with one or more productions that expand $A_j$</span><br><span class="line">  end;</span><br><span class="line">  rewrite the productions to eliminate any direct left recursion on $A_i$</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">impose an order on the nonterminals,$A_1, A_2, \cdots, A_n$</span><br><span class="line">for i $\leftarrow$ 1 to n do;</span><br><span class="line">  for j $\leftarrow$ 1 to i - 1 do;</span><br><span class="line">    if $\exists$ a production $A_i \rightarrow A_j\gamma$</span><br><span class="line">      replace $A_i \rightarrow A_j\gamma$ with one or more productions that expand $A_j$</span><br><span class="line">  end;</span><br><span class="line">  rewrite the productions to eliminate any direct left recursion on $A_i$</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
 <p>该算法为所有nonterminal symbol规定了一个推导顺序, 并从外层循环开始遍历, 内存循环则寻找任何满足以下条件的production: 将$A_i$扩展为$A_j$开头的右侧句型. 假设$A_i \rightarrow A_j\gamma$, 且$A_j \rightarrow {\beta}_1|{\beta}_2|\cdots|{\beta}_k$, 则将$A_i \rightarrow A_j\gamma$替换为$A_i \rightarrow {\beta}_1|{\beta}_2|\cdots|{\beta}_k \gamma$. 这个过程会将<strong>间接左递归</strong>转换为<strong>直接左递归</strong>. 内层循环后, $A_i$相关的所有间接左递归都变为直接左递归, 用右递归消除即可.</p>
 <h4 id="3-1-3-Backtrack-Free-Parsing"><a href="#3-1-3-Backtrack-Free-Parsing" class="headerlink" title="3.1.3 Backtrack-Free Parsing"></a>3.1.3 Backtrack-Free Parsing</h4><p>为让parser每次都选择正确的production, 除了当前关注的符号外, 需要考虑下一个输入符号, 称为lookahead symbol(前瞻符号). 通过lookahead symbol, parser可以消除右递归表达式选择造成的不确定性, 也可以说是无回溯的. 从定义上来说, 对于每个语法符号$\alpha$, 定义一个集合$\text{FIRST}(\alpha)$: 从$\alpha$推导出的字符串中第一个terminal symbol的集合. $\text{FIRST}$的定义域为$\text{T} \cup \text{NT} \cup \{\epsilon, \text{eof}\}$, 值域为$\text{T} \cup \{\epsilon, \text{eof}\}$.</p>
 <p>以算法运算符为例, terminal symbol, $epsilon$和eof的FIRST集合也就是符号本身:</p>
@@ -446,9 +430,9 @@ Parser (1) - Zaf1ro's Blog
 <tr>
 <th align="center"></th>
 <th align="center">Expr</th>
-<th align="center">Expr’</th>
+<th align="center">Expr&#39;</th>
 <th align="center">Term</th>
-<th align="center">Term’</th>
+<th align="center">Term&#39;</th>
 <th align="center">Factor</th>
 </tr>
 </thead>
@@ -462,19 +446,15 @@ Parser (1) - Zaf1ro's Blog
 </tr>
 </tbody></table>
 <p>构建nonterminal symbol的FIRST集合的代码如下:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">for each $\alpha \in$ (T $\cup$ eof $\cup \epsilon$) do;</span><br><span class="line">  $\text&#123;FIRST&#125;(\alpha) \leftarrow \alpha$;</span><br><span class="line">end;</span><br><span class="line">for each A ∈ N T do;</span><br><span class="line">  $\text&#123;FIRST&#125;(A) \leftarrow \phi$;</span><br><span class="line">end;</span><br><span class="line"></span><br><span class="line">while ($\text&#123;FIRST&#125;$ sets are still changing) do;</span><br><span class="line">  for each $p \in P$, where $p$ has the form $A \rightarrow \beta$ do;</span><br><span class="line">    if $\beta$ is $&#123;\beta&#125;_1 &#123;\beta&#125;_2 \ldots &#123;\beta&#125;_k$, where $&#123;\beta&#125;_i \in \text&#123;T&#125; \cup \text&#123;NT&#125;$</span><br><span class="line">      rhs $\leftarrow \text&#123;FIRST&#125;(&#123;\beta&#125;_1) − &#123;\epsilon&#125;$;</span><br><span class="line">      i $\leftarrow$ 1;</span><br><span class="line">      while (i $\leq$ k-1 and $\epsilon \in \text&#123;FIRST&#125;(&#123;\beta&#125;_i)$) do;</span><br><span class="line">        rhs $\leftarrow$ rhs $\cup$ ($\text&#123;FIRST&#125;(&#123;\beta&#125;_&#123;i+1&#125;) − &#123;\epsilon&#125;$);</span><br><span class="line">        i $\leftarrow$ i + 1;</span><br><span class="line">      end;</span><br><span class="line">    end;</span><br><span class="line">    if i = k and $\epsilon \in \text&#123;FIRST&#125;(&#123;\beta&#125;_k)$</span><br><span class="line">      rhs $\leftarrow$ rhs $\cup \ \epsilon$;</span><br><span class="line">    $\text&#123;FIRST&#125;$(A) ← $\text&#123;FIRST&#125;$(A) $\cup$ rhs;</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">for each $\alpha \in$ (T $\cup$ eof $\cup \epsilon$) do;</span><br><span class="line">  $\text&#123;FIRST&#125;(\alpha) \leftarrow \alpha$;</span><br><span class="line">end;</span><br><span class="line">for each A ∈ N T do;</span><br><span class="line">  $\text&#123;FIRST&#125;(A) \leftarrow \phi$;</span><br><span class="line">end;</span><br><span class="line"></span><br><span class="line">while ($\text&#123;FIRST&#125;$ sets are still changing) do;</span><br><span class="line">  for each $p \in P$, where $p$ has the form $A \rightarrow \beta$ do;</span><br><span class="line">    if $\beta$ is $&#123;\beta&#125;_1 &#123;\beta&#125;_2 \ldots &#123;\beta&#125;_k$, where $&#123;\beta&#125;_i \in \text&#123;T&#125; \cup \text&#123;NT&#125;$</span><br><span class="line">      rhs $\leftarrow \text&#123;FIRST&#125;(&#123;\beta&#125;_1) − &#123;\epsilon&#125;$;</span><br><span class="line">      i $\leftarrow$ 1;</span><br><span class="line">      while (i $\leq$ k-1 and $\epsilon \in \text&#123;FIRST&#125;(&#123;\beta&#125;_i)$) do;</span><br><span class="line">        rhs $\leftarrow$ rhs $\cup$ ($\text&#123;FIRST&#125;(&#123;\beta&#125;_&#123;i+1&#125;) − &#123;\epsilon&#125;$);</span><br><span class="line">        i $\leftarrow$ i + 1;</span><br><span class="line">      end;</span><br><span class="line">    end;</span><br><span class="line">    if i = k and $\epsilon \in \text&#123;FIRST&#125;(&#123;\beta&#125;_k)$</span><br><span class="line">      rhs $\leftarrow$ rhs $\cup \ \epsilon$;</span><br><span class="line">    $\text&#123;FIRST&#125;$(A) ← $\text&#123;FIRST&#125;$(A) $\cup$ rhs;</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
 <p>对于每个production $A \rightarrow \beta$来说, $\beta$可以表示成多个符号的连接, 也就是${\beta}_1 {\beta}_2 \ldots {\beta}_k$, 其FIRST集合为$\text{FIRST}({\beta}_1) \cup \text{FIRST}({\beta}_2) \cup \ldots \cup \text{FIRST}({\beta}_n)$, 其中${\beta}_n$为$\beta$中首个$\text{FIRST}$不包含$\epsilon$的符号.<br>但还存在一个问题: $\text{FIRST}(\epsilon)$为$\{\epsilon\}$, 导致无法匹配任何词类, 也可以说, 可以匹配任何词类. 因此需要定义一个新的集合$\text{FOLLOW(A)}$, 表示紧接nonterminal symbol A之后出现的符号集合. 以下是计算$\text{FOLLOW}$集合的算法:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">for each A $\in$ NT do;</span><br><span class="line">  $\text&#123;FOLLOW&#125;$(A) $\leftarrow \phi$;</span><br><span class="line">end;</span><br><span class="line">$\text&#123;FOLLOW&#125;$(S) $\leftarrow$ &#123;eof&#125; ;</span><br><span class="line">while ($\text&#123;FOLLOW&#125;$ sets are still changing) do;</span><br><span class="line">  for each $p \in P$ of the form $A \rightarrow &#123;\beta&#125;_1 &#123;\beta&#125;_2 \cdots &#123;\beta&#125;_k$ do;</span><br><span class="line">    $\text&#123;TRAILER&#125; \leftarrow \text&#123;FOLLOW&#125;$(A);</span><br><span class="line">    for i $\leftarrow$ k down to 1 do;</span><br><span class="line">      if $&#123;\beta&#125;_i \in \text&#123;NT&#125;$ then begin;</span><br><span class="line">        $FOLLOW(&#123;\beta&#125;_i) \leftarrow \text&#123;FOLLOW&#125;(&#123;\beta&#125;_i) \ \cup \ \text&#123;TRAILER&#125;$;</span><br><span class="line">        if $\epsilon \in \text&#123;FIRST&#125;(&#123;\beta&#125;+i)$</span><br><span class="line">          $\text&#123;TRAILER&#125; \leftarrow \text&#123;TRAILER&#125; \cup (\text&#123;FIRST&#125;(&#123;\beta&#125;_i) −\epsilon)$;</span><br><span class="line">        else</span><br><span class="line">          $\text&#123;TRAILER&#125; \leftarrow \text&#123;FIRST&#125;(&#123;\beta&#125;_i)$;</span><br><span class="line">      else </span><br><span class="line">        $\text&#123;TRAILER&#125; \leftarrow \text&#123;FIRST&#125;(&#123;\beta&#125;_i)$; // is &#123;$&#123;\beta&#125;_i$&#125;</span><br><span class="line">    end;</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">for each A $\in$ NT do;</span><br><span class="line">  $\text&#123;FOLLOW&#125;$(A) $\leftarrow \phi$;</span><br><span class="line">end;</span><br><span class="line">$\text&#123;FOLLOW&#125;$(S) $\leftarrow$ &#123;eof&#125; ;</span><br><span class="line">while ($\text&#123;FOLLOW&#125;$ sets are still changing) do;</span><br><span class="line">  for each $p \in P$ of the form $A \rightarrow &#123;\beta&#125;_1 &#123;\beta&#125;_2 \cdots &#123;\beta&#125;_k$ do;</span><br><span class="line">    $\text&#123;TRAILER&#125; \leftarrow \text&#123;FOLLOW&#125;$(A);</span><br><span class="line">    for i $\leftarrow$ k down to 1 do;</span><br><span class="line">      if $&#123;\beta&#125;_i \in \text&#123;NT&#125;$ then begin;</span><br><span class="line">        $FOLLOW(&#123;\beta&#125;_i) \leftarrow \text&#123;FOLLOW&#125;(&#123;\beta&#125;_i) \ \cup \ \text&#123;TRAILER&#125;$;</span><br><span class="line">        if $\epsilon \in \text&#123;FIRST&#125;(&#123;\beta&#125;+i)$</span><br><span class="line">          $\text&#123;TRAILER&#125; \leftarrow \text&#123;TRAILER&#125; \cup (\text&#123;FIRST&#125;(&#123;\beta&#125;_i) −\epsilon)$;</span><br><span class="line">        else</span><br><span class="line">          $\text&#123;TRAILER&#125; \leftarrow \text&#123;FIRST&#125;(&#123;\beta&#125;_i)$;</span><br><span class="line">      else </span><br><span class="line">        $\text&#123;TRAILER&#125; \leftarrow \text&#123;FIRST&#125;(&#123;\beta&#125;_i)$; // is &#123;$&#123;\beta&#125;_i$&#125;</span><br><span class="line">    end;</span><br><span class="line">  end;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
 <p>该算法基于之前的$\text{FIRST}$集合. TRAILER表示前一个字符可能承接的符号集合. 假设production为$A \rightarrow \beta$, $\beta$可以表示为多个符号的连接${\beta}_1 {\beta}_2 \cdots {\beta}_k$. 每次处理production时都需初始化TRAILER为$\text{FOLLOW}(A)$, 表示$\text{FOLLOW}({\beta}_n)$, 然后从后向前遍历每个符号:</p>
 <ol>
 <li>若$\beta_i$为terminal symbol, 将TRAILER置为$\text{FIRST}(\beta_i)$集合, 表示$\text{FOLLOW}(\beta_{i-1})$</li>
-<li>若${\beta}_i$为nonterminal symbol, 则将TRAILER并入$\text{FOLLOW}(\beta_i)$, 并重新设置TRAILER:<ol>
+<li>若${\beta}_i$为nonterminal symbol, 则将TRAILER并入$\text{FOLLOW}(\beta_i)$, 并重新设置TRAILER:</li>
 <li>若$\text{FIRST}({\beta}_i)$包含$\epsilon$: 将TRAILER置为除$\epsilon$的$\text{FIRST}({\beta}_i)$所有符号</li>
 <li>若$\text{FIRST}({\beta}_i)$不包含$\epsilon$: 将TRAILER置为$\text{FIRST}({\beta}_i)$</li>
-</ol>
-</li>
 </ol>
 <p>算术表达式的FOLLOW集合如下:</p>
 <table>
@@ -482,9 +462,9 @@ Parser (1) - Zaf1ro's Blog
 <tr>
 <th align="center"></th>
 <th align="center">Expr</th>
-<th align="center">Expr’</th>
+<th align="center">Expr&#39;</th>
 <th align="center">Term</th>
-<th align="center">Term’</th>
+<th align="center">Term&#39;</th>
 <th align="center">Factor</th>
 </tr>
 </thead>
@@ -497,8 +477,8 @@ Parser (1) - Zaf1ro's Blog
 <td align="center">eof, +, -, $\times$, $\div$, $\underline{)}$</td>
 </tr>
 </tbody></table>
-<p>使用FIRST和FOLLOW集合, 可以规定一个增强版FIRST: $\text{FIRST}^+$<br>$$<br>\text{FIRST}^+(A \rightarrow \beta) =<br>\begin{cases}<br>\text{FIRST}(\beta), &amp; \text{if} \ \epsilon \notin \text{FIRST}(\beta)\\<br>\text{FIRST}(\beta) \cup \text{FOLLOW}(A), &amp; \text{otherwise}<br>\end{cases}<br>$$</p>
-<p>对于某个nonterminal symbol A, 存在多个production $A \rightarrow {\beta}_1 | {\beta}_2 | \cdots | {\beta}_n$, 无回溯的语法必定具有以下属性:<br>$$<br>\text{FIRST}^+(A \rightarrow {\beta}_i) \cap \text{FIRST}^+(A \rightarrow {\beta}_j) = \phi, \ \forall \ 1 \leq i, j \leq b, i \neq j<br>$$</p>
+<p>使用FIRST和FOLLOW集合, 可以规定一个增强版FIRST: $\text{FIRST}^+$<br>$$<br>\text{FIRST}^+(A \rightarrow \beta) &#x3D;<br>\begin{cases}<br>\text{FIRST}(\beta), &amp; \text{if} \ \epsilon \notin \text{FIRST}(\beta)\\<br>\text{FIRST}(\beta) \cup \text{FOLLOW}(A), &amp; \text{otherwise}<br>\end{cases}<br>$$</p>
+<p>对于某个nonterminal symbol A, 存在多个production $A \rightarrow {\beta}_1 | {\beta}_2 | \cdots | {\beta}_n$, 无回溯的语法必定具有以下属性:<br>$$<br>\text{FIRST}^+(A \rightarrow {\beta}_i) \cap \text{FIRST}^+(A \rightarrow {\beta}_j) &#x3D; \phi, \ \forall \ 1 \leq i, j \leq b, i \neq j<br>$$</p>
 <p>以下是算术表达式的全部$\text{FIRST}^+$:</p>
 <table>
 <thead>
@@ -508,35 +488,35 @@ Parser (1) - Zaf1ro's Blog
 </tr>
 </thead>
 <tbody><tr>
-<td align="center">Expr $\rightarrow$ Term Expr’</td>
+<td align="center">Expr $\rightarrow$ Term Expr&#39;</td>
 <td align="center">$\underline{(}$, name, num</td>
 </tr>
 <tr>
-<td align="center">Expr’ $\rightarrow$ + Term Expr’</td>
+<td align="center">Expr&#39; $\rightarrow$ + Term Expr&#39;</td>
 <td align="center">+</td>
 </tr>
 <tr>
-<td align="center">Expr’ $\rightarrow$ - Term Expr’</td>
+<td align="center">Expr&#39; $\rightarrow$ - Term Expr&#39;</td>
 <td align="center">-</td>
 </tr>
 <tr>
-<td align="center">Expr’ $\rightarrow \epsilon$</td>
+<td align="center">Expr&#39; $\rightarrow \epsilon$</td>
 <td align="center">$\underline{)}$, eof, $\epsilon$</td>
 </tr>
 <tr>
-<td align="center">Term $\rightarrow$ Factor Term’</td>
+<td align="center">Term $\rightarrow$ Factor Term&#39;</td>
 <td align="center">$\underline{(}$, name, num</td>
 </tr>
 <tr>
-<td align="center">Term’ $\rightarrow \times$ Factor Term’</td>
+<td align="center">Term&#39; $\rightarrow \times$ Factor Term&#39;</td>
 <td align="center">$\times$</td>
 </tr>
 <tr>
-<td align="center">Term’ $\rightarrow \div$ Factor Term’</td>
+<td align="center">Term&#39; $\rightarrow \div$ Factor Term&#39;</td>
 <td align="center">$\div$</td>
 </tr>
 <tr>
-<td align="center">Term’ $\rightarrow \epsilon$</td>
+<td align="center">Term&#39; $\rightarrow \epsilon$</td>
 <td align="center">+, -, $\underline{)}$, eof, $\epsilon$</td>
 </tr>
 <tr>
@@ -553,20 +533,18 @@ Parser (1) - Zaf1ro's Blog
 </tr>
 </tbody></table>
 <h4 id="3-1-4-Left-Factoring-to-Eliminate-Backtracking"><a href="#3-1-4-Left-Factoring-to-Eliminate-Backtracking" class="headerlink" title="3.1.4 Left-Factoring to Eliminate Backtracking"></a>3.1.4 Left-Factoring to Eliminate Backtracking</h4><p>并非所有语句都是无回溯的, 以下面的语法规则为例:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">11 $\textit&#123;Factor&#125; \rightarrow \text&#123;name&#125;$</span><br><span class="line">12     $| \rightarrow \text&#123;name&#125;$</span><br><span class="line">13     $| \rightarrow \text&#123;name&#125; \underline&#123;[&#125; \textit&#123;ArgList&#125; \underline&#123;]&#125;$</span><br><span class="line">14     $| \rightarrow \text&#123;name&#125; \underline&#123;(&#125; \textit&#123;ArgList&#125; \underline&#123;)&#125;$</span><br><span class="line">15 $\textit&#123;ArgList&#125; \rightarrow \ \textit&#123;Expr&#125; \ \textit&#123;MoreArgs&#125;$</span><br><span class="line">16 $\textit&#123;MoreArgs&#125; \rightarrow \ , \ \textit&#123;Expr&#125; \ \textit&#123;MoreArgs&#125;$</span><br><span class="line">17         $| \ \epsilon$</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">11 $\textit&#123;Factor&#125; \rightarrow \text&#123;name&#125;$</span><br><span class="line">12     $| \rightarrow \text&#123;name&#125;$</span><br><span class="line">13     $| \rightarrow \text&#123;name&#125; \underline&#123;[&#125; \textit&#123;ArgList&#125; \underline&#123;]&#125;$</span><br><span class="line">14     $| \rightarrow \text&#123;name&#125; \underline&#123;(&#125; \textit&#123;ArgList&#125; \underline&#123;)&#125;$</span><br><span class="line">15 $\textit&#123;ArgList&#125; \rightarrow \ \textit&#123;Expr&#125; \ \textit&#123;MoreArgs&#125;$</span><br><span class="line">16 $\textit&#123;MoreArgs&#125; \rightarrow \ , \ \textit&#123;Expr&#125; \ \textit&#123;MoreArgs&#125;$</span><br><span class="line">17         $| \ \epsilon$</span><br></pre></td></tr></table></figure>
 <p>可以看到, 第11, 12, 13规则的$\text{FIRST}^+$集合是相同的, 都是name, 可能导致回溯. 可以转换production来生成不相交的$\text{FIRST}^+$集合:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">11 $\textit&#123;Factor&#125; \rightarrow \text&#123;name&#125; \textit&#123;Arguments&#125;$</span><br><span class="line">12 $\textit&#123;Arguments&#125; \rightarrow \underline&#123;[&#125; ArgList \underline&#123;]&#125;$</span><br><span class="line">13       $| \ \rightarrow \underline&#123;(&#125; ArgList \underline&#123;)&#125;$</span><br><span class="line">14       $| \ \rightarrow \epsilon$</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">11 $\textit&#123;Factor&#125; \rightarrow \text&#123;name&#125; \textit&#123;Arguments&#125;$</span><br><span class="line">12 $\textit&#123;Arguments&#125; \rightarrow \underline&#123;[&#125; ArgList \underline&#123;]&#125;$</span><br><span class="line">13       $| \ \rightarrow \underline&#123;(&#125; ArgList \underline&#123;)&#125;$</span><br><span class="line">14       $| \ \rightarrow \epsilon$</span><br></pre></td></tr></table></figure>
 <p>重写$\textit{Factor}$分为两个步骤, 称为left factoring(提取左因子):</p>
 <ol>
 <li>匹配规则中的公共前缀</li>
 <li>为不同的后缀添加一个新的nonterminal symbol: $\textit{Arguments}$</li>
 </ol>
 <p>形式上描述: 对于production $A \rightarrow \alpha \beta_1 | \alpha \beta_2 | \cdots | \alpha \beta_n | \gamma_1 | \gamma_2 | \cdots | \gamma_j$, $\alpha$为公共前缀, $\gamma_i$表示不从$\alpha$开始右侧句型. 转换后用新的nonterminal symbol B来表示后缀:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$A \rightarrow \alpha B | \gamma_1 | \gamma_2 | \cdots | \gamma_j$</span><br><span class="line">$B \rightarrow \beta_1 | \beta_2 | \cdots | \beta_n$</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$A \rightarrow \alpha B | \gamma_1 | \gamma_2 | \cdots | \gamma_j$</span><br><span class="line">$B \rightarrow \beta_1 | \beta_2 | \cdots | \beta_n$</span><br></pre></td></tr></table></figure>
 
-<h3 id="3-2-Top-Down-Recursive-Descent-Parser"><a href="#3-2-Top-Down-Recursive-Descent-Parser" class="headerlink" title="3.2 Top-Down Recursive-Descent Parser"></a>3.2 Top-Down Recursive-Descent Parser</h3><p>递归下降的无回溯parser在结构上呈现为一组相互递归的过程, 每个nonterminal symbol都对于一个<strong>过程</strong>. 例如: nonterminal symbol A的过程可以识别输入流中的A实例. 为识别A的产生式中的nonterminal symbol B, 需要调用B的<strong>过程</strong>. 以下是${Expr}’$的右递归表达式语法:</p>
+<h3 id="3-2-Top-Down-Recursive-Descent-Parser"><a href="#3-2-Top-Down-Recursive-Descent-Parser" class="headerlink" title="3.2 Top-Down Recursive-Descent Parser"></a>3.2 Top-Down Recursive-Descent Parser</h3><p>递归下降的无回溯parser在结构上呈现为一组相互递归的过程, 每个nonterminal symbol都对于一个<strong>过程</strong>. 例如: nonterminal symbol A的过程可以识别输入流中的A实例. 为识别A的产生式中的nonterminal symbol B, 需要调用B的<strong>过程</strong>. 以下是${Expr}&#39;$的右递归表达式语法:</p>
 <table>
 <thead>
 <tr>
@@ -575,11 +553,11 @@ Parser (1) - Zaf1ro's Blog
 </tr>
 </thead>
 <tbody><tr>
-<td align="center">$\text{Expr}’ \rightarrow + \ \text{Term} \ \text{Expr}’$</td>
+<td align="center">$\text{Expr}&#39; \rightarrow + \ \text{Term} \ \text{Expr}&#39;$</td>
 <td align="center">$ + $</td>
 </tr>
 <tr>
-<td align="center">$\qquad \ | \ - \ \text{Term} \ \text{Expr}’$</td>
+<td align="center">$\qquad \ | \ - \ \text{Term} \ \text{Expr}&#39;$</td>
 <td align="center">$ - $</td>
 </tr>
 <tr>
@@ -587,107 +565,18 @@ Parser (1) - Zaf1ro's Blog
 <td align="center">$ \epsilon, \text{eof}, ) $</td>
 </tr>
 </tbody></table>
-<p>为识别$\text{Expr}’$, 需要创建一个函数名为EPrime(), 遵循一个简单的模式: 根据${\text{FIRST}^+}$集合和匹配输入流中的符号. 以下是EPrime的代码:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">EPrime()</span><br><span class="line">  /* $\text&#123;Expr&#125;&apos; \rightarrow + \ \text&#123;Term&#125; \ \text&#123;Expr&#125;&apos; \ | - \text&#123;Term&#125; \ \text&#123;Expr&#125;&apos;$ */</span><br><span class="line">  if (word = + or word = -)</span><br><span class="line">    word $\leftarrow$ NextWord();</span><br><span class="line">    if (Term())</span><br><span class="line">      return EPrime();</span><br><span class="line">    else </span><br><span class="line">      return false;</span><br><span class="line">  else if (word = $\underline&#123;)&#125;$ or word = eof) /* $\text&#123;Expr&#125;&apos; \rightarrow \epsilon $ */</span><br><span class="line">      return true;</span><br><span class="line">  else /* no match */</span><br><span class="line">    report a syntax error;</span><br><span class="line">  return false;</span><br></pre></td></tr></table></figure>
-
+<p>为识别$\text{Expr}&#39;$, 需要创建一个函数名为EPrime(), 遵循一个简单的模式: 根据${\text{FIRST}^+}$集合和匹配输入流中的符号. 以下是EPrime的代码:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">EPrime()</span><br><span class="line">  /* $\text&#123;Expr&#125;&#x27; \rightarrow + \ \text&#123;Term&#125; \ \text&#123;Expr&#125;&#x27; \ | - \text&#123;Term&#125; \ \text&#123;Expr&#125;&#x27;$ */</span><br><span class="line">  if (word = + or word = -)</span><br><span class="line">    word $\leftarrow$ NextWord();</span><br><span class="line">    if (Term())</span><br><span class="line">      return EPrime();</span><br><span class="line">    else </span><br><span class="line">      return false;</span><br><span class="line">  else if (word = $\underline&#123;)&#125;$ or word = eof) /* $\text&#123;Expr&#125;&#x27; \rightarrow \epsilon $ */</span><br><span class="line">      return true;</span><br><span class="line">  else /* no match */</span><br><span class="line">    report a syntax error;</span><br><span class="line">  return false;</span><br></pre></td></tr></table></figure>
 <p>构建top-Down recursive-descent parser的策略比较简单: 为每个nonterminal symbol构建一个<strong>过程</strong>来识别与之匹配的产生式. 直接过程彼此嵌套并互相调用, 并可在无法找到预期terminal symbol时生成错误信息:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">/* Goal $\rightarrow$ Expr */</span><br><span class="line">Main( )</span><br><span class="line">  word $&#123;leftarrow&#125;$ NextWord( );</span><br><span class="line">  if (Expr( ))</span><br><span class="line">    if (word = eof )</span><br><span class="line">      report success;</span><br><span class="line">    else</span><br><span class="line">      Fail( );</span><br><span class="line"></span><br><span class="line">Fail( )</span><br><span class="line">  report syntax error;</span><br><span class="line">  attempt error recovery or exit;</span><br><span class="line"></span><br><span class="line">/* Expr $\rightarrow$ Term Expr&apos;*/</span><br><span class="line">Expr( )</span><br><span class="line">  if (Term( ))</span><br><span class="line">    return EPrime( );</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br><span class="line"></span><br><span class="line">/* Expr&apos; $\rightarrow$ + Term Expr&apos; */</span><br><span class="line">/* Expr&apos; $\rightarrow$ - Term Expr&apos; */</span><br><span class="line">EPrime( )  </span><br><span class="line">  if (word = + or word = - )</span><br><span class="line">    word $\leftarrow$  NextWord( );</span><br><span class="line">    if (Term())</span><br><span class="line">      return EPrime( );</span><br><span class="line">    else</span><br><span class="line">      Fail();</span><br><span class="line">  else if (word = ) or word = eof)</span><br><span class="line">    return true; /* $\text&#123;Expr&#125;&apos; \rightarrow \epsilon$ */</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br><span class="line"></span><br><span class="line">/* Term $\rightarrow$ Factor Term&apos; */</span><br><span class="line">Term( )</span><br><span class="line">  if (Factor())</span><br><span class="line">    return TPrime( );</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br><span class="line"></span><br><span class="line">/* Term&apos; $\rightarrow \times$ Factor Term&apos; */</span><br><span class="line">/* Term&apos; $\rightarrow \div$ Factor Term&apos; */</span><br><span class="line">TPrime( ) </span><br><span class="line">  if (word = $\times$ or word = $\div$)</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    if (Factor( ))</span><br><span class="line">      return TPrime( );</span><br><span class="line">    else</span><br><span class="line">      Fail();</span><br><span class="line">  else if (word = + or word = - or word = ) or word = eof)</span><br><span class="line">    return true; /* Term&apos; $\rightarrow \epsilon$ */</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br><span class="line"></span><br><span class="line">/* Factor $\rightarrow$ (Expr) */</span><br><span class="line">Factor( )</span><br><span class="line">  if (word = $\underline&#123;(&#125;$ )</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    if (not Expr( ))</span><br><span class="line">      Fail();</span><br><span class="line">    if (word $\neq \underline&#123;)&#125;$)</span><br><span class="line">      Fail();</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    return true;</span><br><span class="line">  /* Factor $\rightarrow$ num */</span><br><span class="line">  /* Factor $\rightarrow$ name */</span><br><span class="line">  else if (word = num or word = name)</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    return true;</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/* Goal $\rightarrow$ Expr */</span><br><span class="line">Main( )</span><br><span class="line">  word $&#123;leftarrow&#125;$ NextWord( );</span><br><span class="line">  if (Expr( ))</span><br><span class="line">    if (word = eof )</span><br><span class="line">      report success;</span><br><span class="line">    else</span><br><span class="line">      Fail( );</span><br><span class="line"></span><br><span class="line">Fail( )</span><br><span class="line">  report syntax error;</span><br><span class="line">  attempt error recovery or exit;</span><br><span class="line"></span><br><span class="line">/* Expr $\rightarrow$ Term Expr&#x27;*/</span><br><span class="line">Expr( )</span><br><span class="line">  if (Term( ))</span><br><span class="line">    return EPrime( );</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br><span class="line"></span><br><span class="line">/* Expr&#x27; $\rightarrow$ + Term Expr&#x27; */</span><br><span class="line">/* Expr&#x27; $\rightarrow$ - Term Expr&#x27; */</span><br><span class="line">EPrime( )  </span><br><span class="line">  if (word = + or word = - )</span><br><span class="line">    word $\leftarrow$  NextWord( );</span><br><span class="line">    if (Term())</span><br><span class="line">      return EPrime( );</span><br><span class="line">    else</span><br><span class="line">      Fail();</span><br><span class="line">  else if (word = ) or word = eof)</span><br><span class="line">    return true; /* $\text&#123;Expr&#125;&#x27; \rightarrow \epsilon$ */</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br><span class="line"></span><br><span class="line">/* Term $\rightarrow$ Factor Term&#x27; */</span><br><span class="line">Term( )</span><br><span class="line">  if (Factor())</span><br><span class="line">    return TPrime( );</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br><span class="line"></span><br><span class="line">/* Term&#x27; $\rightarrow \times$ Factor Term&#x27; */</span><br><span class="line">/* Term&#x27; $\rightarrow \div$ Factor Term&#x27; */</span><br><span class="line">TPrime( ) </span><br><span class="line">  if (word = $\times$ or word = $\div$)</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    if (Factor( ))</span><br><span class="line">      return TPrime( );</span><br><span class="line">    else</span><br><span class="line">      Fail();</span><br><span class="line">  else if (word = + or word = - or word = ) or word = eof)</span><br><span class="line">    return true; /* Term&#x27; $\rightarrow \epsilon$ */</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br><span class="line"></span><br><span class="line">/* Factor $\rightarrow$ (Expr) */</span><br><span class="line">Factor( )</span><br><span class="line">  if (word = $\underline&#123;(&#125;$ )</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    if (not Expr( ))</span><br><span class="line">      Fail();</span><br><span class="line">    if (word $\neq \underline&#123;)&#125;$)</span><br><span class="line">      Fail();</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    return true;</span><br><span class="line">  /* Factor $\rightarrow$ num */</span><br><span class="line">  /* Factor $\rightarrow$ name */</span><br><span class="line">  else if (word = num or word = name)</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">    return true;</span><br><span class="line">  else</span><br><span class="line">    Fail();</span><br></pre></td></tr></table></figure>
+
 
 <h3 id="3-3-Table-Driven-LL-1-Parser"><a href="#3-3-Table-Driven-LL-1-Parser" class="headerlink" title="3.3 Table-Driven LL(1) Parser"></a>3.3 Table-Driven LL(1) Parser</h3><p>对于无回溯语法, 使用$\text{FIRST}^+$集合可以实现top-down parser, 称为<strong>LL(1)</strong>. 该语法分析器由左(Left)到右扫描输入, 构建一个最左推导(Leftmost), 其中仅使用一个前瞻符号(1). 以下是LL(1)的算法:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">word $\leftarrow$ NextWord( );</span><br><span class="line">push eof onto Stack;</span><br><span class="line">push the start symbol, S, onto Stack;</span><br><span class="line">focus $\leftarrow$ top of Stack;</span><br><span class="line">while (1)</span><br><span class="line">  if (focus = eof and word = eof)</span><br><span class="line">    report success and exit the loop;</span><br><span class="line">  else if (focus $\in$ T or focus = eof)</span><br><span class="line">    if focus matches word</span><br><span class="line">      pop Stack;</span><br><span class="line">      word $\leftarrow$ NextWord( );</span><br><span class="line">    else</span><br><span class="line">      report an error looking for symbol at top of stack;</span><br><span class="line">  else /* focus is a nonterminal */</span><br><span class="line">    if Table[focus, word] is $A \rightarrow B_1 B_2 \cdots B_k$</span><br><span class="line">      pop Stack;</span><br><span class="line">      for i $\leftarrow$ k to 1 by -1 do;</span><br><span class="line">        if ($B_i \neq\epsilon$)</span><br><span class="line">          push $B_i$ onto Stack;</span><br><span class="line">    else</span><br><span class="line">      report an error expanding focus;</span><br><span class="line">  focus $\leftarrow$ top of Stack;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">word $\leftarrow$ NextWord( );</span><br><span class="line">push eof onto Stack;</span><br><span class="line">push the start symbol, S, onto Stack;</span><br><span class="line">focus $\leftarrow$ top of Stack;</span><br><span class="line">while (1)</span><br><span class="line">  if (focus = eof and word = eof)</span><br><span class="line">    report success and exit the loop;</span><br><span class="line">  else if (focus $\in$ T or focus = eof)</span><br><span class="line">    if focus matches word</span><br><span class="line">      pop Stack;</span><br><span class="line">      word $\leftarrow$ NextWord( );</span><br><span class="line">    else</span><br><span class="line">      report an error looking for symbol at top of stack;</span><br><span class="line">  else /* focus is a nonterminal */</span><br><span class="line">    if Table[focus, word] is $A \rightarrow B_1 B_2 \cdots B_k$</span><br><span class="line">      pop Stack;</span><br><span class="line">      for i $\leftarrow$ k to 1 by -1 do;</span><br><span class="line">        if ($B_i \neq\epsilon$)</span><br><span class="line">          push $B_i$ onto Stack;</span><br><span class="line">    else</span><br><span class="line">      report an error expanding focus;</span><br><span class="line">  focus $\leftarrow$ top of Stack;</span><br></pre></td></tr></table></figure>
 <p>以下是LL(1)的右递归表达式语法表:</p>
-<table>
-<thead>
-<tr>
-<th align="center"></th>
-<th>eof</th>
-<th align="center">+</th>
-<th align="center">-</th>
-<th align="center">$\times$</th>
-<th align="center">$\div$</th>
-<th align="center">$\underline{(}$</th>
-<th align="center">$\underline{)}$</th>
-<th align="center">name</th>
-<th align="center">num</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">Goal</td>
-<td>-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">0</td>
-<td align="center">-</td>
-<td align="center">0</td>
-<td align="center">0</td>
-</tr>
-<tr>
-<td align="center">Expr</td>
-<td>-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">1</td>
-<td align="center">-</td>
-<td align="center">1</td>
-<td align="center">1</td>
-</tr>
-<tr>
-<td align="center">Expr’</td>
-<td>4</td>
-<td align="center">2</td>
-<td align="center">3</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">4</td>
-<td align="center">-</td>
-<td align="center">-</td>
-</tr>
-<tr>
-<td align="center">Term</td>
-<td>-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">5</td>
-<td align="center">-</td>
-<td align="center">5</td>
-<td align="center">5</td>
-</tr>
-<tr>
-<td align="center">Term’</td>
-<td>8</td>
-<td align="center">8</td>
-<td align="center">8</td>
-<td align="center">6</td>
-<td align="center">7</td>
-<td align="center">-</td>
-<td align="center">8</td>
-<td align="center">-</td>
-<td align="center">-</td>
-</tr>
-<tr>
-<td align="center">Factor</td>
-<td>-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">9</td>
-<td align="center">-</td>
-<td align="center">11</td>
-<td align="center">10</td>
-</tr>
-</tbody></table>
+<p>| | eof | + | - | $\times$ | $\div$ | $\underline{(}$ | $\underline{)}$ | name | num |<br>|:---:||:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:<br>| Goal  | - | - | - | - | - | 0 | - | 0 | 0 |<br>| Expr  | - | - | - | - | - | 1 | - | 1 | 1 |<br>| Expr&#39; | 4 | 2 | 3 | - | - | - | 4 | - | - |<br>| Term  | - | - | - | - | - | 5 | - | 5 | 5 |<br>| Term&#39; | 8 | 8 | 8 | 6 | 7 | - | 8 | - | - |<br>| Factor| - | - | - | - | - | 9 | - | 11| 10|</p>
 <p>为构建LL(1)语法分析器, compiler需要一个右递归且无回溯的语法, 和一个parser generator来构造parser. LL(1) parser generator最常见的技术就是table-driven skeleton parser. 语法分析表将nonterminal symbol和前瞻符号映射到对应的产生式, 给定nonterminal symbol A和前瞻符号w, Table[A, w]指定用于扩展该语法树的产生式. 以下是构造Table的算法:</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">build $\text&#123;FIRST&#125;$, $\text&#123;FOLLOW&#125;$ and $\text&#123;FIRST&#125;^+$ sets</span><br><span class="line">for each nonterminal symbol A do:</span><br><span class="line">  for each terminal w do;</span><br><span class="line">    Table[A, w] $\leftarrow$ error;</span><br><span class="line">  for each production p of the form $A \rightarrow \beta$ do;</span><br><span class="line">    for each terminal w $\in \text&#123;FIRST&#125;^+(A \rightarrow \beta)$ do;</span><br><span class="line">      Table[A, w] $\leftarrow$ p;</span><br><span class="line">    if eof $\in \text&#123;FIRST&#125;^+(A \rightarrow \beta$)</span><br><span class="line">      Table[A, eof] $\leftarrow$ p;</span><br></pre></td></tr></table></figure>
-
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">build $\text&#123;FIRST&#125;$, $\text&#123;FOLLOW&#125;$ and $\text&#123;FIRST&#125;^+$ sets</span><br><span class="line">for each nonterminal symbol A do:</span><br><span class="line">  for each terminal w do;</span><br><span class="line">    Table[A, w] $\leftarrow$ error;</span><br><span class="line">  for each production p of the form $A \rightarrow \beta$ do;</span><br><span class="line">    for each terminal w $\in \text&#123;FIRST&#125;^+(A \rightarrow \beta)$ do;</span><br><span class="line">      Table[A, w] $\leftarrow$ p;</span><br><span class="line">    if eof $\in \text&#123;FIRST&#125;^+(A \rightarrow \beta$)</span><br><span class="line">      Table[A, eof] $\leftarrow$ p;</span><br></pre></td></tr></table></figure>
 <p>对于输入流$a + b \times c$, 以下是整个语法分析过程:</p>
 <table>
 <thead>
@@ -709,77 +598,77 @@ Parser (1) - Zaf1ro's Blog
 </tr>
 <tr>
 <td align="center">1</td>
-<td align="center">eof Expr’ Term</td>
+<td align="center">eof Expr&#39; Term</td>
 <td align="center">$\uparrow$ name + name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">5</td>
-<td align="center">eof Expr’ Term’ Factor</td>
+<td align="center">eof Expr&#39; Term&#39; Factor</td>
 <td align="center">$\uparrow$ name + name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">11</td>
-<td align="center">eof Expr’ Term’ name</td>
+<td align="center">eof Expr&#39; Term&#39; name</td>
 <td align="center">$\uparrow$ name + name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">$\rightarrow$</td>
-<td align="center">eof Expr’ Term’</td>
+<td align="center">eof Expr&#39; Term&#39;</td>
 <td align="center">name $\uparrow$ + name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">8</td>
-<td align="center">eof Expr’</td>
+<td align="center">eof Expr&#39;</td>
 <td align="center">name $\uparrow$ + name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">2</td>
-<td align="center">eof Expr’ Term +</td>
+<td align="center">eof Expr&#39; Term +</td>
 <td align="center">name $\uparrow$ + name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">$\rightarrow$</td>
-<td align="center">eof Expr’ Term</td>
+<td align="center">eof Expr&#39; Term</td>
 <td align="center">name + $\uparrow$ name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">5</td>
-<td align="center">eof Expr’ Term’ Factor</td>
+<td align="center">eof Expr&#39; Term&#39; Factor</td>
 <td align="center">name + $\uparrow$ name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">11</td>
-<td align="center">eof Expr’ Term’ name</td>
+<td align="center">eof Expr&#39; Term&#39; name</td>
 <td align="center">name + $\uparrow$ name $\times$ name</td>
 </tr>
 <tr>
 <td align="center">$\rightarrow$</td>
-<td align="center">eof Expr’ Term’</td>
+<td align="center">eof Expr&#39; Term&#39;</td>
 <td align="center">name + name $\uparrow$ $\times$ name</td>
 </tr>
 <tr>
 <td align="center">6</td>
-<td align="center">eof Expr’ Term’ Factor $\times$</td>
+<td align="center">eof Expr&#39; Term&#39; Factor $\times$</td>
 <td align="center">name + name $\uparrow$ $\times$ name</td>
 </tr>
 <tr>
 <td align="center">$\rightarrow$</td>
-<td align="center">eof Expr’ Term’ Factor</td>
+<td align="center">eof Expr&#39; Term&#39; Factor</td>
 <td align="center">name + name $\times$ $\uparrow$ name</td>
 </tr>
 <tr>
 <td align="center">11</td>
-<td align="center">eof Expr’ Term’ name</td>
+<td align="center">eof Expr&#39; Term&#39; name</td>
 <td align="center">name + name $\times$ $\uparrow$ name</td>
 </tr>
 <tr>
 <td align="center">$\rightarrow$</td>
-<td align="center">eof Expr’ Term’</td>
+<td align="center">eof Expr&#39; Term&#39;</td>
 <td align="center">name + name $\times$ name $\uparrow$</td>
 </tr>
 <tr>
 <td align="center">8</td>
-<td align="center">eof Expr’</td>
+<td align="center">eof Expr&#39;</td>
 <td align="center">name + name $\times$ name $\uparrow$</td>
 </tr>
 <tr>
@@ -824,7 +713,10 @@ Parser (1) - Zaf1ro's Blog
   </article>
 
   </div>
-  <script type="text/x-mathjax-config">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+<script type="text/x-mathjax-config">
 MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
 </script>
 
@@ -836,9 +728,6 @@ MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["
 <script type="text/x-mathjax-config">
 MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
 MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
-</script>
-
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
 
 
@@ -878,18 +767,14 @@ MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
 
 
     
-  
-
 
 
 
 
   
-    <script type="text/javascript" src="/lib/jquery/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
   
 
-  
-    <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
   
 
     
@@ -904,7 +789,7 @@ $(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.regi
 <script type="text/javascript">
 var themeConfig = {
   fancybox: {
-    enable: true
+    enable: false
   },
 };
 </script>
