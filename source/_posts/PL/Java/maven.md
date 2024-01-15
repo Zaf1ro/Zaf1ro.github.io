@@ -199,10 +199,10 @@ POM(Prject Object Model)是Maven项目中最重要的文件, 文件名为`pom.xm
 * classifier: 该参数为可选项, 且没有固定值, 可让相同POM构建不同内容的artifact. 例如, 一个artifact可能针对Java 11和Java 1.8做了不同内容, 可配置`jdk11`和`jdk8`生成不同内容的artifact
 * type: 该参数表示依赖的类型, 默认为`jar`, type通常与packaging一致.
 * scope: 该参数表示依赖范围, 用于限制依赖项的**transitivity**(传递性), 一共有以下五种范围, 对应package的三个作用范围: 编译, 测试, 运行.
-    * compile: 默认范围, 对于三种作用范围均有效, 例如log4j
-    * provided: 只对编译和测试有效, 该依赖通常由外部容器提供, 运行时无需该依赖, 例如servlet-api
-    * runtime: 只对测试和运行有效, 如JDBC
-    * test: 只对测试有效, 例如junit
+    * compile: 默认范围, 对于三种作用范围均有效, 例如`log4j`
+    * provided: 只对编译和测试有效, 该依赖通常由外部容器提供, 运行时无需该依赖, 例如`servlet-api`
+    * runtime: 只对测试和运行有效, 如`JDBC`
+    * test: 只对测试有效, 例如`junit`
     * system: 范围与provided一致, 该依赖由`systemPath`提供, 会导致可移植性降低, 不建议使用
 * systemPath: 仅当scope为system时才使用该参数, 否则报错. 该参数值必须是一个绝对路径, 建议使用property来指定一个机器特定的路径, 例如`${java.home}/lib`
 * optional: 当当前项目本身作为一个依赖时, 可将该参数设置为true. 例如, 项目A依赖于项目B来编译一部分运行时不会使用的代码, 而项目X依赖于项目A时可能不需要安装项目B, 因此A可将B设置为optional
@@ -238,14 +238,14 @@ POM(Prject Object Model)是Maven项目中最重要的文件, 文件名为`pom.xm
 <build>
   <defaultGoal>install</defaultGoal>
   <directory>/home/jenkins/82467a7c/workspace/aven_maven-box_maven-site_master/target</directory>
-  <finalName>${artifactId}-${version}</finalName>
+  <finalName>{artifactId}-{version}</finalName>
   <filters>
     <filter>filters/filter1.properties</filter>
   </filters>
   ...
 </build>
 ```
-* finalName: 项目打包后的名称, 默认为`${artifactId}-${version}`
+* finalName: 项目打包后的名称, 默认为`artifactId-version`
 * defaultGoal: 若没有给出执行的目标或phase(如命令`mvn`), 则将该参数作为默认目标
 * directory: Maven构建时生成文件的存放目录, 默认为`${project.basedir}/target`
 * filter: 存放`*.properties`文件的目录, 默认为`${project.basedir}/src/main/filters/`
@@ -488,4 +488,4 @@ Parent POM的`packgaing`元素必须为`pom`, 以下是parent POM会被继承到
     * plugin configuration
 * reporting
 
-需要注意的是, child POM会自动继承`groupId`和`version`, 因此child POM只需设置`artifactId`. Parent POM中`dependencies`的所有依赖都会继承到child POM, 因此子项目可直接调用该依赖; 但一般不会直接在parent POM中使用`dependencies`, 而是使用`dependencyManagement`: 当parent POM设置`dependencyManagement`后, child POM不会自动添加该依赖, 只有显示声明相同`groupId`和`artifactId`时才会拥有该依赖, `version`会从parent POM继承而来.
+需要注意的是, child POM会自动继承`groupId`和`version`, 因此child POM只需设置`artifactId`. Parent POM中`dependencies`的所有依赖都会继承到child POM, 因此子项目可直接调用该依赖; 但一般不会直接在parent POM中使用`dependencies`, 而是使用`dependencyManagement`: 当parent POM设置`dependencyManagement`后, child POM不会自动添加该依赖, 只有显式声明相同`groupId`和`artifactId`时才会拥有该依赖, `version`会从parent POM继承而来.
