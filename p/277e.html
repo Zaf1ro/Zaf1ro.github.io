@@ -37,18 +37,18 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/277e.html"/>
 
 
-<meta name="description" content="1. Introduction电子计算机中, interrupt(也称为trap)会请求中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态变化">
+<meta name="description" content="1. Introduction电子计算机中, interrupt(中断, 也称为trap)会中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Signals">
 <meta property="og:url" content="https://zaf1ro.github.io/p/277e.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="1. Introduction电子计算机中, interrupt(也称为trap)会请求中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态变化">
+<meta property="og:description" content="1. Introduction电子计算机中, interrupt(中断, 也称为trap)会中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态">
 <meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/10-5-signal-semantics.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/10-6-reentrant-func.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/10-18-proc-when-editor-running.png">
 <meta property="article:published_time" content="2019-09-17T18:12:52.000Z">
-<meta property="article:modified_time" content="2024-01-03T17:00:09.438Z">
+<meta property="article:modified_time" content="2024-03-06T20:40:23.576Z">
 <meta property="article:tag" content="UNIX">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/10-5-signal-semantics.png">
@@ -133,7 +133,13 @@ Signals - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>电子计算机中, <strong>interrupt</strong>(也称为<strong>trap</strong>)会请求中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态变化.<br>Signal是软件层面的interrupt, 其是一种处理异步事件的方式, 大多数应用程序都需要处理signal. UNIX系统的早期版本就支持signal, 但并不可靠, signal会丢失, 且进程执行某些关键代码时无法屏蔽特定signal. 4.3BSD和SVR3对signal model做出了调整, 让其变得可靠. POSIX.1标准化了signal model.</p>
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>电子计算机中, <strong>interrupt</strong>(中断, 也称为<strong>trap</strong>)会中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态变化.<br>Signal是软件层面的interrupt, 其是一种处理异步事件的方式, 大多数应用程序都需要处理signal. UNIX系统的早期版本就支持signal, 但并不可靠, signal会丢失, 且进程执行某些关键代码时无法屏蔽特定signal. 4.3BSD和SVR3对signal model做出了调整, 让其变得可靠. POSIX.1标准化了signal model.<br>假设存在两个进程A和B, A无法直接向B发送signal, 必须通过kernel转发. 之所以需要通过kernel转发, 是出于安全考虑. Kernel收到signal后会检查A是否有权限向B发送signal, 若通过检查, 则会在B的PCB(进程控制块)中的信号表设置该signal, 并向B发送中断请求, B进入内核态, Kernel会查看该signal对应的处理函数, 并跳回到用户态执行该函数. 以下是signal的一些特性:</p>
+<ul>
+<li>Signal可由异常(非法内存访问), 硬件(Ctrl-C), 或程序产生(<code>kill</code>)</li>
+<li>Signal是异步的, signal的触发时间无法确定, 也无法确定产生何种signal</li>
+<li>Signal的处理不是即时的, 发送方发送signal时, 接收方不会立即收到</li>
+<li>Signal没有队列: 若某个进程同一时间收到多次同一类型的signal, 该进程只处理一次该signal</li>
+</ul>
 <h2 id="2-Signal-Concepts"><a href="#2-Signal-Concepts" class="headerlink" title="2. Signal Concepts"></a>2. Signal Concepts</h2><ul>
 <li>每个signal都有一个名字, 以<strong>SIG</strong>开头. 例如:<ul>
 <li><code>SIGABRT</code>: 进程调用<code>abort()</code>时产生的abort signal</li>

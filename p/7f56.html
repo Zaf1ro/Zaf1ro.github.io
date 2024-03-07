@@ -37,15 +37,15 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/7f56.html"/>
 
 
-<meta name="description" content="1. 简介BT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者.  2. BitTorent文件的分布包括以下实体 普通的web server 静态的metainfo(元信息)文件 BitTorrent Tracker 原始的下载者">
+<meta name="description" content="1. IntroductionBT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者.  2. BitTorent文件的分布包括以下实体 普通的web server 静态的metainfo(元信息)文件 BitTorrent Trac">
 <meta property="og:type" content="article">
 <meta property="og:title" content="BitTorrent Protocol Specification">
 <meta property="og:url" content="https://zaf1ro.github.io/p/7f56.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="1. 简介BT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者.  2. BitTorent文件的分布包括以下实体 普通的web server 静态的metainfo(元信息)文件 BitTorrent Tracker 原始的下载者">
+<meta property="og:description" content="1. IntroductionBT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者.  2. BitTorent文件的分布包括以下实体 普通的web server 静态的metainfo(元信息)文件 BitTorrent Trac">
 <meta property="og:locale">
 <meta property="article:published_time" content="2016-01-29T01:00:42.000Z">
-<meta property="article:modified_time" content="2024-01-03T17:00:07.154Z">
+<meta property="article:modified_time" content="2024-01-17T16:32:29.366Z">
 <meta property="article:tag" content="Network">
 <meta name="twitter:card" content="summary">
 
@@ -74,7 +74,7 @@ BitTorrent Protocol Specification - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="toc-text">1. 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-BitTorent%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%86%E5%B8%83%E5%8C%85%E6%8B%AC%E4%BB%A5%E4%B8%8B%E5%AE%9E%E4%BD%93"><span class="toc-text">2. BitTorent文件的分布包括以下实体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Host%E9%9C%80%E8%A6%81%E5%81%9A%E4%BB%A5%E4%B8%8B%E6%AD%A5%E9%AA%A4%E6%89%8D%E8%83%BD%E5%BC%80%E5%90%AF%E6%9C%8D%E5%8A%A1"><span class="toc-text">3. Host需要做以下步骤才能开启服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%94%A8%E6%88%B7%E9%9C%80%E8%A6%81%E5%81%9A%E4%BB%A5%E4%B8%8B%E6%93%8D%E4%BD%9C%E6%89%8D%E8%83%BD%E5%BC%80%E5%90%AF%E4%B8%8B%E8%BD%BD"><span class="toc-text">4. 用户需要做以下操作才能开启下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Bencoding"><span class="toc-text">5. Bencoding</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-metainfo%E6%96%87%E4%BB%B6-metainfo-file"><span class="toc-text">6. metainfo文件(metainfo file)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-info%E5%AD%97%E5%85%B8-info-dictionary"><span class="toc-text">7. info字典(info dictionary)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-trackers"><span class="toc-text">8. trackers</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-peer%E5%8D%8F%E8%AE%AE-peer-protocol"><span class="toc-text">9. peer协议(peer protocol)</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-BitTorent%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%86%E5%B8%83%E5%8C%85%E6%8B%AC%E4%BB%A5%E4%B8%8B%E5%AE%9E%E4%BD%93"><span class="toc-text">2. BitTorent文件的分布包括以下实体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Host%E9%9C%80%E8%A6%81%E5%81%9A%E4%BB%A5%E4%B8%8B%E6%AD%A5%E9%AA%A4%E6%89%8D%E8%83%BD%E5%BC%80%E5%90%AF%E6%9C%8D%E5%8A%A1"><span class="toc-text">3. Host需要做以下步骤才能开启服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%94%A8%E6%88%B7%E9%9C%80%E8%A6%81%E5%81%9A%E4%BB%A5%E4%B8%8B%E6%93%8D%E4%BD%9C%E6%89%8D%E8%83%BD%E5%BC%80%E5%90%AF%E4%B8%8B%E8%BD%BD"><span class="toc-text">4. 用户需要做以下操作才能开启下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Bencoding"><span class="toc-text">5. Bencoding</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-metainfo%E6%96%87%E4%BB%B6-metainfo-file"><span class="toc-text">6. metainfo文件(metainfo file)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-info%E5%AD%97%E5%85%B8-info-dictionary"><span class="toc-text">7. info字典(info dictionary)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-trackers"><span class="toc-text">8. trackers</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Peer%E5%8D%8F%E8%AE%AE-Peer-protocol"><span class="toc-text">9. Peer协议(Peer protocol)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-BitTorrent-tracker"><span class="toc-text">10. BitTorrent tracker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E5%B7%B2%E7%9F%A5client%E6%A0%BC%E5%BC%8F"><span class="toc-text">11. 已知client格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-%E6%9C%AA%E7%9F%A5%E7%9A%84client"><span class="toc-text">13. 未知的client</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E5%85%B6%E4%BB%96"><span class="toc-text">14. 其他</span></a></li></ol>
   </div>
 
     </div>
@@ -129,7 +129,7 @@ BitTorrent Protocol Specification - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p>BT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者. </p>
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>BT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者. </p>
 <h2 id="2-BitTorent文件的分布包括以下实体"><a href="#2-BitTorent文件的分布包括以下实体" class="headerlink" title="2. BitTorent文件的分布包括以下实体"></a>2. BitTorent文件的分布包括以下实体</h2><ul>
 <li>普通的web server</li>
 <li>静态的metainfo(元信息)文件</li>
@@ -194,7 +194,101 @@ BitTorrent Protocol Specification - Zaf1ro
 </ul>
 </li>
 </ul>
-<h2 id="9-peer协议-peer-protocol"><a href="#9-peer协议-peer-protocol" class="headerlink" title="9. peer协议(peer protocol)"></a>9. peer协议(peer protocol)</h2><p>BitTorrent的peer协议通过TCP或uTP操作.<br>Peer连接是对称的. 双向传输的信息是相同的, 数据库可以走任意方向.<br>Peer协议适用于metainfo文件描述的由索引连接的多片文件, 以0为开始. 当一个peer下载了一片, 并且进行了hash匹配, 那么就可以将该片分享给其他peer.<br>连接以两个bit的状态码结束: 是否choke, 是否interested. Choking意味着只有切换为unchoked状态才能传输数据. Choking背后的推导和原理将会在后面提到.<br>当一端为interested, 另一端为not choking时进行数据传输. 每当下载器不对peer进行请求下载时, Interested状态必须随时保持更新, 尽管peer可能对本端choked, 也必须传递not interested. 尽管使用起来很困难, 但这能使得下载器只是哪些peer将开始下载, 如果是peer对本端是unchoked.<br>连接开始的初始状态为choke和not interested<br>数据传输时, 下载器应保持片查询, 并按队列进行查询, 这样可以提升TCP性能. 另一方面, 不能写入TCP缓存的请求将会在内存中排队等候, 而不是存储在应用层的网络缓存中, 这样当发生choke时可以全部抛弃.<br>Peer wire协议会包含一次握手, 随后就是以长度为前缀的信息组成的流传输. 握手以字符串19开始, 后面跟着&quot;BitTorrent protocol&quot;. 开始的字符串为长度前缀, 把这个字符串放这里是希望其他新的协议也这么做, 并且可以通过这个来区分协议.<br>协议中的后续传输的整数都以大端字节4bytes编码<br>固定头部后紧跟着8个保留bytes, 现在是用零填充. 如果你想拓展协议可以使用这些bytes.<br>紧接着下的20bytes是metainfo文件的info value的bencode编码的sha1散列值(与tracker的GET中的info_hash相同), 如果两端传输的该值不相同, 将断开连接. 以下是一个例外: 如果下载器想通过一个端口进行多个下载, 将会在即将到来的连接中接受下载的hash, 如果hash在列表中, 将回复相同的hash.<br>下载hash后为20bytes的peer id, 如果接收端的peer id和开始端不匹配也会中断连接.<br>以上就是握手, 接下来是交互的以长度为前缀的流和信息. 长度为0的信息为keepalives和ignored. keepalives每隔两分钟发一次, 但当期望数据时超市可能会更快的完成. </p>
+<h2 id="9-Peer协议-Peer-protocol"><a href="#9-Peer协议-Peer-protocol" class="headerlink" title="9. Peer协议(Peer protocol)"></a>9. Peer协议(Peer protocol)</h2><p>BitTorrent的peer协议通过TCP或uTP操作.<br>Peer连接是对称的. 双向传输的信息是相同的, 数据库可以走任意方向.<br>Peer协议适用于metainfo文件描述的由索引连接的多片文件, 以0为开始. 当一个peer下载了一片, 并且进行了hash匹配, 那么就可以将该片分享给其他peer.<br>连接以两个bit的状态码结束: 是否choke, 是否interested. Choking意味着只有切换为unchoked状态才能传输数据. Choking背后的推导和原理将会在后面提到.<br>当一端为interested, 另一端为not choking时进行数据传输. 每当下载器不对peer进行请求下载时, Interested状态必须随时保持更新, 尽管peer可能对本端choked, 也必须传递not interested. 尽管使用起来很困难, 但这能使得下载器只是哪些peer将开始下载, 如果是peer对本端是unchoked.<br>连接开始的初始状态为choke和not interested<br>数据传输时, 下载器应保持片查询, 并按队列进行查询, 这样可以提升TCP性能. 另一方面, 不能写入TCP缓存的请求将会在内存中排队等候, 而不是存储在应用层的网络缓存中, 这样当发生choke时可以全部抛弃.<br>Peer wire协议会包含一次握手, 随后就是以长度为前缀的信息组成的流传输. 握手以字符串19开始, 后面跟着&quot;BitTorrent protocol&quot;. 开始的字符串为长度前缀, 把这个字符串放这里是希望其他新的协议也这么做, 并且可以通过这个来区分协议.<br>协议中的后续传输的整数都以大端字节4bytes编码<br>固定头部后紧跟着8个保留bytes, 现在是用零填充. 如果你想拓展协议可以使用这些bytes.<br>紧接着下的20bytes是metainfo文件的info value的bencode编码的sha1散列值(与tracker的GET中的info_hash相同), 如果两端传输的该值不相同, 将断开连接. 以下是一个例外: 如果下载器想通过一个端口进行多个下载, 将会在即将到来的连接中接受下载的hash, 如果hash在列表中, 将回复相同的hash.<br>下载hash后为20bytes的peer id, 如果接收端的peer id和开始端不匹配也会中断连接.<br>以上就是握手, 接下来是交互的以长度为前缀的流和信息. 长度为0的信息为keepalives和ignored. keepalives每隔两分钟发一次, 但当期望数据时超市可能会更快的完成. </p>
+<h2 id="10-BitTorrent-tracker"><a href="#10-BitTorrent-tracker" class="headerlink" title="10. BitTorrent tracker"></a>10. BitTorrent tracker</h2><p>tracker的request和peer握手中的20字节的Peer ID不仅用于标记每个peer, 还用来标记client的实现和版本.<br>传统client会将peer id中的第一个字母设置为&quot;m&quot;, 紧接着主版本号, 副版本号和阶段版本号, 使用&quot;-&quot;隔开, 例如&quot;M4-3-6-&quot;或&quot;M4-20-8-&quot;, 对应着4.3.6和4.20.8版本号. Peer id中剩下的字节都是随机分配的.<br>许多client使用两个字符作为开端, 这样可以识别client的实现, 后面的四个ascii数字用来表示版本号. 和传统的client一样, 其他字节随机分配. 例如:&quot;-AZ2060-&quot;. </p>
+<h2 id="11-已知client格式"><a href="#11-已知client格式" class="headerlink" title="11. 已知client格式"></a>11. 已知client格式</h2><ul>
+<li>&#39;AG&#39;: Ares</li>
+<li>&#39;A~&#39;: Ares</li>
+<li>&#39;AR&#39;: Arctic</li>
+<li>&#39;AV&#39;: Avicora</li>
+<li>&#39;AX&#39;: BitPump</li>
+<li>&#39;AZ&#39;: Azureus</li>
+<li>&#39;BB&#39;: BitBuddy</li>
+<li>&#39;BC&#39;: BitComet</li>
+<li>&#39;BF&#39;: Bitflu</li>
+<li>&#39;BG&#39;: BTG (uses Rasterbar libtorrent)</li>
+<li>&#39;BR&#39;: BitRocket</li>
+<li>&#39;BS&#39;: BTSlave</li>
+<li>&#39;BX&#39;: ~Bittorrent X</li>
+<li>&#39;CD&#39;: Enhanced CTorrent</li>
+<li>&#39;CT&#39;: CTorrent</li>
+<li>&#39;DE&#39;: DelugeTorrent</li>
+<li>&#39;DP&#39;: Propagate Data Client</li>
+<li>&#39;EB&#39;: EBit</li>
+<li>&#39;ES&#39;: electric sheep</li>
+<li>&#39;FT&#39;: FoxTorrent</li>
+<li>&#39;GS&#39;: GSTorrent</li>
+<li>&#39;HL&#39;: Halite</li>
+<li>&#39;HN&#39;: Hydranode</li>
+<li>&#39;KG&#39;: KGet</li>
+<li>&#39;KT&#39;: KTorrent</li>
+<li>&#39;LH&#39;: LH-ABC</li>
+<li>&#39;LP&#39;: Lphant</li>
+<li>&#39;LT&#39;: libtorrent</li>
+<li>&#39;lt&#39;: libTorrent</li>
+<li>&#39;LW&#39;: LimeWire</li>
+<li>&#39;MO&#39;: MonoTorrent</li>
+<li>&#39;MP&#39;: MooPolice</li>
+<li>&#39;MR&#39;: Miro</li>
+<li>&#39;MT&#39;: MoonlightTorrent</li>
+<li>&#39;NX&#39;: Net Transport</li>
+<li>&#39;PD&#39;: Pando</li>
+<li>&#39;qB&#39;: qBittorrent</li>
+<li>&#39;QD&#39;: QQDownload</li>
+<li>&#39;QT&#39;: Qt 4 Torrent example</li>
+<li>&#39;RT&#39;: Retriever</li>
+<li>&#39;S~&#39;: Shareaza alpha&#x2F;beta</li>
+<li>&#39;SB&#39;: ~Swiftbit</li>
+<li>&#39;SS&#39;: SwarmScope</li>
+<li>&#39;ST&#39;: SymTorrent</li>
+<li>&#39;st&#39;: sharktorrent</li>
+<li>&#39;SZ&#39;: Shareaza</li>
+<li>&#39;TN&#39;: TorrentDotNET</li>
+<li>&#39;TR&#39;: Transmission</li>
+<li>&#39;TS&#39;: Torrentstorm</li>
+<li>&#39;TT&#39;: TuoTu</li>
+<li>&#39;UL&#39;: uLeecher!</li>
+<li>&#39;UT&#39;: µTorrent</li>
+<li>&#39;VG&#39;: Vagaa</li>
+<li>&#39;WT&#39;: BitLet</li>
+<li>&#39;WY&#39;: FireTorrent</li>
+<li>&#39;XL&#39;: Xunlei</li>
+<li>&#39;XT&#39;: XanTorrent</li>
+<li>&#39;XX&#39;: Xtorrent</li>
+<li>&#39;ZT&#39;: ZipTorrent</li>
+</ul>
+<h2 id="13-未知的client"><a href="#13-未知的client" class="headerlink" title="13. 未知的client"></a>13. 未知的client</h2><p>以下client还没被标记, 需要确认:</p>
+<ul>
+<li>&#39;BD&#39; (例如: -BD0300-)</li>
+<li>&#39;NP&#39; (例如: -NP0201-)</li>
+<li>&#39;wF&#39; (例如: -wF2200-)</li>
+</ul>
+<h2 id="14-其他"><a href="#14-其他" class="headerlink" title="14. 其他"></a>14. 其他</h2><p>Shad0w的实验性BitTorrent实现和BitTornado都将peer id的开头设为&quot;T&quot;, BitTornado会紧接着5个ascii字符的版本号, 如果没有5个字节长, 则用&quot;-&quot;填充. 表示版本号的ascii字符只能使用以下字符:<br>0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-<br>例如:&quot;S58B-----&quot;表示5.8.11版本. 和其他的peer id格式一样, 其他的字符都是随机分配. </p>
+<p>已知的client使用以下编码格式:</p>
+<ul>
+<li>&#39;A&#39;: ABC</li>
+<li>&#39;O&#39;: Osprey Permaseed</li>
+<li>&#39;Q&#39;: BTQueue</li>
+<li>&#39;R&#39;: Tribler</li>
+<li>&#39;S&#39;: Shadow&#39;s client</li>
+<li>&#39;T&#39;: BitTornado</li>
+<li>&#39;U&#39;: UPnP NAT Bit Torrent</li>
+</ul>
+<ol>
+<li>BitComet的peer id包含四个ASCII字符&quot;exbc&quot;, 后面跟着两个字节x和y, 最后跟着随机字符. x为十进制的小数点前版本号, y为十进制的小数点后版本号. BitLord使用相同的格式, 但会在版本号后面添加LORD. BitComet的一个非官方补丁将&quot;exbc&quot;替换为&quot;FUTB&quot;. 自BitComet版本更新为0.59后, Peer IDs的编码更改为Azureus风格</li>
+<li>XBT客户端有自己的格式. 它的peer id包含三个大写字符:XBT, 之后是三个ASCII整数来表示版本号. 如果客户端是debug build, 那么第七位为小写字符d, 否则为&quot;-&quot;. 之后就是随机的整数, 大小写字符. 例如:XBT054d-, 这说明是debug build 0.5.4版本</li>
+<li>Opera 8预览版和Opera9.x发行版都使用以下peer_id格式:前两个字节是&quot;OP&quot;, 后面四个字节为版本号. 剩下的是随机小写十六进制数</li>
+<li>MLdonkey使用以下peer_id格式:首字符为&quot;-ML&quot;, 紧接带点版本号, 然后是&quot;-&quot;, 最后为随机字符, 例如: -ML2.7.2-kgjjfkd</li>
+<li>Bits on Wheels使用&quot;-BOWxxx-yyyyyyyyyyyy&quot;, y为随机大小字符, x为版本号, 例如:1.0.6等价于A0C</li>
+<li>Queen Bee使用Bram的新风格: Q1-0-0--或Q1-10-0-后跟着随机字节</li>
+<li>BitTyrant是Azureus的分支, 1.1版本中使用AZ2500BT + 随机字节作为peer ID</li>
+<li>TorrenTopia的1.90版本是3.4.6版本主线的分支, 其peer ID以346------开头</li>
+<li>BitSpirit对于其peer ID有不同的格式. 它的ID使用&quot;\\0\\&#39;3BS&quot;作为前四个字节, 表示3.x版本号, &quot;\0\2BS&quot;表示2.x版本. 所有格式都以&quot;UDP0&quot;作为结尾</li>
+<li>Rufus使用2字节的十进制ASCII数值作为版本号, 第三四字节是&quot;RS&quot;, 以后跟着用户的昵称和一些随机字节</li>
+<li>G3 Torrent以&quot;G3&quot;开头, 紧跟着9个字符的用户昵称</li>
+<li>FlashGet使用Azureus风格, 以&quot;FG&quot;开头, 没有&quot;-&quot;, 版本1.82.1002仍然使用数字&quot;0180&quot;</li>
+<li>AllPeers使用用户相关字符的sha1哈希值, 并用&quot;AP + 版本号 + -&quot;替代了前几个字节</li>
+</ol>
 
     </div>
 
@@ -211,9 +305,9 @@ BitTorrent Protocol Specification - Zaf1ro
       
   <nav class="post-nav">
     
-      <a class="prev" href="/p/ca71.html">
+      <a class="prev" href="/p/485.html">
         <i class="icon-left"></i>
-        <span class="prev-text nav-default">BitTorrent Peer ID Conventions</span>
+        <span class="prev-text nav-default">assert.h</span>
         <span class="prev-text nav-mobile">Prev</span>
       </a>
     
