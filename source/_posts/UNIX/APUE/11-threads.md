@@ -28,11 +28,21 @@ description:
 * errno值
 * 线程特定数据
 
-以下是线程共享的数据:
-* 可执行程序代码
-* 程序的global variable和heap memory
-* stack
+以下是同一进程中不同线程共享的资源:
+* text sement: 可执行程序代码
+* data segment: 全局变量
+* heap
+* 当前工作目录
+* 用户id和组id
 * file descriptor
+
+以下是线程独占的资源:
+* 线程id
+* context: 寄存器值, 包括程序计数器(PC), 栈指针寄存器(SP)
+* stack
+* errno值
+* signal mask
+* 调度优先级
 
 
 ## 2. Thread Identification
@@ -79,7 +89,7 @@ UNIX中每个线程都拥有各自的errno, 但pthread functions不会使用到.
 
 
 ## 4. Thread Termination
-线程内调用`exit(`), `_Exit()`, `_exit()`会导致整个进程终止运行. 若只想终止单个线程, 可使用以下方法:
+线程内调用`exit()`, `_Exit()`, `_exit()`会导致整个进程终止运行. 若只想终止单个线程, 可使用以下方法:
 1. call return from the start routine, the return value is the thread's exit code
 2. cancelled by another thread in the same process
 3. call pthread_exit()
@@ -110,7 +120,7 @@ void pthread_exit(void *retval);
  */
 int pthread_join(pthread_t thread, void **retval);
 ```
-由于retval的类型为无类型指针, 所以可以传入一个structure. 但需要注意: 若retval指向的变量位于stack(临时变量), 线程调用pthread_exit()后销毁所有线程内的数据, 导致pthread_join()中retval获取的数据为无效数据. 因此应使用global variable或调用malloc()将数据创建在heap上.
+由于retval的类型为无类型指针, 所以可以传入一个structure. 但需要注意: 若retval指向的变量位于stack(临时变量), 线程调用`pthread_exit()`后销毁所有线程内的数据, 导致`pthread_join()`中retval获取的数据为无效数据. 因此应使用global variable或调用`malloc()`将数据创建在heap上.
 
 ```c
 #include <pthread.h>
@@ -138,7 +148,7 @@ void pthread_cleanup_push(void (*rtn)(void *), void *arg);
  */
 void pthread_cleanup_pop(int execute);
 ```
-pthread_cleanup_pop()会在以下三种情况下弹出clean-up handler并执行该handler:
+`pthread_cleanup_pop()`会在以下三种情况下弹出clean-up handler并执行该handler:
 1. thread is cancelled
 2. thread terminates itself by calling pthread_exit()
 3. thread calls pthread_cleanup_pop() with a nonzero execute argument
@@ -181,7 +191,7 @@ int pthread_mutex_init(pthread_mutex_t *mutex,
  */
 int pthread_mutex_destroy(pthread_mutex_t *mutex);
 ```
-PTHREAD_MUTEX_INITIALIZER会创建静态mutex object, pthread_mutex_init()则会创建动态mutex object(调用malloc()创造, 需要调用pthread_mutex_destroy()销毁).
+PTHREAD_MUTEX_INITIALIZER会创建静态mutex object, `pthread_mutex_init()`则会创建动态mutex object(调用`malloc()`创造, 需要调用`pthread_mutex_destroy()`销毁).
 ```c
 #include <pthread.h>
 
@@ -210,7 +220,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex);
 
 ### 5.2 Deadlock Avoidance
 单个锁造成死锁的可能性不大, 除非thread在获得mutex后继续尝试获取该mutex. 若锁的数量大于1个后, 死锁的可能性就变得很大, 例如: thread 1和thread 2都需要获取mutex A和mutex B. Thread 1已获取mutex A, 尝试获取mutex B; Thread 2已获取mutex B, 尝试获取mutex A. 若thread 1或thread 2都不打算释放已获取的mutex, 则两个thread都陷入死锁并一直等待.
-避免死锁的方法之一: 控制获取锁的顺序. 若thread 1和thread 2必须在获取mutex A后才能获取mutex B, 则死锁永远不会发生. 但程序随体积变大, 锁的获取顺序不再容易控制, 这时可采用另一种策略: 若当前无法获取mutex, 则等待一段时间后再尝试获取(调用pthread_mutex_trylock()防止阻塞该thread).
+避免死锁的方法之一: 控制获取锁的顺序. 若thread 1和thread 2必须在获取mutex A后才能获取mutex B, 则死锁永远不会发生. 但程序随体积变大, 锁的获取顺序不再容易控制, 这时可采用另一种策略: 若当前无法获取mutex, 则等待一段时间后再尝试获取(调用`pthread_mutex_trylock()`防止阻塞该thread).
 
 ###  5.3 pthread_mutex_timedlock Function
 ```c
@@ -341,7 +351,7 @@ state = GOOD;
 pthread_mutex_unlock(mx);
 signal_event(); /* expecting to wake thread 1 up */
 ```
-上述代码看似解决了状态同步问题, 但存在一个bug: 当thread 1执行完pthread_mutex_unlock()后, CPU的执行权可能转移到thread 2. Thread 2在执行完后再次回到thread 1, 而这时thread 1调用wait_for_event()并陷入永久的睡眠. 问题的关键在于无法实现原子性的unlock和wait连续操作.
+上述代码看似解决了状态同步问题, 但存在一个bug: 当thread 1执行完`pthread_mutex_unlock()`后, CPU的执行权可能转移到thread 2. Thread 2在执行完后再次回到thread 1, 而这时thread 1调用`wait_for_event()`并陷入永久的睡眠. 问题的关键在于无法实现原子性的unlock和wait连续操作.
 ```c
 /* in thread 1 */
 pthread_mutex_lock(mx); /* protecting state access */
@@ -487,4 +497,4 @@ int pthread_barrier_destroy(pthread_barrier_t *barrier);
  */
 int pthread_barrier_wait(pthread_barrier_t *barrier);
 ```
-barrier在使用中不能修改count. 若想重置count, 必须调用pthread_barrier_destroy()和pthread_barrier_init()重新设置count.
+barrier在使用中不能修改count. 若想重置count, 必须调用`pthread_barrier_destroy()`和`pthread_barrier_init()`重新设置count.

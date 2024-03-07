@@ -10,9 +10,13 @@ date: 2019-09-17 14:12:52
 ---
 
 ## 1. Introduction
-电子计算机中, **interrupt**(也称为**trap**)会请求中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态变化.
+电子计算机中, **interrupt**(中断, 也称为**trap**)会中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态变化.
 Signal是软件层面的interrupt, 其是一种处理异步事件的方式, 大多数应用程序都需要处理signal. UNIX系统的早期版本就支持signal, 但并不可靠, signal会丢失, 且进程执行某些关键代码时无法屏蔽特定signal. 4.3BSD和SVR3对signal model做出了调整, 让其变得可靠. POSIX.1标准化了signal model.
-
+假设存在两个进程A和B, A无法直接向B发送signal, 必须通过kernel转发. 之所以需要通过kernel转发, 是出于安全考虑. Kernel收到signal后会检查A是否有权限向B发送signal, 若通过检查, 则会在B的PCB(进程控制块)中的信号表设置该signal, 并向B发送中断请求, B进入内核态, Kernel会查看该signal对应的处理函数, 并跳回到用户态执行该函数. 以下是signal的一些特性:
+* Signal可由异常(非法内存访问), 硬件(Ctrl-C), 或程序产生(`kill`)
+* Signal是异步的, signal的触发时间无法确定, 也无法确定产生何种signal
+* Signal的处理不是即时的, 发送方发送signal时, 接收方不会立即收到
+* Signal没有队列: 若某个进程同一时间收到多次同一类型的signal, 该进程只处理一次该signal
 
 ## 2. Signal Concepts
 * 每个signal都有一个名字, 以**SIG**开头. 例如:

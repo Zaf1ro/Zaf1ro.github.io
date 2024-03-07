@@ -1,9 +1,8 @@
 ---
 title: Kafka Essential
 tags:
-  - Distributed System
+  - Kafka
 category:
-  - Distributed System
   - Kafka
 abbrlink: b805
 date: 2022-09-12 12:56:23
@@ -20,27 +19,30 @@ Kafka作为**Message oriented middleware**(MOM, 消息中间件)的一种实现,
 
 
 ## 2. Main Concepts and Terminology
-现在需要缕清一些Kafka的名词定义:
-* 对于外部服务来说, Kafka分为两个部分:
-  * Server: Kafka以一个集群的形式运行, 也就是说, 一个Kafka由多个服务器组成. 服务器中运行的服务进程称为**broker**, 负责接收和处理client的请求, 以及消息的持久化. 虽然多个broker可运行在一台服务器上, 但通常一台服务器只运行一个broker, 因此一个broker也可表示一个服务器; 若某个服务器宕机, 其他服务器上的broker不会受影响.
-  * Client: client与server进行交流, 用于读取, 写入和处理消息. 发送消息的client称为**producer**, 读取并处理消息的client称为**consumer**
-* 对于Kafka server, 其内部包含以下几种数据结构:
-  * Message(消息): 表示业务中发生了某件事, 每个message有一个key, 一个value, 一个timestamp, 和一个可选的metadata
-  * Topic(主题): 类似于文件系统中的folder(文件夹), message为文件夹中的file(文件). Topic中的message可随时读取, 且读取后不会被删除(过期后自动删除); 单个topic支持多个producer同时写入, 也支持多个consumer同时读取
+对于外部服务, Kafka分为两个部分:
+* Server: Kafka以一个集群的形式运行, 也就是说, 一个Kafka由多个服务器组成. 服务器中运行的服务进程称为**broker**, 负责接收和处理client的请求, 以及消息的持久化. 虽然多个broker可运行在一台服务器上, 但通常一台服务器只运行一个broker, 因此一个broker也可表示一个服务器; 若某个服务器宕机, 其他服务器上的broker不会受影响.
+* Client: client与server进行交流, 用于读取, 写入和处理消息. 发送消息的client称为**producer**, 读取并处理消息的client称为**consumer**
 
-Kafka还提供了两个重要特性:
-* Fault-tolerant(容错性): 由于Kafka集群由多个服务器组成, 必须保证单个服务器的宕机不会影响到整个集群的运行, 虽然服务器宕机的概率极低, 但服务器数量的增加会导致宕机出现的概率增加(假设宕机是随机独立事件). 对于Kafka集群来说, 当某个服务器宕机时, 其持有的数据也不可用, 因此需将数据拷贝到多台机器上(replication). 相同数据的副本称为**replica**, 且分为两类:
-  * Leader: 其中一个replica所在的broker作为leader, 负责与client交互(producer向leader写消息, consumer从leader读取消息)
-  * Follower: 其他replica所在的broker作为follower, 不与任何client交互, 只向leader发送同步请求, 将最新消息下载到本地
-* Scalability(可伸缩性): 由于单个topic内的消息可能超过单个服务器的存储上限, 因此需将topic拆分为多个**partition**(分区), 每个partition有自己的leader和follower. 单个topic内的partition编号从零开始, 依次递增, 假设某个topic有100个partition, 则partition编号为0到99.
+从Kafka Server内部观察, 其包含以下几种概念:
+* Message(消息): 表示业务中发生了某件事, 每个message有一个key, 一个value, 一个timestamp, 和一个可选的metadata
+* Topic(主题): 类似于文件系统中的folder(文件夹), message为文件夹中的file(文件). Topic中的message可随时读取, 且读取后不会被删除(过期后自动删除). 需要注意的是, topic只是一个逻辑概念, 并不存在一个服务器或文件表示topic, 该概念用于将message分类, 相同类型的message会分配到同一个topic. 一个topic支持多个producer同时写入, 也支持多个consumer同时读取.
+* Partition(分区): 一个topic可拆分为一个或多个partition, 一个broker可拥有一个topic中的一个partition. 与topic不同的是, partition不是一个逻辑概念, 其作为kafka中**最小的存储单元**, 每个partition都是一个log文件. 需要注意的是, 一个topic下的partition拥有不同的message, partition之间并不是互为备份关系. 单个topic内的partition编号从零开始, 依次递增, 假设某个topic有100个partition, 则partition编号为0到99.
+* Offset(偏移量): partition中的每条message都会分配一个序号, 称为**offset**, 当producer写入message时, 会向对应topic中的其中一个partition追加该message. 由于每个partition内的offset不同, 因此一个topic下的message是无序的, 但一个partition内的message是有序的; 如果要求topic整体有序, 则只能拥有一个partition.
 
-总结: 一个Kafka集群包含多个topic(消息分类), 一个topic包含多个partition(解除单机容量限制), 一个partition拥有多个replica, 每个replica放置在不同的服务器上(防止单点故障导致数据不可用), 每个partition的replica分为leader和follower两种身份, client只与leader交互.
-Kafka的replica身份划分延伸出一个问题: Redis和MySQL都支持读写分离(follower可处理client的读请求), 但Kafka选择读写不分离, 其设计原因如下:
-* 读写是否分离并没有优劣之分, 每个工具都有各自的应用场景, 选择合适的架构更重要: MySQL和Redis的使用场景中, 读请求的数量通常比写入高一个或几个数量级, 因此需要横向拓展处理读请求的能力(增加follower数量); Kafka作为MOM系统, 而不是数据存储引擎, 不会出现读多写少的情况.
-* Kafka的replica数据同步为**异步**, 因此leader和follower之间存在数据不一致, 无论是将其改为同步模式(写入性能下降), 还是忍受数据不一致性(client读取到过期数据), 都存在很多问题.
-* Kafka天然支持横向拓展, 因为其最小读写单元为partition, 这使得集群中每个机器都具有读写能力(假设partition的replica数量配置得当), 集群中不会出现某台机器负载过重的问题
+之所以提出上述概念, 是因为kafka在设计之初需保证的两个特性:
+* Fault-tolerant(容错性): 为保证容错性, kafka集群需由多个服务器组成, 从而保证单个服务器宕机时不会影响到整个集群的运行. 虽然单个服务器宕机的概率极低, 但随着服务器数量的增加, 集群中出现宕机的概率也随之增加(假设宕机是随机独立事件). 若某个服务器宕机, 则其保存的数据也不可用, 因此需对数据进行冗余备份, 也就是拷贝到多台机器上(replication). 同一partition的不同副本称为**replica**, 分为两类:
+  * Leader: 其中一个replica所在的broker作为leader, 负责与client交互(producer向leader写消息, consumer从leader读取消息).
+  * Follower: 其他replica作为follower, 不与任何client交互, 只负责将最新message备份到本地
+* Scalability(可拓展性), 分为两个部分:
+  * 容量拓展性: 单个topic内的message会超过单个服务器的存储上限, 因此将topic拆分为多个partition. 根据数据总量和单机容量, 可计算出需要多少个partition.
+  * 负载拓展性: 若没有partition的概念, 那么一个topic的所有读写压力会集中在某个broker上, 导致失去水平拓展; 将topic拆分为多个partition后, 若分区规则合理, 则消息会被均匀地分布到不同的partition. kafka集群中的每个broker都可作为一个partition的leader, 因此同一topic下的消息会由不同broker读写.
 
-持久化数据对于Kafka十分重要, 这决定了Kafka的吞吐量. Kafak使用**log**(日志)保存数据, 日志只能**append-only**(追加写), 从而避免了随机I/O操作; 但一直写入总会耗尽磁盘, 因此需定期删除旧消息以回收磁盘. Kafka中一个日志拆分为多个**log segment**(日志段), 当一个日志段写满后, 会创建新的日志段, 并将旧的日志段封存起来, Kafka会定期检查日志段是否过期(默认七天), 并删除过期的日志段.
+总结: 一个Kafka集群包含多个topic(消息分类), 一个topic包含多个partition(可拓展性), 一个partition拥有多个replica, 且每个replica放置在不同broker(防止单点故障导致数据不可用), replica所在的broker分为leader和follower, producer和consumer只与leader交互. Replica身份划分延伸出一个问题: Redis和MySQL都支持读写分离(leader负责写请求, follower负责读请求), 但Kafka选择读写不分离, 其设计原因如下:
+* 读写是否分离并没有优劣之分, 每个工具都有各自的应用场景, 选择合适的架构更重要: MySQL和Redis的使用场景中, 读请求的数量通常比写入高一个或多个数量级, 因此需横向拓展处理读请求的能力(增加follower数量); Kafka作为MOM系统, 而不是数据存储引擎, 不会出现读多写少的情况.
+* Kafka的数据同步方式为**异步**, 因此leader和follower会存在数据不一致情况, 无论是将其改为同步模式(producer延迟增加, leader写入能力下降), 还是忍受数据不一致性(consumer从follower读取到过期数据), 都存在很多问题.
+* Kafka的最小读写单元为partition, 使得集群中每个broker都可以作为一个partition的leader, 从而不会出现某台机器负载过重
+
+持久化数据对于Kafka十分重要, 这决定了Kafka的吞吐量. Kafak使用**log**(日志)文件保存数据, 日志只能**append-only**(追加写), 从而避免了随机I/O操作; 但一直写入总会耗尽磁盘, 因此需定期删除旧消息以回收磁盘. Kafka将一个日志拆分为多个**log segment**(日志段), 当一个日志段写满后, 会创建新的日志段, 并将旧的日志段封存起来, Kafka会定期检查日志段是否过期(默认七天), 并删除过期的日志段.
 
 
 ## 3. Message Pattern
@@ -51,7 +53,7 @@ Kafka的replica身份划分延伸出一个问题: Redis和MySQL都支持读写�
 传统的消息队列的缺陷在于, 消息一旦被消息, 就会从队列中删除, 且只能被一个consumer消费; 发布/订阅模型允许多个consumer同时消费, 但单个consumer必须订阅整个主题, 导致伸缩性不高. Kafka引入了**Consumer Group**(消费者组)概念: consumer group包含一组consumer, topic中的partition会分配给topic中不同的consumer, 从而解决了伸缩性差的问题(consumer不必消费topic的所有partition), 提高了消费端的吞吐量(多个consumer同时消费同一topic).
 每个consumer group拥有一个全局唯一ID, 称为**Group ID**. 需要注意的是, topic中一个partition只能由consumer group中的一个consumer消费(consumer与partition呈一一对应关系). Consumer消费信息时, 会保留一个字段记录已经消费到哪个partition的哪个位置, 该字段称为**consumer offset**(消费者位移).
 虽然多个consumer同时消费单个topic带来了极大的伸缩性, 但也引入诸多问题:
-* Kafka如何记录consumer消费到哪个partition的哪一条消息: Kafka使用**offset**(与**consumer offset**不同)表示consumer已消费了哪些消息. 对于单个consumer group, 其包含一组键值对, key为`<topic, partition>`, value为partition的最新位移. 老版本Kafka将位移信息保存在ZooKeeper上, 但ZooKeeper不适合频繁的写操作, 会拖慢整体性能, 因此新版本Kafka将位移信息保存在内部的topic中, 称为**\__consumer_offsets**.
+* Kafka如何记录consumer消费到哪个partition的哪一条消息: Kafka使用**offset**(与**consumer offset**不同)表示consumer已消费了哪些消息. 对于单个consumer group, 其包含一组键值对, key为`<topic, partition>`, value为partition的最新位移. 老版本Kafka将位移信息保存在ZooKeeper上, 但ZooKeeper不适合频繁的写操作, 会拖慢整体性能, 因此新版本Kafka将位移信息保存在内部的topic中, 称为**__consumer_offsets**.
 * Kafka如何为每个consumer分配partition: Kafka会自动分配单个consumer group中每个consumer要消费的partition, 假设某个consumer挂掉, Kafka会自动检测并将该consumer负责的partition分配给其他consumer, 称为**Rebalance**. 对于rebalance, 存在以下注意点:
   * Rebalance何时触发
   * Rebalance的分配策略
@@ -75,7 +77,7 @@ Rebalance看似美好, 但也有很多弊端:
 * group coordinator如何启动: 所有broker启动时都开启一个group coordinator组件, 因此所有broker都可成为group coordinator
 * consumer如何找到group coordinator所在的broker:
   1. consumer向任意一个broker发送`FindCoordinator`请求, 并附带consumer group的`Group ID`
-  2. 收到请求的broker计算`Group ID`的`hash值`, 并从`\__consumer_offsets`获得该consumer group的partition数量
+  2. 收到请求的broker计算`Group ID`的`hash值`, 并从`__consumer_offsets`获得该consumer group的partition数量
   3. `hash值 % partition数`即为某个paritition的编号
   4. 该partition的leader为group coordinator, 返回给consumer
 

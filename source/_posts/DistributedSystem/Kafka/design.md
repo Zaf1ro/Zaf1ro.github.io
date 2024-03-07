@@ -3,9 +3,8 @@ title: Kafka Design
 abbrlink: bbb8
 date: 2021-05-23 15:05:47
 tags:
-  - Distributed System
+  - Kafka
 category:
-  - Distributed System
   - Kafka
 keywords:
 description:
@@ -81,19 +80,20 @@ Producer负责决定消息发送到哪个partition, 可以采取随机发送, �
 Kafka consumer通过向拥有partition的broker发送fetch请求来获取数据. Consumer可在请求中指定log的offset, 也可以重新获取之前消费过的数据.
 
 ### 5.1 Push vs. Pull
-设计Kafka consumer时有一个最初的问题, consumer应从broker拉取数据, 还是broker主动向consumer推送数据. Kafka选择了一种更保守的设计, 大多数message system也采用这种设计, 也就是让producer主动向broker推送数据, consumer主动从broker拉取数据. 一些以日志为中心的系统(如Scribe和Apache Flume)采用截然相反的策略: broker主动向consumer推送数据. 两种设计各有优缺点: broker主动推送的系统很难处理多种consumer, 因为broker掌握着数据发送的速率, 这样虽然能让消费者以最大效率消耗消息, 但也有可能由于consumer处理速度不足而丢失消息; consumer主动拉取的系统则对consumer更加友善, consumer掌握着更多的主动权, 通过某种backoff protocol(补偿协议)可以让consumer充分发挥传输效率, 但又不会超负荷. 因此Kafka选择了传统的pull model.
-主动拉取数据的系统还有一个优势, 可以对发送给consumer的数据采取激进的批处理. broker主动推送的系统必须在不知道下游consumer能否处理的情况下, 决定发送一个消息, 还是囤积更多消息延迟发送. 若为了追求低延迟, 则每次发送只包含一个消息. 而consumer主动拉取的设计可以从log的某个位置开始, 一次获取多个消息, 可以在不增加延迟的情况下实现更好的批处理.
-而consumer主动拉取的不足之处在于, 如果broker端没有任何数据, consumer会不断地轮询等待数据到达. 为避免这种情况, 可阻塞consumer的请求, 直到broker有数据时再回复请求. 
+Kafka consumer的设计之处时存在一个争论: consumer应主动从broker拉取数据, 还是broker主动向consumer推送数据. Kafka选择了一种更保守的设计, 也就是让producer主动向broker推送数据, consumer主动从broker拉取数据; 另一些以日志为中心的系统(如Apache Flume)采用截然相反的策略: broker主动向consumer推送数据.
+两种设计各有优缺点: 由于broker掌握着数据发送的速率, push模型的系统很难适应不同条件下的consumer, 可能导致consumer因网络拥塞或消息处理速度不足而丢失消息; Pull模型中的consumer掌握着更多的主动权, 因而对consumer更加友善, 通过某种backoff protocol(补偿协议)可以让consumer充分发挥传输效率, 但又不会超负荷. 因此Kafka选择了传统的pull模型.
+Pull模型还有一个优势: broker可以一次向consumer发送多个消息. Push消息的模型在不知道consumer能否处理的情况下, 无法决定是发送一个消息, 还是一次发送多个消息; 而pull模型中的consumer可以从log的某个位置开始, 一次获取多个消息, 从而在不增加延迟的情况下实现更好的批处理.
+Pull模型的缺点在于, 若broker没有任何数据, 则consumer会不断地轮询, 直到broker有新的消息. 为避免这种情况, broker可阻塞consumer的请求, 直到broker有数据时再回复请求, 从而减少broker的负载.
 当然也可以使用其他拉取数据的设计, Producer可以先将数据写入本地的log中, 等待broker从producer拉取数据. 但Kafka的producer可能有上千个, 成千上万个磁盘并不能让事情变得可靠. 只需要大规模运行SLA的管道, 就不需要producer的持久化.
 
 ### 5.2 Consumer Position
-消息消耗的进度也是影响messaging system运行效率的关键之一. 绝大多数messaging system把包含消耗进度的metadata保存在broker, 当消息传递给consumer时, broker需要立刻记录这个事件, 或等到consumer确认后记录. 这种设计很符合直接, 对于单个服务器来说, 其不知道metadata还要发送给谁. 由于很多messaging system的metadata数据结构伸缩性很差, 因此这也是个务实的选择. 由于broker明白消耗到哪里, 因此可以删除已被消耗的数据, 让数据尺寸小一些.
-还有一件很难确定的事情: broker和consumer如何确定某个消息是否已被消费. 若borker在发出消息后就确认该消息已被consumer消费, 那么consumer可能没有接收到消息或处理失败, 则该消息丢失. 为解决这个问题, 很多messaging system添加了acknowledgement机制, 当broker发送消息时, 该消息被标记为**sent**(已发送), 而不是**consumed**(已消耗); broker会等到consumer返回ack, 收到ack后将消息状态改为consumed. 这种方案可以解决消息丢失问题, 但会产生新的问题:
-1. 若consumer成功接收并处理消息, 但在发送ack前崩溃, 则该消息在broker的状态仍为sent, 会被消费两次
-2. broker必须为所有已发送的消息保存多个状态, 这会造成性能降低
-3. 如何处理那些状态为sent, 但始终没有被确认的消息
+消息消耗的速度也是影响messaging system运行效率的关键之一. 绝大多数的messaging system会把**metadata**(包含消息消耗进度的文件)保存在broker端, 当消息传递给consumer时, broker需立即记录该事件, 或等到consumer确认消费完毕后记录. 这种设计很符合直觉, 对于单个服务器来说, 服务器无需将metadata发送给他人; 由于broker明白哪些消息已被消耗, 因此可删除被消费的消息, 已减轻服务器负载.
+但上述设计存在一个问题: broker如何确定consumer是否消费了传递的消息. 若broker发出消息后默认该消息已被consumer消费, 则可能因为网络故障或consumer宕机导致消息未消费, broker会错误清除未被消费的消息. 为解决该问题, 一些messaging system添加了**acknowledgement**机制: 当broker发送消息后, 该消息的状态为**sent**(已发送); 等到consumer返回ack后, broker再将消息的状态改为**consumed**(已消费). 这种方法可解决消息丢失问题, 但也会产生新的问题:
+* 若consumer成功接收并处理消息, 但在发送ack前宕机, 导致该消息在broker端的状态仍为**sent**
+* Broker需为所有已发送的消息保存多个状态, 导致性能下降
+* Broker如何处理状态为**sent**, 却始终未被consumer确认的消息
 
-Kafka的处理方式则不同. Kafka对partition进行分类, 称为**topic**. 同一时间, 一个topic只能被订阅了该topic的consumer group中的一个consumer消耗, 这意味着每个consumer在每个partition的位置只是一个整数, 即下一个要被消耗的消息的偏移量. 这使得消耗量的状态很小, 每个partition只有一个数字. 该状态可被定期检查, 让消息确认的代价变得很低.
+Kafka的处理方式则不同: Kafka对partition进行分类, 称为**topic**. 同一时间, 一个topic只能被订阅了该topic的consumer group中的一个consumer消耗, 这意味着每个consumer在每个partition的位置只是一个整数, 即下一个要被消耗的消息的偏移量. 这使得消耗量的状态很小, 每个partition只有一个数字. 该状态可被定期检查, 让消息确认的代价变得很低.
 这种策略还有一个额外的好处, consumer可以选择一个旧的offset来重复消耗消息.这违背了queue的定义, 但这也是很多consumer需要的功能. 举个例子, 如果consumer的代码中有一个bug, 但该consumer已经处理过一些消息, 可以让consumer修复完bug后重新处理消息.
 
 ### 5.3 Offline Data Load
