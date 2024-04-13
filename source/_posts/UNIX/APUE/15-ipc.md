@@ -1,10 +1,9 @@
 ---
 title: Interprocess Communication
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: 4cb2
 date: 2019-10-07 09:13:30
 keywords:

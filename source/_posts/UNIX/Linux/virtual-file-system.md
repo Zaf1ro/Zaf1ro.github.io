@@ -1,10 +1,9 @@
 ---
 title: Virtual File System
-category:
-  - UNIX
-  - Linux
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: '4850'
 date: 2023-02-20 10:30:52
 keywords:

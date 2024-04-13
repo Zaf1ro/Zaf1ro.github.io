@@ -10,8 +10,8 @@ keywords:
 description:
 ---
 
-## Producer Configuration
-### 1. Mandatory Properties
+## 1. Producer Configuration
+### 1.1 Mandatory Properties
 #### bootstrap.servers
 该属性为`host:port`格式的列表, 表示producer与Kafka集群初次建立连接时所需的broker列表. 该属性不必包含所有broker, 但推荐包含至少两个broker地址, 若其中一个broker宕机, 可连接另外一个broker.
 
@@ -22,7 +22,7 @@ description:
 该属性为一个class名称, 用于序列化record的value. 
 
 
-### 2. Optional Properties
+### 1.2 Optional Properties
 #### client.id
 该属性可为任意字符串, 表示client的标识符. Broker用其区分不同的client, 通常用于日志记录和配额. 推荐将该属性配置为client所处的服务名称, 如`order service`. 默认为空字符串.
 
@@ -78,3 +78,4 @@ description:
 
 #### enable.idempotence
 从0.11版本开始, kafka支持**exacylt once**语义, 将该属性设置为`true`可保证producer端生成消息的顺序和broker端的写入顺序相同, 且不会造成重复写入(若producer发送后, leader写入消息并宕机, producer未收到确认并再次发送消息, 新的leader会返回`DuplicateSequenceException`).
+

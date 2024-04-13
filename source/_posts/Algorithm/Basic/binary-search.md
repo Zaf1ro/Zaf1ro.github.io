@@ -856,3 +856,44 @@ class Solution {
     }
 }
 ```
+
+
+## 4. Median of Two Sorted Arrays
+Given two sorted arrays `nums1` and `nums2` of size `m` and `n` respectively, return **the median** of the two sorted arrays.
+The overall run time complexity should be `O(log (m+n))`.
+
+Example 1:
+```
+Input: nums1 = [1,3], nums2 = [2]
+Output: 2.00000
+Explanation: merged array = [1,2,3] and median is 2.
+```
+
+Example 2:
+```
+Input: nums1 = [1,2], nums2 = [3,4]
+Output: 2.50000
+Explanation: merged array = [1,2,3,4] and median is (2 + 3) / 2 = 2.5.
+```
+
+### Binary Search
+```java
+class Solution {
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        int n = nums1.length + nums2.length;
+        return (helper(nums1, nums2, 0, 0, (n-1)/2) + helper(nums1, nums2, 0, 0, n/2)) / 2.0;
+    }
+
+    private int helper(int[] nums1, int[] nums2, int i, int j, int t) {
+        if (i == nums1.length) return nums2[j+t];
+        if (j == nums2.length) return nums1[i+t];
+        if (t == 0) return Math.min(nums1[i], nums2[j]);
+        int n1 = i + t/2 < nums1.length ? nums1[i+t/2] : Integer.MAX_VALUE;
+        int n2 = j + t/2 < nums2.length ? nums2[j+t/2] : Integer.MAX_VALUE;
+        if (n1 < n2) {
+            return helper(nums1, nums2, i+(t+1)/2, j, t-(t+1)/2);
+        }
+        return helper(nums1, nums2, i, j+(t+1)/2, t-(t+1)/2);
+    }
+}
+```

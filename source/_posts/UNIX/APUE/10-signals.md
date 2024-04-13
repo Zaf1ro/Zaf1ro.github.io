@@ -1,10 +1,9 @@
 ---
 title: Signals
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: 277e
 date: 2019-09-17 14:12:52
 ---

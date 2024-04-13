@@ -1,10 +1,9 @@
 ---
 title: Linux namespace
-category:
-  - UNIX
-  - Linux
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: 93ff
 date: 2022-11-20 15:33:00
 keywords:

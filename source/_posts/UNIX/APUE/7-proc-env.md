@@ -1,10 +1,9 @@
 ---
 title: Process Environment
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: 8ccf
 date: 2019-08-29 08:29:12
 ---

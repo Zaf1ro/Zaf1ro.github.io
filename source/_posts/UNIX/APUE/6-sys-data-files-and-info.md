@@ -1,10 +1,9 @@
 ---
 title: System Data Files and Infomation
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: 4ad7
 date: 2019-08-25 17:58:41
 ---

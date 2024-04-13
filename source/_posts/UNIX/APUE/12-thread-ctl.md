@@ -1,10 +1,9 @@
 ---
 title: Thread Control
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: '7793'
 date: 2019-09-27 12:22:47
 keywords:

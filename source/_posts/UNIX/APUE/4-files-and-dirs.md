@@ -1,10 +1,9 @@
 ---
 title: Files and Directories
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: 49f7
 date: 2019-08-05 16:30:42
 ---

@@ -1,10 +1,9 @@
 ---
 title: Process Relationships
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: ba76
 date: 2019-09-11 14:52:00
 ---

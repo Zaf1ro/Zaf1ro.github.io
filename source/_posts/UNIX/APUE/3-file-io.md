@@ -1,10 +1,9 @@
 ---
 title: File I/O
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: aabf
 date: 2019-07-29 17:39:17
 ---

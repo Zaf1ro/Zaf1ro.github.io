@@ -1,10 +1,9 @@
 ---
 title: Process Control
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: c259
 date: 2019-09-01 12:46:20
 ---

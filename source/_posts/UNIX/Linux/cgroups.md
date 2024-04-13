@@ -1,10 +1,9 @@
 ---
 title: Linux cgroups
-category:
-  - UNIX
-  - Linux
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: f10b
 date: 2023-01-02 08:44:25
 keywords:

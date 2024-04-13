@@ -1,10 +1,9 @@
 ---
 title: Standard I/O
-category:
-  - UNIX
-  - APUE
 tags:
-  - UNIX
+  - Linux
+category:
+  - Linux
 abbrlink: f946
 date: 2019-08-20 08:35:26
 ---

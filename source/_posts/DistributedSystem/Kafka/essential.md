@@ -25,7 +25,7 @@ Kafka作为**Message oriented middleware**(MOM, 消息中间件)的一种实现,
 
 从Kafka Server内部观察, 其包含以下几种概念:
 * Message(消息): 表示业务中发生了某件事, 每个message有一个key, 一个value, 一个timestamp, 和一个可选的metadata
-* Topic(主题): 类似于文件系统中的folder(文件夹), message为文件夹中的file(文件). Topic中的message可随时读取, 且读取后不会被删除(过期后自动删除). 需要注意的是, topic只是一个逻辑概念, 并不存在一个服务器或文件表示topic, 该概念用于将message分类, 相同类型的message会分配到同一个topic. 一个topic支持多个producer同时写入, 也支持多个consumer同时读取.
+* Topic(主题): 用于分类message, topic中的message可随时读取, 且读取后不会被删除(过期后自动删除). 需要注意的是, topic只是一个逻辑概念, 并不固定存放在某个服务器或文件中, producer发送的每个message都必须拥有一个topic的属性, 同一topic的message组成整个topic. 一个topic支持多个producer同时写入, 也支持多个consumer同时读取.
 * Partition(分区): 一个topic可拆分为一个或多个partition, 一个broker可拥有一个topic中的一个partition. 与topic不同的是, partition不是一个逻辑概念, 其作为kafka中**最小的存储单元**, 每个partition都是一个log文件. 需要注意的是, 一个topic下的partition拥有不同的message, partition之间并不是互为备份关系. 单个topic内的partition编号从零开始, 依次递增, 假设某个topic有100个partition, 则partition编号为0到99.
 * Offset(偏移量): partition中的每条message都会分配一个序号, 称为**offset**, 当producer写入message时, 会向对应topic中的其中一个partition追加该message. 由于每个partition内的offset不同, 因此一个topic下的message是无序的, 但一个partition内的message是有序的; 如果要求topic整体有序, 则只能拥有一个partition.
 
