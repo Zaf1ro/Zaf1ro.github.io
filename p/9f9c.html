@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Key Value Store"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/9f9c.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/9f9c.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/9f9c.html"/>
+
+
+<meta name="description" content="IntroductionIn key-value store(or key-value database), Each unique identifier is stored as a key with its associated value. This data pairing is known as a &quot;key-value&quot; pair. In a key-value p">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Key Value Store">
+<meta property="og:url" content="https://zaf1ro.github.io/p/9f9c.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="IntroductionIn key-value store(or key-value database), Each unique identifier is stored as a key with its associated value. This data pairing is known as a &quot;key-value&quot; pair. In a key-value p">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-04-12T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-04-10T14:51:12.000Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Key Value Store - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Introduction"><span class="toc-text">Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Single-server-key-value-store"><span class="toc-text">Single server key-value store</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Distributed-key-value-store"><span class="toc-text">Distributed key-value store</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP-theorem"><span class="toc-text">CAP theorem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Real-world-distributed-systems"><span class="toc-text">Real-world distributed systems</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#System-components"><span class="toc-text">System components</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Data-partition"><span class="toc-text">Data partition</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Data-replication"><span class="toc-text">Data replication</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Consistency"><span class="toc-text">Consistency</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Handling-failures"><span class="toc-text">Handling failures</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#System-architecture-diagram"><span class="toc-text">System architecture diagram</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Summary"><span class="toc-text">Summary</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Key Value Store
+        
+      </h1>
+      <time class="post-time">
+          04/12/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>In key-value store(or key-value database), Each unique identifier is stored as a key with its associated value. This data pairing is known as a &quot;key-value&quot; pair.</p>
+<p>In a key-value pair, the key must be unique, and the value associated with the key can be accessed through the key. The value can be strings, lists, objects.</p>
+<p>Here&#39;s some characteristics of key-value store:</p>
+<ul>
+<li>The size of a key-value pair is small</li>
+<li>Ability to store big data.</li>
+<li>High availability: The system responds quickly, even during failures.</li>
+<li>High scalability</li>
+<li>Automatic scaling</li>
+<li>Tunable consistency</li>
+<li>Low latency</li>
+</ul>
+<h2 id="Single-server-key-value-store"><a href="#Single-server-key-value-store" class="headerlink" title="Single server key-value store"></a>Single server key-value store</h2><p>The easist approach: store key-value pair in a hash table<br>Two optimizations:</p>
+<ul>
+<li>Data compression</li>
+<li>Store only frequently used data in memeory and rest on disk</li>
+</ul>
+<h2 id="Distributed-key-value-store"><a href="#Distributed-key-value-store" class="headerlink" title="Distributed key-value store"></a>Distributed key-value store</h2><h3 id="CAP-theorem"><a href="#CAP-theorem" class="headerlink" title="CAP theorem"></a>CAP theorem</h3><p>it is impossible for a distributed system to guarantee all of three guarantees:</p>
+<ul>
+<li><p>Consistency: all clients see the same data at the same time no matter which node they connect to</p>
+</li>
+<li><p>Availability: request sent from client always gets a response even if some of the nodes are down</p>
+</li>
+<li><p>Partition Tolerance: the system continues to operate despite network partitions</p>
+</li>
+<li><p>CP system: supports consistency and partition tolerance, sacrifice availability</p>
+</li>
+<li><p>AP system: supports availability and partition tolerance, sacrifice consistency</p>
+</li>
+<li><p>CA system: supports consistency and availability, sacrifice partition tolerance</p>
+</li>
+</ul>
+<p>Since network failure is unavoidable, a distributed system must tolerate network partition. Thus, a CA system cannot exist in realworld applications.</p>
+<h3 id="Real-world-distributed-systems"><a href="#Real-world-distributed-systems" class="headerlink" title="Real-world distributed systems"></a>Real-world distributed systems</h3><p>Since network partition cannot be avoided, we must choose between consistency and availability. Assume we have 3 servers(s1, s2, s3) in a distributed system, and s3 goes down:</p>
+<ul>
+<li>choose consistency: block all write operation to s1 and s2 to avoid data consistency</li>
+<li>choose availability: keep accepting read even it returns old data. s1 and s2 keep accepting writes, and synced to s3 when network partition is resolved</li>
+</ul>
+<h3 id="System-components"><a href="#System-components" class="headerlink" title="System components"></a>System components</h3><h4 id="Data-partition"><a href="#Data-partition" class="headerlink" title="Data partition"></a>Data partition</h4><p>split the data into smaller partitions and store them in multiple servers.<br>Two challenges:</p>
+<ul>
+<li>Distribute data across multiple servers evenly</li>
+<li>Minimize data movement when nodes are added or removed</li>
+</ul>
+<p>Solution: Consistent hashing<br>advantages: Automatic scaling, heterogenrity</p>
+<h4 id="Data-replication"><a href="#Data-replication" class="headerlink" title="Data replication"></a>Data replication</h4><p>replicate data asynchronously over N servers: after a key is mapped to a position on the hash ring, walk clockwise from that position and choose the first N servers on the ring.<br>With virtual nodes, the first N nodes on the ring may be owned by fewer than N physical servers. To avoid this issue, we only choose unique servers while performing the clockwise walk logic.<br>Nodes in the same data center often fail at the same time: replicas should be placed in distinct data centers.</p>
+<h4 id="Consistency"><a href="#Consistency" class="headerlink" title="Consistency"></a>Consistency</h4><p>Quorum consensus can guarantee consistency for both read and write operations</p>
+<ul>
+<li>N: The number of replicas</li>
+<li>W: A write quorum. For a successful write operation, write operation must be acknowledged from W replicas.</li>
+<li>R: A read quorum. For a successful read operation, read operation must wait for responses from at least R replicas.</li>
+</ul>
+<p>W &#x3D; 1: data is replicated at s0, s1, s2. the coordinator must receive at least one acknowledgment before the write operation is considered as successful. A coordinator acts as a proxy between the client and the nodes.</p>
+<p>The configuration of W, R and N is a typical tradeoff between latency and consistency:</p>
+<ul>
+<li>W or R &#x3D; 1: the query is quick but with bad consistency</li>
+<li>W or R &gt; 1: the query will be slower but with better consistency</li>
+<li>W + R &gt; N: strong consistency is guaranteed &lt;- at least one overlapping node that has the latest data to ensure consistency</li>
+<li>R &#x3D; 1 and W &#x3D; N: the system is optimized for a fast read</li>
+</ul>
+<h5 id="Consistency-models"><a href="#Consistency-models" class="headerlink" title="Consistency models"></a>Consistency models</h5><ul>
+<li>Strong consistency: any read operation returns the most updated write data item. A client never sees out-of-date data. -&gt; not to accept new reads&#x2F;writes until every replica has agreed on current write</li>
+<li>Weak consistency: read operations may not see the most updated value.</li>
+<li>Eventual consistency: Given enough time, all updates are propagated, and all replicas are consistent.</li>
+</ul>
+<h5 id="Inconsistency-resolution-versioning"><a href="#Inconsistency-resolution-versioning" class="headerlink" title="Inconsistency resolution: versioning"></a>Inconsistency resolution: versioning</h5><p>Replication:</p>
+<ul>
+<li>pros: high availability</li>
+<li>cons: inconsistencies among replicas</li>
+</ul>
+<p>Solution for inconsistencies: versioning and vector locks. Versioning means treating each data modification as a new immutable version of data.<br>Assume we have two servers(s1 and s2), and each server has a replica(key-value pair): <code>name: john</code>. s1 changes the name to <code>johnSanFrancisco</code> and s2 changes the name to <code>johnNewYork</code>. These two changes are performed simultaneously. Now, we have conflicting values, called versions v1 and v2.</p>
+<p>To resolve the conflict of the last two versions, we need a versioning system that can detect conflicts and reconcile conflicts -&gt; vector clock<br>A vector clock is a <code>[server, version]</code> pair associated with a data item. It can be used to check if one version precedes, succeeds, or in conflict with others. Assume a vector clock is represented by <code>D([S1, v1], [S2, v2], …, [Sn, vn])</code>:</p>
+<ul>
+<li><code>D</code>: a data item</li>
+<li><code>v1</code>: a version counter</li>
+<li><code>s1</code>: a server number</li>
+</ul>
+<p>If data item <code>D</code> is written to server <code>Si</code>, the system must perform one of the following tasks:</p>
+<ul>
+<li>Increment <code>vi</code> if <code>[Si, vi]</code> exists</li>
+<li>Otherwise, create a new entry <code>[Si, 1]</code></li>
+</ul>
+<p>Example:</p>
+<ol>
+<li>client writes <code>D1</code> to the system: the write is handled by server <code>Sx</code>, and <code>Sx</code> creates a vector clock <code>D1[(Sx, 1)]</code>.</li>
+<li>Another client reads the latest <code>D1</code>, updates it to <code>D2</code>, and writes it back. Assume the write is handled by the same server <code>Sx</code>, which now has vector clock <code>D2([Sx, 2])</code>.</li>
+<li>Another client reads the latest <code>D2</code>, updates it to <code>D3</code>, and writes it back. Assume the write is handled by server <code>Sy</code>, which now has vector clock <code>D3([Sx, 2], [Sy, 1])</code>.</li>
+<li>Another client reads the latest <code>D2</code>, updates it to <code>D4</code>, and writes it back. Assume the write is handled by server <code>Sz</code>, which now has <code>D4([Sx, 2], [Sz, 1])</code>.</li>
+<li>When another client reads <code>D3</code> and <code>D4</code>, it discovers a conflict, which is caused by data item D2 being modified by both <code>Sy</code> and <code>Sz</code>.  The conflict is resolved by the client and updated data is sent to the server.</li>
+</ol>
+<p>When no conflict: X is an ancestor of Y if the version counters of Y is greater than or equal to the ones in X. For example: the vector clock <code>D([s0, 1], [s1, 1])</code> is an  ancestor of <code>D([s0, 1], [s1, 2])</code>.<br>When conflict exists: X is a sibling of Y if there is any participant in Y&#39;s vector clock who has a counter that is less than its corresponding counter in X. For example, <code>D([s0, 1], [s1, 2])</code> and <code>D([s0, 2], [s1, 1])</code>.</p>
+<p>Downsides:</p>
+<ul>
+<li>vector clocks add complexity to the client because it needs to implement conflict resolution logic</li>
+<li>the [server: version] pairs in the vector clock could grow rapidly -&gt; set a threshold for the length, and if it exceeds the limit, the oldest pairs are removed</li>
+</ul>
+<h4 id="Handling-failures"><a href="#Handling-failures" class="headerlink" title="Handling failures"></a>Handling failures</h4><h5 id="Failure-detection"><a href="#Failure-detection" class="headerlink" title="Failure detection"></a>Failure detection</h5><p>In a distributed system, it&#39;s hard to believe to say the other server is down.<br>Solution 1: all-to-all multicasting<br>Drawback: this is inefficient when many servers are in the system</p>
+<p>Solution 2: use decentralized failure detection methods like gossip protocol, works as follows:</p>
+<ol>
+<li>Each node maintains a node membership list, which contains member IDs and heartbeat counters</li>
+<li>Each node periodically increments its heartbeat counter</li>
+<li>Each node periodically sends heartbeats to a set of random nodes, which in turn<br>propagate to another set of nodes</li>
+<li>Once node receive heartbeats, update membership list to the latest</li>
+<li>If the heartbeat has not increased for more than predefined periods, the member is considered as offline</li>
+</ol>
+<p>For example:</p>
+<ol>
+<li>Node <code>s0</code> maintains a membership list.</li>
+<li>Node <code>s0</code> notices that node <code>s2</code>&#39;s heartbeat counter has not increased for a long time.</li>
+<li>Node <code>s0</code> sends heartbeats that include <code>s2</code>&#39;s info to a set of random nodes. Once other nodes confirm that <code>s2</code>&#39;s heartbeat counter has not been updated for a long time, node <code>s2</code> is marked down.</li>
+</ol>
+<h5 id="Handling-temporary-failures"><a href="#Handling-temporary-failures" class="headerlink" title="Handling temporary failures"></a>Handling temporary failures</h5><p>After failures have been detected, the system needs to deploy certain mechanisms to ensure availability. In the strict quorum approach, read and write operations could be blocked -&gt; sloppy quorum: Instead of enforcing the quorum requirement, the system chooses the first W healthy servers for writes and first R healthy servers for reads on the hash ring; When the down server is up, changes will be pushed back to achieve data consistency.</p>
+<h5 id="Handling-permanent-failures"><a href="#Handling-permanent-failures" class="headerlink" title="Handling permanent failures"></a>Handling permanent failures</h5><p>To handle permanent failure, we have to compare each piece of data on replicas and update each replica to the newest version. A Merkle tree is used for inconsistency detection and minimizing the amount of data transferred.<br>Steps of building a Merkle tree:</p>
+<ol>
+<li>Divide <code>key space</code> into <code>buckets</code> </li>
+<li>Hash each <code>key</code> in a bucket using a uniform hashing method</li>
+<li>Create a single hash node per <code>bucket</code></li>
+<li>Build the tree upwards till root by calculating hashes of children</li>
+</ol>
+<p>To compare two Merkle trees:</p>
+<ul>
+<li>start by comparing the root hashes<ul>
+<li>If root hashes match: both servers have the same data</li>
+<li>If not: compare its left chold and right child</li>
+</ul>
+</li>
+</ul>
+<p>Traverse the tree to find which buckets are not synchronized and synchronize those buckets only.</p>
+<h5 id="Handling-data-center-outage"><a href="#Handling-data-center-outage" class="headerlink" title="Handling data center outage"></a>Handling data center outage</h5><p>It&#39;s important to replicate data across multiple data centers to handle data center outage. </p>
+<h4 id="System-architecture-diagram"><a href="#System-architecture-diagram" class="headerlink" title="System architecture diagram"></a>System architecture diagram</h4><p>Main features of the architecture:</p>
+<ul>
+<li>Clients communicate with the key-value store through simple APIs: get(key) and put(key, value).</li>
+<li>A coordinator is a node that acts as a proxy between the client and the key-value store</li>
+<li>Nodes are distributed on a ring using consistent hashing</li>
+<li>The system is decentralized so adding and moving nodes can be automatic</li>
+<li>Data is replicated at multiple nodes</li>
+<li>every node has the same set of responsibilities -&gt; no single point of failure</li>
+</ul>
+<h5 id="Write-path"><a href="#Write-path" class="headerlink" title="Write path"></a>Write path</h5><ol>
+<li>The write request is persisted on a commit log file</li>
+<li>Data is saved in the memory cache</li>
+<li>When the memory cache is full or reaches a predefined threshold, data is flushed to SSTable on disk</li>
+</ol>
+<h5 id="Read-path"><a href="#Read-path" class="headerlink" title="Read path"></a>Read path</h5><p>first checks if data is in the memory cache</p>
+<ul>
+<li>If so, the data is returned to the client</li>
+<li>If not, checks the bloom filter to find out which SSTable contains the key</li>
+<li>SSTables return the result of the data set</li>
+<li>The result of the data set is returned to the client</li>
+</ul>
+<h3 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h3><ul>
+<li>store big data: use consistent hashing to spread the load across servers</li>
+<li>high available read: data replication, multi-data center</li>
+<li>High available write: versioning and conflict resolution with vector clock</li>
+<li>Dataset partition: consistent hashing</li>
+<li>Incremental scalability: consistent hashing</li>
+<li>Heterogeneity: consistent hashing</li>
+<li>Tunable consistency: Quorum consensus</li>
+<li>temporary failure: sloppy quorum and hinted handoff</li>
+<li>permanent failure: merkle tree</li>
+<li>data center outage: cross-data center replication</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/b1ee.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - Unique ID Generator</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/10a4.html">
+        <span class="next-text nav-default">System Design - Consistent Hashing</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
+MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
+</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
+MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/9f9c.html';
+  var disqus_title = "System Design - Key Value Store";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>
