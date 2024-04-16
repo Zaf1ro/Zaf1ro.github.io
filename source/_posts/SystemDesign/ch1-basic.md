@@ -10,22 +10,20 @@ keywords:
 description:
 ---
 
-## Vertical scaling vs horizontal scaling
+## 1. Vertical scaling vs horizontal scaling
 Vertical scaling, referred to as "scale up", means the process of adding more power (CPU,
 RAM, etc.) to your servers. Horizontal scaling, referred to as "scale-out", allows you to scale
 by adding more servers into your pool of resources.
 
 Pros:
-* vertical scaling is a great option, and the simplicity of vertical scaling is
-its main advantage.
+* vertical scaling is a great option, and the simplicity of vertical scaling is its main advantage.
+
 Cons:
-* Vertical scaling has a hard limit. It is impossible to add unlimited CPU and memory to a
-single server.
-* Vertical scaling does not have failover and redundancy. If one server goes down, the
-website/app goes down with it completely.
+* Vertical scaling has a hard limit. It is impossible to add unlimited CPU and memory to a single server.
+* Vertical scaling does not have failover and redundancy. If one server goes down, the website/app goes down with it completely.
 
 
-## Load Balancing
+## 2. Load Balancing
 Load balancing refers to efficiently distributing incoming network traffic across a group of backend servers, also known as a server farm or server pool.
 
 load balancing configurations:
@@ -35,9 +33,11 @@ load balancing configurations:
 * Geo-location is another widely used dynamic algorithm: load balancer assigns requests from a region to a defined server or server set.
 
 
-## Database replication
+## 3. Database replication
 A master database generally only supports write operations. A slave database gets copies of the data from the master database and only supports read operations. All the data-modifying commands like insert, delete, or update must be sent to the master database. 
-Most applications require a much higher ratio of reads to writes: , the number of slave databases in a system is usually larger than the number of master databases
+Most applications require a much higher ratio of reads to writes: The number of slave database is usually larger than the number of master databases
+
+![database replication](/images/System-Design/Interview/1-database-replication.png)
 
 Advantages: 
 * Better performance: all writes and updates happen in master nodes; whereas, read operations are distributed across slave nodes.
@@ -52,15 +52,43 @@ what if one of the databases goes offline:
     * circular replication
 
 
-## Cache
-A cache is a temporary storage area that stores the result of expensive responses or frequently accessed data in memory so that subsequent requests are served more quickly.
+## 4. Database scaling
+Two approaches for database scaling:
+* vertical scaling
+* horizontal scaling
 
-Advantage:
+![Database scaling](/images/System-Design/Interview/1-scaling.jpg) 
+
+### 4.1 Database Vertical Scaling
+Adding more power (CPU, RAM, DISK, etc.) to an existing machine. 
+Drawbacks:
+* hardware limit for a single server
+* Greater risk of single point of failures
+* cost is high since powerful servers are much more expensive
+
+### 4.2 Horizontal Scaling
+Separating large databases into smaller parts, called shards. Each shard shares the same schema, though the actual data on each shard is unique to the shard.
+The most important factor to consider when implementing a sharding strategy is the choice of the sharding key. Sharding key (known as a partition key) consists of one or more columns that determine how data is distributed. 
+
+### 4.3 Challenges of sharding
+* Resharding data:
+    * a single shard could no longer hold more data due to rapid growth.
+    * Certain shards might experience shard exhaustion faster than others due to uneven data distribution.
+* Celebrity problem: Excessive access to a specific shard could cause server overload. For social applications, that shard with celebrity will be overwhelmed with read operations -> allocate a shard for each celebrity
+* Join and de-normalization: hard to perform join operations across database shards -> denormalize the database so that queries can be performed in a single table.
+
+
+
+## 5. Cache
+A cache is a temporary storage area that stores the result of expensive responses or frequently accessed data in memory so that subsequent requests are served more quickly.
+![cache](/images/System-Design/Interview/1-cache.jpg)
+
+### 5.1 Advantages
 * better system performance
 * reduce database workload
 * scale the cache tier independently
 
-Considerations for using cache:
+### 5.2 Considerations for using cache:
 * when to use cache: using cache when data is read frequently but modified infrequently
 * expiration policy: Once cached data is expired, it is removed from the cache.
     * make the expiration date too short: reload data from the database too frequently
@@ -72,8 +100,10 @@ Considerations for using cache:
 * eviction policy: Once the cache is full, any requests to add items to the cache might cause existing items to be removed (Least-recently-used, LRU)
 
 
-## Content delivery network (CDN)
+## 6. Content delivery network (CDN)
 A CDN is a network of geographically dispersed servers used to deliver static content.
+![CDN](/images/System-Design/Interview/1-CDN.jpg)
+
 1. User A tries to get image.png by using an image URL
 2. If the CDN server does not have image.png in the cache, the CDN server requests the file from the origin
 3. The origin returns image.png to the CDN server, which includes optional HTTP header Time-to-Live (TTL)
@@ -90,23 +120,23 @@ Considerations of using a CDN:
     * serve a different version of the object
 
 
-## Stateless web tier
-scale the web tier horizontally -> move state out of the web tier: A good practice is to store session data in the persistent storage such as NoSQL. Each web server in the cluster can access state data from databases.
-In this stateless architecture, HTTP requests from users can be sent to any web servers, which
-fetch state data from a shared data store. State data is stored in a shared data store and kept
-out of web servers. 
+## 7. Stateless web tier
+scale the web tier horizontally -> move state out of the web tier: A good practice is to store session data in the persistent storage such as NoSQL. Each web server in the cluster can access state data from databases. In this stateless architecture, HTTP requests from users can be sent to any web servers, which fetch state data from a shared data store. State data is stored in a shared data store and kept out of web servers.
+![Stateless Servers](/images/System-Design/Interview/1-stateless-servers.jpg) 
 
 
-## Data center
+## 8. Data center
 In normal operation, users are geoDNS-routed, also known as geo-routed, to the closest data center. geoDNS is a DNS service that allows domain names to be resolved to IP addresses based on the location of a user.
 
-challenges:
+Challenges:
 * Traffic redirection: need tools to direct traffic to the correct data center(GeoDNS)
-* Data synchronization:  Users from different regions could use different local databases or caches. In failover cases, traffic might be routed to a data center where data is unavailable. Solution: replicate data across multiple data centers.
+* Data synchronization: Users from different regions could use different local databases or caches. In failover cases, traffic might be routed to a data center where data is unavailable. Solution: replicate data across multiple data centers.
 * Test and deployment: Automated deployment tools are vital to keep services consistent through all the data centers
 
 
-## Message queue
+## 9. Message queue
+![Message Queue](/images/System-Design/Interview/1-message-queue.jpg) 
+
 A message queue is a durable component, stored in memory, that supports asynchronous communication. 
 * producer: create messages, and publish them to a message queue
 * consumers: connect to the queue, and perform actions defined by the messages
@@ -114,7 +144,7 @@ A message queue is a durable component, stored in memory, that supports asynchro
 Advantage of MQ: **Decoupling**. producer can post a message to the queue when the consumer is unavailable to process it; consumer can read messages from the queue even when the producer is unavailable.
 
 
-## Logging, metrics, automation
+## 10. Logging, metrics, automation
 * Logging: Monitoring error logs is important because it helps to identify errors and problems
 * Metrics: Collecting different types of metrics help us to gain business insights and understand the health status
     * Host level metrics: CPU, Memory, disk I/O
@@ -123,31 +153,7 @@ Advantage of MQ: **Decoupling**. producer can post a message to the queue when t
 * Automation: automation tool to improve producitivity. 
 
 
-## Database scaling
-Two approaches for database scaling:
-* vertical scaling
-* horizontal scaling
-
-### Database Vertical Scaling
-Adding more power (CPU, RAM, DISK, etc.) to an existing machine. 
-Drawbacks:
-* hardware limit for a single server
-* Greater risk of single point of failures
-* cost is high since powerful servers are much more expensive
-
-### Horizontal Scaling
-Separating large databases into smaller parts, called shards. Each shard shares the same schema, though the actual data on each shard is unique to the shard.
-The most important factor to consider when implementing a sharding strategy is the choice of the sharding key. Sharding key (known as a partition key) consists of one or more columns that determine how data is distributed. 
-
-challenges of sharding:
-* Resharding data:
-    * a single shard could no longer hold more data due to rapid growth.
-    * Certain shards might experience shard exhaustion faster than others due to uneven data distribution.
-* Celebrity problem: Excessive access to a specific shard could cause server overload. For social applications, that shard with celebrity will be overwhelmed with read operations -> allocate a shard for each celebrity
-* Join and de-normalization: hard to perform join operations across database shards -> denormalize the database so that queries can be performed in a single table.
-
-
-## summary of how to scale our system to support millions of users
+## 11. Summary of How to Scale System to Support Millions of Users
 * Keep web tier stateless
 * Build redundancy at every tier
 * Cache data as much as you can

@@ -10,32 +10,30 @@ keywords:
 description:
 ---
 
-## Step 1 - Understand the problem and establish design scope
-* Can you give an example of how a URL shortener work?: Assume URL https://www.amazon.com/ is the original URL. Your service creates an alias with shorter length: https://tinyurl.com/y7keocwj. If you
-click the alias, it redirects you to the original URL.
+## 1. Understand Problem and Establish Design Scope
+* Can you give an example of how a URL shortener work?: Assume URL https://www.amazon.com/ is the original URL. Your service creates an alias with shorter length: https://tinyurl.com/y7keocwj. If you click the alias, it redirects you to the original URL.
 * What is the traffic volume?: 100 million URLs are generated per day.
 * How long is the shortened URL?: As short as possible
-* What characters are allowed in the shortened URL?: Shortened URL can be a combination of numbers (0-9) and characters (a-z, AZ).
+* What characters are allowed in the shortened URL?: Shortened URL can be a combination of numbers (0-9) and characters (a-z, A-Z).
 *  Can shortened URLs be deleted or updated?: shortened URLs cannot be deleted or updated.
 
 basic use cases:
-* URL shortening: a long URL -> a much shorter URL
+* URL shortening: a long URL => a much shorter URL
 * URL redirecting: a shorter URL => the original URL
 * High availability
-* scalability
-* fault tolerance
+* Scalability
+* Fault tolerance
 
-### Back of the envelope estimation
-* Write operation: 100 million URLs per day.
+### 1.1 Back of the envelope estimation
+* Write operation: 100 million URLs are generated per day.
 * Write operation per second: 100 million / 24 / 3600 = 1160
-* Read operation: ratio of read operation to write operation is 10:1 -> 1160 * 10 = 11,600
-* URL shortener service will run for 10 years: 100 million * 365 * 10 = 365 billion records
-* Average URL length: 100
-* Storage requirement: 365 billion * 100 bytes * 10 years = 365 TB
+* Read operation: Assuming ratio of read to write is 10:1, read operation per second: 1160 * 10 = 11,600
+* Assuming URL shortener service will run for 10 years: 100 million * 365 * 10 = 365 billion records
+* Assuming Average URL length is 100, storage requirement: 365 billion * 100 bytes * 10 years = 365 TB
 
 
-## Step 2 - Propose high-level design and get buy-in
-### API Endpoints
+## 2. Propose High-level Design and get buy-in
+### 2.1 API Endpoints
 A URL shortener primary needs two API endpoints:
 * URL shortening: a client sends a `POST` request, contains one parameter: the original long URL. For example:
     * URL: `api/v1/data/shorten`
@@ -45,38 +43,42 @@ A URL shortener primary needs two API endpoints:
     * URL: `api/v1/shortUrl`
     * Return: longURL for HTTP redirection
 
-### URL redirecting
+### 2.2 URL redirecting
 Once the server receives a tinyurl request, it changes the short URL to the long URL with 301 redirect.
+![URL Redirect](/images/System-Design/Interview/8-url-redirect.jpg)
+
 The most intuitive solution: hash table. Assuming the hash table stores `<shortURL, longURL>` pairs, URL redirecting can be implemented by the following:
 * Get longURL: longURL = hashTable.get(shortURL)
 * Once you get the longURL, perform the URL redirect.
 
-### URL shortening
-Assume the short URL looks like: `www.tinyurl.com/{hashValue}`, we need a hash function `fx` that maps a long URL to the hashValue, The requirements of hash function:
-* Each longURL is hashed to one hashValue
-* Each hashValue can be mapped back to the longURL.
+### 2.3 URL shortening
+Assume the short URL looks like: `www.tinyurl.com/{hashValue}`, we need a hash function `fx` that maps a long URL to the `hashValue`, The requirements of hash function:
+* Each `longURL` is hashed to one `hashValue`
+* Each `hashValue` can be mapped back to the `longURL`.
 
 
-## Step 3 - Design deep dive
-### Data model
-Since memory resources are limited and expensive, we cannot store everything in a hash table. A better option is to store `<shortURL, longURL>` mapping in a relational database, 
+## 3. Design deep dive
+### 3.1 Data model
+Since memory resources are limited and expensive, we cannot store everything in a hash table. A better option is to store `<shortURL, longURL>` mapping in a relational database, the simplified version of the table contains 3 columns: `id`, `shortURL`, `longURL`.
 
-### Hash function
-Hash function is used to hash a long URL to a short URL, also known as hashValue. The hashValue consists of characters from `[0-9, a-z, A-Z]`, containing 10 + 26 + 26 = 62 characters. When n = 7, 62 ^ n = 3.5 trillion, so the length of hashValue is 7.
+### 3.2 Hash function
+Hash function is used to hash a long URL to a short URL, also known as `hashValue`. The `hashValue` consists of characters from `[0-9, a-z, A-Z]`, containing 10 + 26 + 26 = 62 characters.
 
-#### Hash + collision resolution
+#### 3.2.1 Hash Collision
 Use well-known hash functions like CRC32, MD5, or SHA-1 to hash a long URL to a 7 characters string, but this method can lead to hash collisions. To resolve hash collisions, we can recursively append a new predefined string until no more collision is discovered.
+![Hash Collision](/images/System-Design/Interview/8-hash-collision.jpg)
+
 * Drawback: it is expensive to query the database to check if a shortURL exists for every request.
 * Solution: bloom filter
 
-#### Base 62 conversion
-example to explain how the conversion works: convert ${11157}_{10}$ to base 62 representation:
+#### 3.2.2 Base 62 Conversion
+Base conversion helps to convert the same number between its different number representation systems. Example to explain how the conversion works: convert ${11157}_{10}$ to base 62 representation:
 * 0-0, ..., 9-9, 10-a, 11-b, ..., 35-z, 36-A, ..., 61-Z,
 * ${11157}_{10}$ = 2 x 62^2 + 55 x 62^1 + 59 x 62^0 = [2, 55, 59] -> [2, T, X] in base 62
 
-the short URL is https://tinyurl.com/2TX
+Thus, the short URL is https://tinyurl.com/2TX
 
-#### Comparison of the two approaches
+#### 3.2.3 Comparison of the Two Approaches
 | Hash + collision resolution | Base 62 conversion |
 |:----|:----|
 | Fixed short URL length | The short URL length is not fixed, it goes up with ID |
@@ -84,32 +86,35 @@ the short URL is https://tinyurl.com/2TX
 | Collision is possible and must be resolved | Collision is impossible because ID is unique |
 | impossible to figure out the next available short URL | easy to figure out the next available short URL, it's a security concern |
 
-### URL shortening deep dive
-Base 62 conversion is used in our design:
-1. input longURL
+### 3.3 URL Shortening Deep Dive
+![URL Shortening Deep Dive](/images/System-Design/Interview/8-url-shortening-deep-dive.jpg)
+
+1. Input longURL
 2. The system checks if the longURL is in the database
 3. If it is, it means the longURL was converted to shortURL before
 4. If not, the longURL is new. A new unique ID is generated by an unique ID generator
 5. Convert the ID to shortURL with base 62 conversion
 6. Create a new database row with the ID, shortURL, and longURL
 
-Drawback: we have to implement a unique ID generator in distributed environment
+Problem: we have to implement a unique ID generator in distributed environment
 Solution: refer to chapter 7
 
-### URL redirecting deep dive
-As there are more reads than writes, `<shortURL, longURL>` mapping is stored in a cache to improve performance. URL redirecting:
-1. user clicks a short URL link
-2. load balancer forwards the request to web servers
+### 3.4 URL Redirecting Deep Dive
+As there are more reads than writes, `<shortURL, longURL>` mapping is stored in a cache to improve performance.
+![URL Redirecting Deep Dive](/images/System-Design/Interview/8-url-redirecting-deep-dive.jpg)
+
+1. User clicks a short URL link
+2. Load balancer forwards the request to web servers
 3. If a shortURL is already in the cache, return the longURL directly
 4. If shortURL not in the cache, fetch the longURL from the database
 5. If shortURL not in the database, it is likely a user entered an invalid shortURL
-6. return longURL to user
+6. Return longURL to user
 
 
-## Step 4 - Wrap up
-additional talking points:
+## 4. Wrap up
+Additional talking points:
 * Rate limiter: filter out requests based on IP address or other filtering rules
 * Web server scaling: scale the web tier by adding or removing web servers
 * Database scaling: Database replication and sharding
 * Analytics: help to answer important questions like how many people click on a link? When do they click the link? etc
-*  Availability, consistency, and reliability: 
+*  Availability, consistency, and reliability
