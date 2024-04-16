@@ -37,17 +37,28 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/6c1f.html"/>
 
 
-<meta name="description" content="Step 1 - Understand the problem and establish design scope the matching only supported at the beginning of a search query system should return 5 autocomplete suggestions How does the system know which">
+<meta name="description" content="1. Understand the problem and establish design scope Is the matching only supported at the beginning of a search query or in the middle as well the matching only supported at the beginning of a search">
 <meta property="og:type" content="article">
 <meta property="og:title" content="System Design - Search Autocomplete">
 <meta property="og:url" content="https://zaf1ro.github.io/p/6c1f.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="Step 1 - Understand the problem and establish design scope the matching only supported at the beginning of a search query system should return 5 autocomplete suggestions How does the system know which">
+<meta property="og:description" content="1. Understand the problem and establish design scope Is the matching only supported at the beginning of a search query or in the middle as well the matching only supported at the beginning of a search">
 <meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-data-gathering.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-frequency-table.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-trie-example.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-updated-trie-example.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-optimized-trie-example.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-redesigned-data-gathering-service.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-aggregated-data.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-mapping-between-trie-and-key-value-store.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-query-service.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-update-trie-node.jpg">
 <meta property="article:published_time" content="2024-04-19T16:42:10.000Z">
-<meta property="article:modified_time" content="2024-04-10T14:51:38.000Z">
+<meta property="article:modified_time" content="2024-04-16T01:22:09.951Z">
 <meta property="article:tag" content="System Design">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/13-data-gathering.jpg">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -74,7 +85,7 @@ System Design - Search Autocomplete - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-1-Understand-the-problem-and-establish-design-scope"><span class="toc-text">Step 1 - Understand the problem and establish design scope</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Back-of-the-envelope-estimation"><span class="toc-text">Back of the envelope estimation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-2-Propose-high-level-design-and-get-buy-in"><span class="toc-text">Step 2 - Propose high-level design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Data-gathering-service"><span class="toc-text">Data gathering service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Query-service"><span class="toc-text">Query service</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-3-Design-deep-dive"><span class="toc-text">Step 3 - Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Trie-data-structure"><span class="toc-text">Trie data structure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Data-gathering-service-1"><span class="toc-text">Data gathering service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Query-service-1"><span class="toc-text">Query service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Trie-operations"><span class="toc-text">Trie operations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Scale-the-storage"><span class="toc-text">Scale the storage</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Step-4-Wrap-up"><span class="toc-text">Step 4 - Wrap up</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understand-the-problem-and-establish-design-scope"><span class="toc-text">1. Understand the problem and establish design scope</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Back-of-the-envelope-estimation"><span class="toc-text">1.1 Back of the envelope estimation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Propose-high-level-design-and-get-buy-in"><span class="toc-text">2. Propose high-level design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Data-gathering-service"><span class="toc-text">2.1 Data gathering service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Query-service"><span class="toc-text">2.2 Query service</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Design-deep-dive"><span class="toc-text">3. Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Trie-data-structure"><span class="toc-text">3.1 Trie data structure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Data-gathering-service"><span class="toc-text">3.2 Data gathering service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Query-service"><span class="toc-text">3.3 Query service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Trie-operations"><span class="toc-text">3.4 Trie operations</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-Create"><span class="toc-text">3.4.1 Create</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-Update-two-ways-to-update-the-trie"><span class="toc-text">3.4.2 Update: two ways to update the trie:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-Delete"><span class="toc-text">3.4.3 Delete</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Scale-the-storage"><span class="toc-text">3.5 Scale the storage</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Wrap-up"><span class="toc-text">4. Wrap up</span></a></li></ol>
   </div>
 
     </div>
@@ -129,16 +140,16 @@ System Design - Search Autocomplete - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="Step-1-Understand-the-problem-and-establish-design-scope"><a href="#Step-1-Understand-the-problem-and-establish-design-scope" class="headerlink" title="Step 1 - Understand the problem and establish design scope"></a>Step 1 - Understand the problem and establish design scope</h2><ul>
-<li>the matching only supported at the beginning of a search query</li>
-<li>system should return 5 autocomplete suggestions</li>
+      <h2 id="1-Understand-the-problem-and-establish-design-scope"><a href="#1-Understand-the-problem-and-establish-design-scope" class="headerlink" title="1. Understand the problem and establish design scope"></a>1. Understand the problem and establish design scope</h2><ul>
+<li>Is the matching only supported at the beginning of a search query or in the middle as well the matching only supported at the beginning of a search query:  Only at the beginning of a search query</li>
+<li>How many autocomplete suggestions should the system return: 5</li>
 <li>How does the system know which 5 suggestions to return: determined by popularity, decided by the historical query frequency</li>
-<li>Does the system support spell check?: spell check or autocorrect is not supported</li>
-<li>Are search queries in English?: Yes</li>
-<li>Do we allow capitalization and special characters?: No, we assume all search queries have lowercase alphabetic characters</li>
+<li>Does the system support spell check: No, spell check or autocorrect is not supported</li>
+<li>Are search queries in English: Yes</li>
+<li>Do we allow capitalization and special characters: No, we assume all search queries have lowercase alphabetic characters</li>
 <li>How many users use the product?: 10 million DAU</li>
 </ul>
-<p>Summary of the requirements:</p>
+<p>Requirements:</p>
 <ul>
 <li>Fast response time: autocomplete suggestions must show up fast enough</li>
 <li>Relevant: Autocomplete suggestions should be relevant to the search term</li>
@@ -146,7 +157,7 @@ System Design - Search Autocomplete - Zaf1ro
 <li>Scalable: The system can handle high traffic volume</li>
 <li>Highly available: The system should remain available and accessible when part of the system is offline, slows down, or experiences unexpected network errors</li>
 </ul>
-<h3 id="Back-of-the-envelope-estimation"><a href="#Back-of-the-envelope-estimation" class="headerlink" title="Back of the envelope estimation"></a>Back of the envelope estimation</h3><ul>
+<h3 id="1-1-Back-of-the-envelope-estimation"><a href="#1-1-Back-of-the-envelope-estimation" class="headerlink" title="1.1 Back of the envelope estimation"></a>1.1 Back of the envelope estimation</h3><ul>
 <li>Assume 10 million daily active users (DAU)</li>
 <li>An average person performs 10 searches per day</li>
 <li>20 bytes of data per query string:<ul>
@@ -160,29 +171,30 @@ System Design - Search Autocomplete - Zaf1ro
 <li>Peak QPS &#x3D; QPS * 2 &#x3D; ~48,000</li>
 <li>Assume 20% of the daily queries are new. 10 million * 10 queries &#x2F; day * 20 byte per query * 20% &#x3D; 0.4 GB. This means 0.4GB of new data is added to storage daily.</li>
 </ul>
-<h2 id="Step-2-Propose-high-level-design-and-get-buy-in"><a href="#Step-2-Propose-high-level-design-and-get-buy-in" class="headerlink" title="Step 2 - Propose high-level design and get buy-in"></a>Step 2 - Propose high-level design and get buy-in</h2><p>the system is broken down into two:</p>
+<h2 id="2-Propose-high-level-design-and-get-buy-in"><a href="#2-Propose-high-level-design-and-get-buy-in" class="headerlink" title="2. Propose high-level design and get buy-in"></a>2. Propose high-level design and get buy-in</h2><p>The system is broken down into two:</p>
 <ul>
-<li>Data gathering service: gather user input queries and aggregates them in real-time.</li>
-<li>Query service: Given a search query or prefix, return 5 most frequently searched terms.</li>
+<li>Data gathering service: gather user input queries and aggregates them in real-time</li>
+<li>Query service: Given a search query or prefix, return 5 most frequently searched terms</li>
 </ul>
-<h3 id="Data-gathering-service"><a href="#Data-gathering-service" class="headerlink" title="Data gathering service"></a>Data gathering service</h3><p>Assume we have a frequency table that stores the query string(column 1) and its frequency(column 2).  In the beginning, the frequency table is empty. users enter queries, the frequency table is updated.</p>
-<h3 id="Query-service"><a href="#Query-service" class="headerlink" title="Query service"></a>Query service</h3><p>The frequency table has two fields:</p>
+<h3 id="2-1-Data-gathering-service"><a href="#2-1-Data-gathering-service" class="headerlink" title="2.1 Data gathering service"></a>2.1 Data gathering service</h3><p>Assume we have a frequency table that stores the <strong>query string</strong> and its <strong>frequency</strong>.  In the beginning, the frequency table is empty. Later, users enter queries &quot;twitch&quot;, &quot;twitter&quot;, &quot;twitter,&quot; and &quot;twillo&quot; sequentially.<br><img src="/images/System-Design/Interview/13-data-gathering.jpg" alt="Data Gathering"></p>
+<h3 id="2-2-Query-service"><a href="#2-2-Query-service" class="headerlink" title="2.2 Query service"></a>2.2 Query service</h3><p>Assume we have a frequency table, and it has two fields:<br><img src="/images/System-Design/Interview/13-frequency-table.jpg" alt="Frequency Table"></p>
 <ul>
 <li>Query: it stores the query string</li>
 <li>Frequency: it represents the number of times a query has been searched</li>
 </ul>
 <p>To get top 5 frequently searched queries, execute the following SQL query:</p>
 <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> frequency_table</span><br><span class="line"><span class="keyword">WHERE</span> query <span class="keyword">like</span> `prefix<span class="operator">%</span>`</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> frequency <span class="keyword">DESC</span></span><br><span class="line">LIMIT <span class="number">5</span></span><br></pre></td></tr></table></figure>
-
-
-<h2 id="Step-3-Design-deep-dive"><a href="#Step-3-Design-deep-dive" class="headerlink" title="Step 3 - Design deep dive"></a>Step 3 - Design deep dive</h2><h3 id="Trie-data-structure"><a href="#Trie-data-structure" class="headerlink" title="Trie data structure"></a>Trie data structure</h3><p>The data structure trie (prefix tree) is used to overcome the problem.:</p>
+<p>This is an acceptable solution when the data set is small. When it is large, accessing the database becomes a bottleneck.</p>
+<h2 id="3-Design-deep-dive"><a href="#3-Design-deep-dive" class="headerlink" title="3. Design deep dive"></a>3. Design deep dive</h2><h3 id="3-1-Trie-data-structure"><a href="#3-1-Trie-data-structure" class="headerlink" title="3.1 Trie data structure"></a>3.1 Trie data structure</h3><p>Relational databases are used for storage in the high-level design. However, fetching the top 5 search queries from a relational database is inefficient. The data structure trie (prefix tree) is used to overcome the problem:</p>
 <ul>
 <li>A trie is a tree-like data structure</li>
 <li>The root represents an empty string</li>
 <li>Each node stores a character and has 26 children</li>
 <li>Each tree node represents a single word or a prefix string</li>
 </ul>
-<p>To support sorting by frequency, frequency info needs to be included in nodes, Assume:</p>
+<p><img src="/images/System-Design/Interview/13-trie-example.jpg" alt="Trie Example"></p>
+<p>To support sorting by frequency, frequency info needs to be included in nodes.<br><img src="/images/System-Design/Interview/13-updated-trie-example.jpg" alt="Updated Trie Example"></p>
+<p>Before diving into the algorithm, let us define some terms:</p>
 <ul>
 <li>p: length of a prefix</li>
 <li>n: total number of nodes in a trie</li>
@@ -190,16 +202,21 @@ System Design - Search Autocomplete - Zaf1ro
 </ul>
 <p>Steps to get top k most searched queries:</p>
 <ol>
-<li>Find the prefix. Time complexity: O(p)</li>
-<li>Traverse the subtree from the prefix node to get all valid children. Time complexity: O(c)</li>
-<li>Sort the children and get top k. Time complexity: O(clogc)</li>
+<li>Find the prefix. Time complexity: <code>O(p)</code></li>
+<li>Traverse the subtree from the prefix node to get all valid children. Time complexity: <code>O(c)</code></li>
+<li>Sort the children and get top k. Time complexity: <code>O(clogc)</code></li>
 </ol>
-<p>Two optimizations:</p>
+<p>The time complexity of this algorithm is the sum of time spent on each step mentioned above: <code>O(p) + O(c) + O(clogc)</code>. It&#39;s too slow because we need to traverse the entire trie to get top k results in the worst-case scenario. Below are two optimizations:</p>
 <ul>
 <li>Limit the max length of a prefix: Users rarely type a long search query into the search box, so we can limit the length of a prefix</li>
 <li>Cache top search queries at each node: store top k most frequently used queries at each node</li>
 </ul>
-<h3 id="Data-gathering-service-1"><a href="#Data-gathering-service-1" class="headerlink" title="Data gathering service"></a>Data gathering service</h3><p>Updating data in real-time is not practical for the following two reasons:</p>
+<p><img src="/images/System-Design/Interview/13-optimized-trie-example.jpg" alt="Optimized Trie Example"></p>
+<ul>
+<li>Find the prefix node. Time complexity: O(1)</li>
+<li>Return top k. Since top k queries are cached, the time complexity for this step is O(1).</li>
+</ul>
+<h3 id="3-2-Data-gathering-service"><a href="#3-2-Data-gathering-service" class="headerlink" title="3.2 Data gathering service"></a>3.2 Data gathering service</h3><p>Updating data in real-time may be not practical for the following two reasons:</p>
 <ul>
 <li>Users may enter billions of queries per day</li>
 <li>Top suggestions may not change much once the trie is built</li>
@@ -209,17 +226,17 @@ System Design - Search Autocomplete - Zaf1ro
 <li>Twitter: requires up to date autocomplete suggestions.</li>
 <li>Google: keywords might not change much on a daily basis.</li>
 </ul>
-<p>The underlying foundation for data gathering service is same: data used to build the trie is from analytics or logging services:</p>
+<p>Despite the differences in use cases, the underlying foundation for data gathering service is same because data used to build the trie is from analytics or logging services.<br><img src="/images/System-Design/Interview/13-redesigned-data-gathering-service.jpg" alt="Redesigned Data Gathering Service"></p>
 <ul>
 <li>Analytics Logs: store raw data about search queries. Logs are append-only and are not indexed</li>
-<li>Aggregators: The size of logs is very large, and data is not in the right format, we need to aggregate data so it can be processed by our system<ul>
+<li>Aggregators: The size of logs is very large, and data is not in the right format. We need to aggregate data so it can be processed by our system<ul>
 <li>For real-time application: aggregate data in a shorter time interval</li>
-<li>For non-real-time application: aggregating data less frequently, for example, once per week</li>
+<li>For non-real-time application: aggregate data less frequently, for example, once per week</li>
 </ul>
 </li>
-<li>Aggregated Data: an example of aggregated weekly data<ul>
-<li>time field: the start time of a week</li>
-<li>frequency field: the sum of the occurrences for the corresponding query in this week</li>
+<li>Aggregated Data:<br>  <img src="/images/System-Design/Interview/13-aggregated-data.jpg" alt="Aggregated Data"><ul>
+<li>Time field: the start time of a week</li>
+<li>Frequency field: the sum of the occurrences for the corresponding query in this week</li>
 <li>Workers: a set of servers that build the trie data structure and store it in Trie DB</li>
 <li>Trie Cache: a distributed cache system that keeps trie in memory for fast read</li>
 <li>Trie DB: the persistent storage, two options:<ul>
@@ -230,41 +247,41 @@ System Design - Search Autocomplete - Zaf1ro
 </ul>
 </li>
 </ul>
-<h3 id="Query-service-1"><a href="#Query-service-1" class="headerlink" title="Query service"></a>Query service</h3><ol>
+<p><img src="/images/System-Design/Interview/13-mapping-between-trie-and-key-value-store.jpg" alt="Mapping between trie and key-value store"></p>
+<h3 id="3-3-Query-service"><a href="#3-3-Query-service" class="headerlink" title="3.3 Query service"></a>3.3 Query service</h3><p><img src="/images/System-Design/Interview/13-query-service.jpg" alt="Mapping between trie and key-value store"></p>
+<ol>
 <li>A search query is sent to the load balancer</li>
 <li>The load balancer routes the request to API servers</li>
 <li>API servers get trie data from Trie Cache and construct autocomplete suggestions for the client</li>
-<li>If the data is not in Trie Cache, replenish data back to the cache</li>
+<li>If the data is not in Trie Cache, we replenish data back to the cache</li>
 </ol>
-<p>optimizations for speeding the query:</p>
+<p>Optimizations for speeding the query:</p>
 <ul>
 <li>AJAX request: sending&#x2F;receiving a request&#x2F;response does not refresh the whole web page</li>
-<li>Browser caching: save autocomplete suggestions in browser cache</li>
-<li>Data sampling: For a large-scale system, logging every search query requires a lot of processing power and storage. only 1 out of every N requests is logged by the system.</li>
+<li>Browser caching: For many applications, autocomplete search suggestions may not change much within a short time. Thus, autocomplete suggestions can be saved in browser cache to allow subsequent requests to get results from the cache directly.</li>
+<li>Data sampling: For a large-scale system, logging every search query requires a lot of processing power and storage. Only 1 out of every N requests will be logged by the system.</li>
 </ul>
-<h3 id="Trie-operations"><a href="#Trie-operations" class="headerlink" title="Trie operations"></a>Trie operations</h3><ul>
-<li>Create: Trie is created by workers using aggregated data. The source of data is from analytics Log</li>
-<li>Update: two ways to update the trie<ul>
+<h3 id="3-4-Trie-operations"><a href="#3-4-Trie-operations" class="headerlink" title="3.4 Trie operations"></a>3.4 Trie operations</h3><h4 id="3-4-1-Create"><a href="#3-4-1-Create" class="headerlink" title="3.4.1 Create"></a>3.4.1 Create</h4><p>Trie is created by workers using aggregated data. The source of data is from Analytics Log&#x2F;DB</p>
+<h4 id="3-4-2-Update-two-ways-to-update-the-trie"><a href="#3-4-2-Update-two-ways-to-update-the-trie" class="headerlink" title="3.4.2 Update: two ways to update the trie:"></a>3.4.2 Update: two ways to update the trie:</h4><ul>
 <li>Update the trie weekly. Once a new trie is created, the new trie replaces the old one</li>
 <li>Update individual trie node directly. When we update a trie node, its ancestors all the way up to the root must be updated because ancestors store top queries of children</li>
 </ul>
-</li>
-<li>Delete: To remove hateful, violent, sexually explicit, or dangerous autocomplete suggestions, we can add a filter layer in front of the Trie Cache</li>
-</ul>
-<h3 id="Scale-the-storage"><a href="#Scale-the-storage" class="headerlink" title="Scale the storage"></a>Scale the storage</h3><p>shard based on the first character, examples:</p>
+<p><img src="/images/System-Design/Interview/13-update-trie-node.jpg" alt="Update Trie Node"><br>On the left side, the search query &quot;beer&quot; has the original value 10. On the right side, it is updated to 30. As you can see, the node and its ancestors have the &quot;beer&quot; value updated to 30.</p>
+<h4 id="3-4-3-Delete"><a href="#3-4-3-Delete" class="headerlink" title="3.4.3 Delete"></a>3.4.3 Delete</h4><p>To remove hateful, violent, sexually explicit, or dangerous autocomplete suggestions, we can add a filter layer in front of the Trie Cache</p>
+<h3 id="3-5-Scale-the-storage"><a href="#3-5-Scale-the-storage" class="headerlink" title="3.5 Scale the storage"></a>3.5 Scale the storage</h3><p>Since English is the only supported language, a naive way to shard is based on the first character. Here are some examples:</p>
 <ul>
-<li>If we have two servers, store queries starting with &#39;a&#39; to &#39;m&#39; on the first server, and &#39;n&#39; to &#39;z&#39; on the second server</li>
-<li>If we have three servers, split queries into &#39;a&#39; to &#39;i&#39;, &#39;j&#39; to &#39;r&#39; and &#39;s&#39; to &#39;z&#39;</li>
+<li>If we have two servers, store queries starting with <code>&#39;a&#39;</code> to <code>&#39;m&#39;</code> on the first server, and <code>&#39;n&#39;</code> to <code>&#39;z&#39;</code> on the second server</li>
+<li>If we have three servers, split queries into <code>&#39;a&#39;</code> to <code>&#39;i&#39;</code>, <code>&#39;j&#39;</code> to <code>&#39;r&#39;</code> and <code>&#39;s&#39;</code> to <code>&#39;z&#39;</code></li>
 </ul>
-<p>we can split queries up to 26 servers because there are 26 alphabetic characters in English. But the word is not even distribution by its first character. So we need to analyze historical data distribution pattern and apply smarter sharding logic.</p>
-<h2 id="Step-4-Wrap-up"><a href="#Step-4-Wrap-up" class="headerlink" title="Step 4 - Wrap up"></a>Step 4 - Wrap up</h2><p>follow up questions:</p>
+<p>We can split queries up to 26 servers because there are 26 alphabetic characters in English. But the word is not even distribution by its first character. So we need to analyze historical data distribution pattern and apply smarter sharding logic.</p>
+<h2 id="4-Wrap-up"><a href="#4-Wrap-up" class="headerlink" title="4. Wrap up"></a>4. Wrap up</h2><p>Follow up questions:</p>
 <ul>
-<li>How do you extend your design to support multiple languages?: store Unicode characters in trie nodes</li>
-<li>What if top search queries in one country are different from others?: we might build different tries for different countries</li>
-<li>How can we support the trending (real-time) search queries?: When a news event breaks out, a search query suddenly becomes popular, the original design will not work because the schedule of updating the trie is on weekly basis, and building the trie takes too long. Few ideas:<ul>
+<li>How to support multiple languages: store Unicode characters in trie nodes</li>
+<li>What if top search queries in one country are different from others: we might build different tries for different countries</li>
+<li>How can we support the trending (real-time) search queries: When a news event breaks out, a search query suddenly becomes popular, the original design will not work because the schedule of updating the trie is on weekly basis, and building the trie takes too long. Few ideas:<ul>
 <li>Reduce the working data set by sharding</li>
 <li>Change the ranking model and assign more weight to recent search queries</li>
-<li>Keep processing the steam data by other system, like Apache Hadoop MapReduce, Apache Spark Streaming, Apache Kafka</li>
+<li>Data may come as streams, so we do not have access to all the data at once. Stream processing requires a different set of systems: Apache Hadoop MapReduce, Apache Spark Streaming, Apache Kafka</li>
 </ul>
 </li>
 </ul>

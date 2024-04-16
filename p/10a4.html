@@ -37,17 +37,28 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/10a4.html"/>
 
 
-<meta name="description" content="The rehashing problemIf you have n cache servers, a common way to balance the load is to use the following hash method: serverIndex &#x3D; hash(key) % N, where N is the size of the server pool.This approac">
+<meta name="description" content="1. The rehashing problemIf you have n cache servers, a common way to balance the load is to use the following hash method: serverIndex &#x3D; hash(key) % N, where N is the size of the server pool.This appr">
 <meta property="og:type" content="article">
 <meta property="og:title" content="System Design - Consistent Hashing">
 <meta property="og:url" content="https://zaf1ro.github.io/p/10a4.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="The rehashing problemIf you have n cache servers, a common way to balance the load is to use the following hash method: serverIndex &#x3D; hash(key) % N, where N is the size of the server pool.This approac">
+<meta property="og:description" content="1. The rehashing problemIf you have n cache servers, a common way to balance the load is to use the following hash method: serverIndex &#x3D; hash(key) % N, where N is the size of the server pool.This appr">
 <meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-space.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-ring.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-keys.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-server-lookup.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-add-new-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-remove-a-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-virtual-nodes-example.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-virtual-nodes-add-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-virtual-nodes-remove-server.jpg">
 <meta property="article:published_time" content="2024-04-11T16:42:10.000Z">
-<meta property="article:modified_time" content="2024-04-10T14:50:52.000Z">
+<meta property="article:modified_time" content="2024-04-14T16:42:50.543Z">
 <meta property="article:tag" content="System Design">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-space.jpg">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -74,7 +85,7 @@ System Design - Consistent Hashing - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#The-rehashing-problem"><span class="toc-text">The rehashing problem</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consistent-hashing"><span class="toc-text">Consistent hashing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash-space-and-hash-ring"><span class="toc-text">Hash space and hash ring</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash-servers"><span class="toc-text">Hash servers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash-keys"><span class="toc-text">Hash keys</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Server-lookup"><span class="toc-text">Server lookup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Add-a-server"><span class="toc-text">Add a server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Remove-a-server"><span class="toc-text">Remove a server</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Two-issue-in-the-basic-approach"><span class="toc-text">Two issue in the basic approach</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Virtual-nodes"><span class="toc-text">Virtual nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Find-affected-keys"><span class="toc-text">Find affected keys</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Summary"><span class="toc-text">Summary</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-The-rehashing-problem"><span class="toc-text">1. The rehashing problem</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Consistent-hashing"><span class="toc-text">2. Consistent hashing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hash-space-and-hash-ring"><span class="toc-text">2.1 Hash space and hash ring</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Hash-servers"><span class="toc-text">2.2 Hash servers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Hash-keys"><span class="toc-text">2.3 Hash keys</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Server-lookup"><span class="toc-text">2.4 Server lookup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Add-a-server"><span class="toc-text">2.5 Add a server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-Remove-a-server"><span class="toc-text">2.6 Remove a server</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Two-issue-in-the-basic-approach"><span class="toc-text">3. Two issue in the basic approach</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Virtual-nodes"><span class="toc-text">3.1 Virtual nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Find-affected-keys"><span class="toc-text">3.2 Find affected keys</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Summary"><span class="toc-text">4. Summary</span></a></li></ol>
   </div>
 
     </div>
@@ -129,38 +140,62 @@ System Design - Consistent Hashing - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="The-rehashing-problem"><a href="#The-rehashing-problem" class="headerlink" title="The rehashing problem"></a>The rehashing problem</h2><p>If you have n cache servers, a common way to balance the load is to use the following hash method: <code>serverIndex = hash(key) % N</code>, where <code>N</code> is the size of the server pool.<br>This approach works well when the size of the server pool is fixed. However, problems arise when new servers are added, or existing servers are removed: client will connect to the wrong server to fetch data.</p>
-<h2 id="Consistent-hashing"><a href="#Consistent-hashing" class="headerlink" title="Consistent hashing"></a>Consistent hashing</h2><p>Comparsion:</p>
+      <h2 id="1-The-rehashing-problem"><a href="#1-The-rehashing-problem" class="headerlink" title="1. The rehashing problem"></a>1. The rehashing problem</h2><p>If you have n cache servers, a common way to balance the load is to use the following hash method: <code>serverIndex = hash(key) % N</code>, where <code>N</code> is the size of the server pool.<br>This approach works well when the size of the server pool is fixed. However, problems arise when new servers are added, or existing servers are removed: client will connect to the wrong server to fetch data.</p>
+<h2 id="2-Consistent-hashing"><a href="#2-Consistent-hashing" class="headerlink" title="2. Consistent hashing"></a>2. Consistent hashing</h2><p>Comparsion:</p>
 <ul>
-<li>Traditional hashing: when making change on the number of slots, nearly all keys need to be remapped</li>
-<li>Consistent hashing: when making change on the number of slots, only <code>k/n</code> need to be remapped (k is the number of keys, n is the number of slots)</li>
+<li>Traditional hashing: when making change on the number of slots, all keys need to be remapped</li>
+<li>Consistent hashing: when making change on the number of slots, only <code>k/n</code> need to be remapped (<code>k</code> is the number of keys, <code>n</code> is the number of slots)</li>
 </ul>
-<h3 id="Hash-space-and-hash-ring"><a href="#Hash-space-and-hash-ring" class="headerlink" title="Hash space and hash ring"></a>Hash space and hash ring</h3><p>Assume SHA-1 is used as the hash function <code>f</code>, and the output range of the hash function is: <code>x0, x1, x2, x3, ..., xn</code>. Since SHA-1&#39;s hash space is <code>[0, 2^160 - 1]</code>, <code>x0</code> corresponds to 0, <code>xn</code> corresponds to <code>2^160 - 1</code>. By connecting the x0 and xn, we got a hash ring.</p>
-<h3 id="Hash-servers"><a href="#Hash-servers" class="headerlink" title="Hash servers"></a>Hash servers</h3><p>We map the servers based on their IP address or name onto the ring using hash function <code>f</code>. </p>
-<h3 id="Hash-keys"><a href="#Hash-keys" class="headerlink" title="Hash keys"></a>Hash keys</h3><p>The cache keys are also hashed onto the hash ring.</p>
-<h3 id="Server-lookup"><a href="#Server-lookup" class="headerlink" title="Server lookup"></a>Server lookup</h3><p>To determine which server a key is stored on, we go clockwise from the key position on the ring until a server is found. </p>
-<h3 id="Add-a-server"><a href="#Add-a-server" class="headerlink" title="Add a server"></a>Add a server</h3><p>adding a new server will only need to redistribute part of keys. </p>
-<h3 id="Remove-a-server"><a href="#Remove-a-server" class="headerlink" title="Remove a server"></a>Remove a server</h3><p>When a server is removed, only part of keys require redistribution with consistent hashing</p>
-<h2 id="Two-issue-in-the-basic-approach"><a href="#Two-issue-in-the-basic-approach" class="headerlink" title="Two issue in the basic approach"></a>Two issue in the basic approach</h2><p>basic approach:</p>
+<h3 id="2-1-Hash-space-and-hash-ring"><a href="#2-1-Hash-space-and-hash-ring" class="headerlink" title="2.1 Hash space and hash ring"></a>2.1 Hash space and hash ring</h3><p>Assume hash function is <code>f</code>, and the output range of the hash function is: <code>$x_0, x_1, x_2, x_3, ..., x_n$</code>. For example, SHA-1&#39;s hash space is <code>$[0, 2^&#123;160&#125; - 1]$</code>, <code>$x_0$</code> corresponds to <code>0</code>, <code>$x_n$</code> corresponds to <code>$2^&#123;160&#125; - 1$</code>.<br><img src="/images/System-Design/Interview/5-hash-space.jpg" alt="Hash Space"></p>
+<p>By connecting the <code>$x_0$</code> and <code>$x_n$</code>, we got a hash ring.<br><img src="/images/System-Design/Interview/5-hash-ring.jpg" alt="Hash Ring"></p>
+<h3 id="2-2-Hash-servers"><a href="#2-2-Hash-servers" class="headerlink" title="2.2 Hash servers"></a>2.2 Hash servers</h3><p>We map the servers based on their IP address or name onto the ring using hash function <code>f</code>.<br><img src="/images/System-Design/Interview/5-hash-server.jpg" alt="Hash Server"></p>
+<h3 id="2-3-Hash-keys"><a href="#2-3-Hash-keys" class="headerlink" title="2.3 Hash keys"></a>2.3 Hash keys</h3><p>The cache keys(key0, key1, key2, and key3) are also hashed onto the hash ring, and there is no modular operation<br><img src="/images/System-Design/Interview/5-hash-keys.jpg" alt="Hash Keys"></p>
+<h3 id="2-4-Server-lookup"><a href="#2-4-Server-lookup" class="headerlink" title="2.4 Server lookup"></a>2.4 Server lookup</h3><p>To determine which server a key is stored on, we go clockwise from the key position on the ring until a server is found. For example:</p>
+<ul>
+<li>key0 is stored on server 0</li>
+<li>key1 is stored on server 1</li>
+<li>key2 is stored on server 2</li>
+<li>key3 is stored on server 3.</li>
+</ul>
+<p><img src="/images/System-Design/Interview/5-server-lookup.jpg" alt="Server Lookup"></p>
+<h3 id="2-5-Add-a-server"><a href="#2-5-Add-a-server" class="headerlink" title="2.5 Add a server"></a>2.5 Add a server</h3><p>adding a new server will only need to redistribute part of keys. For example, after server 4 is added, only key0 needs to be redistributed; The rest of the keys are unaffected.<br><img src="/images/System-Design/Interview/5-add-new-server.jpg" alt="Add New Server"></p>
+<h3 id="2-6-Remove-a-server"><a href="#2-6-Remove-a-server" class="headerlink" title="2.6 Remove a server"></a>2.6 Remove a server</h3><p>When a server is removed, only part of keys require redistribution with consistent hashing. For example, when server 1 is removed, only key1 needs to be remapped to server 2. The rest of the keys are unaffected.<br><img src="/images/System-Design/Interview/5-remove-a-server.jpg" alt="Remove a Server"></p>
+<h2 id="3-Two-issue-in-the-basic-approach"><a href="#3-Two-issue-in-the-basic-approach" class="headerlink" title="3. Two issue in the basic approach"></a>3. Two issue in the basic approach</h2><p>Basic approach of consistent hashing algorithm:</p>
 <ul>
 <li>Map servers and keys on to the ring using a uniformly distributed hash function</li>
 <li>To find out which server a key is mapped to, go clockwise from the key position until the first server on the ring is found</li>
 </ul>
-<p>Two problems:</p>
+<p>Two problems with the basic approach:</p>
 <ul>
-<li>when add or remove a server, its impossible to keep the same size of partition for each server</li>
-<li>it is possible to have a non-uniform key distribution on the ring</li>
+<li>When add or remove a server, its impossible to keep the same size of partition for each server</li>
+<li>It is possible to have a non-uniform key distribution on the ring</li>
 </ul>
-<h3 id="Virtual-nodes"><a href="#Virtual-nodes" class="headerlink" title="Virtual nodes"></a>Virtual nodes</h3><p>each server is represented by multiple virtual nodes on the ring, and each server is responsible for multiple partitions. To find which server a key is stored on, we go clockwise from the key’s location and find the first virtual node encountered on the ring.<br>As the number of virtual nodes increases, the distribution of keys becomes more balanced; However, more spaces are needed to store data about virtual nodes. This is a tradeoff, and we can tune the number of virtual nodes to fit our system requirements.</p>
-<h3 id="Find-affected-keys"><a href="#Find-affected-keys" class="headerlink" title="Find affected keys"></a>Find affected keys</h3><ul>
-<li>Add new server: when server <code>S</code> is added onto the ring. The affected range starts from <code>S</code>(newly added node) and moves anticlockwise around the ring until a server is found <code>S&#39;</code>. Thus, keys located between <code>S&#39;</code> and <code>S</code> need to be redistributed to <code>S</code>.</li>
-<li>Remove existing server: the affected range starts from <code>S</code>(removed node) and moves anticlockwise around the ring until a server is found <code>S&#39;</code>. Thus, keys located between <code>S</code> and <code>S&#39;</code> must be redistributed to <code>S&#39;</code>.</li>
+<h3 id="3-1-Virtual-nodes"><a href="#3-1-Virtual-nodes" class="headerlink" title="3.1 Virtual nodes"></a>3.1 Virtual nodes</h3><p>A virtual node refers to the real node, and each server is represented by multiple virtual nodes on the ring. To find which server a key is stored on, we go clockwise from the key&#39;s location and find the first virtual node encountered on the ring.<br>For example, both server 0 and server 1 have 3 virtual nodes:</p>
+<ul>
+<li>server 0: s0_0, s0_1, and s0_2</li>
+<li>server 1: s1_0, s1_1, and s1_2</li>
 </ul>
-<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>The benefits of consistent hashing:</p>
+<p><img src="/images/System-Design/Interview/5-virtual-nodes-example.jpg" alt="Virtual Nodes Example"></p>
+<p>As the number of virtual nodes increases, the distribution of keys becomes more balanced; However, more spaces are needed to store data about virtual nodes. This is a tradeoff, and we can tune the number of virtual nodes to fit our system requirements.</p>
+<h3 id="3-2-Find-affected-keys"><a href="#3-2-Find-affected-keys" class="headerlink" title="3.2 Find affected keys"></a>3.2 Find affected keys</h3><ul>
+<li><p>Add new server: when server <code>S</code> is added onto the ring. The affected range starts from <code>S</code> and moves anticlockwise around the ring until a server is found <code>S&#39;</code>. Thus, keys located between <code>S&#39;</code> and <code>S</code> need to be redistributed to <code>S</code>. For example, server 4 is added onto the ring, keys located between s3 and s4 need to be redistributed to s4.<br><img src="/images/System-Design/Interview/5-virtual-nodes-add-server.jpg" alt="Add New Server with Virtual Nodes"></p>
+</li>
+<li><p>Remove existing server: the affected range starts from <code>S</code>(removed node) and moves anticlockwise around the ring until a server is found <code>S&#39;</code>. Thus, keys located between <code>S</code> and <code>S&#39;</code> must be redistributed to <code>S&#39;</code>. For example, When a server 1 is removed, the affected range is between server 0 and server 1.<br><img src="/images/System-Design/Interview/5-virtual-nodes-remove-server.jpg" alt="Remove Server with Virtual Nodes"></p>
+</li>
+</ul>
+<h2 id="4-Summary"><a href="#4-Summary" class="headerlink" title="4. Summary"></a>4. Summary</h2><p>The benefits of consistent hashing:</p>
 <ul>
 <li>Minimized the number of redistributed keys when servers are added or removed</li>
 <li>Data are more evenly distributed, so it&#39;s easy to scale horizontally</li>
 <li>Mitigate hotspot key problem. Excessive access to a specific shard could cause server overload</li>
+</ul>
+<p>Consistent hashing use case:</p>
+<ul>
+<li>Partitioning component of Amazon&#39;s Dynamo database</li>
+<li>Data partitioning across the cluster in Apache Cassandra</li>
+<li>Discord chat application</li>
+<li>Akamai content delivery network</li>
+<li>Maglev network load balancer</li>
 </ul>
 
     </div>

@@ -37,17 +37,24 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/6040.html"/>
 
 
-<meta name="description" content="Vertical scaling vs horizontal scalingVertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,RAM, etc.) to your servers. Horizontal scaling, referred to as">
+<meta name="description" content="1. Vertical scaling vs horizontal scalingVertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,RAM, etc.) to your servers. Horizontal scaling, referred to">
 <meta property="og:type" content="article">
 <meta property="og:title" content="System Design - Basic">
 <meta property="og:url" content="https://zaf1ro.github.io/p/6040.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="Vertical scaling vs horizontal scalingVertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,RAM, etc.) to your servers. Horizontal scaling, referred to as">
+<meta property="og:description" content="1. Vertical scaling vs horizontal scalingVertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,RAM, etc.) to your servers. Horizontal scaling, referred to">
 <meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-database-replication.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-scaling.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-cache.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-CDN.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-stateless-servers.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-message-queue.jpg">
 <meta property="article:published_time" content="2024-04-08T16:42:10.000Z">
-<meta property="article:modified_time" content="2024-04-10T14:50:56.000Z">
+<meta property="article:modified_time" content="2024-04-14T03:28:33.790Z">
 <meta property="article:tag" content="System Design">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-database-replication.png">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -74,7 +81,7 @@ System Design - Basic - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Vertical-scaling-vs-horizontal-scaling"><span class="toc-text">Vertical scaling vs horizontal scaling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Load-Balancing"><span class="toc-text">Load Balancing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Database-replication"><span class="toc-text">Database replication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cache"><span class="toc-text">Cache</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Content-delivery-network-CDN"><span class="toc-text">Content delivery network (CDN)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Stateless-web-tier"><span class="toc-text">Stateless web tier</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Data-center"><span class="toc-text">Data center</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Message-queue"><span class="toc-text">Message queue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Logging-metrics-automation"><span class="toc-text">Logging, metrics, automation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Database-scaling"><span class="toc-text">Database scaling</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Database-Vertical-Scaling"><span class="toc-text">Database Vertical Scaling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Horizontal-Scaling"><span class="toc-text">Horizontal Scaling</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#summary-of-how-to-scale-our-system-to-support-millions-of-users"><span class="toc-text">summary of how to scale our system to support millions of users</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Vertical-scaling-vs-horizontal-scaling"><span class="toc-text">1. Vertical scaling vs horizontal scaling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Load-Balancing"><span class="toc-text">2. Load Balancing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Database-replication"><span class="toc-text">3. Database replication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Database-scaling"><span class="toc-text">4. Database scaling</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Database-Vertical-Scaling"><span class="toc-text">4.1 Database Vertical Scaling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Horizontal-Scaling"><span class="toc-text">4.2 Horizontal Scaling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Challenges-of-sharding"><span class="toc-text">4.3 Challenges of sharding</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Cache"><span class="toc-text">5. Cache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Advantages"><span class="toc-text">5.1 Advantages</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Considerations-for-using-cache"><span class="toc-text">5.2 Considerations for using cache:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Content-delivery-network-CDN"><span class="toc-text">6. Content delivery network (CDN)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Stateless-web-tier"><span class="toc-text">7. Stateless web tier</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Data-center"><span class="toc-text">8. Data center</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Message-queue"><span class="toc-text">9. Message queue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Logging-metrics-automation"><span class="toc-text">10. Logging, metrics, automation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Summary-of-How-to-Scale-System-to-Support-Millions-of-Users"><span class="toc-text">11. Summary of How to Scale System to Support Millions of Users</span></a></li></ol>
   </div>
 
     </div>
@@ -129,14 +136,17 @@ System Design - Basic - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="Vertical-scaling-vs-horizontal-scaling"><a href="#Vertical-scaling-vs-horizontal-scaling" class="headerlink" title="Vertical scaling vs horizontal scaling"></a>Vertical scaling vs horizontal scaling</h2><p>Vertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,<br>RAM, etc.) to your servers. Horizontal scaling, referred to as &quot;scale-out&quot;, allows you to scale<br>by adding more servers into your pool of resources.</p>
+      <h2 id="1-Vertical-scaling-vs-horizontal-scaling"><a href="#1-Vertical-scaling-vs-horizontal-scaling" class="headerlink" title="1. Vertical scaling vs horizontal scaling"></a>1. Vertical scaling vs horizontal scaling</h2><p>Vertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,<br>RAM, etc.) to your servers. Horizontal scaling, referred to as &quot;scale-out&quot;, allows you to scale<br>by adding more servers into your pool of resources.</p>
 <p>Pros:</p>
 <ul>
-<li>vertical scaling is a great option, and the simplicity of vertical scaling is<br>its main advantage.<br>Cons:</li>
-<li>Vertical scaling has a hard limit. It is impossible to add unlimited CPU and memory to a<br>single server.</li>
-<li>Vertical scaling does not have failover and redundancy. If one server goes down, the<br>website&#x2F;app goes down with it completely.</li>
+<li>vertical scaling is a great option, and the simplicity of vertical scaling is its main advantage.</li>
 </ul>
-<h2 id="Load-Balancing"><a href="#Load-Balancing" class="headerlink" title="Load Balancing"></a>Load Balancing</h2><p>Load balancing refers to efficiently distributing incoming network traffic across a group of backend servers, also known as a server farm or server pool.</p>
+<p>Cons:</p>
+<ul>
+<li>Vertical scaling has a hard limit. It is impossible to add unlimited CPU and memory to a single server.</li>
+<li>Vertical scaling does not have failover and redundancy. If one server goes down, the website&#x2F;app goes down with it completely.</li>
+</ul>
+<h2 id="2-Load-Balancing"><a href="#2-Load-Balancing" class="headerlink" title="2. Load Balancing"></a>2. Load Balancing</h2><p>Load balancing refers to efficiently distributing incoming network traffic across a group of backend servers, also known as a server farm or server pool.</p>
 <p>load balancing configurations:</p>
 <ul>
 <li>round-robin</li>
@@ -144,7 +154,8 @@ System Design - Basic - Zaf1ro
 <li>dynamic algorithm: consider server health and server response times when assigning requests.</li>
 <li>Geo-location is another widely used dynamic algorithm: load balancer assigns requests from a region to a defined server or server set.</li>
 </ul>
-<h2 id="Database-replication"><a href="#Database-replication" class="headerlink" title="Database replication"></a>Database replication</h2><p>A master database generally only supports write operations. A slave database gets copies of the data from the master database and only supports read operations. All the data-modifying commands like insert, delete, or update must be sent to the master database.<br>Most applications require a much higher ratio of reads to writes: , the number of slave databases in a system is usually larger than the number of master databases</p>
+<h2 id="3-Database-replication"><a href="#3-Database-replication" class="headerlink" title="3. Database replication"></a>3. Database replication</h2><p>A master database generally only supports write operations. A slave database gets copies of the data from the master database and only supports read operations. All the data-modifying commands like insert, delete, or update must be sent to the master database.<br>Most applications require a much higher ratio of reads to writes: The number of slave database is usually larger than the number of master databases</p>
+<p><img src="/images/System-Design/Interview/1-database-replication.png" alt="database replication"></p>
 <p>Advantages: </p>
 <ul>
 <li>Better performance: all writes and updates happen in master nodes; whereas, read operations are distributed across slave nodes.</li>
@@ -161,15 +172,35 @@ System Design - Basic - Zaf1ro
 </ul>
 </li>
 </ul>
-<h2 id="Cache"><a href="#Cache" class="headerlink" title="Cache"></a>Cache</h2><p>A cache is a temporary storage area that stores the result of expensive responses or frequently accessed data in memory so that subsequent requests are served more quickly.</p>
-<p>Advantage:</p>
+<h2 id="4-Database-scaling"><a href="#4-Database-scaling" class="headerlink" title="4. Database scaling"></a>4. Database scaling</h2><p>Two approaches for database scaling:</p>
 <ul>
+<li>vertical scaling</li>
+<li>horizontal scaling</li>
+</ul>
+<p><img src="/images/System-Design/Interview/1-scaling.jpg" alt="Database scaling"> </p>
+<h3 id="4-1-Database-Vertical-Scaling"><a href="#4-1-Database-Vertical-Scaling" class="headerlink" title="4.1 Database Vertical Scaling"></a>4.1 Database Vertical Scaling</h3><p>Adding more power (CPU, RAM, DISK, etc.) to an existing machine.<br>Drawbacks:</p>
+<ul>
+<li>hardware limit for a single server</li>
+<li>Greater risk of single point of failures</li>
+<li>cost is high since powerful servers are much more expensive</li>
+</ul>
+<h3 id="4-2-Horizontal-Scaling"><a href="#4-2-Horizontal-Scaling" class="headerlink" title="4.2 Horizontal Scaling"></a>4.2 Horizontal Scaling</h3><p>Separating large databases into smaller parts, called shards. Each shard shares the same schema, though the actual data on each shard is unique to the shard.<br>The most important factor to consider when implementing a sharding strategy is the choice of the sharding key. Sharding key (known as a partition key) consists of one or more columns that determine how data is distributed. </p>
+<h3 id="4-3-Challenges-of-sharding"><a href="#4-3-Challenges-of-sharding" class="headerlink" title="4.3 Challenges of sharding"></a>4.3 Challenges of sharding</h3><ul>
+<li>Resharding data:<ul>
+<li>a single shard could no longer hold more data due to rapid growth.</li>
+<li>Certain shards might experience shard exhaustion faster than others due to uneven data distribution.</li>
+</ul>
+</li>
+<li>Celebrity problem: Excessive access to a specific shard could cause server overload. For social applications, that shard with celebrity will be overwhelmed with read operations -&gt; allocate a shard for each celebrity</li>
+<li>Join and de-normalization: hard to perform join operations across database shards -&gt; denormalize the database so that queries can be performed in a single table.</li>
+</ul>
+<h2 id="5-Cache"><a href="#5-Cache" class="headerlink" title="5. Cache"></a>5. Cache</h2><p>A cache is a temporary storage area that stores the result of expensive responses or frequently accessed data in memory so that subsequent requests are served more quickly.<br><img src="/images/System-Design/Interview/1-cache.jpg" alt="cache"></p>
+<h3 id="5-1-Advantages"><a href="#5-1-Advantages" class="headerlink" title="5.1 Advantages"></a>5.1 Advantages</h3><ul>
 <li>better system performance</li>
 <li>reduce database workload</li>
 <li>scale the cache tier independently</li>
 </ul>
-<p>Considerations for using cache:</p>
-<ul>
+<h3 id="5-2-Considerations-for-using-cache"><a href="#5-2-Considerations-for-using-cache" class="headerlink" title="5.2 Considerations for using cache:"></a>5.2 Considerations for using cache:</h3><ul>
 <li>when to use cache: using cache when data is read frequently but modified infrequently</li>
 <li>expiration policy: Once cached data is expired, it is removed from the cache.<ul>
 <li>make the expiration date too short: reload data from the database too frequently</li>
@@ -184,7 +215,7 @@ System Design - Basic - Zaf1ro
 </li>
 <li>eviction policy: Once the cache is full, any requests to add items to the cache might cause existing items to be removed (Least-recently-used, LRU)</li>
 </ul>
-<h2 id="Content-delivery-network-CDN"><a href="#Content-delivery-network-CDN" class="headerlink" title="Content delivery network (CDN)"></a>Content delivery network (CDN)</h2><p>A CDN is a network of geographically dispersed servers used to deliver static content.</p>
+<h2 id="6-Content-delivery-network-CDN"><a href="#6-Content-delivery-network-CDN" class="headerlink" title="6. Content delivery network (CDN)"></a>6. Content delivery network (CDN)</h2><p>A CDN is a network of geographically dispersed servers used to deliver static content.<br><img src="/images/System-Design/Interview/1-CDN.jpg" alt="CDN"></p>
 <ol>
 <li>User A tries to get image.png by using an image URL</li>
 <li>If the CDN server does not have image.png in the cache, the CDN server requests the file from the origin</li>
@@ -206,21 +237,22 @@ System Design - Basic - Zaf1ro
 </ul>
 </li>
 </ul>
-<h2 id="Stateless-web-tier"><a href="#Stateless-web-tier" class="headerlink" title="Stateless web tier"></a>Stateless web tier</h2><p>scale the web tier horizontally -&gt; move state out of the web tier: A good practice is to store session data in the persistent storage such as NoSQL. Each web server in the cluster can access state data from databases.<br>In this stateless architecture, HTTP requests from users can be sent to any web servers, which<br>fetch state data from a shared data store. State data is stored in a shared data store and kept<br>out of web servers. </p>
-<h2 id="Data-center"><a href="#Data-center" class="headerlink" title="Data center"></a>Data center</h2><p>In normal operation, users are geoDNS-routed, also known as geo-routed, to the closest data center. geoDNS is a DNS service that allows domain names to be resolved to IP addresses based on the location of a user.</p>
-<p>challenges:</p>
+<h2 id="7-Stateless-web-tier"><a href="#7-Stateless-web-tier" class="headerlink" title="7. Stateless web tier"></a>7. Stateless web tier</h2><p>scale the web tier horizontally -&gt; move state out of the web tier: A good practice is to store session data in the persistent storage such as NoSQL. Each web server in the cluster can access state data from databases. In this stateless architecture, HTTP requests from users can be sent to any web servers, which fetch state data from a shared data store. State data is stored in a shared data store and kept out of web servers.<br><img src="/images/System-Design/Interview/1-stateless-servers.jpg" alt="Stateless Servers"> </p>
+<h2 id="8-Data-center"><a href="#8-Data-center" class="headerlink" title="8. Data center"></a>8. Data center</h2><p>In normal operation, users are geoDNS-routed, also known as geo-routed, to the closest data center. geoDNS is a DNS service that allows domain names to be resolved to IP addresses based on the location of a user.</p>
+<p>Challenges:</p>
 <ul>
 <li>Traffic redirection: need tools to direct traffic to the correct data center(GeoDNS)</li>
-<li>Data synchronization:  Users from different regions could use different local databases or caches. In failover cases, traffic might be routed to a data center where data is unavailable. Solution: replicate data across multiple data centers.</li>
+<li>Data synchronization: Users from different regions could use different local databases or caches. In failover cases, traffic might be routed to a data center where data is unavailable. Solution: replicate data across multiple data centers.</li>
 <li>Test and deployment: Automated deployment tools are vital to keep services consistent through all the data centers</li>
 </ul>
-<h2 id="Message-queue"><a href="#Message-queue" class="headerlink" title="Message queue"></a>Message queue</h2><p>A message queue is a durable component, stored in memory, that supports asynchronous communication. </p>
+<h2 id="9-Message-queue"><a href="#9-Message-queue" class="headerlink" title="9. Message queue"></a>9. Message queue</h2><p><img src="/images/System-Design/Interview/1-message-queue.jpg" alt="Message Queue"> </p>
+<p>A message queue is a durable component, stored in memory, that supports asynchronous communication. </p>
 <ul>
 <li>producer: create messages, and publish them to a message queue</li>
 <li>consumers: connect to the queue, and perform actions defined by the messages</li>
 </ul>
 <p>Advantage of MQ: <strong>Decoupling</strong>. producer can post a message to the queue when the consumer is unavailable to process it; consumer can read messages from the queue even when the producer is unavailable.</p>
-<h2 id="Logging-metrics-automation"><a href="#Logging-metrics-automation" class="headerlink" title="Logging, metrics, automation"></a>Logging, metrics, automation</h2><ul>
+<h2 id="10-Logging-metrics-automation"><a href="#10-Logging-metrics-automation" class="headerlink" title="10. Logging, metrics, automation"></a>10. Logging, metrics, automation</h2><ul>
 <li>Logging: Monitoring error logs is important because it helps to identify errors and problems</li>
 <li>Metrics: Collecting different types of metrics help us to gain business insights and understand the health status<ul>
 <li>Host level metrics: CPU, Memory, disk I&#x2F;O</li>
@@ -230,29 +262,7 @@ System Design - Basic - Zaf1ro
 </li>
 <li>Automation: automation tool to improve producitivity.</li>
 </ul>
-<h2 id="Database-scaling"><a href="#Database-scaling" class="headerlink" title="Database scaling"></a>Database scaling</h2><p>Two approaches for database scaling:</p>
-<ul>
-<li>vertical scaling</li>
-<li>horizontal scaling</li>
-</ul>
-<h3 id="Database-Vertical-Scaling"><a href="#Database-Vertical-Scaling" class="headerlink" title="Database Vertical Scaling"></a>Database Vertical Scaling</h3><p>Adding more power (CPU, RAM, DISK, etc.) to an existing machine.<br>Drawbacks:</p>
-<ul>
-<li>hardware limit for a single server</li>
-<li>Greater risk of single point of failures</li>
-<li>cost is high since powerful servers are much more expensive</li>
-</ul>
-<h3 id="Horizontal-Scaling"><a href="#Horizontal-Scaling" class="headerlink" title="Horizontal Scaling"></a>Horizontal Scaling</h3><p>Separating large databases into smaller parts, called shards. Each shard shares the same schema, though the actual data on each shard is unique to the shard.<br>The most important factor to consider when implementing a sharding strategy is the choice of the sharding key. Sharding key (known as a partition key) consists of one or more columns that determine how data is distributed. </p>
-<p>challenges of sharding:</p>
-<ul>
-<li>Resharding data:<ul>
-<li>a single shard could no longer hold more data due to rapid growth.</li>
-<li>Certain shards might experience shard exhaustion faster than others due to uneven data distribution.</li>
-</ul>
-</li>
-<li>Celebrity problem: Excessive access to a specific shard could cause server overload. For social applications, that shard with celebrity will be overwhelmed with read operations -&gt; allocate a shard for each celebrity</li>
-<li>Join and de-normalization: hard to perform join operations across database shards -&gt; denormalize the database so that queries can be performed in a single table.</li>
-</ul>
-<h2 id="summary-of-how-to-scale-our-system-to-support-millions-of-users"><a href="#summary-of-how-to-scale-our-system-to-support-millions-of-users" class="headerlink" title="summary of how to scale our system to support millions of users"></a>summary of how to scale our system to support millions of users</h2><ul>
+<h2 id="11-Summary-of-How-to-Scale-System-to-Support-Millions-of-Users"><a href="#11-Summary-of-How-to-Scale-System-to-Support-Millions-of-Users" class="headerlink" title="11. Summary of How to Scale System to Support Millions of Users"></a>11. Summary of How to Scale System to Support Millions of Users</h2><ul>
 <li>Keep web tier stateless</li>
 <li>Build redundancy at every tier</li>
 <li>Cache data as much as you can</li>
