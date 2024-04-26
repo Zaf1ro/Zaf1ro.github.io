@@ -27,10 +27,12 @@ Cons:
 Load balancing refers to efficiently distributing incoming network traffic across a group of backend servers, also known as a server farm or server pool.
 
 load balancing configurations:
-* round-robin
-* weighted algorithm: different servers are assigned relative weights based on their capacity to handle traffic. if server A has twice the capacity of server B, then the load balancer would give twice the amount of traffic to server A compared to server B.
-* dynamic algorithm: consider server health and server response times when assigning requests.
+* Round-robin
+* Weighted algorithm: different servers are assigned relative weights based on their capacity to handle traffic. if server A has twice the capacity of server B, then the load balancer would give twice the amount of traffic to server A compared to server B.
+* Dynamic algorithm: consider server health and server response times when assigning requests.
 * Geo-location is another widely used dynamic algorithm: load balancer assigns requests from a region to a defined server or server set.
+* Sticky session: All requests from the client during the session are sent to the same target. This feature is useful for servers that maintain state information.
+* Application-based stickiness: routing based on fields in the request, such as standard and custom HTTP headers and methods, query parameters, and source IP address
 
 
 ## 3. Database replication
