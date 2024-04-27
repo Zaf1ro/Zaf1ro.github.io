@@ -55,7 +55,7 @@
 <meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-virtual-nodes-add-server.jpg">
 <meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-virtual-nodes-remove-server.jpg">
 <meta property="article:published_time" content="2024-04-11T16:42:10.000Z">
-<meta property="article:modified_time" content="2024-04-14T16:42:50.543Z">
+<meta property="article:modified_time" content="2024-04-26T21:28:30.405Z">
 <meta property="article:tag" content="System Design">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-space.jpg">
@@ -85,7 +85,7 @@ System Design - Consistent Hashing - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-The-rehashing-problem"><span class="toc-text">1. The rehashing problem</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Consistent-hashing"><span class="toc-text">2. Consistent hashing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hash-space-and-hash-ring"><span class="toc-text">2.1 Hash space and hash ring</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Hash-servers"><span class="toc-text">2.2 Hash servers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Hash-keys"><span class="toc-text">2.3 Hash keys</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Server-lookup"><span class="toc-text">2.4 Server lookup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Add-a-server"><span class="toc-text">2.5 Add a server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-Remove-a-server"><span class="toc-text">2.6 Remove a server</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Two-issue-in-the-basic-approach"><span class="toc-text">3. Two issue in the basic approach</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Virtual-nodes"><span class="toc-text">3.1 Virtual nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Find-affected-keys"><span class="toc-text">3.2 Find affected keys</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Summary"><span class="toc-text">4. Summary</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-The-rehashing-problem"><span class="toc-text">1. The rehashing problem</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Consistent-hashing"><span class="toc-text">2. Consistent hashing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hash-space-and-hash-ring"><span class="toc-text">2.1 Hash space and hash ring</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Hash-servers"><span class="toc-text">2.2 Hash servers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Hash-keys"><span class="toc-text">2.3 Hash keys</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Server-lookup"><span class="toc-text">2.4 Server lookup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Add-a-server"><span class="toc-text">2.5 Add a server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-Remove-a-server"><span class="toc-text">2.6 Remove a server</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Two-issue-in-the-basic-approach"><span class="toc-text">3. Two issue in the basic approach</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Virtual-nodes"><span class="toc-text">3.1 Virtual nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Find-affected-keys"><span class="toc-text">3.2 Find affected keys</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Data-Replication"><span class="toc-text">4. Data Replication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Summary"><span class="toc-text">5. Summary</span></a></li></ol>
   </div>
 
     </div>
@@ -183,7 +183,14 @@ System Design - Consistent Hashing - Zaf1ro
 <li><p>Remove existing server: the affected range starts from <code>S</code>(removed node) and moves anticlockwise around the ring until a server is found <code>S&#39;</code>. Thus, keys located between <code>S</code> and <code>S&#39;</code> must be redistributed to <code>S&#39;</code>. For example, When a server 1 is removed, the affected range is between server 0 and server 1.<br><img src="/images/System-Design/Interview/5-virtual-nodes-remove-server.jpg" alt="Remove Server with Virtual Nodes"></p>
 </li>
 </ul>
-<h2 id="4-Summary"><a href="#4-Summary" class="headerlink" title="4. Summary"></a>4. Summary</h2><p>The benefits of consistent hashing:</p>
+<h2 id="4-Data-Replication"><a href="#4-Data-Replication" class="headerlink" title="4. Data Replication"></a>4. Data Replication</h2><p>To ensure highly available, Consistent Hashing replicates each data item on multiple <code>N</code> nodes. <code>N</code> is equivalent to the replication factor (the number of nodes that will receive the copy of the same data).</p>
+<ol>
+<li>Each key is assigned to a <strong>coordinator node</strong> (usually the first node that falls in the hash range)</li>
+<li>coordinator node stores the data locally</li>
+<li>coordinator node replicates it to <code>&#39;N-1&#39;</code> clockwise successor nodes on the ring asynchronously.</li>
+</ol>
+<p>This results in each node owning the region on the ring between it and its <code>&#39;Nth&#39;</code> predecessor.</p>
+<h2 id="5-Summary"><a href="#5-Summary" class="headerlink" title="5. Summary"></a>5. Summary</h2><p>The benefits of consistent hashing:</p>
 <ul>
 <li>Minimized the number of redistributed keys when servers are added or removed</li>
 <li>Data are more evenly distributed, so it&#39;s easy to scale horizontally</li>

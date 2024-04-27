@@ -47,7 +47,7 @@
 <meta property="og:image" content="https://zaf1ro.github.io/images/Kafka/log_cleaner_anatomy.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Kafka/log_compaction.png">
 <meta property="article:published_time" content="2021-05-23T19:05:47.000Z">
-<meta property="article:modified_time" content="2024-03-06T16:03:54.750Z">
+<meta property="article:modified_time" content="2024-03-06T17:03:56.000Z">
 <meta property="article:tag" content="Kafka">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/Kafka/log_cleaner_anatomy.png">
@@ -229,7 +229,7 @@ Kafka Design - Zaf1ro
 <h3 id="7-4-Replica-Management"><a href="#7-4-Replica-Management" class="headerlink" title="7.4 Replica Management"></a>7.4 Replica Management</h3><p>上述的讨论只围绕着一个log, 也就是一个topic中的一个partition. 然而, 在Kafka集群中会有成百上千个partition. 我们尝试以轮询的方式平衡集群中的partition, 避免大量topic的partition集中在少数节点. 同样, 我们尝试平衡leader, 这样每个节点都能承担一定比例的leader职责.<br>Leader的选举过程也很重要, 这决定了不可用窗口期的长度. 一个简单的leader选举实现可以是: 当某个节点出现故障, 为该节点上的所有partition都举行一次选举. 相反, 我们可以推选一个broker作为<strong>controller</strong>. 这个controller会检测broker层面的故障, 并负责为故障节点中的所有受影响partition分配新的leader. 这样可以批处理多个修改leader的通发生故障, 剩余的broker中会有一个成为新的controller.</p>
 <h2 id="8-Log-Compaction"><a href="#8-Log-Compaction" class="headerlink" title="8. Log Compaction"></a>8. Log Compaction</h2><p><strong>Log compaction</strong>(日志压缩)确保在Kafka中, 对于单个topic partition的log数据来说, 每个message key至少保留一个最新值. 它能解决一些特殊场景, 例如, 应用在崩溃或系统故障后恢复, 或是维护完成后程序重启. 让我们详细研究这些用例, 并阐述压缩是如何工作的.<br>目前为止, 我们只描述过一个简单的方法来保存数据, 也就是在一段固定时间后, 或日志大小达到某个阈值后删除旧数据. 这种方式对于临时时间类数据十分有效, 例如, 每个记录独立存在的日志系统. 但还存在另一种数据流方式: 对于键控修改的可变数据日志, 例如, 对数据表的更改.<br>让我们以一个具体的例子讨论这种流. 假设我们有一个topic保存用户邮箱地址. 每当用户修改其邮箱地址时, 我们都会向该topic发送一个消息, key为用户id. 假设用户的id为<strong>123</strong>, 每个消息都包含邮箱地址的更改(其他id的消息被忽略):</p>
 <figure class="highlight text"><table><tr><td class="code"><pre><span class="line">123 =&gt; bill@microsoft.com</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">123 =&gt; bill@gatesfoundation.org</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">        .</span><br><span class="line">123 =&gt; bill@gmail.com</span><br></pre></td></tr></table></figure>
-<p>日志压缩给我们提供了更精细的日志保存机制, 从而为每个primary key至少保留最新的更新(例如: <a href="mailto:&#98;&#x69;&#x6c;&#x6c;&#64;&#103;&#109;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;" rel="external nofollow noreferrer">&#98;&#x69;&#x6c;&#x6c;&#64;&#103;&#109;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;</a>). 这么做保证了日志包含每个key对应的最终值的完整快照, 而不是最近更新的key. 这意味着下游consumer可以从改topic恢复其状态, 无需保留所有更改的日志. 下面是log compaction的一些用例:</p>
+<p>日志压缩给我们提供了更精细的日志保存机制, 从而为每个primary key至少保留最新的更新(例如: <a href="mailto:&#x62;&#105;&#108;&#x6c;&#x40;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;" rel="external nofollow noreferrer">&#x62;&#105;&#108;&#x6c;&#x40;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;</a>). 这么做保证了日志包含每个key对应的最终值的完整快照, 而不是最近更新的key. 这意味着下游consumer可以从改topic恢复其状态, 无需保留所有更改的日志. 下面是log compaction的一些用例:</p>
 <ol>
 <li>Database change subscription(数据库更改订阅): 多个数据系统共享一个数据集合是十分常见的, 其中有些系统是RDBMS, 有些是key-value store. 举个例子, 现在有一个数据库, 一个cache, 一个搜索集群, 一个Hadoop集群. 对于数据库的每次修改都需反应在其他系统中. 如果只处理实时更新, 则只需要最新的日志; 但如果用于重新加载缓存或恢复故障搜索节点, 则需要完整数据集.</li>
 <li>Event sourcing(事件源): 这是一种应用设计风格, 将查询处理和应用程序设计结合到一起, 并将日志修改作为应用的主要存储.</li>
