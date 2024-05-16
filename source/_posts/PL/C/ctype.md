@@ -1,9 +1,10 @@
 ---
 title: ctype.h
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: e9d2
 date: 2017-06-30 09:41:21
 ---

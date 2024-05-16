@@ -1,9 +1,9 @@
 ---
 title: Process Control
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: c259
 date: 2019-09-01 12:46:20
 ---

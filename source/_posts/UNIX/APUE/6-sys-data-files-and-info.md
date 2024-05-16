@@ -1,9 +1,9 @@
 ---
 title: System Data Files and Infomation
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: 4ad7
 date: 2019-08-25 17:58:41
 ---

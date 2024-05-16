@@ -1,10 +1,10 @@
 ---
 title: JVM (3)
 category:
+  - Programming Language
   - Java
-  - JVM
 tag:
-  - Java
+  - Programming Language
 abbrlink: 94a0
 date: 2017-11-09 08:58:48
 ---

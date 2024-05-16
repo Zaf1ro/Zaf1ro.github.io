@@ -1,10 +1,10 @@
 ---
 title: Hashtable
 category:
+  - Programming Language
   - Java
-  - Collections
 tag:
-  - Java
+  - Programming Language
 abbrlink: ca38
 date: 2018-01-23 13:41:20
 ---

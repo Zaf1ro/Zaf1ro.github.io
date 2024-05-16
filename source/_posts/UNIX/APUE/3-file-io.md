@@ -1,9 +1,9 @@
 ---
 title: File I/O
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: aabf
 date: 2019-07-29 17:39:17
 ---

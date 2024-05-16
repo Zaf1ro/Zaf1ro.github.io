@@ -2,7 +2,7 @@
 title: System Design - Basic
 category:
   - System Design
-tag:
+tag: 
   - System Design
 abbrlink: '6040'
 date: 2024-04-08 12:42:10
@@ -54,7 +54,20 @@ what if one of the databases goes offline:
     * circular replication
 
 
-## 4. Database scaling
+## 4. Database Selection
+### 4.1 SQL vs NoSQL
+* SQL databases are suitable for structured data, where data is consistent, and relationships between tables are well-defined.
+* NoSQL databases are suitable for semi-structured or unstructured data, where the data does not conform to a predefined schema, and relationships between data elements are not well-defined.
+
+* SQL follows ACID properties (Atomicity, Consistency, Isolation and Durability) for the transaction management; NoSQL doesn't necessarily follow ACID properties.
+* SQL supports JOIN and complex queries; NoSQL doesn't support.
+* SQL use normalized data structure; NoSQL uses denormalized data structure
+
+### 4.2 Key-Value Database vs Document Database
+Document database and key-value database both are types of NoSQL design. Document database is an extension of the key-value database model. Rather than just storing data based on a key that maps to a value, document databases store structured data. These documents can contain multiple defined values that can be indexed to speed up queries and grab related data. Document databases can be seen as a middle ground between key-value databases and relational databases, where you have the option of creating a semi-structured schema if you choose.
+
+
+## 4. Database Scaling
 Two approaches for database scaling:
 * vertical scaling
 * horizontal scaling
@@ -70,9 +83,14 @@ Drawbacks:
 
 ### 4.2 Horizontal Scaling
 Separating large databases into smaller parts, called shards. Each shard shares the same schema, though the actual data on each shard is unique to the shard.
-The most important factor to consider when implementing a sharding strategy is the choice of the sharding key. Sharding key (known as a partition key) consists of one or more columns that determine how data is distributed. 
+The most important factor to consider when implementing a sharding strategy is the choice of the sharding key. Sharding key (known as a partition key) consists of one or more columns that determine how data is distributed.
 
-### 4.3 Challenges of sharding
+### 4.3 Database Replication Techniques
+There are several types of database replication based on the type of server architecture:
+* Single-leader architecture: leader receives the write operations, slaves receive the read operations
+* No-leader architecture: Every server can receive write and read operation. For example, Amazon's DynamoDB
+
+### 4.4 Challenges of Sharding
 * Resharding data:
     * a single shard could no longer hold more data due to rapid growth.
     * Certain shards might experience shard exhaustion faster than others due to uneven data distribution.
@@ -136,7 +154,7 @@ Challenges:
 * Test and deployment: Automated deployment tools are vital to keep services consistent through all the data centers
 
 
-## 9. Message queue
+## 9. Message Queue
 ![Message Queue](/images/System-Design/Interview/1-message-queue.jpg) 
 
 A message queue is a durable component, stored in memory, that supports asynchronous communication. 

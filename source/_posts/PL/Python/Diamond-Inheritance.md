@@ -1,10 +1,10 @@
 ---
 title: Diamond Inheritance
 category:
+  - Programming Language
   - Python
-  - Basic
 tag:
-  - Python
+  - Programming Language
 abbrlink: 599f
 date: 2016-06-06 21:23:50
 ---

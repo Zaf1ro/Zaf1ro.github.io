@@ -1,9 +1,10 @@
 ---
-title: C++11
+title: C++ 11
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: 2c50cec5
 date: 2018-07-01 08:19:31
 ---

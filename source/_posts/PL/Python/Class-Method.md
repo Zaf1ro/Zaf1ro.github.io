@@ -1,10 +1,10 @@
 ---
 title: Class Method
 category:
+  - Programming Language
   - Python
-  - Basic
 tag:
-  - Python
+  - Programming Language
 abbrlink: bbe1
 date: 2015-12-10 13:38:49
 ---

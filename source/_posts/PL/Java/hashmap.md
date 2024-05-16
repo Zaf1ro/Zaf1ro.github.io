@@ -1,10 +1,10 @@
 ---
 title: HashMap
 category:
+  - Programming Language
   - Java
-  - Collections
 tag:
-  - Java
+  - Programming Language
 abbrlink: bd61
 date: 2018-01-21 17:49:08
 ---

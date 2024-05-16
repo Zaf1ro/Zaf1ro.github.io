@@ -60,7 +60,15 @@ Once the client receives new messages or reaches timeout threshold, it immediate
 ### 2.3 WebSocket
 ![WebSocket](/images/System-Design/Interview/12-websocket.jpg)
 
-WebSocket connection is initiated by the client. It is bi-directional and persistent. Through this persistent connection, a server could send updates to a client. By using WebSocket for both sending and receiving, it simplifies the design and makes implementation on both client and server more straightforward.
+WebSocket connection is initiated by the client. It is bi-directional and persistent. Through this persistent connection, a server could send updates to a client. By using WebSocket for both sending and receiving.
+
+### 2.4 Long Polling vs WebSocket
+* Long Polling:
+    * Advantages: Long polling is implemented on `XMLHttpRequest`, so nearly all devices support long polling
+    * Disadvantages: more resource intensive on the server than WebSocket; could have message ordering issue if a client has two browser tabs open consuming the same server resource
+* WebSockets:
+    * Advantages: low latency since only one connection and Full-duplex asynchronous messaging; HTTP headers are not sent on each server request, reduce the size of data payloads.
+    * Disadvantages: don’t automatically recover when connections are terminated; Browsers older than 2011 aren’t able to support
 
 ### 2.4 High-Level Design
 Most features (sign up, login, user profile, etc) of a chat application could use the traditional request/response method over HTTP. The chat system is broken down into three categories: stateless services, stateful services, and third-party integration.

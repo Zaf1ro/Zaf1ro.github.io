@@ -1,10 +1,10 @@
 ---
 title: Memory Management
 category:
+  - Programming Language
   - Python
-  - Source Code
 tag:
-  - Python
+  - Programming Language
 abbrlink: 9a67
 date: 2017-04-02 12:03:47
 ---

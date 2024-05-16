@@ -1,9 +1,9 @@
 ---
 title: Signals
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: 277e
 date: 2019-09-17 14:12:52
 ---

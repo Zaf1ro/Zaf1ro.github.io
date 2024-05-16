@@ -1,9 +1,10 @@
 ---
-title: C++并发
+title: C++ Concurrency
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: 412a
 date: 2017-11-03 14:52:55
 ---

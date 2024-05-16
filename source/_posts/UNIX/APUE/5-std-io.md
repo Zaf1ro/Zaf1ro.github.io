@@ -1,9 +1,9 @@
 ---
 title: Standard I/O
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: f946
 date: 2019-08-20 08:35:26
 ---

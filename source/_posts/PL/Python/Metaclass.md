@@ -1,10 +1,10 @@
 ---
 title: Metaclass
 category:
+  - Programming Language
   - Python
-  - Basic
 tag:
-  - Python
+  - Programming Language
 abbrlink: 617f
 date: 2015-12-16 15:47:03
 ---

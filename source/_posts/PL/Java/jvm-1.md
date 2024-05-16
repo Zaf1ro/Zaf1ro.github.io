@@ -1,10 +1,10 @@
 ---
 title: JVM (1)
-tags:
-  - Java
 category:
+  - Programming Language
   - Java
-  - JVM
+tags:
+  - Programming Language
 abbrlink: f4a1
 date: 2017-11-06 08:58:48
 keywords:

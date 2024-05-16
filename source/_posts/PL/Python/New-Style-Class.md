@@ -1,10 +1,10 @@
 ---
 title: New Style Class
 category:
+  - Programming Language
   - Python
-  - Source Code
 tag:
-  - Python
+  - Programming Language
 abbrlink: 3f85
 date: 2017-03-16 10:52:39
 ---

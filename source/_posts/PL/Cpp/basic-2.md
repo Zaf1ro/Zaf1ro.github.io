@@ -1,9 +1,10 @@
 ---
 title: C++ Basic (2)
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: d4cf
 date: 2017-09-09 14:41:09
 ---

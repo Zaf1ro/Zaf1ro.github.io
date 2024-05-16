@@ -1,9 +1,10 @@
 ---
 title: Macro Definition
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: '2828'
 date: 2016-03-16 08:32:59
 ---

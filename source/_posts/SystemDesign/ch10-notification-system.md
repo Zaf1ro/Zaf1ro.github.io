@@ -58,7 +58,7 @@ when a user installs our app or signs up for the first time, API servers collect
 * Third-party services: responsible for delivering notifications to users
   * extensibility: system should easily plug or unplug of a third-party service
   * navailablility: system should be availble for all time and regions
-* iOS, Android, SMS, Email: Users receive notifications on their devices. Three problems d in this design:
+* iOS, Android, SMS, Email: Users receive notifications on their devices. Three problems in this design:
   * Single point of failure (SPOF)
   * Hard to scale: It is challenging to scale databases, caches, and different notification processing components independently.
   * Performance bottleneck: Processing and sending notifications can be resource intensive. Handling everything in one system can result in the system overload, especially during peak hours.
@@ -71,8 +71,7 @@ when a user installs our app or signs up for the first time, API servers collect
 
 1. A service calls APIs provided by notification servers to send notifications.
 2. Notification servers fetch metadata such as user info, device token, and notification setting from the cache or database
-3. A notification event is sent to the corresponding queue for processing. For instance, an
-iOS push notification event is sent to the iOS PN queue.
+3. A notification event is sent to the corresponding queue for processing. For instance, an iOS push notification event is sent to the iOS PN queue.
 4. Workers pull notification events from message queues.
 5. Workers send notifications to third party services.
 6. Third-party services send notifications to user devices.

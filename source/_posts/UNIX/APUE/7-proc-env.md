@@ -1,9 +1,9 @@
 ---
 title: Process Environment
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: 8ccf
 date: 2019-08-29 08:29:12
 ---

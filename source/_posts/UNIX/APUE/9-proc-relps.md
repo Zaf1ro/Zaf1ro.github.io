@@ -1,9 +1,9 @@
 ---
 title: Process Relationships
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: ba76
 date: 2019-09-11 14:52:00
 ---

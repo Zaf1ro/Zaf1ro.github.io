@@ -1,9 +1,10 @@
 ---
 title: errno.h
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: '6437'
 date: 2017-07-05 16:20:20
 ---

@@ -1,8 +1,9 @@
 ---
 title: Kafka Configuration
 tags:
-  - Kafka
+  - Distributed System
 category:
+  - Distributed System
   - Kafka
 abbrlink: eef
 date: 2024-03-05 15:21:55

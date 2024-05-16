@@ -1,9 +1,10 @@
 ---
 title: C++ Basic (3)
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: 44ce
 date: 2017-09-15 14:50:17
 ---

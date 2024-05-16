@@ -81,7 +81,16 @@ As the number of virtual nodes increases, the distribution of keys becomes more 
   ![Remove Server with Virtual Nodes](/images/System-Design/Interview/5-virtual-nodes-remove-server.jpg)
 
 
-## 4. Summary
+## 4. Data Replication
+To ensure highly available, Consistent Hashing replicates each data item on multiple `N` nodes. `N` is equivalent to the replication factor (the number of nodes that will receive the copy of the same data).
+1. Each key is assigned to a **coordinator node** (usually the first node that falls in the hash range)
+2. coordinator node stores the data locally
+3. coordinator node replicates it to `'N-1'` clockwise successor nodes on the ring asynchronously.
+
+This results in each node owning the region on the ring between it and its `'Nth'` predecessor.
+
+
+## 5. Summary
 The benefits of consistent hashing:
 * Minimized the number of redistributed keys when servers are added or removed
 * Data are more evenly distributed, so it's easy to scale horizontally

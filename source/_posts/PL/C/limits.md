@@ -1,9 +1,10 @@
 ---
 title: limits.h
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: aa5d
 date: 2017-09-03 14:20:24
 ---

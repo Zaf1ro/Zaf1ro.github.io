@@ -1,9 +1,9 @@
 ---
 title: Interprocess Communication
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: 4cb2
 date: 2019-10-07 09:13:30
 keywords:

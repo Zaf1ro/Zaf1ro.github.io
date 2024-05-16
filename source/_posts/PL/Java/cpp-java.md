@@ -1,10 +1,10 @@
 ---
 title: C++ vs. Java
 category:
+  - Programming Language
   - Java
-  - Basic
 tag:
-  - Java
+  - Programming Language
 abbrlink: 9f80
 date: 2017-10-22 14:40:40
 ---

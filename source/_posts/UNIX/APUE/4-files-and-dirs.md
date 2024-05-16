@@ -1,9 +1,9 @@
 ---
 title: Files and Directories
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: 49f7
 date: 2019-08-05 16:30:42
 ---

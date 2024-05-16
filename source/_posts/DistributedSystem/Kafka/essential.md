@@ -1,8 +1,9 @@
 ---
 title: Kafka Essential
 tags:
-  - Kafka
+  - Distributed System
 category:
+  - Distributed System
   - Kafka
 abbrlink: b805
 date: 2022-09-12 12:56:23

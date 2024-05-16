@@ -1,10 +1,10 @@
 ---
 title: PyStringObject
 category:
+  - Programming Language
   - Python
-  - Source Code
 tag:
-  - Python
+  - Programming Language
 abbrlink: aaab
 date: 2017-03-02 10:41:27
 ---

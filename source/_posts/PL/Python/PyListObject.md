@@ -1,10 +1,10 @@
 ---
 title: PyListObject
 category:
+  - Programming Language
   - Python
-  - Source Code
 tag:
-  - Python
+  - Programming Language
 abbrlink: f5e5
 date: 2017-03-02 21:42:40
 ---

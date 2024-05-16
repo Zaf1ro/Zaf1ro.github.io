@@ -1,9 +1,9 @@
 ---
 title: Thread Control
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: '7793'
 date: 2019-09-27 12:22:47
 keywords:

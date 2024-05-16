@@ -1,9 +1,9 @@
 ---
 title: Threads
 tags:
-  - Linux
+  - Unix
 category:
-  - Linux
+  - Unix
 abbrlink: '1101'
 date: 2019-09-23 14:25:28
 keywords:

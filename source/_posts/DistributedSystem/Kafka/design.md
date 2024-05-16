@@ -3,8 +3,9 @@ title: Kafka Design
 abbrlink: bbb8
 date: 2021-05-23 15:05:47
 tags:
-  - Kafka
+  - Distributed System
 category:
+  - Distributed System
   - Kafka
 keywords:
 description:

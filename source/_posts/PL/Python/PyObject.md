@@ -1,10 +1,10 @@
 ---
 title: PyObject
 category:
+  - Programming Language
   - Python
-  - Source Code
 tag:
-  - Python
+  - Programming Language
 abbrlink: 1c3f
 date: 2017-02-23 23:21:23
 ---

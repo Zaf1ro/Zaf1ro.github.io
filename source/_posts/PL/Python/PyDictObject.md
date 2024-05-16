@@ -1,10 +1,10 @@
 ---
 title: PyDictObject
 category:
+  - Programming Language
   - Python
-  - Source Code
 tag:
-  - Python
+  - Programming Language
 abbrlink: '1365'
 date: 2017-03-07 17:31:39
 ---

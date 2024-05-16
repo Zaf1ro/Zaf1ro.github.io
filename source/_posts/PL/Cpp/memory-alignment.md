@@ -1,9 +1,10 @@
 ---
 title: Memory Alignment
 category:
+  - Programming Language
   - C/C++
 tag:
-  - C/C++
+  - Programming Language
 abbrlink: c196
 date: 2016-03-27 10:47:07
 ---

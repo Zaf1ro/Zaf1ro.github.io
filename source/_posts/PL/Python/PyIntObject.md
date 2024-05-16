@@ -1,10 +1,10 @@
 ---
 title: PyIntObject
 category:
+  - Programming Language
   - Python
-  - Source Code
 tag:
-  - Python
+  - Programming Language
 abbrlink: d2e9
 date: 2017-02-26 22:02:13
 ---

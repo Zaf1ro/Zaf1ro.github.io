@@ -1,10 +1,10 @@
 ---
 title: Maven
 category:
-  - Java
-  - Basic
+  - Full Stack
+  - Maven
 tag:
-  - Java
+  - Full Stack
 abbrlink: '9478'
 date: 2024-01-04 09:31:17
 keywords:

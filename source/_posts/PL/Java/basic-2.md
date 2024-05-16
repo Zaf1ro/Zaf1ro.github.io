@@ -1,10 +1,10 @@
 ---
 title: Java Basic (2)
 category:
+  - Programming Language
   - Java
-  - Basic
 tag:
-  - Java
+  - Programming Language
 abbrlink: b093
 date: 2017-10-30 15:51:18
 ---
