@@ -45,7 +45,7 @@
 <meta property="og:description" content="1. Transaction数据库系统中, 一个Transaction(事务)应具备以下四种属性:  Atomicity (原子性): 通常一个事务会包含多个statement(声明), 该属性可确保一个事务作为一个不可分割的单元, 声明要么全部成功, 要么全部失败. 之所以需要该属性, 是因为相比于所有声明都无效, 部分声明生效会引起更大问题. Consistency (一致性): 该属性确保事">
 <meta property="og:locale">
 <meta property="article:published_time" content="2024-05-16T12:16:20.000Z">
-<meta property="article:modified_time" content="2024-05-20T22:18:30.512Z">
+<meta property="article:modified_time" content="2024-05-21T12:07:04.927Z">
 <meta property="article:tag" content="Full Stack">
 <meta name="twitter:card" content="summary">
 
@@ -378,7 +378,7 @@ Spring Transaction - Zaf1ro
 </tbody></table>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TransactionDefinition</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the propagation behavior. The default is PROPAGATION_REQUIRED.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">getPropagationBehavior</span><span class="params">()</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the isolation level. The default is ISOLATION_DEFAULT</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">getIsolationLevel</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the the maximum amount of time that a transaction can run before it is</span></span><br><span class="line"><span class="comment">     * automatically rolled back.</span></span><br><span class="line"><span class="comment">     * Only for use with PROPAGATION_REQUIRED or PROPAGATION_REQUIRES_NEW.</span></span><br><span class="line"><span class="comment">     * The default value for the timeout property is -1.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">getTimeout</span><span class="params">()</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return whether to optimize as a read-only transaction.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isReadOnly</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the name of this transaction</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    String <span class="title function_">getName</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h3 id="6-3-TransactionStatus"><a href="#6-3-TransactionStatus" class="headerlink" title="6.3 TransactionStatus"></a>6.3 TransactionStatus</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TransactionStatus</span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return true if the current transaction is a new transaction; return false if it </span></span><br><span class="line"><span class="comment">   * participates in an existing transaction.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">isNewTransaction</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether this transaction internally carries a savepoint, or, is this a nested</span></span><br><span class="line"><span class="comment">   * transaction based on a savepoint</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">hasSavepoint</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Let transaction manager only rollback the current transaction, instead of throwing</span></span><br><span class="line"><span class="comment">   * an expcetion </span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">setRollbackOnly</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether the transaction has been marked as rollback-only&#x27;</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">isRollbackOnly</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether this transaction has already been committed or rolled back.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> isCompleted;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="6-3-TransactionStatus"><a href="#6-3-TransactionStatus" class="headerlink" title="6.3 TransactionStatus"></a>6.3 TransactionStatus</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TransactionStatus</span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return true if the current transaction is a new transaction; return false if it </span></span><br><span class="line"><span class="comment">   * participates in an existing transaction.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">isNewTransaction</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether this transaction internally carries a savepoint, or, is this a nested</span></span><br><span class="line"><span class="comment">   * transaction based on a savepoint</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">hasSavepoint</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Let transaction manager only rollback the current transaction, instead of throwing</span></span><br><span class="line"><span class="comment">   * an expcetion </span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">setRollbackOnly</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether the transaction has been marked as rollback-only</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">isRollbackOnly</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether this transaction has already been committed or rolled back.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> isCompleted;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -409,21 +409,29 @@ Spring Transaction - Zaf1ro
   </article>
 
   </div>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 <script type="text/x-mathjax-config">
-MathJax.Hub.Config({tex2jax:{inlineMath:[["$","$"],["\\(","\\)"]],processEscapes:!0}});
-</script>
-
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({tex2jax:{skipTags:["script","noscript","style","textarea"]}});
-MathJax.Hub.Config({TeX:{Macros:{fi:"{f\\,\\!_i}",SS:["{#1\\:\\!_#2}",2],SUBx:["{\\:\\!_#1}",1],EXPx:["{\\;\\!^#1}",1],Ss:["{#1\\,\\!_#2}",2],subx:["{\\,\\!_#1}",1]}}});
-</script>
-
-<script type="text/x-mathjax-config">
-MathJax.Hub.Queue(function(){var a,e=MathJax.Hub.getAllJax();for(a=0;a<e.length;a+=1)e[a].SourceElement().parentNode.className+=" has-jax"});
-MathJax.Hub.Queue(["setRenderer", MathJax.Hub, "SVG"]);
+MathJax.Hub.Config({
+    showProcessingMessages: false,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath:[["$","$"],["\\(","\\)"]],
+        processEscapes:!0,
+        skipTags:["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            fi:"{f\\,\\!_i}",
+            SS:["{#1\\:\\!_#2}",2],
+            SUBx:["{\\:\\!_#1}",1],
+            EXPx:["{\\;\\!^#1}",1],
+            Ss:["{#1\\,\\!_#2}",2],
+            subx:["{\\,\\!_#1}",1]
+        }
+    }
+});
 </script>
 
 
