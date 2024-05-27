@@ -47,13 +47,7 @@ Types of component:
 * Stateful component: contains state, state changes when there's any new event or parameter. Stateful components typically come with lifecycles to trigger state updates at different moments. Different scenarios requiring different states and lifecycles.
 
 
-## 4. Component Patterns
-### 4.1 Presentational/Container Component
-* Presentational Components: Components that care about how data is shown to the user. In this example, that's the rendering the list of dog images.
-* Container Components: Components that care about what data is shown to the user. In this example, that's fetching the dog images.
-
-
-## 5. Bubbling and Capturing
+## 4. Bubbling and Capturing
 The standard DOM Events describes 3 phases of event propagation:
 1. Capturing: the event goes down to the element.
 2. Target: the event reached the target element.
@@ -63,7 +57,7 @@ Capturing: this phase was invisible unless set the handler `capture` option to `
 Bubbling: When an event happens on an element, it first runs the handlers on it, then on its parent, then all the way up on other ancestors. Almost all events bubble. (For example: `P -> DIV -> FORM -> BODY -> HTML`)
 
 
-## 6. Event
+## 5. Event
 * event.target: the deepest element that originated the event
 * event.currentTarget (this): the current element that handles the event (the one that has the handler on it)
 * event.eventPhase: the current phase (capturing=1, target=2, bubbling=3)
@@ -72,6 +66,10 @@ Stop Events:
 * event.stopPropagation(): prevents further propagation of the current event in the **capturing** and **bubbling** phases
 * event.stopImmediatePropagation(): prevents other listeners of the same event from being called
 * event.preventDefault(): don't take default action if the event doesn't get handled
+
+
+## 6. Fragments
+A common pattern in React is for a component to return multiple elements. Fragments let you group a list of children without adding extra nodes to the DOM. `key` is the only attribute that can be passed to Fragment. 
 
 
 ## 7. createPortal
@@ -147,23 +145,7 @@ Problem:
 * hard to reuse stateful logic between components: render props and higher-order components needs to restructure your components, and causes wrapper hell. Hooks allow you to reuse stateful logic without changing your component hierarchy.
 * Complex components become hard to understand: Each lifecycle method often contains a mix of unrelated logic. For example, components might perform some data fetching in `componentDidMount` and `componentDidUpdate`. However, the same `componentDidMount` method might also contain some unrelated logic that sets up event listeners, with cleanup performed in `componentWillUnmount`. Hooks split one component into smaller functions based on what pieces are related (such as setting up a subscription or fetching data)
 
-### 12.1 Rules of React
-* Components and Hooks must be pure: A component or hook should follow the rules:
-  * Idempotent: always get the same result when run it with the same inputs (props, state, context amd hook input)
-  * No side effects in render: Code with side effects should run in event handler or useEffect
-  * Does not change non-local values
-* React calls Components and Hooks:
-  * Never call component functions directly
-  ```js
-  function BlogPost() {
-    return <Layout>{Article()}</Layout>; // Wrong: Never call them directly
-  }
-  ```
-  * Never pass around Hooks as regular values
-* Only call Hooks at the top level
-* Only call Hooks from React functions
-
-### 12.1 State Hook
+### 12.2 State Hook
 ```js
 /**
  * params:
@@ -183,7 +165,7 @@ Others:
 * Lazy initial state: If the initial state is the result of an expensive computation, you may provide a function instead, which will be executed only on the initial render.
 * If you update a state to the same value as the current state, React will not re-render the children or trigger effects
 
-### 12.2 Effect Hook
+### 12.3 Effect Hook
 In React class components, the `render` method itself shouldn't cause side effects. We typically want to perform our effects after React has updated the DOM. This is why React class puts side effects into `componentDidMount` and `componentDidUpdate`.
 Problem:
 * `componentDidMount` and `componentDidUpdate` may have the same code
@@ -206,7 +188,7 @@ So we can place all code related with re-render in `useEffect`, instead of three
 * Pass an array as second argument: React will re-run the effect if one of values in array is updated, usually using props and state
 * empty array as second argument: React will only run the effect when mount and unmount component
 
-### 12.3 Memo Hook
+### 12.4 Memo Hook
 `useMemo` will only recompute the memoized value when one of the dependencies has changed. `useMemo` is a tool for optimizing rendering performance.
 ```js
 /**
@@ -224,7 +206,7 @@ Usage:
 * Skipping expensive recalculations: For example, component A has two child components, B and C. When A' state changes, triggering a re-render. At this point, both B and C also re-render. By employing `useMemo`, only when the props used by B change, B will be re-rendered, while C will remain unaffected.
 * Skipping re-rendering of components: For example, component A passes prop to its child component. By default, when a component re-renders, React re-renders all of its children recursively. If re-render is slow, you can put calculation in `useMemo` to ensure that it has the same value between the re-renders (until dependencies change).
 
-### 12.4 Context Hook
+### 12.5 Context Hook
 ```js
 /**
  * params:
@@ -243,7 +225,7 @@ Usage:
 * Overriding context for a part of the tree
 * Optimizing re-renders when passing objects and functions
 
-### 12.5 Ref Hook
+### 12.6 Ref Hook
 `useRef` is a React Hook that lets you reference a value that's not needed for rendering.
 ```js
 /**
@@ -266,7 +248,7 @@ When to use refs:
 * Storing and manipulating DOM elements
 * Storing other objects that aren’t necessary to calculate the JSX
 
-### 12.6 Reducer Hook
+### 12.7 Reducer Hook
 `useReducer` is an alternative to `useState`. Accepts a reducer of type `(state, action) => newState`, and returns the current state paired with a `dispatch` method.
 ```js
 const [state, dispatch] = useReducer(reducer, initialArg, init);
@@ -299,7 +281,7 @@ function Counter() {
 }
 ```
 
-### 12.7 Layout Hook
+### 12.8 Layout Hook
 `useLayoutEffect` is a version of `useEffect` that fires before the browser repaints the screen.
 ```js
 /**
@@ -330,5 +312,18 @@ Usage: Measuring layout before the browser repaints the screen
 * Ensuring reusable state
 
 
-## 14. Fragments
-A common pattern in React is for a component to return multiple elements. Fragments let you group a list of children without adding extra nodes to the DOM. `key` is the only attribute that can be passed to Fragment. 
+## 14. Rules of React
+* Components and Hooks must be pure: A component or hook should follow the rules:
+  * Idempotent: always get the same result when run it with the same inputs (props, state, context amd hook input)
+  * No side effects in render: Code with side effects should run in event handler or useEffect
+  * Does not change non-local values
+* React calls Components and Hooks:
+  * Never call component functions directly
+  ```js
+  function BlogPost() {
+    return <Layout>{Article()}</Layout>; // Wrong: Never call them directly
+  }
+  ```
+  * Never pass around Hooks as regular values
+* Only call Hooks at the top level
+* Only call Hooks from React functions

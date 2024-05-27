@@ -72,7 +72,7 @@ Isolation意味着同时执行的事务相互隔离: 它们不会干扰到对方
 * Isolation: 同时执行的多个事务互不干扰. 例如, 某个事务包含多个写入操作, 其他事务要么看到该事务的写入全部完成, 要么什么都看不到, 不存在中间状态.
 
 当同时修改多个对象(行, 文档, 记录)时, 通常需要**multi-object transactions**(多对象事务)来保证多个数据同步. 下图是一个邮件应用的例子:
-![Violating isolation: one transaction reads another transaction’s uncommitted writes](/images/System-Design/DDIA/ch-7-2.png)
+![Violating isolation: one transaction reads another transaction's uncommitted writes](/images/System-Design/DDIA/ch-7-2.png)
 
 执行以下查询语句来显示用户未读邮件数量:
 ```sql
@@ -131,22 +131,22 @@ SELECT COUNT（*）FROM emails WHERE recipient_id = 2 AND unread_flag = true
 
 #### 2.1.1 No dirty reads
 假设一个事务写入数据, 但事务还未提交或中止; 若另一个事务能看到未提交的数据, 则称为**dirty read**(脏读).
-![No dirty reads: user 2 sees the new value for x only after user 1’s transaction has committed](/images/System-Design/DDIA/ch-7-4.png)
+![No dirty reads: user 2 sees the new value for x only after user 1's transaction has committed](/images/System-Design/DDIA/ch-7-4.png)
 
-对于*读已提交*隔离级别的事务, 必须防止脏读. 也就是说, 只有事务成功提交后, 其写入的数据才能被其他事务看到. 上图中, 用户1执行`x = 3`, 但用户2的`get x`仍读取到旧值2(因为用户1还未提交). 防止脏读可避免以下并发问题:
+对于**read committed**隔离级别的事务, 必须防止脏读. 也就是说, 只有事务成功提交后, 其写入的数据才能被其他事务看到. 上图中, 用户1执行`x = 3`, 但用户2的`get x`仍读取到旧值2(因为用户1还未提交). 防止脏读可避免以下并发问题:
 * 若事务需更新多个对象, 脏读会让其他事务看到部分更新. 例如, 用户看到未读邮件, 但看不到更新的计数器. 部分更新状态的数据库会让事务做出错误决定.
 * 若事务被中止, 则所有写入数据都需要回滚. 若数据库允许脏读, 事务会看到将被回滚的数据.
 
 #### 2.1.2 No dirty writes
 两个事务同时更新同一对象会发生什么? 我们无法确定哪个事务先写入, 但通常认为后者覆盖前者的写入.
-但如果前一个事务只进行了一部分, 如果后者覆盖前者的未提交数据, 则称为**dirty write**(脏写). 对于*读已提交*的隔离级别的事务, 必须防止脏写. 通常会推迟第二次写入, 等待第一个事务提交或中止. 通过防止脏写, 可避免以下并发问题:
+但如果前一个事务只进行了一部分, 如果后者覆盖前者的未提交数据, 则称为**dirty write**(脏写). 对于**read committed**的隔离级别的事务, 必须防止脏写. 通常会推迟第二次写入, 等待第一个事务提交或中止. 通过防止脏写, 可避免以下并发问题:
 ![With dirty writes, conflicting writes from different transactions can be mixed up](/images/System-Design/DDIA/ch-7-5.png)
 
-* 若事务更新多个对象, 脏写会导致不好结果. 上图中为二手车销售网站, Alice和Bob想购买同一辆车. 购买车辆需要两次数据库写入: 网站上的商品列表需要更新, 以反映买家的行为; 发票需发送给买家. 上图中, 商品列表上属于Bob(因为Bob成功更新listing表), 但发票属于Alice(因为Alice成功更新invoices表). *读已提交*可防止此类问题.
-* 然而, *读已提交*不能防止两个计数器自增的竞争状态. 第一次写入提交后才进行的第二次写入, 因此不能算作脏写.
+* 若事务更新多个对象, 脏写会导致不好结果. 上图中为二手车销售网站, Alice和Bob想购买同一辆车. 购买车辆需要两次数据库写入: 网站上的商品列表需要更新, 以反映买家的行为; 发票需发送给买家. 上图中, 商品列表上属于Bob(因为Bob成功更新listing表), 但发票属于Alice(因为Alice成功更新invoices表). **read committed**可防止此类问题.
+* 然而, **read committed**不能防止两个计数器自增的竞争状态. 第一次写入提交后才进行的第二次写入, 因此不能算作脏写.
 
 #### 2.1.3 Implementing read committed
-*读已提交*是一种非常流行的隔离级别. Oracle 11g, PostgreSQL, SQL Server 2012, MemSQL都默认使用该隔离级别. 
+**read committed**是一种非常流行的隔离级别. Oracle 11g, PostgreSQL, SQL Server 2012, MemSQL都默认使用该隔离级别. 
 数据库通常使用**row-level lock**(行锁)来避免脏写: 当事务想要修改某个对象时, 必须先获得该对象的锁. 事务提交或中止前都要持有该锁. 每个对象只能有一个事务持有其锁; 若其他事务想写入同一对象, 必须等前一个事务提交或中止. 这种锁定是数据库自动完成的.
 如何避免脏读? 其中一种方法是使用锁, 任何事务读取数据时都要先获得锁, 读取后释放. 这样可保证读取时不会有脏值.
 但读锁在实践中效果并不好. 一个长时间运行的写入事务会让只读事务等待很久. 等待锁的释放会导致应用的某个部分变慢, 从而触发连锁反应, 致使其他部分也变慢.
@@ -154,12 +154,12 @@ SELECT COUNT（*）FROM emails WHERE recipient_id = 2 AND unread_flag = true
 
 
 ### 2.2 Snapshot Isolation and Repeatable Read
-从表面上看来, *读已提交*可能已经满足了事务的所有需求. 其允许中止事务(atomicity), 防止读取到部分的事务结果, 并防止并发写入造成的混乱. 
-但即使使用*读已提交*的隔离级别, 也会遇到很多并发问题. 下图展示了一种可能遇到的并发问题:
+从表面上看来, **read committed**可能已经满足了事务的所有需求. 其允许中止事务(atomicity), 防止读取到部分的事务结果, 并防止并发写入造成的混乱. 
+但即使使用**read committed**的隔离级别, 也会遇到很多并发问题. 下图展示了一种可能遇到的并发问题:
 ![Read skew: Alice observes the database in an inconsistent state](/images/System-Design/DDIA/ch-7-6.png)
 
 Alice有两个储蓄账户, 各有500元. 现在有一笔业务要从一个账户转账100元到另一个账户. 处理业务时她正好查看账户, 这时收款账户仍为500元, 还没收到转账; 但付款账户已经完成转账, 因此只有400元. 对于Alice, 总账户只有900元, 消失了100元.
-这种异常称为**nonrepeatable read**(不可重复读)或**read skew**(读取偏差): 若Alice重新刷新页面, 会看到收款账户为600元. *读已提交*的隔离级别下, 读取偏差在是可容忍的: Alice查看的账户余额的确都已提交.
+这种异常称为**nonrepeatable read**(不可重复读)或**read skew**(读取偏差): 若Alice重新刷新页面, 会看到收款账户为600元. **read committed**的隔离级别下, 读取偏差在是可容忍的: Alice查看的账户余额的确都已提交.
 上述例子中的问题并不会长期存在, 只要Alice等几秒再刷新页面就能看到正确余额. 然而, 某些情况下是不能容忍这种短暂的不一致:
 * Backups: 备份时需要复制整个数据库, 对于大型数据库, 可能要耗费数小时. 执行备份时, 数据库仍可接受写入. 因此, 被备份的数据将包含旧值和新值. 若需从这样的备份中恢复数据, 则将造成永久性的不一致
 * Analytic queries and integrity checks: 有时需要一次扫描数据库中的大部分数据. 这类查询常出现在分析工作中, 或定期完整性检查中. 若不同时间点查询数据库中的不同区域, 返回的结果可能毫无意义.
@@ -169,9 +169,9 @@ Alice有两个储蓄账户, 各有500元. 现在有一笔业务要从一个账�
 PostgreSQL, 使用InnoDB引擎的MySQL, Oracle, SQL Server等数据库都支持快照隔离.
 
 #### 2.2.1 Implementing snapshot isolation
-与*读已提交*相似, snapshot isolation也使用写锁来防止脏写. 这意味着, 当某个事务写入时, 其他事务的写入会被阻塞. 但读取时无需任何锁. 从性能的角度来说, 快照隔离的一个关键原则是: 读不会阻塞写, 写也不会阻塞读, 这样就允许数据库对一致性快照进行长时间查询时, 同时处理写入请求, 且两者不会争夺任何锁.
+与**read committed**相似, snapshot isolation也使用写锁来防止脏写. 这意味着, 当某个事务写入时, 其他事务的写入会被阻塞. 但读取时无需任何锁. 从性能的角度来说, 快照隔离的一个关键原则是: 读不会阻塞写, 写也不会阻塞读, 这样就允许数据库对一致性快照进行长时间查询时, 同时处理写入请求, 且两者不会争夺任何锁.
 为实现快照隔离, 数据库需保留一个对象的多个不同提交版本, 因为不同事务在不同的时间点看到的数据库状态不同. 由于数据库需要维护单个对象的多个版本, 该技术被称为**multi-version concurrency control**(MVCC, 多版本并发控制).
-*读已提交*只需保留对象的两个版本: 已提交的版本和被覆盖但尚未提交的版本. 然而, *快照隔离*使用MVCC实现*读已提交*的隔离级别: 每个查询使用单独的快照, 而整个事务使用相同的快照.
+**read committed**只需保留对象的两个版本: 已提交的版本和被覆盖但尚未提交的版本. 然而, *快照隔离*使用MVCC实现**read committed**的隔离级别: 每个查询使用单独的快照, 而整个事务使用相同的快照.
 ![Implementing snapshot isolation using multi-version objects](/images/System-Design/DDIA/ch-7-7.png)
 
 上图展示了PostgreSQL如何基于MVCC实现快照隔离. 当一个事务开始时, 其会获得一个唯一且永远增长的**transaction ID**(txid). 事务写入的数据都会标记事务ID.
@@ -204,7 +204,7 @@ CouchDB, Datomic, 和LMDB使用另一种方法. 虽然它们也使用B-tree, 但
 不幸的是, SQL standard对于隔离级别的定义存在瑕疵, 比较模糊. 虽然很多数据库实现了可重复读, 但提供的保证存在很大差异.
 
 ### 2.3 Preventing Lost Updates
-*读已提交*和*快照隔离*主要保证了并发写入时只读事务能看到什么, 但忽略了两个事务并发写入的问题.
+**read committed**和*快照隔离*主要保证了并发写入时只读事务能看到什么, 但忽略了两个事务并发写入的问题.
 并发写入事务之间还有几种有趣的冲突. 其中最出名的为**lost update**(丢失更新)问题, 以两个并发的计数器增量为例.
 若应用从数据库读取, 修改, 并写回修改的值, 有可能发生丢失更新的问题. 若两个事务同时执行, 由于后者的写入会覆盖前者, 因此会丢失其中一个值. 该问题会发生于不同的情景:
 * 增加计数器或更新账户余额(读取当前数值, 计算新值, 并写回新值)
@@ -337,7 +337,7 @@ COMMIT;
 
 
 ## 3. Serializability
-*读已提交*和*快照隔离*不能防止所有竞争条件, 还有一些棘手的问题, 如写偏差和幻读:
+**read committed**和*快照隔离*不能防止所有竞争条件, 还有一些棘手的问题, 如写偏差和幻读:
 * 隔离级别难以理解, 且不同数据库的实现不一致(repeatable read的定义完全不同)
 * 很难判断在特定隔离级别下应用程序代码是否安全; 尤其是大型项目, 很难知道并发发生的所有事
 * 没有很好检测竞争条件的工具. 原则上, **static analysis**(静态分析)可能有所帮助, 但研究成果无法应用到实践. 由于并发问题都是不确定的, 因此检测十分困难, 只有在某些时序下才能发现问题.
@@ -474,7 +474,7 @@ SSI基于快照隔离, 即事务中的所有读取都来自一致性快照. 相�
 
 #### 3.3.4 Detecting writes that affect prior reads
 下图展示当一个事务读取数据后, 该查询结果被其他事务修改:
-![In serializable snapshot isolation, detecting when one transaction modifies another transaction’s reads](/images/System-Design/DDIA/ch-7-11.png)
+![In serializable snapshot isolation, detecting when one transaction modifies another transaction's reads](/images/System-Design/DDIA/ch-7-11.png)
 
 在2PL中我们讨论了索引范围锁, 其允许数据库锁住某个查询匹配的所有行, 如`WHERE shift_id = 1234`. SSI使用类似的技术, 但不会阻塞其他事务.
 事务42和43都查询`shift_id = 1234`的值班医生. 若`shift_id`上有索引, 则数据库可使用索引项1234记录两个事务读取的事实(若没有索引, 则在表级别上进行跟踪). 这类信息只需要保留一段时间: 当某个事务完成, 且所有并发事务完成后, 就可以删除该信息.
