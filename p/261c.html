@@ -37,15 +37,15 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/261c.html"/>
 
 
-<meta name="description" content="1. Introduction单调栈首先是一种栈, 元素只能从一端输入和输出, 且栈内元素保持单调性: 元素始终保持递增或递减. 通常会在栈内保存元素的坐标, 而不是元素本身, 这样既可以从栈内找到对应元素, 也可保留元素的坐标信息. 2. Procedure描述单调栈的单调性时, 若栈底元素小于栈顶元素, 则称为单调递增; 反之, 则称为单调递减. 为维护单调栈的单调性, 插入元素时需比较插入元">
+<meta name="description" content="1. Introduction单调栈是一种特殊的stack(栈), 在栈的LIFO(Last in, first out, 后进先出)规则下, 栈内元素保持单调性: 从栈顶到栈底的元素始终保持单调递增或递减. 若从栈顶到栈底的元素单调递增, 则称为mono-increasing stack(单调递增栈), 例如: [5,4,3,2,1], 元素从右侧(栈顶)进入或弹出; 若从栈顶到栈底的元素单调递">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Monotonic Stack">
 <meta property="og:url" content="https://zaf1ro.github.io/p/261c.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="1. Introduction单调栈首先是一种栈, 元素只能从一端输入和输出, 且栈内元素保持单调性: 元素始终保持递增或递减. 通常会在栈内保存元素的坐标, 而不是元素本身, 这样既可以从栈内找到对应元素, 也可保留元素的坐标信息. 2. Procedure描述单调栈的单调性时, 若栈底元素小于栈顶元素, 则称为单调递增; 反之, 则称为单调递减. 为维护单调栈的单调性, 插入元素时需比较插入元">
+<meta property="og:description" content="1. Introduction单调栈是一种特殊的stack(栈), 在栈的LIFO(Last in, first out, 后进先出)规则下, 栈内元素保持单调性: 从栈顶到栈底的元素始终保持单调递增或递减. 若从栈顶到栈底的元素单调递增, 则称为mono-increasing stack(单调递增栈), 例如: [5,4,3,2,1], 元素从右侧(栈顶)进入或弹出; 若从栈顶到栈底的元素单调递">
 <meta property="og:locale">
 <meta property="article:published_time" content="2023-06-23T14:01:57.000Z">
-<meta property="article:modified_time" content="2024-01-03T18:00:00.000Z">
+<meta property="article:modified_time" content="2024-06-06T16:43:38.296Z">
 <meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
 
@@ -74,7 +74,7 @@ Monotonic Stack - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Procedure"><span class="toc-text">2. Procedure</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-Trapping-Rain-Water"><span class="toc-text">42. Trapping Rain Water</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#84-Largest-Rectangle-in-Histogram"><span class="toc-text">84. Largest Rectangle in Histogram</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solution-1"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#85-Maximal-Rectangle"><span class="toc-text">85. Maximal Rectangle</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solution-2"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2030-Smallest-K-Length-Subsequence-With-Occurrences-of-a-Letter"><span class="toc-text">2030. Smallest K-Length Subsequence With Occurrences of a Letter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solution-3"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#321-Create-Maximum-Number"><span class="toc-text">321. Create Maximum Number</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solution-4"><span class="toc-text">Solution</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Monotonicity"><span class="toc-text">2. Monotonicity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Usage"><span class="toc-text">3. Usage</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-The-first-element-on-the-left-that-is-greater-than-target-element"><span class="toc-text">3.1 The first element on the left that is greater than target element</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-The-first-element-on-the-right-that-is-greater-than-target-element"><span class="toc-text">3.2 The first element on the right that is greater than target element</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-The-first-element-on-the-left-that-is-less-than-target-element"><span class="toc-text">3.3 The first element on the left that is less than target element</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-The-first-element-on-the-right-that-is-less-than-target-element"><span class="toc-text">3.4 The first element on the right that is less than target element</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Conclusion"><span class="toc-text">3.5 Conclusion</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Leetcode"><span class="toc-text">4. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#42-Trapping-Rain-Water"><span class="toc-text">42. Trapping Rain Water</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Montonic-Stack"><span class="toc-text">Montonic Stack</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#84-Largest-Rectangle-in-Histogram"><span class="toc-text">84. Largest Rectangle in Histogram</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-1"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Montonic-Stack-1"><span class="toc-text">Montonic Stack</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#85-Maximal-Rectangle"><span class="toc-text">85. Maximal Rectangle</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-2"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Montonic-Stack-2"><span class="toc-text">Montonic Stack</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2030-Smallest-K-Length-Subsequence-With-Occurrences-of-a-Letter"><span class="toc-text">2030. Smallest K-Length Subsequence With Occurrences of a Letter</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-3"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Montonic-Stack-3"><span class="toc-text">Montonic Stack</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#321-Create-Maximum-Number"><span class="toc-text">321. Create Maximum Number</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-4"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Montonic-Stack-4"><span class="toc-text">Montonic Stack</span></a></li></ol></li></ol></li></ol>
   </div>
 
     </div>
@@ -129,13 +129,57 @@ Monotonic Stack - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>单调栈首先是一种栈, 元素只能从一端输入和输出, 且栈内元素保持单调性: 元素始终保持递增或递减. 通常会在栈内保存元素的坐标, 而不是元素本身, 这样既可以从栈内找到对应元素, 也可保留元素的坐标信息.</p>
-<h2 id="2-Procedure"><a href="#2-Procedure" class="headerlink" title="2. Procedure"></a>2. Procedure</h2><p>描述单调栈的单调性时, 若栈底元素小于栈顶元素, 则称为单调递增; 反之, 则称为单调递减. 为维护单调栈的单调性, <strong>插入元素</strong>时需比较插入元素与栈顶元素: 假设存在一个单调栈, 其栈内自顶向下的元素为<code>&#123;0, 11, 45, 81&#125;</code>, 若插入元素为14, 为保证该栈<strong>单调递减</strong>, 需依次弹出栈顶元素<code>0, 11</code>, 该栈最终变为<code>&#123;14, 45, 81&#125;</code>.</p>
-<h2 id="42-Trapping-Rain-Water"><a href="#42-Trapping-Rain-Water" class="headerlink" title="42. Trapping Rain Water"></a>42. Trapping Rain Water</h2><p>Given <code>n</code> non-negative integers representing an elevation map where the width of each bar is <code>1</code>, compute how much water it can trap after raining.</p>
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>单调栈是一种特殊的<strong>stack</strong>(栈), 在栈的<strong>LIFO</strong>(Last in, first out, 后进先出)规则下, 栈内元素保持单调性: 从栈顶到栈底的元素始终保持单调递增或递减. 若从栈顶到栈底的元素单调递增, 则称为<strong>mono-increasing stack</strong>(单调递增栈), 例如: <code>[5,4,3,2,1]</code>, 元素从右侧(栈顶)进入或弹出; 若从栈顶到栈底的元素单调递减, 则称为<strong>mono-decreasing stack</strong>(单调递减栈).<br>使用时, 通常会在栈内保存元素的坐标, 而不是元素本身, 这样既可找到对应元素, 也可保留元素的坐标信息.</p>
+<h2 id="2-Monotonicity"><a href="#2-Monotonicity" class="headerlink" title="2. Monotonicity"></a>2. Monotonicity</h2><p>描述单调栈的单调性时, 若栈顶元素大于栈底元素, 则称为单调递增; 反之, 则称为单调递减. 为维护单调栈的单调性, <strong>插入元素</strong>时需比较插入元素与栈顶元素:</p>
+<ul>
+<li>对于单调递增栈:<ul>
+<li>若当前元素大于或等于栈顶元素, 则弹出栈顶元素</li>
+<li>若栈为空, 或当前元素小于栈顶元素, 则进栈</li>
+</ul>
+</li>
+<li>对于单调递减栈:<ul>
+<li>若当前元素小于或等于栈顶元素, 则弹出栈顶元素</li>
+<li>若栈为空, 或当前元素大于栈顶元素, 则进栈</li>
+</ul>
+</li>
+</ul>
+<p>假设存在一个单调栈, 其栈内自顶向下的元素为<code>[0, 11, 45, 81]</code>, 若插入元素为14, 为保证该栈<strong>单调递减</strong>, 需依次弹出栈顶元素<code>0, 11</code>, 该栈最终变为<code>[14, 45, 81]</code>.</p>
+<h2 id="3-Usage"><a href="#3-Usage" class="headerlink" title="3. Usage"></a>3. Usage</h2><p>单调栈可在时间复杂度为$O(n)$的情况下, 在数组中找到第一个比目标元素大(或小)的元素. 假设数组长度为<code>n</code>, 目标元素为<code>x</code>, 其坐标为<code>i</code>.</p>
+<h3 id="3-1-The-first-element-on-the-left-that-is-greater-than-target-element"><a href="#3-1-The-first-element-on-the-left-that-is-greater-than-target-element" class="headerlink" title="3.1 The first element on the left that is greater than target element"></a>3.1 The first element on the left that is greater than target element</h3><p>从左向右遍历元素($[0, i-1]$), 构建一个单调递增栈, 并执行以下步骤直到找到答案或栈为空:</p>
+<ul>
+<li>若栈为空, 则<code>x</code>左侧不存在比<code>x</code>大的元素</li>
+<li>若栈顶元素小于或等于<code>x</code>, 则弹出栈顶元素</li>
+<li>若栈顶元素大于<code>x</code>, 则栈顶元素为答案</li>
+</ul>
+<h3 id="3-2-The-first-element-on-the-right-that-is-greater-than-target-element"><a href="#3-2-The-first-element-on-the-right-that-is-greater-than-target-element" class="headerlink" title="3.2 The first element on the right that is greater than target element"></a>3.2 The first element on the right that is greater than target element</h3><p>从右向左遍历元素($[n-1, i+1]$), 构建一个单调递增栈, 并执行以下步骤直到找到答案或栈为空:</p>
+<ul>
+<li>若栈为空, 则<code>x</code>右侧不存在比<code>x</code>大的元素</li>
+<li>若栈顶元素小于或等于<code>x</code>, 则弹出栈顶元素</li>
+<li>若栈顶元素大于<code>x</code>, 则栈顶元素为答案</li>
+</ul>
+<h3 id="3-3-The-first-element-on-the-left-that-is-less-than-target-element"><a href="#3-3-The-first-element-on-the-left-that-is-less-than-target-element" class="headerlink" title="3.3 The first element on the left that is less than target element"></a>3.3 The first element on the left that is less than target element</h3><p>从左向右遍历元素($[0, i-1]$), 构建一个单调递减栈, 并执行以下步骤直到找到答案或栈为空:</p>
+<ul>
+<li>若栈为空, 说明<code>x</code>左侧不存在比<code>x</code>小的元素</li>
+<li>若栈顶元素小于或等于<code>x</code>, 则弹出栈顶元素</li>
+<li>若栈顶元素大于<code>x</code>, 则栈顶元素为答案</li>
+</ul>
+<h3 id="3-4-The-first-element-on-the-right-that-is-less-than-target-element"><a href="#3-4-The-first-element-on-the-right-that-is-less-than-target-element" class="headerlink" title="3.4 The first element on the right that is less than target element"></a>3.4 The first element on the right that is less than target element</h3><p>从右向左遍历元素($[n-1, i+1]$), 构建一个单调递增栈, 并执行以下步骤直到找到答案或栈为空:</p>
+<ul>
+<li>若栈为空, 说明<code>x</code>右侧不存在比<code>x</code>小的元素</li>
+<li>若栈顶元素大于或等于<code>x</code>, 则弹出栈顶元素</li>
+<li>若栈顶元素小于<code>x</code>, 则栈顶元素为答案</li>
+</ul>
+<h3 id="3-5-Conclusion"><a href="#3-5-Conclusion" class="headerlink" title="3.5 Conclusion"></a>3.5 Conclusion</h3><p>单调栈的原理在于<strong>弹出不可能符合条件的元素</strong>. 以寻找比目标元素大的左侧第一个元素为例, 当从左向右遍历数组时, 存在以下可能性:</p>
+<ul>
+<li>若栈为空, 则当前元素可能为答案, 因此入栈</li>
+<li>若当前元素大于或等于栈顶元素, 则直接弹出栈顶元素, 因为当前元素更靠近目标元素且比目标元素大, 因此可直接排除栈顶元素</li>
+<li>若当前元素比栈顶元素小, 则可能成为答案, 也可能不会成为答案, 因此入栈</li>
+</ul>
+<h2 id="4-Leetcode"><a href="#4-Leetcode" class="headerlink" title="4. Leetcode"></a>4. Leetcode</h2><h3 id="42-Trapping-Rain-Water"><a href="#42-Trapping-Rain-Water" class="headerlink" title="42. Trapping Rain Water"></a>42. Trapping Rain Water</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given <code>n</code> non-negative integers representing an elevation map where the width of each bar is <code>1</code>, compute how much water it can trap after raining.</p>
 <p>Example 1:</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: height = [0,1,0,2,1,0,1,3,2,1,2,1]</span><br><span class="line">Output: 6</span><br><span class="line">Explanation: The above elevation map (black section) is represented by array [0,1,0,2,1,0,1,3,2,1,2,1]. In this case, 6 units of rain water (blue section) are being trapped.</span><br></pre></td></tr></table></figure>
 
-<h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h3><p>题目要求返回雨水的总量, 通过观察可以发现, 若存在雨水, 则一定存在<code>高低高</code>的结构, 例如<code>&#123;1,0,1&#125;</code>. 因此可维护一个单调栈: 遍历数组时, 栈的性质保证栈底元素的坐标一定比栈顶元素更小; 且该栈保持单调递减, 从而保证之前的bar高于之后的bar, 形成一个<code>高低</code>的结构. 当某个bar大于栈顶元素时, 可能存在两种情况:</p>
+<h4 id="Montonic-Stack"><a href="#Montonic-Stack" class="headerlink" title="Montonic Stack"></a>Montonic Stack</h4><p>题目要求返回雨水的总量, 通过观察可以发现, 若存在雨水, 则一定存在<code>高低高</code>的结构, 例如<code>&#123;1,0,1&#125;</code>. 因此可维护一个单调栈: 遍历数组时, 栈的性质保证栈底元素的坐标一定比栈顶元素更小; 且该栈保持单调递减, 从而保证之前的bar高于之后的bar, 形成一个<code>高低</code>的结构. 当某个bar大于栈顶元素时, 可能存在两种情况:</p>
 <ul>
 <li>栈内只有一个元素, 不足以形成<code>高低高</code></li>
 <li>栈内存在两个或以上元素, 可以形成<code>高低高</code></li>
@@ -143,15 +187,14 @@ Monotonic Stack - Zaf1ro
 <p>需要注意的是, 水坑的高度不一定由当前元素决定, 也取决于左侧单调栈中的元素, 例如<code>&#123;1,0,2&#125;</code>, 遍历到<code>height[2]</code>时, 水坑的高度应为<code>min(1,2) = 1</code>; 水坑的宽度也不一定为1, 例如<code>&#123;2,1,0,2&#125;</code>, 遍历到<code>height[3]</code>时, 先计算<code>height[1:3]</code>的雨水量, 再计算<code>height[0,3]</code>的雨水量, 为防止重复计算, 需记录上一个水坑的高度. 该方法的时间复杂度为<code>$O(n)$</code>.</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">trap</span><span class="params">(<span class="type">int</span>[] height)</span> &#123;</span><br><span class="line">        Deque&lt;Integer&gt; deque = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; height.length; i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> height[i], prev = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; h &gt;= height[deque.peekLast()]) &#123;</span><br><span class="line">                prev = height[deque.pollLast()];</span><br><span class="line">                <span class="keyword">if</span> (!deque.isEmpty()) &#123;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> deque.peekLast();</span><br><span class="line">                    res += (Math.min(height[t], h) - prev) * (i - t - <span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            deque.offerLast(i);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-
-<h2 id="84-Largest-Rectangle-in-Histogram"><a href="#84-Largest-Rectangle-in-Histogram" class="headerlink" title="84. Largest Rectangle in Histogram"></a>84. Largest Rectangle in Histogram</h2><p>Given an array of integers <code>heights</code> representing the histogram&#39;s bar height where the width of each bar is <code>1</code>, return the area of the largest rectangle in the histogram.</p>
+<h3 id="84-Largest-Rectangle-in-Histogram"><a href="#84-Largest-Rectangle-in-Histogram" class="headerlink" title="84. Largest Rectangle in Histogram"></a>84. Largest Rectangle in Histogram</h3><h4 id="Problem-Description-1"><a href="#Problem-Description-1" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an array of integers <code>heights</code> representing the histogram&#39;s bar height where the width of each bar is <code>1</code>, return the area of the largest rectangle in the histogram.</p>
 <p>Example 1:</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: heights = [2,1,5,6,2,3]</span><br><span class="line">Output: 10</span><br><span class="line">Explanation: The above is a histogram where width of each bar is 1.</span><br><span class="line">The largest rectangle is shown in the red area, which has an area = 10 units.</span><br></pre></td></tr></table></figure>
 
 <p>Example 2:</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: heights = [2,4]</span><br><span class="line">Output: 4</span><br></pre></td></tr></table></figure>
 
-<h3 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h3><p>题目要求返回bar组成的最大矩形面积, 可以发现一个规律: 最大矩形面积的高度一定是某一个bar的高度, 最大矩形的宽度为该bar向左右延伸的最大宽度, 因此矩形的面积为<code>heights[i] * (r - l + 1)</code>. 若我们对每个bar向左右延伸, 即可得到最终答案, 该方法的时间复杂度为<code>$O(n^2)$</code>. 当对一个bar向左(或右)延伸时, 存在三种可能:</p>
+<h4 id="Montonic-Stack-1"><a href="#Montonic-Stack-1" class="headerlink" title="Montonic Stack"></a>Montonic Stack</h4><p>题目要求返回bar组成的最大矩形面积, 可以发现一个规律: 最大矩形面积的高度一定是某一个bar的高度, 最大矩形的宽度为该bar向左右延伸的最大宽度, 因此矩形的面积为<code>heights[i] * (r - l + 1)</code>. 若我们对每个bar向左右延伸, 即可得到最终答案, 该方法的时间复杂度为<code>$O(n^2)$</code>. 当对一个bar向左(或右)延伸时, 存在三种可能:</p>
 <ul>
 <li>当前bar的高度大于或等于目标bar, 可继续向外延伸</li>
 <li>抵达数组边界, 无法继续向外延伸</li>
@@ -172,22 +215,21 @@ Monotonic Stack - Zaf1ro
 <p>需要注意的是, 由于只有当前元素小于栈顶元素时才会弹出栈顶元素, 因此需在数组最后添加一个高度为<code>0</code>的bar, 保证所有bar构成的矩形都被会计算. 该算法的时间复杂度为<code>$O(n)$</code>.</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">largestRectangleArea</span><span class="params">(<span class="type">int</span>[] heights)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>, n = heights.length;</span><br><span class="line">        <span class="type">int</span>[] arr = <span class="keyword">new</span> <span class="title class_">int</span>[n+<span class="number">1</span>];</span><br><span class="line">        System.arraycopy(heights, <span class="number">0</span>, arr, <span class="number">0</span>, n);</span><br><span class="line">        Deque&lt;Integer&gt; deque = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n + <span class="number">1</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; arr[i] &lt;= arr[deque.peekLast()]) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> arr[deque.pollLast()], l = deque.isEmpty() ? -<span class="number">1</span> : deque.peekLast();</span><br><span class="line">                res = Math.max(res, h * (i - l - <span class="number">1</span>));</span><br><span class="line">            &#125;</span><br><span class="line">            deque.offerLast(i);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-
-<h2 id="85-Maximal-Rectangle"><a href="#85-Maximal-Rectangle" class="headerlink" title="85. Maximal Rectangle"></a>85. Maximal Rectangle</h2><p>Given a <code>rows x cols</code> binary <code>matrix</code> filled with <code>0</code>&#39;s and <code>1</code>&#39;s, find the largest rectangle containing only <code>1</code>&#39;s and return its area.</p>
+<h3 id="85-Maximal-Rectangle"><a href="#85-Maximal-Rectangle" class="headerlink" title="85. Maximal Rectangle"></a>85. Maximal Rectangle</h3><h4 id="Problem-Description-2"><a href="#Problem-Description-2" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given a <code>rows x cols</code> binary <code>matrix</code> filled with <code>0</code>&#39;s and <code>1</code>&#39;s, find the largest rectangle containing only <code>1</code>&#39;s and return its area.</p>
 <p>Example 1:</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: matrix = [</span><br><span class="line">    [&quot;1&quot;,&quot;0&quot;,&quot;1&quot;,&quot;0&quot;,&quot;0&quot;],</span><br><span class="line">    [&quot;1&quot;,&quot;0&quot;,&quot;1&quot;,&quot;1&quot;,&quot;1&quot;],</span><br><span class="line">    [&quot;1&quot;,&quot;1&quot;,&quot;1&quot;,&quot;1&quot;,&quot;1&quot;],</span><br><span class="line">    [&quot;1&quot;,&quot;0&quot;,&quot;0&quot;,&quot;1&quot;,&quot;0&quot;]</span><br><span class="line">]</span><br><span class="line">Output: 6</span><br><span class="line">Explanation: The maximal rectangle is shown in the above picture.</span><br></pre></td></tr></table></figure>
 
-<h3 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h3><p>题目要求返回由<code>1</code>组成的最大矩形面积. 若使用上一题的思路, 可轻松求得<code>matrix</code>第一行中的最大矩形面积; 将第二行的数值添加第一行, 即可得到<code>matrix</code>前两行中的最大矩形面积, 以此类推, 可获得<code>matrix</code>中的最大矩形面积. 该算法的时间复杂度为<code>$O(mn)$</code>(<code>m</code>和<code>n</code>为<code>matrix</code>的行数和列数).</p>
+<h4 id="Montonic-Stack-2"><a href="#Montonic-Stack-2" class="headerlink" title="Montonic Stack"></a>Montonic Stack</h4><p>题目要求返回由<code>1</code>组成的最大矩形面积. 若使用上一题的思路, 可轻松求得<code>matrix</code>第一行中的最大矩形面积; 将第二行的数值添加第一行, 即可得到<code>matrix</code>前两行中的最大矩形面积, 以此类推, 可获得<code>matrix</code>中的最大矩形面积. 该算法的时间复杂度为<code>$O(mn)$</code>(<code>m</code>和<code>n</code>为<code>matrix</code>的行数和列数).</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maximalRectangle</span><span class="params">(<span class="type">char</span>[][] matrix)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> matrix.length, n = matrix[<span class="number">0</span>].length, res = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = <span class="keyword">new</span> <span class="title class_">int</span>[n+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                arr[j] = matrix[i][j] == <span class="string">&#x27;0&#x27;</span> ? <span class="number">0</span> : arr[j] + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            res = Math.max(res, maxRectangle(arr));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">maxRectangle</span><span class="params">(<span class="type">int</span>[] arr)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> arr.length, res = <span class="number">0</span>;</span><br><span class="line">        Deque&lt;Integer&gt; deque = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; arr[i] &lt;= arr[deque.peekLast()]) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> arr[deque.pollLast()], l = deque.isEmpty() ? -<span class="number">1</span> : deque.peekLast();</span><br><span class="line">                res = Math.max(res, h * (i - l - <span class="number">1</span>));</span><br><span class="line">            &#125;</span><br><span class="line">            deque.offerLast(i);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="2030-Smallest-K-Length-Subsequence-With-Occurrences-of-a-Letter"><a href="#2030-Smallest-K-Length-Subsequence-With-Occurrences-of-a-Letter" class="headerlink" title="2030. Smallest K-Length Subsequence With Occurrences of a Letter"></a>2030. Smallest K-Length Subsequence With Occurrences of a Letter</h2><p>You are given a string <code>s</code>, an integer <code>k</code>, a letter <code>letter</code>, and an integer <code>repetition</code>.</p>
+<h3 id="2030-Smallest-K-Length-Subsequence-With-Occurrences-of-a-Letter"><a href="#2030-Smallest-K-Length-Subsequence-With-Occurrences-of-a-Letter" class="headerlink" title="2030. Smallest K-Length Subsequence With Occurrences of a Letter"></a>2030. Smallest K-Length Subsequence With Occurrences of a Letter</h3><h4 id="Problem-Description-3"><a href="#Problem-Description-3" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given a string <code>s</code>, an integer <code>k</code>, a letter <code>letter</code>, and an integer <code>repetition</code>.</p>
 <p>Return the <strong>lexicographically smallest</strong> subsequence of <code>s</code> of length <code>k</code> that has the letter <code>letter</code> appear at least <code>repetition</code> times. The test cases are generated so that the <code>letter</code> appears in <code>s</code> at least <code>repetition</code> times.</p>
 <p>A <strong>subsequence</strong> is a string that can be derived from another string by deleting some or no characters without changing the order of the remaining characters.</p>
 <p>A string <code>a</code> is <strong>lexicographically smaller</strong> than a string <code>b</code> if in the first position where <code>a</code> and <code>b</code> differ, string <code>a</code> has a letter that appears earlier in the alphabet than the corresponding letter in <code>b</code>.</p>
 <p>Example 1:</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;leet&quot;, k = 3, letter = &quot;e&quot;, repetition = 1</span><br><span class="line">Output: &quot;eet&quot;</span><br><span class="line">Explanation: There are four subsequences of length 3 that have the letter &#x27;e&#x27; appear at least 1 time:</span><br><span class="line">- &quot;lee&quot; (from &quot;leet&quot;)</span><br><span class="line">- &quot;let&quot; (from &quot;leet&quot;)</span><br><span class="line">- &quot;let&quot; (from &quot;leet&quot;)</span><br><span class="line">- &quot;eet&quot; (from &quot;leet&quot;)</span><br><span class="line">The lexicographically smallest subsequence among them is &quot;eet&quot;.</span><br></pre></td></tr></table></figure>
 
-<h3 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h3><p>题目要求返回最小字典序的字符串, 而一个<strong>单调递增</strong>的单调栈会不断尝试将<strong>位置靠前且字典序更大的字符</strong>替换为<strong>位置靠后且字典序更小的字符</strong>, 因此可使用单调栈, 但该题存在两条附件条件:</p>
+<h4 id="Montonic-Stack-3"><a href="#Montonic-Stack-3" class="headerlink" title="Montonic Stack"></a>Montonic Stack</h4><p>题目要求返回最小字典序的字符串, 而一个<strong>单调递增</strong>的单调栈会不断尝试将<strong>位置靠前且字典序更大的字符</strong>替换为<strong>位置靠后且字典序更小的字符</strong>, 因此可使用单调栈, 但该题存在两条附件条件:</p>
 <ol>
 <li>返回的字符串长度为<code>k</code></li>
 <li>返回的字符串中包含至少<code>reptition</code>个字符<code>letter</code></li>
@@ -218,13 +260,13 @@ Monotonic Stack - Zaf1ro
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">smallestSubsequence</span><span class="params">(String s, <span class="type">int</span> k, <span class="type">char</span> letter, <span class="type">int</span> repetition)</span> &#123;</span><br><span class="line">        Deque&lt;Character&gt; deque = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;();</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>, n = s.length();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">char</span> c: s.toCharArray()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (c == letter) ++cnt;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> s.charAt(i);</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; c &lt; deque.peekLast() &amp;&amp; (deque.size() + n - i &gt; k) &amp;&amp; (cnt &gt;= repetition + (deque.peekLast() == letter ? <span class="number">1</span> : <span class="number">0</span>))) &#123;</span><br><span class="line">                <span class="keyword">if</span> (deque.pollLast() == letter) ++repetition;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (c == letter) --cnt;</span><br><span class="line">            <span class="keyword">if</span> (deque.size() &lt; k) &#123;</span><br><span class="line">                <span class="keyword">if</span> (c == letter) &#123;</span><br><span class="line">                    deque.addLast(c);</span><br><span class="line">                    --repetition;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (deque.size() + repetition &lt; k) &#123;</span><br><span class="line">                    deque.addLast(c);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        <span class="keyword">while</span> (!deque.isEmpty()) &#123;</span><br><span class="line">            sb.append(deque.pollFirst());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sb.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
-<h2 id="321-Create-Maximum-Number"><a href="#321-Create-Maximum-Number" class="headerlink" title="321. Create Maximum Number"></a>321. Create Maximum Number</h2><p>You are given two integer arrays <code>nums1</code> and <code>nums2</code> of lengths <code>m</code> and <code>n</code> respectively. <code>nums1</code> and <code>nums2</code> represent the digits of two numbers. You are also given an integer <code>k</code>.</p>
+<h3 id="321-Create-Maximum-Number"><a href="#321-Create-Maximum-Number" class="headerlink" title="321. Create Maximum Number"></a>321. Create Maximum Number</h3><h4 id="Problem-Description-4"><a href="#Problem-Description-4" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given two integer arrays <code>nums1</code> and <code>nums2</code> of lengths <code>m</code> and <code>n</code> respectively. <code>nums1</code> and <code>nums2</code> represent the digits of two numbers. You are also given an integer <code>k</code>.</p>
 <p>Create the maximum number of length <code>k &lt;= m + n</code> from digits of the two numbers. The relative order of the digits from the same array must be preserved.</p>
 <p>Return an array of the <code>k</code> digits representing the answer.</p>
 <p>Example 1:</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums1 = [3,4,6,5], nums2 = [9,1,2,5,8,3], k = 5</span><br><span class="line">Output: [9,8,6,5,3]</span><br></pre></td></tr></table></figure>
 
-<h3 id="Solution-4"><a href="#Solution-4" class="headerlink" title="Solution"></a>Solution</h3><p>对于一个字符串长度为<code>m</code>的字符串, 若需找出长度为<code>k</code>($k \le m$)的最大数, 可用单调栈将较小的元素弹出, 并保持单调栈内的元素单调递减; 本题要求返回两个数组的最大组合数, 因此可按以下步骤:</p>
+<h4 id="Montonic-Stack-4"><a href="#Montonic-Stack-4" class="headerlink" title="Montonic Stack"></a>Montonic Stack</h4><p>对于一个字符串长度为<code>m</code>的字符串, 若需找出长度为<code>k</code>($k \le m$)的最大数, 可用单调栈将较小的元素弹出, 并保持单调栈内的元素单调递减; 本题要求返回两个数组的最大组合数, 因此可按以下步骤:</p>
 <ol>
 <li>使用单调栈, 保证两个数组分别保持有序的前提下, 找出每个数组的最大数</li>
 <li>将上一步获得的两个最大数组合为一个最大数</li>
@@ -247,9 +289,9 @@ Monotonic Stack - Zaf1ro
       
   <nav class="post-nav">
     
-      <a class="prev" href="/p/9055.html">
+      <a class="prev" href="/p/7faa.html">
         <i class="icon-left"></i>
-        <span class="prev-text nav-default">Trie</span>
+        <span class="prev-text nav-default">Monotonic Queue</span>
         <span class="prev-text nav-mobile">Prev</span>
       </a>
     
@@ -272,21 +314,22 @@ Monotonic Stack - Zaf1ro
 
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
-    showProcessingMessages: false,
+    showProcessingMessages: true,
     jax: ["input/TeX", "output/HTML-CSS"],
     tex2jax: {
-        inlineMath:[["$","$"],["\\(","\\)"]],
-        processEscapes:!0,
-        skipTags:["script","noscript","style","textarea"]
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
     },
     TeX: {
         Macros:{
-            fi:"{f\\,\\!_i}",
-            SS:["{#1\\:\\!_#2}",2],
-            SUBx:["{\\:\\!_#1}",1],
-            EXPx:["{\\;\\!^#1}",1],
-            Ss:["{#1\\,\\!_#2}",2],
-            subx:["{\\,\\!_#1}",1]
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
         }
     }
 });

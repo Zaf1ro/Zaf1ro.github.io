@@ -8,7 +8,7 @@
 
 
 
-  <meta name="description" content="Dynamic Programming - 0/1 Knapsack"/>
+  <meta name="description" content="DP - 0/1 Knapsack Problem"/>
 
 
 
@@ -37,15 +37,15 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/539a.html"/>
 
 
-<meta name="description" content="Introduction0-1背包问题: 有n个物品, 第i个物品的体积为w[i], 价值为v[i], 每个物品至多选一次, 求体积和不超过capacity时的最大价值和.这类问题先从回溯的三要素思考:  当前操作: 枚举到第i个物品, 有两种选择: 选择该物品, 剩余容量下降, 价值增加 不选该物品, 剩余容量不变, 价值不变   子问题: 剩余容量为c时, 之后物品能得到的最大价值和 边界条件">
+<meta name="description" content="1. Introduction0&#x2F;1背包问题: 有$n$个物品和一个容量为$c$的背包, 第$i$个物品的体积为$w[i]$, 价值为$v[i]$, 在不超过背包容量上限的情况下, 求能放入背包中物品的最大价值之和. 该题目有以下几点需要考虑:  每个物品只能放入背包一次 背包有容量上限, 因此可能无法将所有物品都放入背包 将物品放入背包时, 背包的价值增加, 但剩余容量下降, 选择哪些">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Dynamic Programming - 0&#x2F;1 Knapsack">
+<meta property="og:title" content="DP - 0&#x2F;1 Knapsack Problem">
 <meta property="og:url" content="https://zaf1ro.github.io/p/539a.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="Introduction0-1背包问题: 有n个物品, 第i个物品的体积为w[i], 价值为v[i], 每个物品至多选一次, 求体积和不超过capacity时的最大价值和.这类问题先从回溯的三要素思考:  当前操作: 枚举到第i个物品, 有两种选择: 选择该物品, 剩余容量下降, 价值增加 不选该物品, 剩余容量不变, 价值不变   子问题: 剩余容量为c时, 之后物品能得到的最大价值和 边界条件">
+<meta property="og:description" content="1. Introduction0&#x2F;1背包问题: 有$n$个物品和一个容量为$c$的背包, 第$i$个物品的体积为$w[i]$, 价值为$v[i]$, 在不超过背包容量上限的情况下, 求能放入背包中物品的最大价值之和. 该题目有以下几点需要考虑:  每个物品只能放入背包一次 背包有容量上限, 因此可能无法将所有物品都放入背包 将物品放入背包时, 背包的价值增加, 但剩余容量下降, 选择哪些">
 <meta property="og:locale">
 <meta property="article:published_time" content="2024-04-07T15:43:20.000Z">
-<meta property="article:modified_time" content="2024-04-07T18:40:32.000Z">
+<meta property="article:modified_time" content="2024-06-01T21:30:05.821Z">
 <meta property="article:tag" content="Algorithm">
 <meta name="twitter:card" content="summary">
 
@@ -56,7 +56,7 @@
 
 
     <title>
-Dynamic Programming - 0/1 Knapsack - Zaf1ro
+DP - 0/1 Knapsack Problem - Zaf1ro
 </title>
   <meta name="generator" content="Hexo 6.3.0"></head>
 
@@ -74,7 +74,7 @@ Dynamic Programming - 0/1 Knapsack - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Introduction"><span class="toc-text">Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#494-Target-Sum"><span class="toc-text">494. Target Sum</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Brute-Force"><span class="toc-text">2. Brute Force</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Dynamic-Programming"><span class="toc-text">3. Dynamic Programming</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Optimization"><span class="toc-text">4. Optimization</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Leetcode"><span class="toc-text">5. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#494-Target-Sum"><span class="toc-text">494. Target Sum</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li></ol></li></ol>
   </div>
 
     </div>
@@ -120,7 +120,7 @@ Dynamic Programming - 0/1 Knapsack - Zaf1ro
     <header class="post-header">
       <h1 class="post-title">
         
-          Dynamic Programming - 0/1 Knapsack
+          DP - 0/1 Knapsack Problem
         
       </h1>
       <time class="post-time">
@@ -129,28 +129,50 @@ Dynamic Programming - 0/1 Knapsack - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>0-1背包问题: 有n个物品, 第i个物品的体积为w[i], 价值为v[i], 每个物品至多选一次, 求体积和不超过capacity时的最大价值和.<br>这类问题先从回溯的三要素思考:</p>
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>0&#x2F;1背包问题: 有$n$个物品和一个容量为$c$的背包, 第$i$个物品的体积为$w[i]$, 价值为$v[i]$, 在不超过背包容量上限的情况下, 求能放入背包中物品的最大价值之和. 该题目有以下几点需要考虑:</p>
 <ul>
-<li>当前操作: 枚举到第i个物品, 有两种选择:<ul>
-<li>选择该物品, 剩余容量下降, 价值增加</li>
-<li>不选该物品, 剩余容量不变, 价值不变</li>
+<li>每个物品只能放入背包一次</li>
+<li>背包有容量上限, 因此可能无法将所有物品都放入背包</li>
+<li>将物品放入背包时, 背包的价值增加, 但剩余容量下降, 选择哪些物品可最大化背包内的物品价值之和</li>
+</ul>
+<h2 id="2-Brute-Force"><a href="#2-Brute-Force" class="headerlink" title="2. Brute Force"></a>2. Brute Force</h2><p>背包问题的暴力解法就是枚举所有物品组合, 判断每个组合能否放入背包, 并统计最大价值, 时间复杂度为$O(2^n)$. 这种解法不是动态规划, 而是回溯算法.</p>
+<h2 id="3-Dynamic-Programming"><a href="#3-Dynamic-Programming" class="headerlink" title="3. Dynamic Programming"></a>3. Dynamic Programming</h2><p>动态规划算法解决该问题时, 可拆分为以下步骤:</p>
+<ol>
+<li><p>拆分问题: 按照物品坐标和背包剩余容量进行划分</p>
+<ul>
+<li>原问题: 背包剩余容量为<code>$c$</code>且还有<code>$n$</code>个物品时, 求最大价值</li>
+<li>子问题: 背包剩余容量为<code>$c_k$</code>且还有<code>$k$</code>个物品时最大价值, 与背包剩余容量为<code>$c - c_k$</code>且还有<code>$n-k$</code>个物品时的最大价值之和</li>
 </ul>
 </li>
-<li>子问题: 剩余容量为c时, 之后物品能得到的最大价值和</li>
-<li>边界条件:<ul>
-<li>物品枚举完毕: 结束递归</li>
-<li>当前物品的体积超过剩余容量: 不选当前物品</li>
+<li><p>定义状态: 物品坐标<code>$i$</code>和剩余容量<code>$c_i$</code>, 可申请一个<code>$dp[n][c]$</code>表格, 表示前<code>$n$</code>个物品放入一个容量为<code>c</code>的背包时的最大价值.</p>
+</li>
+<li><p>状态转移方程: 对于<code>前$i$个物品且容量为$c_i$的最大价值</code>这个问题, 可转换为两个子问题:</p>
+<ul>
+<li>前$i-1$个物品的最大价值: 前$0$个物品($i &#x3D; 1$)表示背包中没有任何物品, 因此价值为$0$, 容量为$c$</li>
+<li>第$i$个物品是否放入背包:<ul>
+<li>将第$i$个物品放入背包: $dp[i-1][c_{i-1}-w[i]] + v[i]$</li>
+<li>跳过第$i$个物品: $dp[i-1][c]$</li>
 </ul>
 </li>
 </ul>
-<p>因此, 其状态转换方程为: <code>dfs(i, c) = max(dfs(i+1, c), dfs(i+1, c-w[i])+v[i])</code>. 其中, <code>c</code>表示剩余容量, <code>i</code>表示<code>[i, n]</code>范围内的所有物品, 不单指第i个物品.</p>
-<h2 id="494-Target-Sum"><a href="#494-Target-Sum" class="headerlink" title="494. Target Sum"></a>494. Target Sum</h2><p>You are given an integer array <code>nums</code> and an integer <code>target</code>.</p>
-<p>You want to build an <strong>expression</strong> out of nums by adding one of the symbols <code>&#39;+&#39;</code> and <code>&#39;-&#39;</code> before each integer in nums and then concatenate all the integers.</p>
-<p>For example, if <code>nums = [2, 1]</code>, you can add a <code>&#39;+&#39;</code> before <code>2</code> and a <code>&#39;-&#39;</code> before <code>1</code> and concatenate them to build the expression <code>&quot;+2-1&quot;</code>.<br>Return the number of different <strong>expressions</strong> that you can build, which evaluates to <code>target</code>.</p>
+<p> 因此, 状态转移方程如下:<br> $$<br> dp[i][c_i] &#x3D;<br> \begin{cases}<br>     dp[i-1][c_{i-1}],                              &amp; c &lt; w[i] \\[2ex]<br>     max(dp[i-1][c_{i-1}], dp[i-1][c_{i-1}-w[i]] + v[i]), &amp; c \ge w[i]<br> \end{cases}<br> $$</p>
+</li>
+<li><p>初始条件:</p>
+<ul>
+<li>若$c &#x3D; 0$, 则没有容量放下任何物品, 价值为0, 即$dp[i][0] &#x3D; 0, 0 \le i \le c$</li>
+<li>若$i &#x3D; 0$, 则没有任何物品可放入背包, 价值为0, 即$dp[0][w], 0 \le c_i \le c$</li>
+</ul>
+</li>
+<li><p>最终结果: 根据$dp[i][c_i]$的定义, $dp[n][w]$表示前$n$个物品且容量为$w$时的最大价值, 即为答案.</p>
+</li>
+</ol>
+<p>DP的时间复杂度为$O(n \times w)$, 空间复杂度为$O(n \times w)$</p>
+<h2 id="4-Optimization"><a href="#4-Optimization" class="headerlink" title="4. Optimization"></a>4. Optimization</h2><p>求解过程中, <code>前i件物品的状态</code>只与<code>前i-1件物品的状态</code>有关, 与其他阶段的状态无关. 也就是说, 我们只会用到$dp[i][c]$, $dp[i-1][c]$, 和$dp[i-1][c-w[i-1]]$. 因此无需保存所有阶段的状态, 只需两个一维数组分别保存相邻两个阶段的状态; 进一步优化, 可只使用一个一维数组用于保存上一阶段的状态, 采用<strong>滚动数组</strong>的方式进行优化.</p>
+<h2 id="5-Leetcode"><a href="#5-Leetcode" class="headerlink" title="5. Leetcode"></a>5. Leetcode</h2><h3 id="494-Target-Sum"><a href="#494-Target-Sum" class="headerlink" title="494. Target Sum"></a>494. Target Sum</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given an integer array <code>nums</code> and an integer <code>target</code>.<br>You want to build an <strong>expression</strong> out of nums by adding one of the symbols <code>&#39;+&#39;</code> and <code>&#39;-&#39;</code> before each integer in nums and then concatenate all the integers.<br>For example, if <code>nums = [2, 1]</code>, you can add a <code>&#39;+&#39;</code> before <code>2</code> and a <code>&#39;-&#39;</code> before <code>1</code> and concatenate them to build the expression <code>&quot;+2-1&quot;</code>.<br>Return the number of different <strong>expressions</strong> that you can build, which evaluates to <code>target</code>.</p>
 <p>Example 1:</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,1,1,1,1], target = 3</span><br><span class="line">Output: 5</span><br><span class="line">Explanation: There are 5 ways to assign symbols to make the sum of nums be target 3.</span><br><span class="line">-1 + 1 + 1 + 1 + 1 = 3</span><br><span class="line">+1 - 1 + 1 + 1 + 1 = 3</span><br><span class="line">+1 + 1 - 1 + 1 + 1 = 3</span><br><span class="line">+1 + 1 + 1 - 1 + 1 = 3</span><br><span class="line">+1 + 1 + 1 + 1 - 1 = 3</span><br></pre></td></tr></table></figure>
 
-<h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h3><p>对于每个元素有两种选择: 正数或负数. 回溯三要素如下:</p>
+<h4 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h4><p>对于每个元素有两种选择: 正数或负数. 回溯三要素如下:</p>
 <ul>
 <li>当前操作: 枚举每个元素, 对于第i个元素, 可当作正数或负数, <code>target = target +/- nums[i]</code></li>
 <li>子问题: 对于第i+1个和之后的元素, 使得target变为0</li>
@@ -192,7 +214,7 @@ Dynamic Programming - 0/1 Knapsack - Zaf1ro
     
     
       <a class="next" href="/p/a5fe.html">
-        <span class="next-text nav-default">Dynamic Programming - Memoization</span>
+        <span class="next-text nav-default">DP - Memoization Search</span>
         <span class="prev-text nav-mobile">Next</span>
         <i class="icon-right"></i>
       </a>
@@ -209,21 +231,22 @@ Dynamic Programming - 0/1 Knapsack - Zaf1ro
 
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
-    showProcessingMessages: false,
+    showProcessingMessages: true,
     jax: ["input/TeX", "output/HTML-CSS"],
     tex2jax: {
-        inlineMath:[["$","$"],["\\(","\\)"]],
-        processEscapes:!0,
-        skipTags:["script","noscript","style","textarea"]
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
     },
     TeX: {
         Macros:{
-            fi:"{f\\,\\!_i}",
-            SS:["{#1\\:\\!_#2}",2],
-            SUBx:["{\\:\\!_#1}",1],
-            EXPx:["{\\;\\!^#1}",1],
-            Ss:["{#1\\,\\!_#2}",2],
-            subx:["{\\,\\!_#1}",1]
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
         }
     }
 });
@@ -237,7 +260,7 @@ MathJax.Hub.Config({
 <script type="text/javascript">
   var disqus_shortname = 'zaf1ro';
   var disqus_identifier = 'p/539a.html';
-  var disqus_title = "Dynamic Programming - 0/1 Knapsack";
+  var disqus_title = "DP - 0/1 Knapsack Problem";
 
   var disqus = {
     load : function disqus(){
