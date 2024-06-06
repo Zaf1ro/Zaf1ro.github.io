@@ -6,23 +6,33 @@ category:
 tag:
   - Algorithm
 abbrlink: 9d13
-date: 2024-04-05 12:42:10
+date: 2024-04-01 12:42:10
 keywords:
 description:
 ---
 
-## Introduction
-遇到问题不要考虑多层情况, 只需考虑**边界条件**和**非边界条件的逻辑**, 剩下的交给数学归纳法.
+## 1. Introduction
+回溯算法是一种穷举式搜索算法, 在搜索过程中寻找问题的解. 若当前路线无法满足条件时, 会回退一步重新选择. 换句话说, 回溯算法的核心思想为**走不通就回退**, 因此回溯算法可采用**递归**实现. 回溯算法的递归函数会返回两种结果:
+* 找到一个或多个满足条件的答案
+* 尝试所有路线后仍没有找到答案
+
+在思考回溯算法时, 不要考虑多层路线之间如何转换, 只需考虑**边界条件**和**非边界条件的逻辑**, 剩下的交给数学归纳法. 回溯算法主要用于解决以下问题:
+* Subset: 一个数组中**任意数量**元素组成的**组合**(不考虑元素顺序)
+* Combination: 一个数组中**固定数量**元素组成的**组合**(不考虑元素顺序)
+* Permutation: 一个数组中**所有**元素组成的**排列**(需考虑元素顺序)
 
 
-## Subset Backtracking
+## 2. Subset
+### 2.1 Introduction
 子集型回溯的题目通常要求返回一个元素数组中所有组合的结果, 组合的长度不同, 但不允许存在重复组合. 以下是两种解题模板:
-* 第一种模板: 对于每个元素只有两种操作: 选或不选. 因此可对数组中的每i个元素进行选和不选的两种操作, 接下来只需对`[i+1, n)`的数字中构造子集即可.
-* 第二种模板: 每次必须选择一个元素. 因此必须选择第i个元素, 并从`[i+1, n-1]`, `[i+2, n-1]`, ..., `[n-1, n-1]`中构建子集.
+* 第一种模板: 对于每个元素只有两种操作: 选或不选. 因此可对数组中的每i个元素进行选和不选的两种操作, 接下来只需对$[i+1, n)$的数字中构造子集即可.
+* 第二种模板: 每次必须选择一个元素. 因此必须选择第i个元素, 并从$[i+1, n-1], [i+2, n-1]  \ldots  [n-1, n-1]$中构建子集.
 
-需要注意的是, 为了去除重复的组合, 需指定一个元素遍历的顺序, 也就是`从左向右`或`从右向左`依次遍历, 遍历过程中不可回头.
+需要注意的是, 为了去除重复的组合, 需指定一个元素遍历的顺序, 也就是**从左向右**或**从右向左**依次遍历, 遍历过程中不可回头.
 
-### 78. Subsets
+### 2.2 Leetcode
+#### 78. Subsets
+##### Problem Description
 Given an integer array nums of **unique** elements, return all possible subsets (the power set).
 The solution set **must not** contain duplicate subsets. Return the solution in **any order**.
 
@@ -38,8 +48,8 @@ Input: nums = [0]
 Output: [[],[0]]
 ```
 
-#### Solution
-模板一: 每个元素采取选或不选两种方式, 并逐步递归.
+##### Solution 1
+每个元素采取选或不选两种方式, 并逐步递归.
 ```java
 class Solution {
     private List<List<Integer>> res = new ArrayList<>();
@@ -64,7 +74,8 @@ class Solution {
 }
 ```
 
-模板二: 必须选择当前元素, 并从之后的每个元素中递归.
+##### Solution 2
+必须选择当前元素, 并从之后的每个元素中递归.
 ```java
 class Solution {
     private List<List<Integer>> res = new ArrayList<>();
@@ -86,7 +97,8 @@ class Solution {
 }
 ```
 
-### 90. Subsets II
+#### 90. Subsets II
+##### Problem Description
 Given an integer array nums that may contain `duplicates`, return all possible subsets (the power set).
 
 The solution set `must not` contain duplicate subsets. Return the solution in any order.
@@ -103,7 +115,7 @@ Input: nums = [0]
 Output: [[],[0]]
 ```
 
-#### Solution
+##### Solution
 由于数组中存在重复元素, 因此直接套用模板一和模板二都会导致重复组合. 假设数组为`[1,1,1]`:
 * 模板二: 先选择第一个1, 进入递归并退出递归后, 其实已经包含了所有组合, 因此第二个1和第三个1无需选择和进入递归. 若当前元素不是首个被选择的元素, 且与前一个元素相同(假设数组已排序), 那么上一个元素的递归结果已包含当前元素的递归结果, 跳过即可.
 * 模板一: 当进入下一次递归时, 当前递归并不知道上一个元素是否被选择, 因此无法知道是否应该跳过.
@@ -130,8 +142,8 @@ class Solution {
 }
 ```
 
-
-### Palindrome Partitioning
+#### 131. Palindrome Partitioning
+##### Problem Description
 Given a string `s`, partition `s` such that every substring of the partition is a **palindrome**. Return all possible palindrome partitioning of `s`.
 
 Example 1:
@@ -140,7 +152,7 @@ Input: s = "aab"
 Output: [["a","a","b"],["aa","b"]]
 ```
 
-#### Solution
+##### 2. Solution
 该题使用模板一, 但该题无需跳过某个字符, 而是判断选择的子字符串是否为回文串.
 ```java
 class Solution {
@@ -169,7 +181,8 @@ class Solution {
 ```
 
 
-## Combination Backtracking
+## 3. Combination
+### 3.1 Introduction
 组合型回溯的题目通常要求一个元素数组中的相同长度的组合结果, 且组合不可重复. 由于子集型回溯包含所有组合结果, 因此组合型回溯的组合结果其实是子集型回溯结果的一个子集. 假设元素数组为`[1,2,3]`, 则子集型回溯的流程如下:
 * 选1, 组合为[1]
     * 选2, 组合为[1,2]
@@ -183,8 +196,9 @@ class Solution {
 * 若`m = k`, 则当前数组为结果中的一种组合
 * 若`i < d`, 则必然无法选出k个数, 无需继续递归
  
-
-### 77. Combinations
+### 3.2 Leetcode
+#### 77. Combinations
+##### Problem Description
 Given two integers `n` and `k`, return all possible combinations of `k` numbers chosen from the range `[1, n]`.
 You may return the answer in **any order**.
 
@@ -196,8 +210,8 @@ Explanation: There are 4 choose 2 = 6 total combinations.
 Note that combinations are unordered, i.e., [1,2] and [2,1] are considered to be the same combination.
 ```
 
-#### Solution
-模板一: 对于每个元素只有两种情况: 选或不选. 选元素时需保证当前数组不超过k个元素, 不选时需检查之后的元素是否足够k个元素.
+##### Solution 1
+对于每个元素只有两种情况: 选或不选. 选元素时需保证当前数组不超过k个元素, 不选时需检查之后的元素是否足够k个元素.
 ```java
 class Solution {
     private List<List<Integer>> res = new ArrayList<>();
@@ -222,8 +236,9 @@ class Solution {
 }
 ```
 
-模板二: 必须将当前元素放入数组中, 则需保证以下两点:
-* 当前数组的长度不可超过k
+##### Solution 2
+若必须将当前元素放入数组中, 则需保证以下两点:
+* 当前数组的长度不可超过`k`
 * `[i+1, n]`表示之后还可以添加的元素数量, `k - 当前数组长度`表示组合还需要几个元素, 因此需保证`len([i+1, n]) >= k - len(arr)`
 
 ```java
@@ -250,7 +265,8 @@ class Solution {
 }
 ```
 
-### 39. Combination Sum
+#### 39. Combination Sum
+##### Problem Description
 Given an array of **distinct** integers `candidates` and a target integer target, return a list of all **unique combinations** of `candidates` where the chosen numbers sum to `target`. You may return the combinations in **any order**.
 The **same** number may be chosen from candidates an **unlimited number of times**. Two combinations are unique if the frequency of at least one of the chosen numbers is different.
 The test cases are generated such that the number of unique combinations that sum up to `target` is less than `150` combinations for the given input.
@@ -265,12 +281,11 @@ Explanation:
 These are the only two combinations.
 ```
 
-#### Solution
+##### Solution 1
 该题目需要注意两点:
 * 每个元素都可以被选择无数次
 * 没有要求组合的长度, 但要求当前数组的总和等于target, 因此需修改边界条件
 
-模板一:
 ```java
 class Solution {
     private List<List<Integer>> res = new ArrayList<>();
@@ -297,7 +312,7 @@ class Solution {
 }
 ```
 
-模板二:
+##### 3. Solution 2
 ```java
 class Solution {
     private List<List<Integer>> res = new ArrayList<>();
@@ -323,7 +338,8 @@ class Solution {
 }
 ```
 
-### 40. Combination Sum II
+#### 40. Combination Sum II
+##### Problem Description
 Given a collection of candidate numbers (`candidates`) and a target number (`target`), find all unique combinations in `candidates` where the candidate numbers sum to `target`.
 Each number in `candidates` may only be used **once** in the combination.
 
@@ -339,7 +355,7 @@ Output:
 ]
 ```
 
-#### Solution
+##### 2. Solution
 该题需注意几个点:
 * 每个元素只能使用一次: 与传统的子集型回溯问题相同
 * 没有组合的长度要求, 而是求和要求: 与上一题相同
@@ -372,7 +388,8 @@ class Solution {
 }
 ```
 
-### 216. Combination Sum III
+#### 216. Combination Sum III
+##### Problem Description
 Find all valid combinations of `k` numbers that sum up to n such that the following conditions are true:
 * Only numbers `1` through `9` are used.
 * Each number is used **at most once**.
@@ -388,13 +405,12 @@ Explanation:
 There are no other valid combinations.
 ```
 
-#### Solution
+##### Solution 1
 该题的要求如下:
 * `[1, 9]`中每个数字只能选择一个: 元素只能向一个方向移动, 不能原地踏步
 * 要求组合的长度: 边界条件中判断组合长度是否越界
 * 要求组合的总和: 边界条件中判断组合总和是否越界
 
-模板一:
 ```java
 class Solution {
     private List<List<Integer>> res = new ArrayList<>();
@@ -420,7 +436,7 @@ class Solution {
 }
 ```
 
-模板二:
+##### Solution 2
 ```java
 class Solution {
     private List<List<Integer>> res = new ArrayList<>();
@@ -446,7 +462,8 @@ class Solution {
 ```
 
 
-## Permutation
+## 4. Permutation
+### 4.1 Introduction
 排列型回溯的题目通常要求返回一个数组中所有元素的不同排列组合, 因此每个组合的长度与原数组相同, 组合的个数就是数组长度的阶乘, 假设数组为`[1,2,3]`, 则组合数为`3! = 1*2*3 = 6`. 相比于组合型回溯, 元素的顺序至关重要. 假设`path`表示已选元素的集合, `s`表示未选的元素, 回溯的整个流程如下:
 * 当前操作: 从`s`中枚举每个元素作为组合的第i个元素(`path[i]`), 并将该元素从`s`中移除
 * 子问题: 获得组合的第i+1个元素
@@ -454,7 +471,9 @@ class Solution {
 
 整个回溯可写作: `dfs(i, s) -> dfs(i+1, s-{x1}), dfs(i+1, s-{x2}) ....`
 
-### 46. Permutations
+### 4.2 Leetcode
+#### 46. Permutations
+##### Problem Description
 Given an array `nums` of distinct integers, return all the possible permutations. You can return the answer in **any order**.
 
 Example 1:
@@ -463,7 +482,7 @@ Input: nums = [1,2,3]
 Output: [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
 ```
 
-#### Solution
+##### Solution
 当前操作: 从`nums`中枚举每个数字, 作为`arr`的第i个数字
 子问题: 获得`arr`的第i+1个数字
 边界条件: `i == nums.length`时, 可将`arr`作为结果之一
@@ -496,7 +515,8 @@ class Solution {
 }
 ```
 
-### 47. Permutations II
+#### 47. Permutations II
+##### Problem Description
 Given a collection of numbers, `nums`, that might contain duplicates, return all possible unique permutations **in any order**.
 
 Example 1:
@@ -508,7 +528,7 @@ Output:
  [2,1,1]]
 ```
 
-#### Solution
+##### Solution
 该题与上一题基本相同, 唯一区别在于: 原数组中存在重复元素. 以`[1,1]`为例:
 每次递归都枚举`nums`中的每个元素, 作为`arr`的第i个元素. 由于`nums[0] == nums[1]`, 因此, 当`nums[1]`作为`arr`的第一个元素时, 会与`nums[0]`作为`arr`的第一个元素产生的组合相同. 因此枚举当前元素时, 若满足以下两点, 则跳过当前元素:
 * 当前元素与上一个元素值相等
@@ -542,7 +562,8 @@ class Solution {
 }
 ```
 
-### 51. N-Queens
+#### 51. N-Queens
+##### Problem Description
 The **n-queens** puzzle is the problem of placing `n` queens on an `n x n` chessboard such that no two queens attack each other.
 Given an integer `n`, return all distinct solutions to the **n-queens puzzle**. You may return the answer in **any order**.
 Each solution contains a distinct board configuration of the n-queens' placement, where `'Q'` and `'.'` both indicate a queen and an empty space, respectively.
@@ -563,7 +584,7 @@ Output: [
 Explanation: There exist two distinct solutions to the 4-queens puzzle as shown above
 ```
 
-#### Solution
+##### Solution
 该题要求在`n*n`的棋盘上放置`n`个皇后, 由于两个皇后无法同行同列, 因此每个行只有一个皇后, 每一列也只有一个皇后. 对于对角线, 通过观察`[0,0] -> [n-1,n-1]`上的坐标, 可以发现该对角线上的行和列相减为`0`; 通过观察`[0,n-1] -> [n-1,0]`上的坐标, 可以发现该对角线上的行和列之和为`n-1`. 假设现在我们有一个长度为`n`的数组:
 * 数组的坐标为皇后所在的行数
 * 数组上的值为皇后所在的列数

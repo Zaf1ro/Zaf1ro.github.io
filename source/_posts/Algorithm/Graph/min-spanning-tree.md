@@ -1,5 +1,5 @@
 ---
-title: Minimum Spanning Tree (MST)
+title: MST (Minimum Spanning Tree)
 abbrlink: afab
 date: 2023-03-07 15:59:33
 category:

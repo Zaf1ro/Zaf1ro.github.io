@@ -9,8 +9,8 @@ abbrlink: 27b4
 date: 2018-03-12 13:29:10
 ---
 
-## 1. 泰勒展开式
-通过泰勒展开式获得sin(x)和cos(x)的多项式表达
+## 1. Taylor Series
+通过Taylor series(泰勒级数)获得$\sin(x)$和$\cos(x)$的多项式表达
 $$
 \because f(x) = f(a) + \frac{f'(a)}{1!}(x-a) + \frac{f^{(2)}(a)}{2!}(x-a)^2 + \cdots + \frac{f^{(n)}(a)}{n!}(x-a)^n \\\\
 \therefore sin(x) = \frac{cos(0)}{1!} - \frac{cos(0)}{3!}x^3 + \frac{cos(0)}{5!}x^5 - \frac{cos(0)}{7!}x^7 + \frac{cos(0)}{9!}x^9 \cdots \\\\
@@ -20,23 +20,21 @@ cos(x) = cos(0) + \frac{cos(0)}{2!}x^2 - \frac{cos(0)}{4!}x^4 + \frac{cos(0)}{6!
 $$
 
 
-
-## 2. 缩小区间
-在使用泰勒展开式前, 需要先缩减x的区间:
+## 2. Narrow down the Range
+在使用泰勒级数前, 需要先缩减`x`的区间:
 1. 利用周期性将x的范围缩减到$(-\pi, \pi]$
 2. 利用奇偶性将x的范围缩减到$[0, \pi]$
 3. 利用诱导公式将x的范围缩减到$[-\frac{\pi}{2}, \frac{\pi}{2}]$
 4. 利用诱导公式将x的范围缩减到$[-\frac{\pi}{4}, \frac{\pi}{4}]$
 
 诱导公式:
-1. $sin(\pi + \alpha) = -sin \alpha$
-2. $cos(\pi + \alpha) = -cos \alpha$
-3. $sin(\frac{\pi}{2} - \alpha) = cos \alpha$
-4. $cos(\frac{\pi}{2} - \alpha) = sin \alpha$
+1. $\sin(\pi + \alpha) = -\sin \alpha$
+2. $\cos(\pi + \alpha) = -\cos \alpha$
+3. $\sin(\frac{\pi}{2} - \alpha) = \cos \alpha$
+4. $\cos(\frac{\pi}{2} - \alpha) = \sin \alpha$
 
 
-
-## 3. 代码
+## 3. Implementation
 ```java
 private static final double PI = 3.14159265358979323846;
 

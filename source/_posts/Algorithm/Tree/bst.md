@@ -39,7 +39,45 @@ BST的inorder traversal(中序遍历)的序列为非降序序列, 时间复杂�
 * 若`o`的权值小于`v`, 则在`o`的右子树删除权值为`v`的节点
 
 
-## 95. Unique Binary Search Trees II
+## 2. Implementation
+### 2.1 Query Element
+查找元素时, 只需根据情况判断需向左子树或右子树走, 每次判断都会缩小查找范围, 从而提高查找效率. 假设目标值为`val`, 从根节点出发:
+1. 若当前节点为空, 则查找失败
+2. 若当前节点不为空, 对比节点值与目标值
+    * 若$val = node.val$, 则查找成功
+    * 若$val < node.val$, 则查找左子树
+    * 若$val > node.val$, 则查找右子树
+
+最好的情况下, BST与二分查找类似, 从根节点到叶子节点的高度为$\log_2 n$, 因此时间复杂度为$O(\log_2 n)$; 最坏情况下, BST会变为一个链表, 即只有左子树或右子树, 退化为顺序查找, 因此时间复杂度为$O(n)$.
+
+### 2.2 Insert Element
+插入操作与查找操作的步骤类似, 假设插入值为`val`, 从根节点出发:
+1. 若当前节点为空, 则创建一个值为`val`的节点
+2. 若当前节点不为空, 比较节点值和插入值:
+    * 若$val < node.val$, 则插入左子树
+    * 若$val > node.val$, 则插入右子树
+
+由于BST不允许重复节点, 因此若插入值已存在于BST中, 则直接返回.
+
+### 2.3 Delete Element
+在BST中删除元素需先找到被删除节点, 再执行删除操作. 被删除节点可分为三种情况:
+1. 被删除节点的左子树为空, 则让右子树代替被删除节点
+2. 被删除节点的右子树为空, 则让左子树代替被删除节点
+3. 被删除节点的左右子树均不为空, 则让**immediate  predecessor/successor**(直接前驱或直接后继, 也就是小于被删除节点值的最大值, 或大于被删除节点值的最小值)代替被删除节点
+
+BST删除元素的步骤如下, 从根节点出发:
+1. 若当前元素为空, 则返回空
+2. 若$val < node.val$, 则从左子树搜索并删除, 之后更新`node.left`
+3. 若$val > node.val$, 则从右子树搜索并删除, 之后更新`node.right`
+4. 若$val = node.val$, 则当前节点为被删除节点:
+    * 若当前节点的左子树为空, 则让右子树代替当前节点, 返回右子树
+    * 若当前节点的右子树为空, 则让右子树代替当前节点, 返回左子树
+    * 若当前节点的左右子树均不为空, 则将左子树转移到右子树最左侧叶子节点的位置上, 并让右子树代替当前节点, 返回右子树
+
+
+## 3. Leetcode
+### 95. Unique Binary Search Trees II
+#### Problem Description
 Given an integer `n`, return all the structurally unique **BST**'s (binary search trees), which has exactly n nodes of unique values from `1` to `n`. Return the answer in **any order**.
 
 Example 1:
@@ -50,7 +88,7 @@ Input: n = 3
 Output: [[1,null,2,null,3],[1,null,3,2],[2,1,3],[3,1,null,null,2],[3,2,null,1]]
 ```
 
-### Solution
+#### Solution
 ```java
 class Solution {
     public List<TreeNode> generateTrees(int n) {
@@ -79,8 +117,8 @@ class Solution {
 }
 ```
 
-
-## 98. Validate Binary Search Tree
+### 98. Validate Binary Search Tree
+#### Problem Description
 Given the `root` of a binary tree, determine if it is a valid binary search tree (BST).
 A **valid BST** is defined as follows:
 * The left subtree of a node contains only nodes with keys **less than** the node's key.
@@ -96,7 +134,7 @@ Output: false
 Explanation: The root node's value is 5 but its right child's value is 4.
 ```
 
-### Solution
+#### Solution
 ```java
 class Solution {
     public boolean isValidBST(TreeNode root) {
@@ -111,8 +149,8 @@ class Solution {
 }
 ```
 
-
-## 669. Trim a Binary Search Tree
+### 669. Trim a Binary Search Tree
+#### Problem Description
 Given the `root` of a binary search tree and the lowest and highest boundaries as `low` and `high`, trim the tree so that all its elements lies in `[low, high]`. Trimming the tree should **not** change the relative structure of the elements that will remain in the tree (i.e., any node's descendant should remain a descendant). It can be proven that there is a **unique answer**.
 
 Return the root of the trimmed binary search tree. Note that the root may change depending on the given bounds.
@@ -124,7 +162,7 @@ Input: root = [1,0,2], low = 1, high = 2
 Output: [1,null,2]
 ```
 
-### Solution
+#### Solution
 ```java
 class Solution {
     public TreeNode trimBST(TreeNode root, int low, int high) {
@@ -141,7 +179,8 @@ class Solution {
 ```
 
 
-## 235. Lowest Common Ancestor of a Binary Search Tree
+### 235. Lowest Common Ancestor of a Binary Search Tree
+#### Problem Description
 Given a binary search tree (BST), find the lowest common ancestor (LCA) node of two given nodes in the BST.
 
 According to the definition of LCA on Wikipedia: "The lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow **a node to be a descendant of itself**)."
@@ -154,7 +193,7 @@ Output: 6
 Explanation: The LCA of nodes 2 and 8 is 6.
 ```
 
-### Solution
+#### Solution
 ```java
 class Solution {
     public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
@@ -166,8 +205,8 @@ class Solution {
 }
 ```
 
-
-## 450. Delete Node in a BST
+### 450. Delete Node in a BST
+#### Problem Description
 Given a root node reference of a BST and a key, delete the node with the given key in the BST. Return the **root node reference** (possibly updated) of the BST.
 Basically, the deletion can be divided into two stages:
 1. Search for a node to remove.
@@ -183,7 +222,7 @@ One valid answer is [5,4,6,2,null,null,7], shown in the above BST.
 Please notice that another valid answer is [5,2,6,null,4,null,7] and it's also accepted.
 ```
 
-### Solution
+#### Solution
 ```java
 class Solution {
     public TreeNode deleteNode(TreeNode root, int key) {
@@ -207,8 +246,8 @@ class Solution {
 }
 ```
 
-
-## 230. Kth Smallest Element in a BST
+### 230. Kth Smallest Element in a BST
+#### Problem Description
 Given the `root` of a binary search tree, and an integer `k`, return the `$k^{th}$` smallest value (**1-indexed**) of all the values of the nodes in the tree.
 
 Example 1:
@@ -219,7 +258,7 @@ Input: root = [5,3,6,2,4,null,null,1], k = 3
 Output: 3
 ```
 
-### Solution
+#### Solution
 ```java
 class Solution {
     public int kthSmallest(TreeNode root, int k) {
@@ -238,8 +277,8 @@ class Solution {
 }
 ```
 
-
-## 1373. Maximum Sum BST in Binary Tree
+### 1373. Maximum Sum BST in Binary Tree
+#### Problem Description
 Given a **binary tree** root, return the maximum sum of all keys of **any** sub-tree which is also a Binary Search Tree (BST).
 
 Assume a BST is defined as follows:
@@ -255,7 +294,7 @@ Output: 20
 Explanation: Maximum sum in a valid Binary search tree is obtained in root node with key equal to 3.
 ```
 
-### Solution
+#### Solution
 ```java
 class Solution {
     class Node {
@@ -289,8 +328,8 @@ class Solution {
 }
 ```
 
-
-## 272. Closest Binary Search Tree Value II
+### 272. Closest Binary Search Tree Value II
+#### Problem Description
 Given the `root` of a binary search tree, a `target` value, and an integer `k`, return the `k` values in the BST that are closest to the `target`. You may return the answer in **any order**.
 You are **guaranteed** to have only one unique set of `k` values in the BST that are closest to the `target`.
 
@@ -301,7 +340,7 @@ Input: root = [4,2,5,1,3], target = 3.714286, k = 2
 Output: [4,3]
 ```
 
-### Solution
+#### Solution
 ```java
 class Solution {
     private Deque<Integer> deque = new ArrayDeque<>();

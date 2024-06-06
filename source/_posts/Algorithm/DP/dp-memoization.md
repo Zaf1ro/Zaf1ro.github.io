@@ -1,5 +1,5 @@
 ---
-title: Dynamic Programming - Memoization
+title: DP - Memoization Search
 abbrlink: a5fe
 date: 2024-04-06 12:53:17
 category:
@@ -11,7 +11,11 @@ keywords:
 description:
 ---
 
-## Introduction
+## 1. Introduction
+记忆化搜索通过存储已遍历的状态, 可避免对同一状态的重复遍历. 换句话说, 当计算某个子问题时, 首先应检查该子问题是否曾经计算过:
+* 若已计算过, 则直接返回存储的结果
+* 若未计算过, 则继续计算, 并在执行后保存结果
+
 动态规划最重要的是得到**状态定义**和**状态转移方程**, 可以先将题目当作backtracking题目, 也就是, 将一个大问题拆分为一个小问题, 并思考以下三个问题:
 * 当前操作
 * 子问题
@@ -20,7 +24,17 @@ description:
 记忆化搜索则通过记录已经遍历过的状态, 从而避免对同一状态重复遍历, 降低时间复杂度.
 
 
-## 198. House Robber
+## 2. Steps
+记忆化搜索作为动态规划的一种实现, 使用前需考虑动态规划最重要的两个部分:
+* 状态定义
+* 状态转移方程
+
+知道问题对应的状态定义和转移方程后, 可定义一个缓存(通常为数组或哈希表)用于保存子问题的解, 并定义一个递归函数用于解决问题. 在递归函数中, 需先检查当前问题是否已计算过(能否在缓存中找到结果), 若不能则执行计算, 并在返回前将结果保存到缓存中.
+
+
+## 2. Leetcode
+### 198. House Robber
+#### 1. Problem Description
 You are a professional robber planning to rob houses along a street. Each house has a certain amount of money stashed, the only constraint stopping you from robbing each of them is that adjacent houses have security systems connected and **it will automatically contact the police if two adjacent houses were broken into on the same night**.
 Given an integer array `nums` representing the amount of money of each house, return the maximum amount of money you can rob tonight **without alerting the police**.
 
@@ -32,7 +46,7 @@ Explanation: Rob house 1 (money = 1) and then rob house 3 (money = 3).
 Total amount you can rob = 1 + 3 = 4.
 ```
 
-### Solution
+#### 2. Solution
 用回溯的思路, 可分为三个问题:
 * 当前操作: 选或不选当前房子
 * 子问题:
@@ -72,10 +86,9 @@ class Solution {
 }
 ```
 
-
-## 377. Combination Sum IV
+### 377. Combination Sum IV
+#### 1. Problem Description
 Given an array of **distinct** integers `nums` and a target integer `target`, return the number of possible combinations that add up to `target`.
-
 The test cases are generated so that the answer can fit in a **32-bit** integer.
 
 Example 1:
@@ -94,7 +107,7 @@ The possible combination ways are:
 Note that different sequences are counted as different combinations.
 ```
 
-### Solution
+#### 2. Solution
 该问题的要求为:
 * 数组中的元素可重复使用: Combination Sum
 * 组合可重复: 与上述所有题都不同
@@ -151,15 +164,14 @@ class Solution {
 }
 ```
 
-
-## 2466. Count Ways To Build Good Strings
+### 2466. Count Ways To Build Good Strings
+#### 1. Problem Description
 Given the integers `zero`, `one`, `low`, and `high`, we can construct a string by starting with an empty string, and then at each step perform either of the following:
 * Append the character `'0'` `zero` times.
 * Append the character `'1'` `one` times.
 
 This can be performed any number of times.
 A **good** string is a string constructed by the above process having a **length** between `low` and `high` (**inclusive**).
-
 Return the number of **different** good strings that can be constructed satisfying these properties. Since the answer can be large, return it **modulo** `${10}^9 + 7$`.
 
 Example 1:
@@ -172,7 +184,7 @@ It can be constructed as follows: "" -> "0" -> "01" -> "011".
 All binary strings from "000" to "111" are good strings in this example.
 ```
 
-### Solution
+#### 2. Solution
 依然套用回溯三要素:
 * 当前操作: 向当前字符串添加zero次0, 或添加one次1
 * 子操作: 返回剩余字符长度的情况下, 长度满足`[low, high]`的组合数
@@ -238,11 +250,10 @@ class Solution {
 }
 ```
 
-
-## 740. Delete and Earn
+### 740. Delete and Earn
+#### 1. Problem Description
 You are given an integer array `nums`. You want to maximize the number of points you get by performing the following operation any number of times:
 * Pick any `nums[i]` and delete it to earn `nums[i]` points. Afterwards, you must delete **every** element equal to `nums[i] - 1` and **every** element equal to `nums[i] + 1`.
-
 Return the **maximum number of points** you can earn by applying the above operation some number of times.
 
 Example 1:
@@ -255,7 +266,7 @@ Explanation: You can perform the following operations:
 You earn a total of 6 points.
 ```
 
-### Solution
+#### 2. Solution
 题目其实与House Robber相同: 将所有points映射到一个数组上, 若选择`nums[i]`, 则必须跳过`nums[i] + 1`, 因此回溯三要素为:
 * 当前操作: 选或不选当前元素
 * 子问题:
@@ -315,12 +326,10 @@ class Solution {
 }
 ```
 
-
-## 2320. Count Number of Ways to Place Houses
+### 2320. Count Number of Ways to Place Houses
+#### 1. Problem Description
 There is a street with `n * 2` **plots**, where there are `n` plots on each side of the street. The plots on each side are numbered from `1` to `n`. On each plot, a house can be placed.
-
 Return the number of ways houses can be placed such that no two houses are adjacent to each other on the same side of the street. Since the answer may be very large, return it **modulo** `${10}^9 + 7$`.
-
 Note that if a house is placed on the `$i^{th}$` plot on one side of the street, a house can also be placed on the `$i^{th}$` plot on the other side of the street.
 
 Example 1:
@@ -335,7 +344,7 @@ Possible arrangements:
 4. Two houses are placed, one on each side of the street.
 ```
 
-### Solution
+#### 2. Solution
 由于街道的两侧是相互独立的, 因此只需算一侧街道的组合数即可. 回溯三要素:
 * 当前操作: 选或不选当前plot(第i个元素)
 * 子问题: 若选择当前plot, 则需获取第i+2个元素及其之后元素的组合数; 若不选择当前plot, 则需获取第i+1个元素及其之后元素的组合数.
@@ -380,4 +389,3 @@ class Solution {
     }
 }
 ```
-

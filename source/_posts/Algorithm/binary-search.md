@@ -18,7 +18,7 @@ Binary Search(二分搜索)也称为half-interval search(折半搜索), 或logar
 * 若中间元素大于目标值, 则同理, 只需在左侧查找
 
 Binary search的思想在于**减而治之**, 每次查找都排除掉一定不存在目标元素的区间, 并继续在可能存在目标元素的区间查找.
-Binary search的时间复杂度为`$O(\log(N))$`(N为数组元素数), 非递归实现的空间复杂度为`$O(1)$`. 需要注意的是, 使用binary search的前提是**数组是广义有序的**: 对于任意中间元素, 该数组的一侧满足某种条件, 而另一侧不满足条件. 因此, binary search常用于查找满足某种条件的最大(小)值.
+Binary search的时间复杂度为$O(\log(N))$(N为数组元素数), 非递归实现的空间复杂度为$O(1)$. 需要注意的是, 使用binary search的前提是**数组是广义有序的**: 对于任意中间元素, 该数组的一侧满足某种条件, 而另一侧不满足条件. 因此, binary search常用于查找满足某种条件的最大(小)值.
 
 
 ## 2. Implementation
@@ -39,33 +39,33 @@ Binary search取中间值有两种方式:
 
 ### 2.3 Out of bound
 Binary search需要一个终止条件, 也就是`while`语句中的出界判断条件, 以下是三种常见的判断条件:
-* $left <= right$
+* $left \le right$
 * $left < right$
 * $left + 1 < right$
 
 ### 2.4 Update of mid
 Binary search的每次循环都需要更新`mid`, 以下是三种更新`mid`的写法:
-* `left = mid + 1`, `right = mid - 1`
-* `left = mid + 1`, `right = mid`
-* `left = mid`, `right = mid - 1`
+* $left = mid + 1, right = mid - 1$
+* $left = mid + 1, right = mid$ 或 $left = mid, right = mid - 1$
+* $left = mid, right = mid - 1$
 
 ### 2.5 Conclusion
 以上实现看似存在很多组合方式, 但其实只有三种写法:
 * 左闭右闭:
     * 初始区间: $[0, n-1]$
-    * 出界判定条件: `left <= right`
-    * 更新`mid`方式: `left = mid + 1`和`right = mid - 1`
-* 左闭右开(或左开右闭):
-    * 初始区间: $[0, n)$(或$(-1, n-1]$)
-    * 出界判定条件: `left < right`
-    * 更新`mid`方式: `left = mid + 1`和`right = mid`(或`left = mid`和`right = mid - 1`)
+    * 出界判定条件: $left \le right$
+    * 更新`mid`方式: $left = mid + 1, right = mid - 1$
+* 左闭右开 或 左开右闭:
+    * 初始区间: $[0, n)$ 或 $(-1, n-1]$
+    * 出界判定条件: $left < right$
+    * 更新`mid`方式: $left = mid + 1, right = mid$ 或 $left = mid, right = mid - 1$
 * 左开右开: 
     * 初始区间: $(-1, n)$
-    * 出界判定条件: `left + 1 < right`
-    * 更新`mid`方式: `left = mid`和`right = mid`
+    * 出界判定条件: $left + 1 < right$
+    * 更新`mid`方式: $left = mid, right = mid$
 
 上述三种写法可互相转化, 且各有优劣:
-* 左闭右闭: 返回值一定处于`[0, n-1]`区间内, 但循环结束时`left`和`right`的值不同, 需判断返回哪一个值
+* 左闭右闭: 返回值一定处于$[0, n-1]$区间内, 但循环结束时`left`和`right`的值不同, 需判断返回哪一个值
 * 左闭右开(或左开右闭): 循环结束时`left`和`right`相同, 但返回值存在出界风险(左闭右开可能返回`n`, 左开右闭可能返回`-1`), 且由于`left`(或`right`)为坐标的元素并未检查, 需在循环结束后额外判断
 * 左开右开: 写法最简单, 但返回值存在出界风险(`-1`或`n`)
 
@@ -151,10 +151,11 @@ Binary search不光用于判断目标值是否包含在数组中, 还有很多�
 * 查找$< x$的元素: 可转换为$\ge x$的元素坐标减1
 * 查找$\le x$的元素: 可转换为$> x$的元素坐标减1, 也就是$\ge x + 1$的元素坐标减1
 
+因此, 上述四种情况都可转换为$\ge x$情况, 也可转换为其他情况.
 
 ## 4. Leetcode
 ### 34. Find First and Last Position of Element in Sorted Array
-#### 1. Problem Description
+#### Problem Description
 Given an array of integers `nums` sorted in non-decreasing order, find the starting and ending position of a given `target` value.
 
 If `target` is not found in the array, return `[-1, -1]`.
@@ -173,7 +174,7 @@ Input: nums = [5,7,7,8,8,10], target = 6
 Output: [-1,-1]
 ```
 
-#### 2. Binary Search
+#### Solution
 由于数组已经排序, 因此可使用binary search查找第一个目标值元素和最后一个目标值元素的位置.
 ```java
 class Solution {
@@ -219,7 +220,7 @@ class Solution {
 ```
 
 ### 153. Find Minimum in Rotated Sorted Array
-#### 1. Problem Description
+#### Problem Description
 Suppose an array of length `n` sorted in ascending order is **rotated** between `1` and `n` times. For example, the array `nums = [0,1,2,4,5,6,7]` might become:
 * `[4,5,6,7,0,1,2]` if it was rotated `4` times.
 * `[0,1,2,4,5,6,7]` if it was rotated `7` times.
@@ -236,7 +237,7 @@ Output: 1
 Explanation: The original array was [1,2,3,4,5] rotated 3 times.
 ```
 
-#### 2. Binary Search
+#### Solution
 该数组分为两种情况:
 * 未旋转: 最小元素为最左侧元素
 * 旋转过: 最小元素在中间
@@ -265,7 +266,7 @@ class Solution {
 
 
 ### 154. Find Minimum in Rotated Sorted Array II
-#### 1. Problem Description
+#### Problem Description
 Suppose an array of length `n` sorted in ascending order is **rotated** between `1` and `n` times. For example, the array `nums = [0,1,4,4,5,6,7]` might become:
 * `[4,5,6,7,0,1,4]` if it was rotated `4` times.
 * `[0,1,4,4,5,6,7]` if it was rotated `7` times.
@@ -281,7 +282,7 @@ Input: nums = [2,2,2,0,1]
 Output: 0
 ```
 
-#### 2. Binary Search
+#### Solution
 该题与上一题相同, 唯一区别在于数组中存在重复元素, 可能破坏数组的**有序性**, 例如: 若`nums`为`[2,2,2,1,2]`, 则`nums[left]`, `nums[mid]`和`nums[right]`均为2, 此时无法判断最小值在mid的左侧或右侧, 只能缩小区间并再次查找.
 ```java
 class Solution {
@@ -304,7 +305,7 @@ class Solution {
 ```
 
 ### 852. Peak Index in a Mountain Array
-#### 1. Problem Description
+#### Problem Description
 An array `arr` a **mountain** if the following properties hold:
 * `arr.length >= 3`
 * There exists some `i` with `0 < i < arr.length - 1` such that:
@@ -321,7 +322,7 @@ Input: arr = [0,2,1,0]
 Output: 1
 ```
 
-#### 2. Binary Search
+#### Solution
 题目中数组元素虽不按照升序或降序排列, 但仍具有有序性: 由于数组一定存在一个peak, 因此对于中值, 存在三种情况:
 * `arr[mid] > arr[mid-1]`且`arr[mid] > arr[mid+1]`: 说明中值即为peak
 * `arr[mid] < arr[mid-1]`: peak在左侧
@@ -348,7 +349,7 @@ class Solution {
 
 
 ### 378. Kth Smallest Element in a Sorted Matrix
-#### 1. Problem Description
+#### Problem Description
 Given an `n x n` `matrix` where each of the rows and columns is sorted in ascending order, return the `$k^{th}$` smallest element in the matrix.
 
 Note that it is the `$k^{th}$` smallest element in the sorted order, not the `$k^{th}$` distinct element.
@@ -362,7 +363,7 @@ Output: 13
 Explanation: The elements in the matrix are [1,5,9,10,11,12,13,13,15], and the 8th smallest number is 13
 ```
 
-#### 2. Binary Search
+#### Solution
 由于matrix中的元素并不具有严格的有序性, 因此很难直接查找第k小的元素, 可换一种思路: matrix中最小值为`matrix[0][0]`, 最大值为`matrix[n-1][n-1]`, 第k小的元素一定存在于`[matrix[0][0], matrix[n-1][n-1]]`之间, 因此可采用binary search不断缩小区间: 假设第k小的数值为中值(mid), 并统计小于或等于mid的元素在matrix中有多少个:
 * 若元素个数为k: x可能为答案, 也可能比答案大
 * 若元素个数小于k: x比答案小
@@ -405,7 +406,7 @@ class Solution {
 
 
 ### 658. Find K Closest Elements
-#### 1. Problem Description
+#### Problem Description
 Given a **sorted** integer array `arr`, two integers `k` and `x`, return the `k` closest integers to `x` in the array. The result should also be sorted in ascending order.
 An integer `a` is closer to `x` than an integer `b` if:
 * `|a - x| < |b - x|`, or
@@ -423,7 +424,7 @@ Input: arr = [1,2,3,4,5], k = 4, x = -1
 Output: [1,2,3,4]
 ```
 
-#### 2. Binary Search
+#### Solution
 该题目可使用双指针解决: 每次判断前后指针与x的差值, 并缩小差值更大的一端, 直到两个指针之间的距离为k, 但这么做不能利用数组的有序性. 该题可看作求一个长度为k的区间, 并使区间内元素与x的距离的最大值最小, 可以发现, 距离x的最大值只与区间的两端有关. 假设区间的左边界坐标为`i`, 则右边界坐标为`i+k-1`, 因此可对比`arr[i]`和`arr[i+k-1]`与x的距离:
 * `arr[i]`与x的距离更远: 向右移动
 * `arr[i+k-1]`与x的距离更远: 向左移动
@@ -460,7 +461,7 @@ class Solution {
 
 
 ### 1060. Missing Element in Sorted Array
-#### 1. Problem Description
+#### Problem Description
 Given an integer array `nums` which is sorted in **ascending order** and all of its elements are **unique** and given also an integer `k`, return the `$k^{th}$` missing number starting from the leftmost number of the array.
 
 Example 1:
@@ -477,7 +478,7 @@ Output: 8
 Explanation: The missing numbers are [5,6,8,...], hence the third missing number is 8.
 ```
 
-#### 2. Binary Search
+#### Solution
 对于数组中的每个元素, 可计算该元素之前缺失的元素个数: `nums[i] - nums[0] - i`, 若将缺失的元素个数组成一个数组, 可发现数组内的元素呈升序排列, 因此可借助binary search查找.
 ```java
 class Solution {
@@ -498,7 +499,7 @@ class Solution {
 
 
 ### 300. Longest Increasing Subsequence
-#### 1. Problem Description
+#### Problem Description
 Given an integer array `nums`, return the length of the longest **strictly increasing subsequence**.
 
 Example 1:
@@ -508,7 +509,7 @@ Output: 4
 Explanation: The longest increasing subsequence is [2,3,7,101], therefore the length is 4.
 ```
 
-#### 2. Binary Search
+#### Solution
 题目要求最长升序子序列, 因此可维护一个数组`arr`, 并从左向右遍历数组, 对于每个元素:
 * 若该元素大于之前的所有元素, 则放入`arr`尾部
 * 若该元素小于之前的某个元素, 则替换其位置
@@ -539,7 +540,7 @@ class Solution {
 
 
 ### 436. Find Right Interval
-#### 1. Problem Description
+#### Problem Description
 You are given an array of `intervals`, where `intervals[i] = [$\text{start}_i$, $\text{end}_i$]` and each $\text{start}_i$ is unique.
 
 The right interval for an interval `i` is an interval `j` such that `$\text{start}_j \ge \text{end}_i$`and `$\text{start}_j$` is **minimized**. Note that `i` may equal `j`.
@@ -555,7 +556,7 @@ The right interval for [2,3] is [3,4] since $\text{start}_0 = 3$ is the smallest
 The right interval for [1,2] is [2,3] since $\text{start}_1 = 2$ is the smallest start that is >= $\text{end}_2 = 2$.
 ```
 
-#### 2. Binary Search
+#### Solution
 题目要求right interval的start大于或等于当前interval的end, 且保证start值最小, 属于最经典的最大值最小化问题, 每次遍历每个interval的start即可获得答案, 而binary search适用于寻找最大(小)值, 因此可加速这一过程. 需要注意的是, 由于结果需与原数组中的interval一一对应, 因此原数组按照start排序时会破坏对应关系, 需用一个辅助数组记录对应interval的坐标.
 ```java
 class Solution {
@@ -586,7 +587,7 @@ class Solution {
 
 
 ### 1552. Magnetic Force Between Two Balls
-#### 1. Problem Description
+#### Problem Description
 In the universe Earth C-137, Rick discovered a special form of magnetic force between two balls if they are put in his new invented basket. Rick has n empty baskets, the `$i^{th}$` basket is at `position[i]`, Morty has `m` balls and needs to distribute the balls into the baskets such that the **minimum magnetic force** between any two balls is **maximum**.
 Rick stated that magnetic force between two different balls at positions `x` and `y` is `|x - y|`.
 Given the integer array `position` and the integer `m`. Return the required force.
@@ -598,7 +599,7 @@ Output: 3
 Explanation: Distributing the 3 balls into baskets 1, 4 and 7 will make the magnetic force between ball pairs [3, 3, 6]. The minimum magnetic force is 3. We cannot achieve a larger minimum magnetic force than 3.
 ```
 
-#### 2. Binary Search
+#### Solution
 若ball与ball之间距离十分大, 即便使用binary search加速查询, 也会非常耗时, 因此可换一种思路: 最大距离存在于一个固定范围, 假设`position`的长度为`n`, 需要放置`m`个ball, 那么答案的范围为`[1, position[n-1] - position[0]]`. 假设我们从该范围挑选一个数值, 依照该距离放置ball时可放置`k`个ball, 存在三种情况:
 * `k > m`: 挑选的距离过小, 可以放置更多ball
 * `k < m`: 挑选的距离过大, 没有足够空间放置ball
@@ -636,7 +637,7 @@ class Solution {
 
 
 ### 410. Split Array Largest Sum
-#### 1. Problem Description
+#### Problem Description
 Given an integer array `nums` and an integer `k`, split `nums` into `k` non-empty subarrays such that the largest sum of any subarray is **minimized**.
 Return the minimized largest sum of the split.
 A **subarray** is a contiguous part of the array.
@@ -649,7 +650,7 @@ Explanation: There are four ways to split nums into two subarrays.
 The best way is to split it into [7,2,5] and [10,8], where the largest sum among the two subarrays is only 18.
 ```
 
-#### 2. Binary Search
+#### Solution
 与上一题思路相同, 选定一个值, 并查找子序列之和小于或等于该值的子序列数量, 使用binary search不断逼近答案.
 ```java
 class Solution {
@@ -686,7 +687,7 @@ class Solution {
 
 
 ### 1231. Divide Chocolate
-#### 1. Problem Description
+#### Problem Description
 You have one chocolate bar that consists of some chunks. Each chunk has its own sweetness given by the array `sweetness`.
 You want to share the chocolate with your `k` friends so you start cutting the chocolate bar into `k + 1` pieces using `k` cuts, each piece consists of some **consecutive** chunks.
 Being generous, you will eat the piece with the **minimum total sweetness** and give the other pieces to your friends.
@@ -699,7 +700,7 @@ Output: 6
 Explanation: You can divide the chocolate to [1,2,3], [4,5], [6], [7], [8], [9]
 ```
 
-#### 2. Binary Search
+#### Solution
 假设总甜度为`sum(sweetness)`, 总人数为`k + 1`, 自己能得到的甜度位于`[0, sum(sweetness) / (k+1)]`范围内, 因此可binary search不断寻找将巧克力分为`k + 1`份的甜度最大值.
 ```java
 class Solution {
@@ -736,7 +737,7 @@ class Solution {
 
 
 ### 354. Russian Doll Envelopes
-#### 1. Problem Description
+#### Problem Description
 You are given a 2D array of integers `envelopes` where `envelopes[i] = [$w_i$, $h_i$]` represents the width and the height of an envelope.
 One envelope can fit into another if and only if both the width and height of one envelope are greater than the other envelope's width and height.
 Return the maximum number of envelopes you can Russian doll (i.e., put one inside the other).
@@ -749,7 +750,7 @@ Output: 3
 Explanation: The maximum number of envelopes you can Russian doll is 3 ([2,3] => [5,4] => [6,7]).
 ```
 
-#### 2. Binary Search
+#### Solution
 题目要求外部envelope的长度和宽度都大于内部嵌套的envelope, 因此满足有序性, 可使用binary search查找. 但问题在于: 如何让长度和宽度同时满足有序. 若按照宽度排序, 则宽度较小的envelope可能长度大于其他envelope, 因此需分别讨论两个维度:
 1. 先按照宽度排序
 2. 再按照长度排序
@@ -785,7 +786,7 @@ class Solution {
 
 
 ### 1847. Closest Room
-#### 1. Problem Description
+#### Problem Description
 There is a hotel with `n` rooms. The rooms are represented by a 2D integer array `rooms` where `rooms[i] = [$\text{roomId}_i$, $\text{size}_i$]` denotes that there is a room with room number `$\text{roomId}_i$` and size equal to `$\text{size}_i$`. Each `$\text{roomId}_i$` is guaranteed to be **unique**.
 You are also given `k` queries in a 2D array `queries` where `queries[j] = [$\text{preferred}_j$, $\text{minSize}_j$]`. The answer to the `$j^{th}$` query is the room number `id` of a room such that:
 * The room has a size of **at least** `$\text{minSize}_j$`
@@ -804,7 +805,7 @@ Query = [3,3]: There are no rooms with a size of at least 3, so the answer is -1
 Query = [5,2]: Room number 3 is the closest as abs(3 - 5) = 2, and its size of 2 is at least 2. The answer is 3.
 ```
 
-#### 2. Binary Search + Balanced Binary Tree
+#### Solution + Balanced Binary Tree
 题目要求room满足两个条件:
 * `size >= minSize`
 * `Math.abs(preferred - roomId)`最小
@@ -846,7 +847,7 @@ class Solution {
 
 
 ### 4. Median of Two Sorted Arrays
-#### 1. Problem Description
+#### Problem Description
 Given two sorted arrays `nums1` and `nums2` of size `m` and `n` respectively, return **the median** of the two sorted arrays.
 The overall run time complexity should be `O(log (m+n))`.
 
@@ -864,7 +865,7 @@ Output: 2.50000
 Explanation: merged array = [1,2,3,4] and median is (2 + 3) / 2 = 2.5.
 ```
 
-#### 2. Binary Search
+#### Solution
 ```java
 class Solution {
     public double findMedianSortedArrays(int[] nums1, int[] nums2) {

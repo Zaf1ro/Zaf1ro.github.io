@@ -3,21 +3,22 @@
 
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
-    showProcessingMessages: false,
+    showProcessingMessages: true,
     jax: ["input/TeX", "output/HTML-CSS"],
     tex2jax: {
-        inlineMath:[["$","$"],["\\(","\\)"]],
-        processEscapes:!0,
-        skipTags:["script","noscript","style","textarea"]
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
     },
     TeX: {
         Macros:{
-            fi:"{f\\,\\!_i}",
-            SS:["{#1\\:\\!_#2}",2],
-            SUBx:["{\\:\\!_#1}",1],
-            EXPx:["{\\;\\!^#1}",1],
-            Ss:["{#1\\,\\!_#2}",2],
-            subx:["{\\,\\!_#1}",1]
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
         }
     }
 });

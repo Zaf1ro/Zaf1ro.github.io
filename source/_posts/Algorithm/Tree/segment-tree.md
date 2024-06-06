@@ -11,7 +11,67 @@ keywords:
 description:
 ---
 
-## 315. Count of Smaller Numbers After Self
+## 1. Introduction
+线段树(Segment Tree)是一种基于分治思想的二叉树, 用于维护**区间信息**. 线段树的每一个节点都对应一个区间$[left, right]$, `left`和`right`通常为整数:
+* 非叶子节点表示任意一段区间
+* 叶子节点表示一个**单位区间**(长度为1), 因此$left = right$
+* 非叶子节点的**左子节点**表示$[left, (left + right) / 2]$区间, **右子节点**表示$[(left+right)/2+1, right]$区间
+* 根节点表示整个区间
+
+若整个区间内有$n$个元素, 则单点更新, 区间更新, 和区间查询的时间复杂度为$O(\log n)$, 空间复杂度为$O(2 \times 2^{\log_2 n})$, 约等于$4 \times n$
+
+
+## 2. Implementation
+二叉树有两种存储结构:
+* 链式存储: 类与指针
+* 顺序存储: 数组
+
+由于线段树几乎是一种完全二叉树, 因此很适合采用**顺序存储**实现:
+* 根节点的下标为1
+* 若某个非叶子节点的下标为$i$, 则其左子节点坐标为$2 \times i$, 右子节点坐标为$2 \times i + 1$
+* 若某个非根节点的下标为$i$, 则其父节点的下标为$i / 2$
+
+### 2.1 Point Update
+单点更新: 更新某个单位区间(单个元素)的值, 例如, 将第i个元素的值更新为val, 可采用递归方式从根节点出发:
+1. 若当前节点为非叶子节点, 则判断目标元素在左子树还是右子树
+2. 若为当前节点为叶子节点, 则更新该节点值
+3. 从非叶子节点返回时, 更新该节点的区间值(区间和, 区间最值)
+
+### 2.2 Range Query
+区间查询: 查询一个区间的值, 例如, 查询$[left, right]$区间的值. 可采用递归方式从根节点出发:
+1. 若目标区间完全覆盖当前节点所在区间($[l, r]$), 即$left \le l$且$right \ge r$, 则返回该节点的区间值
+2. 若目标区间与当前节点所在区间($[l, r]$)无交集, 即$left > r$或$right < l$, 跳过该节点
+3. 若目标区间与当前节点所在区间有交集, 即不符合上述所有情况:
+    * 若目标区间与其左子节点所在区间($[l, m]$)有交集, 即$left \le m$, 则在左子节点查询
+    * 若目标区间与其右子节点所在区间($[m+1, r]$)有交集, 即$right > m$, 则在右子节点查询
+    * 返回左右子树聚合(sum, max, 或min)的结果
+
+### 2.3 Range Update
+区间更新: 更新一个区间的值, 例如, 将$[left, right]$区间内的所有元素更新为val.  
+线段树中进行单点更新, 区间查询时的时间复杂度为$O(\log n)$, 而在区间更新中, 若某个节点所在区间被目标区间覆盖, 则该节点下的所有区间值都需要更新, 因此时间复杂度为$O(n)$.
+为减少更新的次数和时间复杂度, 可在线段树的节点中添加一个**延迟标记**, 该标记表示**该节点所在区间已更新, 但其子节点并未更新**. 因此, 更新其子节点的操作被推迟到后续操作, 从而将区间更新的时间复杂度降到$O(\log n)$.
+使用了延迟标记的区间更新的步骤如下:
+1. 若目标区间完全覆盖当前节点所在区间($[l, r]$), 即$left \le l$且$right \ge r$, 则更新当前节点值, 并更新延迟标记
+2. 若目标区间与当前节点所在区间($[l, r]$)无交集, 即$left > r$或$right < l$, 跳过该节点
+3. 若目标区间与当前节点所在区间y有交集:
+    * 若当前节点的延迟标记不为空, 则更新其子节点(更新左右子节点的延迟标记, 并清空当前节点的延迟标记)
+    * 若目标区间与其左子节点所在区间($[l, m]$)有交集, 即$left \le m$, 则更新其左子节点
+    * 若目标区间与其右子节点所在区间($[m+1, r]$)有交集, 即$right > m$, 则更新其右子节点
+    * 更新子节点结束后, 更新当前节点的区间值(sum, max, min) 
+
+
+### 3. Applicable Range
+线段树通常用于以下问题:
+* RMQ(Range Maximum/Minimum Query): 对于长度为$n$的数组`nums`, 求`nums`在区间$[l, r]$中的最值
+* 更新某个元素值后查询区间值
+* 更新一个区间的值后查询区间值
+* 更新某个元素值后查询满足条件的最长区间值: 需在更新节点值后合并区间
+* Scan line(扫描线): 用于解决图形的面积, 周长问题. 例如, 求多个重叠矩形的总面积, 可从下向上扫描整个图形, 用线段树维护矩形的y值, 矩形的下边为1, 上边为-1.
+
+
+## 4. Leetcode
+### 315. Count of Smaller Numbers After Self
+#### Problem Description
 Given an integer array `nums`, return an integer array `counts` where `counts[i]` is the number of smaller elements to the right of `nums[i]`.
 
 Example 1:
@@ -25,7 +85,7 @@ To the right of 6 there is 1 smaller element (1).
 To the right of 1 there is 0 smaller element.
 ```
 
-### Segment Tree
+#### Solution
 ```java
 class Solution {
     class Node {
@@ -91,8 +151,8 @@ class Solution {
 }
 ```
 
-
-## 327. Count of Range Sum
+### 327. Count of Range Sum
+#### Problem Description
 Given an integer array `nums` and two integers `lower` and `upper`, return the number of range sums that lie in `[lower, upper]` inclusive.
 Range sum `S(i, j)` is defined as the sum of the elements in nums between indices `i` and `j` inclusive, where `i <= j`.
 
@@ -103,7 +163,7 @@ Output: 3
 Explanation: The three ranges are: [0,0], [2,2], and [0,2] and their respective sums are: -2, -1, 2.
 ```
 
-### Segment Tree
+#### Solution
 ```java
 class Solution {
     class Node {
@@ -175,8 +235,8 @@ class Solution {
 }
 ```
 
-
-## 218. The Skyline Problem
+### 218. The Skyline Problem
+#### Problem Description
 A city's **skyline** is the outer contour of the silhouette formed by all the buildings in that city when viewed from a distance. Given the locations and heights of all the buildings, return the **skyline** formed by these buildings collectively.
 The geometric information of each building is given in the array `buildings` where `$\text{buildings}[i] = [\text{left}_i, \text{right}_i, \text{height}_i]$`:
 * `$\text{left}_i$` is the x coordinate of the left edge of the `$i^{th}$` building.
@@ -197,7 +257,7 @@ Figure A shows the buildings of the input.
 Figure B shows the skyline formed by those buildings. The red points in figure B represent the key points in the output list.
 ```
 
-### Segment Tree
+#### Solution
 ```java
 class Solution {
     public class Node {
@@ -276,7 +336,8 @@ class Solution {
 }
 ```
 
-## 2569. Handling Sum Queries After Update
+### 2569. Handling Sum Queries After Update
+#### Problem Description
 You are given two **0-indexed** arrays `nums1` and `nums2` and a 2D array `queries` of queries. There are three types of queries:
 1. For a query of type 1, `queries[i] = [1, l, r]`. Flip the values from `0` to `1` and from `1` to `0` in `nums1` from index `l` to index `r`. Both `l` and `r` are **0-indexed**.
 2. For a query of type 2, `queries[i] = [2, p, 0]`. For every index `$0 \le i \lt n$`, set `nums2[i] = nums2[i] + nums1[i] * p`.
@@ -291,7 +352,7 @@ Output: [3]
 Explanation: After the first query nums1 becomes [1,1,1]. After the second query, nums2 becomes [1,1,1], so the answer to the third query is 3. Thus, [3] is returned.
 ```
 
-### Segment Tree
+#### Solution
 ```java
 class Node {
     public long sum;
@@ -366,8 +427,8 @@ class Solution {
 }
 ```
 
-
-## 732. My Calendar III
+### 732. My Calendar III
+#### Problem Description
 A `k`-booking happens when `k` events have some non-empty intersection (i.e., there is some time that is common to all k events.)
 You are given some events `[startTime, endTime)`, after each given event, return an integer `k` representing the maximum `k`-booking between all the previous events.
 Implement the `MyCalendarThree` class:
@@ -393,7 +454,7 @@ myCalendarThree.book(5, 10); // return 3
 myCalendarThree.book(25, 55); // return 3
 ```
 
-### Segment Tree
+#### Solution
 ```java
 class Node {
     public int l, r, add, max;

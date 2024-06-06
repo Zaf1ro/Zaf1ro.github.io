@@ -12,14 +12,59 @@ description:
 ---
 
 ## 1. Introduction
-单调栈首先是一种栈, 元素只能从一端输入和输出, 且栈内元素保持单调性: 元素始终保持递增或递减. 通常会在栈内保存元素的坐标, 而不是元素本身, 这样既可以从栈内找到对应元素, 也可保留元素的坐标信息.
+单调栈是一种特殊的**stack**(栈), 在栈的**LIFO**(Last in, first out, 后进先出)规则下, 栈内元素保持单调性: 从栈顶到栈底的元素始终保持单调递增或递减. 若从栈顶到栈底的元素单调递增, 则称为**mono-increasing stack**(单调递增栈), 例如: `[5,4,3,2,1]`, 元素从右侧(栈顶)进入或弹出; 若从栈顶到栈底的元素单调递减, 则称为**mono-decreasing stack**(单调递减栈).
+使用时, 通常会在栈内保存元素的坐标, 而不是元素本身, 这样既可找到对应元素, 也可保留元素的坐标信息.
 
 
-## 2. Procedure
-描述单调栈的单调性时, 若栈底元素小于栈顶元素, 则称为单调递增; 反之, 则称为单调递减. 为维护单调栈的单调性, **插入元素**时需比较插入元素与栈顶元素: 假设存在一个单调栈, 其栈内自顶向下的元素为`{0, 11, 45, 81}`, 若插入元素为14, 为保证该栈**单调递减**, 需依次弹出栈顶元素`0, 11`, 该栈最终变为`{14, 45, 81}`.
+## 2. Monotonicity
+描述单调栈的单调性时, 若栈顶元素大于栈底元素, 则称为单调递增; 反之, 则称为单调递减. 为维护单调栈的单调性, **插入元素**时需比较插入元素与栈顶元素:
+* 对于单调递增栈:
+    * 若当前元素大于或等于栈顶元素, 则弹出栈顶元素
+    * 若栈为空, 或当前元素小于栈顶元素, 则进栈
+* 对于单调递减栈:
+    * 若当前元素小于或等于栈顶元素, 则弹出栈顶元素
+    * 若栈为空, 或当前元素大于栈顶元素, 则进栈
+
+假设存在一个单调栈, 其栈内自顶向下的元素为`[0, 11, 45, 81]`, 若插入元素为14, 为保证该栈**单调递减**, 需依次弹出栈顶元素`0, 11`, 该栈最终变为`[14, 45, 81]`.
 
 
-## 42. Trapping Rain Water
+## 3. Usage
+单调栈可在时间复杂度为$O(n)$的情况下, 在数组中找到第一个比目标元素大(或小)的元素. 假设数组长度为`n`, 目标元素为`x`, 其坐标为`i`.
+
+### 3.1 The first element on the left that is greater than target element
+从左向右遍历元素($[0, i-1]$), 构建一个单调递增栈, 并执行以下步骤直到找到答案或栈为空:
+* 若栈为空, 则`x`左侧不存在比`x`大的元素
+* 若栈顶元素小于或等于`x`, 则弹出栈顶元素
+* 若栈顶元素大于`x`, 则栈顶元素为答案
+
+### 3.2 The first element on the right that is greater than target element
+从右向左遍历元素($[n-1, i+1]$), 构建一个单调递增栈, 并执行以下步骤直到找到答案或栈为空:
+* 若栈为空, 则`x`右侧不存在比`x`大的元素
+* 若栈顶元素小于或等于`x`, 则弹出栈顶元素
+* 若栈顶元素大于`x`, 则栈顶元素为答案
+
+### 3.3 The first element on the left that is less than target element
+从左向右遍历元素($[0, i-1]$), 构建一个单调递减栈, 并执行以下步骤直到找到答案或栈为空:
+* 若栈为空, 说明`x`左侧不存在比`x`小的元素
+* 若栈顶元素小于或等于`x`, 则弹出栈顶元素
+* 若栈顶元素大于`x`, 则栈顶元素为答案
+
+### 3.4 The first element on the right that is less than target element
+从右向左遍历元素($[n-1, i+1]$), 构建一个单调递增栈, 并执行以下步骤直到找到答案或栈为空:
+* 若栈为空, 说明`x`右侧不存在比`x`小的元素
+* 若栈顶元素大于或等于`x`, 则弹出栈顶元素
+* 若栈顶元素小于`x`, 则栈顶元素为答案
+
+### 3.5 Conclusion
+单调栈的原理在于**弹出不可能符合条件的元素**. 以寻找比目标元素大的左侧第一个元素为例, 当从左向右遍历数组时, 存在以下可能性:
+* 若栈为空, 则当前元素可能为答案, 因此入栈
+* 若当前元素大于或等于栈顶元素, 则直接弹出栈顶元素, 因为当前元素更靠近目标元素且比目标元素大, 因此可直接排除栈顶元素
+* 若当前元素比栈顶元素小, 则可能成为答案, 也可能不会成为答案, 因此入栈
+
+
+## 4. Leetcode
+### 42. Trapping Rain Water
+#### Problem Description
 Given `n` non-negative integers representing an elevation map where the width of each bar is `1`, compute how much water it can trap after raining.
 
 Example 1:
@@ -29,7 +74,7 @@ Output: 6
 Explanation: The above elevation map (black section) is represented by array [0,1,0,2,1,0,1,3,2,1,2,1]. In this case, 6 units of rain water (blue section) are being trapped.
 ```
 
-### Solution
+#### Montonic Stack
 题目要求返回雨水的总量, 通过观察可以发现, 若存在雨水, 则一定存在`高低高`的结构, 例如`{1,0,1}`. 因此可维护一个单调栈: 遍历数组时, 栈的性质保证栈底元素的坐标一定比栈顶元素更小; 且该栈保持单调递减, 从而保证之前的bar高于之后的bar, 形成一个`高低`的结构. 当某个bar大于栈顶元素时, 可能存在两种情况:
 * 栈内只有一个元素, 不足以形成`高低高`
 * 栈内存在两个或以上元素, 可以形成`高低高`
@@ -56,8 +101,8 @@ class Solution {
 }
 ```
 
-
-## 84. Largest Rectangle in Histogram
+### 84. Largest Rectangle in Histogram
+#### Problem Description
 Given an array of integers `heights` representing the histogram's bar height where the width of each bar is `1`, return the area of the largest rectangle in the histogram.
 
 Example 1:
@@ -74,7 +119,7 @@ Input: heights = [2,4]
 Output: 4
 ```
 
-### Solution
+#### Montonic Stack
 题目要求返回bar组成的最大矩形面积, 可以发现一个规律: 最大矩形面积的高度一定是某一个bar的高度, 最大矩形的宽度为该bar向左右延伸的最大宽度, 因此矩形的面积为`heights[i] * (r - l + 1)`. 若我们对每个bar向左右延伸, 即可得到最终答案, 该方法的时间复杂度为`$O(n^2)$`. 当对一个bar向左(或右)延伸时, 存在三种可能:
 * 当前bar的高度大于或等于目标bar, 可继续向外延伸
 * 抵达数组边界, 无法继续向外延伸
@@ -108,8 +153,8 @@ class Solution {
 }
 ```
 
-
-## 85. Maximal Rectangle
+### 85. Maximal Rectangle
+#### Problem Description
 Given a `rows x cols` binary `matrix` filled with `0`'s and `1`'s, find the largest rectangle containing only `1`'s and return its area.
 
 Example 1:
@@ -124,7 +169,7 @@ Output: 6
 Explanation: The maximal rectangle is shown in the above picture.
 ```
 
-### Solution
+#### Montonic Stack
 题目要求返回由`1`组成的最大矩形面积. 若使用上一题的思路, 可轻松求得`matrix`第一行中的最大矩形面积; 将第二行的数值添加第一行, 即可得到`matrix`前两行中的最大矩形面积, 以此类推, 可获得`matrix`中的最大矩形面积. 该算法的时间复杂度为`$O(mn)$`(`m`和`n`为`matrix`的行数和列数).
 ```java
 class Solution {
@@ -155,7 +200,8 @@ class Solution {
 }
 ```
 
-## 2030. Smallest K-Length Subsequence With Occurrences of a Letter
+### 2030. Smallest K-Length Subsequence With Occurrences of a Letter
+#### Problem Description
 You are given a string `s`, an integer `k`, a letter `letter`, and an integer `repetition`.
 
 Return the **lexicographically smallest** subsequence of `s` of length `k` that has the letter `letter` appear at least `repetition` times. The test cases are generated so that the `letter` appears in `s` at least `repetition` times.
@@ -176,7 +222,7 @@ Explanation: There are four subsequences of length 3 that have the letter 'e' ap
 The lexicographically smallest subsequence among them is "eet".
 ```
 
-### Solution
+#### Montonic Stack
 题目要求返回最小字典序的字符串, 而一个**单调递增**的单调栈会不断尝试将**位置靠前且字典序更大的字符**替换为**位置靠后且字典序更小的字符**, 因此可使用单调栈, 但该题存在两条附件条件:
 1. 返回的字符串长度为`k`
 2. 返回的字符串中包含至少`reptition`个字符`letter`
@@ -229,7 +275,8 @@ class Solution {
 ```
 
 
-## 321. Create Maximum Number
+### 321. Create Maximum Number
+#### Problem Description
 You are given two integer arrays `nums1` and `nums2` of lengths `m` and `n` respectively. `nums1` and `nums2` represent the digits of two numbers. You are also given an integer `k`.
 
 Create the maximum number of length `k <= m + n` from digits of the two numbers. The relative order of the digits from the same array must be preserved.
@@ -242,7 +289,7 @@ Input: nums1 = [3,4,6,5], nums2 = [9,1,2,5,8,3], k = 5
 Output: [9,8,6,5,3]
 ```
 
-### Solution
+#### Montonic Stack
 对于一个字符串长度为`m`的字符串, 若需找出长度为`k`($k \le m$)的最大数, 可用单调栈将较小的元素弹出, 并保持单调栈内的元素单调递减; 本题要求返回两个数组的最大组合数, 因此可按以下步骤:
 1. 使用单调栈, 保证两个数组分别保持有序的前提下, 找出每个数组的最大数
 2. 将上一步获得的两个最大数组合为一个最大数
