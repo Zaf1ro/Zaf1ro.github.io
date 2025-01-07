@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Data Files and Infomation"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/4ad7.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/4ad7.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/4ad7.html"/>
+
+
+<meta name="description" content="1. Password FileUNIX中的密码为passwd结构体, 该struct至少包含以下field: struct passwd &amp;#123;  char *pw_name;    &#x2F;&#x2F; login username  char *pw_passwd;  &#x2F;&#x2F; encrypted password  uid_t pw_uid;     &#x2F;&#x2F; user ID  gid_t pw_gid;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Data Files and Infomation">
+<meta property="og:url" content="https://zaf1ro.github.io/p/4ad7.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Password FileUNIX中的密码为passwd结构体, 该struct至少包含以下field: struct passwd &amp;#123;  char *pw_name;    &#x2F;&#x2F; login username  char *pw_passwd;  &#x2F;&#x2F; encrypted password  uid_t pw_uid;     &#x2F;&#x2F; user ID  gid_t pw_gid;">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/6-7-time-func.png">
+<meta property="article:published_time" content="2019-08-25T21:58:41.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.057Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/6-7-time-func.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Data Files and Infomation - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Password-File"><span class="toc-text">1. Password File</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Shadow-Passwords"><span class="toc-text">2. Shadow Passwords</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Group-File"><span class="toc-text">3. Group File</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Supplementary-Group-IDs"><span class="toc-text">4. Supplementary Group IDs</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Other-Data-Files"><span class="toc-text">5. Other Data Files</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Login-Accounting"><span class="toc-text">6. Login Accounting</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-System-Identification"><span class="toc-text">7. System Identification</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Time-and-Date-Routines"><span class="toc-text">8. Time and Date Routines</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-timespec-struct"><span class="toc-text">8.1 timespec struct</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-tm-structure"><span class="toc-text">8.2 tm structure</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Data Files and Infomation
+        
+      </h1>
+      <time class="post-time">
+          08/25/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Password-File"><a href="#1-Password-File" class="headerlink" title="1. Password File"></a>1. Password File</h2><p>UNIX中的密码为<code>passwd</code>结构体, 该struct至少包含以下field:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">passwd</span> &#123;</span></span><br><span class="line">  <span class="type">char</span> *pw_name;    <span class="comment">// login username</span></span><br><span class="line">  <span class="type">char</span> *pw_passwd;  <span class="comment">// encrypted password</span></span><br><span class="line">  <span class="type">uid_t</span> pw_uid;     <span class="comment">// user ID</span></span><br><span class="line">  <span class="type">gid_t</span> pw_gid;     <span class="comment">// group ID</span></span><br><span class="line">  <span class="type">char</span> *pw_gecos;   <span class="comment">// user information, such as phone number</span></span><br><span class="line">  <span class="type">char</span> *pw_dir;     <span class="comment">// initial working directory, might be a null pointer</span></span><br><span class="line">  <span class="type">char</span> *pw_shell;   <span class="comment">// initial shell when user logs in</span></span><br><span class="line">&#125;; </span><br></pre></td></tr></table></figure>
+<p>对于绝大多数UNIX系统, <code>/etc/passwd</code>会作为密码库, 每一行包含一个passwd, 每一个field由<code>:</code>分割, 例如:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">root:x:0:0:root:/root:/bin/bash</span><br><span class="line">squid:x:23:23::/var/spool/squid:/dev/null</span><br><span class="line">nobody:x:65534:65534:Nobody:/home:/bin/sh</span><br><span class="line">sar:x:205:105:Stephen Rago:/home/sar:/bin/bash</span><br></pre></td></tr></table></figure>
+<ul>
+<li>root用户为<strong>superuser</strong>, 因为UID为0</li>
+<li>曾经的UNIX会将密码单向hash的密码放在<code>/etc/passwd</code>, 但现代UNIX会用一个placeholder替代, 真正的密码被放在shadow database中, 只有特定权限才能访问.</li>
+<li>每个用户都有一个shell用于执行命令, 默认为<code>/bin/sh</code>. 若为<code>/dev/null</code>, 任何输入都会被抛弃, 因此无法执行任何命令.</li>
+<li>nobody用户占用最后一位UID和GID: 65534. 该用户没有任何权限, 只能访问一些普通文件, 一般服务于FTP或HTTP远程访问的用户.</li>
+<li>部分UNIX系统提供了<code>finger</code>命令来查看更多的信息:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ finger -p root</span><br><span class="line">Login: root                     Name: System Administrator</span><br><span class="line">Directory: /var/root            Shell: /bin/sh</span><br><span class="line">Last login Wed Jul 31 16:26 (EDT) on console</span><br><span class="line">No Mail.</span><br></pre></td></tr></table></figure></li>
+<li>部分UNIX系统提供<code>vipw</code>命令, 允许administrator来修改password文件.</li>
+</ul>
+<p>以下函数用于获取<code>passwd</code>的entry:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to a struct passwd with a matching entry </span></span><br><span class="line"><span class="comment"> *        if matches the user ID `uid`</span></span><br><span class="line"><span class="comment"> * @return a null pointer shall be returned if the request entry is not</span></span><br><span class="line"><span class="comment"> *         found, or an error occur.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> passwd *<span class="title function_">getpwuid</span><span class="params">(<span class="type">uid_t</span> uid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to a struct passwd with a matching entry </span></span><br><span class="line"><span class="comment"> *        if match the username `name`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> passwd *<span class="title function_">getpwnam</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to a struct passwd from the password database.</span></span><br><span class="line"><span class="comment"> *        It returns the first entry if it is the first call;</span></span><br><span class="line"><span class="comment"> *        thereafter, it returns successive entries.</span></span><br><span class="line"><span class="comment"> * @return a pointer to a passwd structure on success; NULL </span></span><br><span class="line"><span class="comment"> *         on error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> passwd *<span class="title function_">getpwent</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief rewind to the beginning of the password database.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">setpwent</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief close the password database after all processing has been</span></span><br><span class="line"><span class="comment"> *        performed.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">endpwent</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>需要注意的是, <code>getpwuid()</code>返回的<code>passwd</code>指针可能会被后续<code>getpwent()</code>, <code>getpwnam()</code>, 或<code>getpwuid()</code>重写, 导致内部数据无效化, 也会因当前线程中止而无效化.</p>
+<h2 id="2-Shadow-Passwords"><a href="#2-Shadow-Passwords" class="headerlink" title="2. Shadow Passwords"></a>2. Shadow Passwords</h2><p>加密后的密码存放在<strong>shadow password file</strong>中. 由于加密算法是单向的, 因此即使知道加密后的hash值也无法知道密码. shadow password file中包含<code>spwd struct</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">spwd</span> &#123;</span></span><br><span class="line">  <span class="type">char</span> *sp_namp;  <span class="comment">/* user login name */</span></span><br><span class="line">  <span class="type">char</span> *sp_pwdp;  <span class="comment">/* encrypted password */</span></span><br><span class="line">  <span class="type">long</span> sp_lstchg; <span class="comment">/* days since Epoch when last change,  */</span></span><br><span class="line">  <span class="type">long</span> sp_min;    <span class="comment">/* days until change allowed */</span></span><br><span class="line">  <span class="type">long</span> sp_max;    <span class="comment">/* days before change required */</span></span><br><span class="line">  <span class="type">long</span> sp_warn;   <span class="comment">/* days before password expires to warn user to change */</span></span><br><span class="line">  <span class="type">long</span> sp_inact;  <span class="comment">/* days after password expires until account is disabled */</span></span><br><span class="line">  <span class="type">long</span> sp_expire; <span class="comment">/* days since Epoch when account expires */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span> sp_flag; <span class="comment">/* Reserved */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>该文件只能被特定程序访问, 如<code>login()</code>, <code>passwd()</code>, 和设置了<code>set-user-ID</code>且文件所有者为<code>root</code>的可执行文件; password file可被任何用户访问.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to spwd struct containing the borken-out</span></span><br><span class="line"><span class="comment"> *        fields of the record in the shadow password file that </span></span><br><span class="line"><span class="comment"> *        matches the username `name`.</span></span><br><span class="line"><span class="comment"> * @return NULL if no available entries or an error occurs</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> spwd *<span class="title function_">getspnam</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to the next entry in the shadow password file.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> spwd *<span class="title function_">getspent</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief rewind to the beginning of shadow password file.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">setspent</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief close the shadow password file.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">endspent</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-Group-File"><a href="#3-Group-File" class="headerlink" title="3. Group File"></a>3. Group File</h2><p>UNIX使用<strong>group</strong>划分不同user, 多个user可属于同一group. 由于文件权限分为三部分, 因此可通过设置group权限来控制特定user群体的权限.<br>UNIX的group信息存放于<strong>group file</strong>, POSIX.1称为<strong>group database</strong>. 该文件通常位于<code>/etc/group</code>, 包含一个或多个<code>group struct</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">group</span> &#123;</span></span><br><span class="line">  <span class="type">char</span> *gr_name;    <span class="comment">/* group name */</span></span><br><span class="line">  <span class="type">char</span> *gr_passwd;  <span class="comment">/* encrypted password */</span></span><br><span class="line">  <span class="type">gid_t</span> gr_gid;     <span class="comment">/* numerical group ID */</span></span><br><span class="line">  <span class="type">char</span> **gr_mem;    <span class="comment">/* array of pointers to individual user names */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>POSIX也提供函数访问group file.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to a group struct with a matching entry </span></span><br><span class="line"><span class="comment"> *        that matches group id</span></span><br><span class="line"><span class="comment"> * @return NULL of requested entry is not found, or an error occurrs</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> group *<span class="title function_">getgrgid</span><span class="params">(<span class="type">gid_t</span> gid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to a group struct with a matching entry </span></span><br><span class="line"><span class="comment"> *        that matches group name</span></span><br><span class="line"><span class="comment"> group name.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> group *<span class="title function_">getgrnam</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to a structure containing the </span></span><br><span class="line"><span class="comment"> *        broken-out fields of the entry in the group file. </span></span><br><span class="line"><span class="comment"> *        The first time getgrent() is called, it returns </span></span><br><span class="line"><span class="comment"> *        the first entry.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> group *<span class="title function_">getgrent</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief rewind to the beginning of the group file.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">setgrent</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief close the group file after all processing has </span></span><br><span class="line"><span class="comment"> *        been performed</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">endgrent</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>需要注意的是, <code>getgrgid()</code>返回的指向<code>group struct</code>的指针会被后续<code>getgrent()</code>, <code>getgrgid()</code>, 或<code>getgrnam()</code>无效化; 中止当前线程也会令该指针无效化.</p>
+<h2 id="4-Supplementary-Group-IDs"><a href="#4-Supplementary-Group-IDs" class="headerlink" title="4. Supplementary Group IDs"></a>4. Supplementary Group IDs</h2><p>UNIX设计之初并没有supplementary group, 一个user只属于一个group, 用户需要其他group的权限时, 则需调用<code>newgrp()</code>改变当前user的real group ID. Kernel检查进程是否拥有文件访问权限时, 只需对比进程的EGID与文件的GID. 执行完毕后, 用户需再次调用<code>newgrp()</code>切换回原本的group.<br>但user和group之间的关系不应为<strong>多对一</strong>, 而是<strong>多对多</strong>, 每个group可包含多个user, user也可处于多个group中. 4.2BSD添加了<strong>supplementary group ID</strong>. user仍拥有一个GID, 称为<strong>primary group ID</strong>, 但还拥有多个<strong>supplementary group ID</strong>. Kernel检查进程是否拥有文件的访问权限时, 若进程的EGID不匹配, 则对比supplementary group ID.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief returns the supplementary group IDs of the calling process</span></span><br><span class="line"><span class="comment"> *        in `list`</span></span><br><span class="line"><span class="comment"> * @param size shoudl be set to the maximum number of items that can be</span></span><br><span class="line"><span class="comment"> *        stored in the buffer pointed to by `list`.</span></span><br><span class="line"><span class="comment"> * @return number of supplementary group IDs on success, −1 </span></span><br><span class="line"><span class="comment"> *         on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">getgroups</span><span class="params">(<span class="type">int</span> size, <span class="type">gid_t</span> <span class="built_in">list</span>[])</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the supplementary group IDs for the calling process</span></span><br><span class="line"><span class="comment"> * @param size specify the number of supplementary group IDs in the </span></span><br><span class="line"><span class="comment"> *        buffer pointed to by `list`. Zero means drop all of its </span></span><br><span class="line"><span class="comment"> *        supplementary group</span></span><br><span class="line"><span class="comment"> * @return 0 on success, -1 if an error occurs</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setgroups</span><span class="params">(<span class="type">size_t</span> size, <span class="type">const</span> <span class="type">gid_t</span> *<span class="built_in">list</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief obtain the supplementary group membership of `user`, and sets</span></span><br><span class="line"><span class="comment"> *        the current process supplementary group IDs to that list. </span></span><br><span class="line"><span class="comment"> *        `group` is also included in the supplementary group IDs.</span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">initgroups</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *user, <span class="type">gid_t</span> group)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-Other-Data-Files"><a href="#5-Other-Data-Files" class="headerlink" title="5. Other Data Files"></a>5. Other Data Files</h2><p>除了password file和group file, UNIX系统还包括其他文件: network service(<code>/etc/services</code>), internet protocols(<code>/etc/protocols</code>). UNIX提供以下函数来访问这些文件:</p>
+<ol>
+<li><code>get</code>: read the next entry of file.</li>
+<li><code>set</code>: open file if not already open, and rewind the file</li>
+<li><code>end</code>: close the data file</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="center">Description</th>
+<th align="center">File Localtion</th>
+<th align="center">Header</th>
+<th align="center">Structure</th>
+<th align="center">Additional keyed lookup functions</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">password</td>
+<td align="center">&#x2F;etc&#x2F;passwd</td>
+<td align="center">&lt;pwd.h&gt;</td>
+<td align="center">passws</td>
+<td align="center">getpwnam, getpwuid</td>
+</tr>
+<tr>
+<td align="center">groups</td>
+<td align="center">&#x2F;etc&#x2F;group</td>
+<td align="center">&lt;grp.h&gt;</td>
+<td align="center">group</td>
+<td align="center">getgrnam, getgrgid</td>
+</tr>
+<tr>
+<td align="center">shadow</td>
+<td align="center">&#x2F;etc&#x2F;shadow</td>
+<td align="center">&lt;shadow.h&gt;</td>
+<td align="center">spwd</td>
+<td align="center">getspnam</td>
+</tr>
+<tr>
+<td align="center">hosts</td>
+<td align="center">&#x2F;etc&#x2F;hosts</td>
+<td align="center">&lt;netdb.h&gt;</td>
+<td align="center">hostent</td>
+<td align="center">getnameinfo, getaddrinfo</td>
+</tr>
+<tr>
+<td align="center">networks</td>
+<td align="center">&#x2F;etc.networks</td>
+<td align="center">&lt;netdb.h&gt;</td>
+<td align="center">netent</td>
+<td align="center">getnetbyname, getnetbyaddr</td>
+</tr>
+<tr>
+<td align="center">protocols</td>
+<td align="center">&#x2F;etc&#x2F;protocols</td>
+<td align="center">&lt;netdb.h&gt;</td>
+<td align="center">protoent</td>
+<td align="center">getprotobyname, getprotobynumber</td>
+</tr>
+<tr>
+<td align="center">services</td>
+<td align="center">&#x2F;etc&#x2F;services</td>
+<td align="center">&lt;netdb.h&gt;</td>
+<td align="center">servent</td>
+<td align="center">getservbyname, getservbyport</td>
+</tr>
+</tbody></table>
+<h2 id="6-Login-Accounting"><a href="#6-Login-Accounting" class="headerlink" title="6. Login Accounting"></a>6. Login Accounting</h2><p>UNIX提供了两个data file:</p>
+<ul>
+<li>utmp: 记录所有当前登录的用户</li>
+<li>wtmp: 记录所有登录和登出动作</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">utmp</span> &#123;</span></span><br><span class="line">  <span class="type">char</span> ut_line[<span class="number">8</span>]; <span class="comment">/* device name of tty */</span></span><br><span class="line">  <span class="type">char</span> ut_name[<span class="number">8</span>]; <span class="comment">/* login name */</span></span><br><span class="line">  <span class="type">long</span> ut_time;    <span class="comment">/* seconds since Epoch */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>用户登录时, <code>login</code>程序会向<code>utmp</code>和<code>wtmp</code>写入一个<code>utmp struct</code>; 用户登出时, <code>init</code>进程从<code>utmp</code>中删除该用户, 并向<code>wtmp</code>写入一个新的<code>utmp struct</code>, 用<strong>null username</strong>表示用户在关联terminal上注销.</p>
+<h2 id="7-System-Identification"><a href="#7-System-Identification" class="headerlink" title="7. System Identification"></a>7. System Identification</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">utsname</span> &#123;</span></span><br><span class="line">  <span class="type">char</span> sysname[];   <span class="comment">/* name of the operating system */</span></span><br><span class="line">  <span class="type">char</span> nodename[];  <span class="comment">/* name of this node */</span></span><br><span class="line">  <span class="type">char</span> release[];   <span class="comment">/* current release of operating system */</span></span><br><span class="line">  <span class="type">char</span> version[];   <span class="comment">/* current version of this release */</span></span><br><span class="line">  <span class="type">char</span> machine[];   <span class="comment">/* hardware identifier */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store system inforamtion in the structure pointed to by `buf`</span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">uname</span><span class="params">(<span class="keyword">struct</span> utsname *buf)</span>;</span><br></pre></td></tr></table></figure>
+<p>由于历史原因, <code>nodename</code>并不能表示TCP&#x2F;IP上的hostname, 如需则调用<code>gethostname()</code>.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the null-terminated hostname in the character array </span></span><br><span class="line"><span class="comment"> *        name, which has a length of `len` bytes. If the hostname is </span></span><br><span class="line"><span class="comment"> *        too large to fit, then name is truncated.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">gethostname</span><span class="params">(<span class="type">char</span> *name, <span class="type">int</span> len)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-Time-and-Date-Routines"><a href="#8-Time-and-Date-Routines" class="headerlink" title="8. Time and Date Routines"></a>8. Time and Date Routines</h2><p>UNIX使用UTC(Coordinated Universal Time)存储时间信息, 数据类型为time_t, 并会自动处理time zone, daylight saving time等问题. </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the current time as the number of seconds since the</span></span><br><span class="line"><span class="comment"> *        Epoch, 1970-01-01 00:00:00 +0000 (UTC)</span></span><br><span class="line"><span class="comment"> * @param t the return value is stored at `t`</span></span><br><span class="line"><span class="comment"> * @return the value of time in seconds since the Epoch on </span></span><br><span class="line"><span class="comment"> *         success; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">time_t</span> <span class="title function_">time</span><span class="params">(<span class="type">time_t</span> *t)</span>;</span><br></pre></td></tr></table></figure>
+<p>除了<code>time_t</code>, 其他类型也可表示时间戳:<br><img src="/images/UNIX/APUE/6-7-time-func.png" alt="Relationship of the various time functions"></p>
+<h3 id="8-1-timespec-struct"><a href="#8-1-timespec-struct" class="headerlink" title="8.1 timespec struct"></a>8.1 timespec struct</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> &#123;</span></span><br><span class="line">  <span class="type">time_t</span> tv_sec;  <span class="comment">// seconds</span></span><br><span class="line">  <span class="type">long</span> tv_nsec;   <span class="comment">// nanoseconds</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief retrieve the time of the specified clock `clk_id`</span></span><br><span class="line"><span class="comment"> * @param clk_id the identifier of the particular clock, must be one </span></span><br><span class="line"><span class="comment"> *        of the following clocks:</span></span><br><span class="line"><span class="comment"> *        * CLOCK_REALTIME: settable system-wide realtime clock</span></span><br><span class="line"><span class="comment"> *        * CLOCK_MONOTONIC: nonsettable system-wide clock derived </span></span><br><span class="line"><span class="comment"> *          from wall-clock time but ignoring leap seconds</span></span><br><span class="line"><span class="comment"> *        * CLOCK_PROCESS_CPUTIME_ID: a clock that measures CPU time </span></span><br><span class="line"><span class="comment"> *          consumed by this process</span></span><br><span class="line"><span class="comment"> *        * CLOCK_THREAD_CPUTIME_ID: a clock that measures CPU time </span></span><br><span class="line"><span class="comment"> *          consumed by this thread</span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">clock_gettime</span><span class="params">(<span class="type">clockid_t</span> clk_id, <span class="keyword">struct</span> timespec *tsp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the time of the specified clock `clk_id`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">clock_settime</span><span class="params">(<span class="type">clockid_t</span> clk_id, <span class="type">const</span> <span class="keyword">struct</span> timespec *tsp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief find the resolution of the specified clock clk_id </span></span><br><span class="line"><span class="comment"> *        If res is not NULL, stores it in `res`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">clock_getres</span><span class="params">(<span class="type">clockid_t</span> clk_id, <span class="keyword">struct</span> timespec *res)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>任何物理时钟都存在偏差, 计算机运行的越久, 与实际时间的偏差越大, 因此需要管理员手动修改, 或NTP纠正, <code>CLOCK_REALTIME</code>则表示最接近实际的时间; 但该时间可能不连续, 例如, 第一次获取的时间小于第二次获取的时间, 给人一种时间回溯的感觉, 因此引入<code>CLOCK_MONOTONIC</code>, 该时间无法被修改, 可用于计算两个事件之间的时间差.</li>
+<li>UNIX支持多进程, 但进程并发受限于很多因素(如CPU数量), 因此进程可能处于等待队列, 计算一个程序的实际性能时, 我们只想知道程序的实际运行时间, 可使用<code>CLOCK_PROCESS_CPUTIME_ID</code></li>
+</ul>
+<h3 id="8-2-tm-structure"><a href="#8-2-tm-structure" class="headerlink" title="8.2 tm structure"></a>8.2 tm structure</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tm</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> tm_sec;   <span class="comment">/* second [0, 60] */</span></span><br><span class="line">  <span class="type">int</span> tm_min;   <span class="comment">/* minute [0, 59] */</span></span><br><span class="line">  <span class="type">int</span> tm_hour;  <span class="comment">/* hour [0, 23] */</span></span><br><span class="line">  <span class="type">int</span> tm_mday;  <span class="comment">/* day of month [1, 31] */</span></span><br><span class="line">  <span class="type">int</span> tm_mon;   <span class="comment">/* month of year [0, 11] */</span></span><br><span class="line">  <span class="type">int</span> tm_year;  <span class="comment">/* years since 1900 */</span></span><br><span class="line">  <span class="type">int</span> tm_wday;  <span class="comment">/* day of week [0, 6] (Sunday = 0) */</span></span><br><span class="line">  <span class="type">int</span> tm_yday;  <span class="comment">/* day of year [0, 365] */</span></span><br><span class="line">  <span class="type">int</span> tm_isdst; <span class="comment">/* daylight savings flag */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief convert the time in seconds since the Epoch to a </span></span><br><span class="line"><span class="comment"> *        broken-down UTC time.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> tm *<span class="title function_">gmtime</span><span class="params">(<span class="type">const</span> <span class="type">time_t</span> *timep)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief convert broken-down time into time since the Epoch</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">time_t</span> <span class="title function_">mktime</span><span class="params">(<span class="keyword">struct</span> tm *tm)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief convert the time in seconds since the Epoch into a </span></span><br><span class="line"><span class="comment"> *        broken-down time. The function corrects for the timezone </span></span><br><span class="line"><span class="comment"> *        and any seasonal time adjustments</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> tm *<span class="title function_">localtime</span><span class="params">(<span class="type">const</span> <span class="type">time_t</span> *timep)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief format the borken-down time `tm` according to the conversion</span></span><br><span class="line"><span class="comment"> *        specification `format` and place the result in the array </span></span><br><span class="line"><span class="comment"> *        pointed to by `s` of size `max`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">size_t</span> <span class="title function_">strftime</span><span class="params">(<span class="type">char</span> *s, <span class="type">size_t</span> max, <span class="type">const</span> <span class="type">char</span> *format, <span class="type">const</span> <span class="keyword">struct</span> tm *tm)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief convert the character string pointed to by `s` to values </span></span><br><span class="line"><span class="comment"> *        which are stored in the broken-down time </span></span><br><span class="line"><span class="comment"> *        structure pointed to by tm</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">char</span> *<span class="title function_">strptime</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *s, <span class="type">const</span> <span class="type">char</span> *format, <span class="keyword">struct</span> tm *tm)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>Conversion sepcifier for <code>strftime()</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%a</td>
+<td>abbreviated weekday name</td>
+<td>Thu</td>
+</tr>
+<tr>
+<td>%A</td>
+<td>full weekday name</td>
+<td>Thursday</td>
+</tr>
+<tr>
+<td>%b</td>
+<td>abbreviated month name</td>
+<td>Jan</td>
+</tr>
+<tr>
+<td>%B</td>
+<td>full month name</td>
+<td>January</td>
+</tr>
+<tr>
+<td>%c</td>
+<td>date and time</td>
+<td>Thu Jan 19 21:24:52 2012</td>
+</tr>
+<tr>
+<td>%C</td>
+<td>year&#x2F;100: [00–99]</td>
+<td>20</td>
+</tr>
+<tr>
+<td>%d</td>
+<td>day of the month: [01–31]</td>
+<td>19</td>
+</tr>
+<tr>
+<td>%D</td>
+<td>date [MM&#x2F;DD&#x2F;YY]</td>
+<td>01&#x2F;19&#x2F;12</td>
+</tr>
+<tr>
+<td>%e</td>
+<td>day of month (single digit preceded by space) [1–31]</td>
+<td>19</td>
+</tr>
+<tr>
+<td>%F</td>
+<td>ISO 8601 date format [YYYY–MM–DD]</td>
+<td>2012-01-19</td>
+</tr>
+<tr>
+<td>%g</td>
+<td>last two digits of ISO 8601 week-based year [00–99]</td>
+<td>12</td>
+</tr>
+<tr>
+<td>%G</td>
+<td>ISO 8601 week-based year</td>
+<td>2012</td>
+</tr>
+<tr>
+<td>%h</td>
+<td>same as %b</td>
+<td>Jan</td>
+</tr>
+<tr>
+<td>%H</td>
+<td>hour of the day (24-hour format): [00–23]</td>
+<td>21</td>
+</tr>
+<tr>
+<td>%I</td>
+<td>hour of the day (12-hour format): [01–12]</td>
+<td>09</td>
+</tr>
+<tr>
+<td>%j</td>
+<td>day of the year: [001–366]</td>
+<td>019</td>
+</tr>
+<tr>
+<td>%m</td>
+<td>month: [01–12]</td>
+<td>01</td>
+</tr>
+<tr>
+<td>%M</td>
+<td>minute: [00–59]</td>
+<td>24</td>
+</tr>
+<tr>
+<td>%n</td>
+<td>newline character</td>
+<td></td>
+</tr>
+<tr>
+<td>%p</td>
+<td>AM&#x2F;PM</td>
+<td>PM</td>
+</tr>
+<tr>
+<td>%r</td>
+<td>locale’s time (12-hour format)</td>
+<td>09:24:52 PM</td>
+</tr>
+<tr>
+<td>%R</td>
+<td>same as %H:%M</td>
+<td>21:24</td>
+</tr>
+<tr>
+<td>%S</td>
+<td>second: [00–60]</td>
+<td>52</td>
+</tr>
+<tr>
+<td>%t</td>
+<td>horizontal tab character</td>
+<td></td>
+</tr>
+<tr>
+<td>%T</td>
+<td>same as %H:%M:%S</td>
+<td>21:24:52</td>
+</tr>
+<tr>
+<td>%u</td>
+<td>ISO 8601 weekday [Monday &#x3D; 1, 1–7]</td>
+<td>4</td>
+</tr>
+<tr>
+<td>%U</td>
+<td>Sunday week number: [00–53]</td>
+<td>03</td>
+</tr>
+<tr>
+<td>%V</td>
+<td>ISO 8601 week number: [01–53]</td>
+<td>03</td>
+</tr>
+<tr>
+<td>%w</td>
+<td>weekday: [0 &#x3D; Sunday, 0–6]</td>
+<td>4</td>
+</tr>
+<tr>
+<td>%W</td>
+<td>Monday week number: [00–53]</td>
+<td>03</td>
+</tr>
+<tr>
+<td>%x</td>
+<td>locale’s date 01&#x2F;19&#x2F;</td>
+<td>12</td>
+</tr>
+<tr>
+<td>%X</td>
+<td>locale’s time 21:24:</td>
+<td>52</td>
+</tr>
+<tr>
+<td>%y</td>
+<td>last two digits of year: [00–99]</td>
+<td>12</td>
+</tr>
+<tr>
+<td>%Y</td>
+<td>year</td>
+<td>2012</td>
+</tr>
+<tr>
+<td>%z</td>
+<td>offset from UTC in ISO 8601 format</td>
+<td>-0500</td>
+</tr>
+<tr>
+<td>%Z</td>
+<td>time zone name</td>
+<td>EST</td>
+</tr>
+<tr>
+<td>%%</td>
+<td>translates to a percent sign</td>
+<td>%</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/8ccf.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Process Environment</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/f946.html">
+        <span class="next-text nav-default">Standard I/O</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/4ad7.html';
+  var disqus_title = "System Data Files and Infomation";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

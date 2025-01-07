@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="DP - 0/1 Knapsack Problem"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/539a.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/539a.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/539a.html"/>
+
+
+<meta name="description" content="1. Introduction0&#x2F;1背包问题: 有$n$个物品和一个容量为$c$的背包, 第$i$个物品的体积为$w[i]$, 价值为$v[i]$, 在不超过背包容量上限的情况下, 求能放入背包中物品的最大价值之和. 该题目有以下几点需要考虑:  每个物品只能放入背包一次 背包有容量上限, 因此可能无法将所有物品都放入背包 将物品放入背包时, 背包的价值增加, 但剩余容量下降, 选择哪些">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DP - 0&#x2F;1 Knapsack Problem">
+<meta property="og:url" content="https://zaf1ro.github.io/p/539a.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction0&#x2F;1背包问题: 有$n$个物品和一个容量为$c$的背包, 第$i$个物品的体积为$w[i]$, 价值为$v[i]$, 在不超过背包容量上限的情况下, 求能放入背包中物品的最大价值之和. 该题目有以下几点需要考虑:  每个物品只能放入背包一次 背包有容量上限, 因此可能无法将所有物品都放入背包 将物品放入背包时, 背包的价值增加, 但剩余容量下降, 选择哪些">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-04-07T15:43:20.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.024Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+DP - 0/1 Knapsack Problem - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Brute-Force"><span class="toc-text">2. Brute Force</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Dynamic-Programming"><span class="toc-text">3. Dynamic Programming</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Optimization"><span class="toc-text">4. Optimization</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Leetcode"><span class="toc-text">5. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#494-Target-Sum"><span class="toc-text">494. Target Sum</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          DP - 0/1 Knapsack Problem
+        
+      </h1>
+      <time class="post-time">
+          04/07/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>0&#x2F;1背包问题: 有$n$个物品和一个容量为$c$的背包, 第$i$个物品的体积为$w[i]$, 价值为$v[i]$, 在不超过背包容量上限的情况下, 求能放入背包中物品的最大价值之和. 该题目有以下几点需要考虑:</p>
+<ul>
+<li>每个物品只能放入背包一次</li>
+<li>背包有容量上限, 因此可能无法将所有物品都放入背包</li>
+<li>将物品放入背包时, 背包的价值增加, 但剩余容量下降, 选择哪些物品可最大化背包内的物品价值之和</li>
+</ul>
+<h2 id="2-Brute-Force"><a href="#2-Brute-Force" class="headerlink" title="2. Brute Force"></a>2. Brute Force</h2><p>背包问题的暴力解法就是枚举所有物品组合, 判断每个组合能否放入背包, 并统计最大价值, 时间复杂度为$O(2^n)$. 这种解法不是动态规划, 而是回溯算法.</p>
+<h2 id="3-Dynamic-Programming"><a href="#3-Dynamic-Programming" class="headerlink" title="3. Dynamic Programming"></a>3. Dynamic Programming</h2><p>动态规划算法解决该问题时, 可拆分为以下步骤:</p>
+<ol>
+<li><p>拆分问题: 按照物品坐标和背包剩余容量进行划分</p>
+<ul>
+<li>原问题: 背包剩余容量为<code>$c$</code>且还有<code>$n$</code>个物品时, 求最大价值</li>
+<li>子问题: 背包剩余容量为<code>$c_k$</code>且还有<code>$k$</code>个物品时最大价值, 与背包剩余容量为<code>$c - c_k$</code>且还有<code>$n-k$</code>个物品时的最大价值之和</li>
+</ul>
+</li>
+<li><p>定义状态: 物品坐标<code>$i$</code>和剩余容量<code>$c_i$</code>, 可申请一个<code>$dp[n][c]$</code>表格, 表示前<code>$n$</code>个物品放入一个容量为<code>c</code>的背包时的最大价值.</p>
+</li>
+<li><p>状态转移方程: 对于<code>前$i$个物品且容量为$c_i$的最大价值</code>这个问题, 可转换为两个子问题:</p>
+<ul>
+<li>前$i-1$个物品的最大价值: 前$0$个物品($i &#x3D; 1$)表示背包中没有任何物品, 因此价值为$0$, 容量为$c$</li>
+<li>第$i$个物品是否放入背包:<ul>
+<li>将第$i$个物品放入背包: $dp[i-1][c_{i-1}-w[i]] + v[i]$</li>
+<li>跳过第$i$个物品: $dp[i-1][c]$</li>
+</ul>
+</li>
+</ul>
+<p> 因此, 状态转移方程如下:<br> $$<br> dp[i][c_i] &#x3D;<br> \begin{cases}<br>     dp[i-1][c_{i-1}],                              &amp; c &lt; w[i] \\[2ex]<br>     max(dp[i-1][c_{i-1}], dp[i-1][c_{i-1}-w[i]] + v[i]), &amp; c \ge w[i]<br> \end{cases}<br> $$</p>
+</li>
+<li><p>初始条件:</p>
+<ul>
+<li>若$c &#x3D; 0$, 则没有容量放下任何物品, 价值为0, 即$dp[i][0] &#x3D; 0, 0 \le i \le c$</li>
+<li>若$i &#x3D; 0$, 则没有任何物品可放入背包, 价值为0, 即$dp[0][w], 0 \le c_i \le c$</li>
+</ul>
+</li>
+<li><p>最终结果: 根据$dp[i][c_i]$的定义, $dp[n][w]$表示前$n$个物品且容量为$w$时的最大价值, 即为答案.</p>
+</li>
+</ol>
+<p>DP的时间复杂度为$O(n \times w)$, 空间复杂度为$O(n \times w)$</p>
+<h2 id="4-Optimization"><a href="#4-Optimization" class="headerlink" title="4. Optimization"></a>4. Optimization</h2><p>求解过程中, <code>前i件物品的状态</code>只与<code>前i-1件物品的状态</code>有关, 与其他阶段的状态无关. 也就是说, 我们只会用到$dp[i][c]$, $dp[i-1][c]$, 和$dp[i-1][c-w[i-1]]$. 因此无需保存所有阶段的状态, 只需两个一维数组分别保存相邻两个阶段的状态; 进一步优化, 可只使用一个一维数组用于保存上一阶段的状态, 采用<strong>滚动数组</strong>的方式进行优化.</p>
+<h2 id="5-Leetcode"><a href="#5-Leetcode" class="headerlink" title="5. Leetcode"></a>5. Leetcode</h2><h3 id="494-Target-Sum"><a href="#494-Target-Sum" class="headerlink" title="494. Target Sum"></a>494. Target Sum</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given an integer array <code>nums</code> and an integer <code>target</code>.<br>You want to build an <strong>expression</strong> out of nums by adding one of the symbols <code>&#39;+&#39;</code> and <code>&#39;-&#39;</code> before each integer in nums and then concatenate all the integers.<br>For example, if <code>nums = [2, 1]</code>, you can add a <code>&#39;+&#39;</code> before <code>2</code> and a <code>&#39;-&#39;</code> before <code>1</code> and concatenate them to build the expression <code>&quot;+2-1&quot;</code>.<br>Return the number of different <strong>expressions</strong> that you can build, which evaluates to <code>target</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,1,1,1,1], target = 3</span><br><span class="line">Output: 5</span><br><span class="line">Explanation: There are 5 ways to assign symbols to make the sum of nums be target 3.</span><br><span class="line">-1 + 1 + 1 + 1 + 1 = 3</span><br><span class="line">+1 - 1 + 1 + 1 + 1 = 3</span><br><span class="line">+1 + 1 - 1 + 1 + 1 = 3</span><br><span class="line">+1 + 1 + 1 - 1 + 1 = 3</span><br><span class="line">+1 + 1 + 1 + 1 - 1 = 3</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h4><p>对于每个元素有两种选择: 正数或负数. 回溯三要素如下:</p>
+<ul>
+<li>当前操作: 枚举每个元素, 对于第i个元素, 可当作正数或负数, <code>target = target +/- nums[i]</code></li>
+<li>子问题: 对于第i+1个和之后的元素, 使得target变为0</li>
+<li>边界条件: i为n, 表示抵达数组末尾, 查看target是否为0</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findTargetSumWays</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> dfs(nums, <span class="number">0</span>, target);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">dfs</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> i, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (i == nums.length) &#123;</span><br><span class="line">            <span class="keyword">return</span> target == <span class="number">0</span> ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dfs(nums, i+<span class="number">1</span>, target+nums[i]) + dfs(nums, i+<span class="number">1</span>, target-nums[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>假设<code>nums</code>中存在数组之和为target的解法, 假设正数元素之和P, 负数元素之和为N, 则<code>P - N = target</code>, <code>P + N = sum(nums)</code>, 因此<code>2P = target + sum(nums)</code>.</p>
+<ul>
+<li>若<code>target + sum(nums)</code>为奇数, 则不存在解</li>
+<li>若<code>target + sum(nums)</code>为负数, 由于<code>0 &lt;= nums[i] &lt;= 1000</code>, 因此不存在解</li>
+</ul>
+<p>因此该问题可转换为: 存在一个数组<code>nums</code>, 从中挑选一些元素并让其之和等于<code>(target + sum(nums)) / 2</code>. 从而让题目与01背包问题相同.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findTargetSumWays</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> num: nums) &#123;</span><br><span class="line">            target += num;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (target &lt; <span class="number">0</span> || target % <span class="number">2</span> == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">return</span> backtracking(nums, <span class="number">0</span>, target/<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> i, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (target &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (i == nums.length) &#123;</span><br><span class="line">            <span class="keyword">return</span> target == <span class="number">0</span> ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> backtracking(nums, i+<span class="number">1</span>, target) + backtracking(nums, i+<span class="number">1</span>, target-nums[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>修改为dp数组:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findTargetSumWays</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> num: nums) &#123;</span><br><span class="line">            target += num;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (target &lt; <span class="number">0</span> || target % <span class="number">2</span> == <span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        target /= <span class="number">2</span>;</span><br><span class="line">        <span class="type">int</span>[][] dp = <span class="keyword">new</span> <span class="title class_">int</span>[n+<span class="number">1</span>][target+<span class="number">1</span>];</span><br><span class="line">        dp[n][<span class="number">0</span>] = <span class="number">1</span>; <span class="comment">// 边界条件</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> n-<span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt;= target; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (nums[i] &gt; j) &#123;</span><br><span class="line">                    dp[i][j] = dp[i+<span class="number">1</span>][j]; <span class="comment">// 跳过不选</span></span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    dp[i][j] = dp[i+<span class="number">1</span>][j] + dp[i+<span class="number">1</span>][j-nums[i]]; <span class="comment">// 加法原则: 若事件A和B不可能同时发生, 则发生事件A和B的总数等于发生A和发生B的数量之和</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[<span class="number">0</span>][target];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/6040.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - Basic</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/a5fe.html">
+        <span class="next-text nav-default">DP - Memoization Search</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/539a.html';
+  var disqus_title = "DP - 0/1 Knapsack Problem";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

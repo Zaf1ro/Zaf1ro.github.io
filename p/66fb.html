@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="TCP Client/Server"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/66fb.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/66fb.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/66fb.html"/>
+
+
+<meta name="description" content="1. Introduction本章将编写一个简单的TCP client&#x2F;server, 主要有以下功能:  client从standard iunput读取一行文本, 并写给server server从network input读取文本, 并将该文本发送回client client从network input读取文本, 并输出到standard output  整个TCP client&amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP Client&#x2F;Server">
+<meta property="og:url" content="https://zaf1ro.github.io/p/66fb.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction本章将编写一个简单的TCP client&#x2F;server, 主要有以下功能:  client从standard iunput读取一行文本, 并写给server server从network input读取文本, 并将该文本发送回client client从network input读取文本, 并输出到standard output  整个TCP client&amp;">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/5-1-simple-echo-cli-svr.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/5-10-cli-close-all-conn.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/5-11-recv-rst-before-accept.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/5-17-tcp-from-cli.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/5-17-tcp-from-svr.gif">
+<meta property="article:published_time" content="2019-11-24T01:41:04.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.043Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/5-1-simple-echo-cli-svr.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+TCP Client/Server - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-TCP-Echo-Server-main-Function"><span class="toc-text">2. TCP Echo Server: main Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-TCP-Echo-Server-str-echo-Function"><span class="toc-text">3. TCP Echo Server: str_echo Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-TCP-Echo-Client-main-Function"><span class="toc-text">4. TCP Echo Client: main Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-TCP-Echo-Client-str-cli"><span class="toc-text">5. TCP Echo Client: str_cli</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Normal-Startup"><span class="toc-text">6. Normal Startup</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Normal-Termination"><span class="toc-text">7. Normal Termination</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-POSIX-Signal-Handling"><span class="toc-text">8. POSIX Signal Handling</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-signal-Function"><span class="toc-text">8.1 signal Function</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-POSIX-Signal-Semantics"><span class="toc-text">8.2 POSIX Signal Semantics</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Handle-SIGCHLD-Signals"><span class="toc-text">9. Handle SIGCHLD Signals</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-Handle-Zombies"><span class="toc-text">9.1 Handle Zombies</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-Handle-Interrupted-System-Calls"><span class="toc-text">9.2 Handle Interrupted System Calls</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-wait-and-waitpid-Functions"><span class="toc-text">10. wait and waitpid Functions</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-Difference-between-wait-and-waitpid"><span class="toc-text">10.1 Difference between wait and waitpid</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-Correct-version-of-TCP-server"><span class="toc-text">10.2 Correct version of TCP server</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Connection-Abort-before-accept-Returns"><span class="toc-text">11. Connection Abort before accept Returns</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-Termination-of-Server-Process"><span class="toc-text">12. Termination of Server Process</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-SIGPIPE-Signal"><span class="toc-text">13. SIGPIPE Signal</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-Crash-of-Server-Host"><span class="toc-text">14. Crash of Server Host</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-Crash-and-Reboot-of-Server-Host"><span class="toc-text">15. Crash and Reboot of Server Host</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-Shutdown-of-Server-Host"><span class="toc-text">16. Shutdown of Server Host</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-Summary-of-TCP-Example"><span class="toc-text">17. Summary of TCP Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#18-Data-Format"><span class="toc-text">18. Data Format</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#18-1-Pass-Text-Strings-between-Client-and-Server"><span class="toc-text">18.1 Pass Text Strings between Client and Server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#18-2-Pass-Binary-Structures-between-Client-and-Server"><span class="toc-text">18.2  Pass Binary Structures between Client and Server</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          TCP Client/Server
+        
+      </h1>
+      <time class="post-time">
+          11/23/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>本章将编写一个简单的TCP client&#x2F;server, 主要有以下功能:</p>
+<ol>
+<li>client从standard iunput读取一行文本, 并写给server</li>
+<li>server从network input读取文本, 并将该文本发送回client</li>
+<li>client从network input读取文本, 并输出到standard output</li>
+</ol>
+<p>整个TCP client&#x2F;server的流程如下:<br><img src="/images/Network/UNP/5-1-simple-echo-cli-svr.gif" alt="Simple echo client and server"><br><code>fgets()</code>和<code>fputs()</code>为standard I&#x2F;O functions, <code>writen()</code>和<code>readlin()</code>为自定义函数</p>
+<h2 id="2-TCP-Echo-Server-main-Function"><a href="#2-TCP-Echo-Server-main-Function" class="headerlink" title="2. TCP Echo Server: main Function"></a>2. TCP Echo Server: main Function</h2><p>创建一个父进程listen请求, 子进程来处理请求</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>                listenfd, connfd;</span><br><span class="line">  <span class="type">pid_t</span>              childpid;</span><br><span class="line">  <span class="type">socklen_t</span>          clilen;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Create a TCP socket */</span></span><br><span class="line">  listenfd = Socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">  </span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* IP Address使用通配符, Port number使用SERV_PORT (9877) */</span></span><br><span class="line">  servaddr.sin_family      = AF_INET;</span><br><span class="line">  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">  servaddr.sin_port        = htons(SERV_PORT);</span><br><span class="line">  Bind(listenfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* Convert into a passive socket */</span></span><br><span class="line">  Listen(listenfd, LISTENQ);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    clilen = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">    <span class="comment">/* Wait for a client connection to complete */</span></span><br><span class="line">    connfd = Accept(listenfd, (SA *) &amp;cliaddr, &amp;clilen);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Create a child process to handle the new client */</span></span><br><span class="line">    <span class="keyword">if</span> ((childpid = Fork()) == <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">/* Close listening socket in child process */</span></span><br><span class="line">      Close(listenfd);</span><br><span class="line">      str_echo(connfd);</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    Close(connfd); <span class="comment">/* Close the connected socket in parent process */</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-TCP-Echo-Server-str-echo-Function"><a href="#3-TCP-Echo-Server-str-echo-Function" class="headerlink" title="3. TCP Echo Server: str_echo Function"></a>3. TCP Echo Server: str_echo Function</h2><p><code>str_echo()</code>负责从client请求中读取数据, 并将数据发送回client</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_echo</span><span class="params">(<span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">ssize_t</span> n;</span><br><span class="line">  <span class="type">char</span>    buf[MAXLINE];</span><br><span class="line"></span><br><span class="line">again:</span><br><span class="line">  <span class="comment">/* Read data from the socket */</span></span><br><span class="line">  <span class="keyword">while</span> ((n = read(sockfd, buf, MAXLINE)) &gt; <span class="number">0</span>)</span><br><span class="line">    Writen(sockfd, buf, n); <span class="comment">// echo back to the client</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (n &lt; <span class="number">0</span> &amp;&amp; errno == EINTR) <span class="comment">/* EINTER代表accept()被打断, 需要重新执行 */</span></span><br><span class="line">    <span class="keyword">goto</span> again;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (n &lt; <span class="number">0</span>) <span class="comment">/* 连接正常, 但client请求中无数据 */</span></span><br><span class="line">    err_sys(<span class="string">&quot;str_echo: read error&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-TCP-Echo-Client-main-Function"><a href="#4-TCP-Echo-Client-main-Function" class="headerlink" title="4. TCP Echo Client: main Function"></a>4. TCP Echo Client: main Function</h2><p>与server连接并传输数据</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> sockfd;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">servaddr</span>;</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (argc != <span class="number">2</span>)</span><br><span class="line">    err_quit(<span class="string">&quot;usage: tcpcli &lt;IPaddress&gt;&quot;</span>);</span><br><span class="line">  </span><br><span class="line">  sockfd = Socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">  </span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family = AF_INET;</span><br><span class="line">  servaddr.sin_port = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* take server&#x27;s IP address from command-line argument */</span></span><br><span class="line">  Inet_pton(AF_INET, argv[<span class="number">1</span>], &amp;servaddr.sin_addr);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* Establish the connection with the server */</span></span><br><span class="line">  Connect(sockfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* handle the rest of the client processing */</span></span><br><span class="line">  str_cli(<span class="built_in">stdin</span>, sockfd);</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-TCP-Echo-Client-str-cli"><a href="#5-TCP-Echo-Client-str-cli" class="headerlink" title="5. TCP Echo Client: str_cli"></a>5. TCP Echo Client: str_cli</h2><p><code>str_cli()</code>负责从standard input中读取文本, 发送给server并读取server传回的文本.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> sendline[MAXLINE], recvline[MAXLINE];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* read a line of text from standard input */</span></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="comment">/* Send text to server */</span></span><br><span class="line">    Writen(sockfd, sendline, <span class="built_in">strlen</span>(sendline));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Read data from server */</span></span><br><span class="line">    <span class="keyword">if</span> (Readline(sockfd, recvline, MAXLINE) == <span class="number">0</span>)</span><br><span class="line">      err_quit(<span class="string">&quot;str_cli: server terminated prematurely&quot;</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Output data to standard output */</span></span><br><span class="line">    Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-Normal-Startup"><a href="#6-Normal-Startup" class="headerlink" title="6. Normal Startup"></a>6. Normal Startup</h2><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpserv01 &amp;</span><br><span class="line">[1] 17870</span><br></pre></td></tr></table></figure>
+<p>当server启动时, 会依次调用<code>socket()</code>, <code>bind()</code>, <code>listen()</code>和<code>accept()</code>, 并阻塞于<code>accept()</code>. client运行前, 可执行<code>netstat</code>命令查看server的socket状态:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ netstat -a</span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q  Send-Q  Local Address  Foreign Address  State</span><br><span class="line">tcp   0       0       *:9877         *:*              LISTEN</span><br></pre></td></tr></table></figure>
+<p>从上述可得知: 该socket处于<code>LISTEN</code>状态, Local IP address为通配符, port number为9877, 可接收任意IP address和port number的请求.</p>
+<p>由于client和server处于同一主机, 所有指定server的IP address为<code>127.0.0.1</code>:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpcli01 127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>Client会依次调用<code>socket()</code>和<code>connect()</code>. TCP的三次握手完成后, client的<code>connect()</code>调用完毕, server的<code>accept()</code>调用完毕. 连接建立后执行以下步骤:</p>
+<ol>
+<li>client调用<code>str_cli()</code>, 阻塞于<code>fgets()</code>, 等待用户在command line输入字符 </li>
+<li>server的<code>accept()</code>完成调用后, 调用<code>fork()</code>生成子进程: 子进程调用<code>readline()</code>等待client传来数据; 父进程继续调用<code>accept()</code>等待下一个client的请求</li>
+</ol>
+<p>这其中存在三个可能阻塞的进程: client, server的prarent process, server的child process. 这时client与server已建立连接但client端还未输入数据, 执行<code>netstat</code>查看连接状态:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ netstat -a</span><br><span class="line">Active Internet connections (servers and established)</span><br><span class="line">Proto Recv-Q  Send-Q  Local Address   Foreign Address  State</span><br><span class="line">tcp   0       0       localhost:9877  localhost:42758  ESTABLISHED</span><br><span class="line">tcp   0       0       localhost:42758 localhost:9877   ESTABLISHED</span><br><span class="line">tcp   0       0       *:9877          *:*              LISTEN</span><br></pre></td></tr></table></figure>
+<p>从上向下依次为:</p>
+<ol>
+<li>server子进程: 与client建立连接, 状态为<code>ESTABLISHED</code>. </li>
+<li>client进程: 与server建立连接, 其port number为kernel随机分配 (42758)</li>
+<li>server父进程: 等待新的client请求</li>
+</ol>
+<p>使用<code>ps</code>命令查看进程之间的状态:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -t pts/6 -o pid,ppid,<span class="built_in">tty</span>,<span class="built_in">stat</span>,args,wchan</span><br><span class="line">PID    PPID   TTY    STAT  COMMAND           WCHAN</span><br><span class="line">17870  22038  pts/6  S     ./tcpserv01       wait_for_connect</span><br><span class="line">19315  17870  pts/6  S     ./tcpserv01       tcp_data_wait</span><br><span class="line">19314  22038  pts/6  S     ./tcpcli01 127.0  read_chan</span><br></pre></td></tr></table></figure>
+<p>从上向下进程依次为:</p>
+<ol>
+<li>server父进程: 其PID为17870, 处于<code>sleep</code>状态, 等待新的client请求 </li>
+<li>server子进程: 其PID为19315, 其父进程PID为17870, 处于<code>sleep</code>状态, 等待client传入数据</li>
+<li>client进程: 处于<code>sleep</code>状态, 等待用户I&#x2F;O输入</li>
+</ol>
+<h2 id="7-Normal-Termination"><a href="#7-Normal-Termination" class="headerlink" title="7. Normal Termination"></a>7. Normal Termination</h2><p>通过输入<code>EOF</code>(通常为Control-D)可终止client与server的连接:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpcli01 127.0.0.1</span><br><span class="line">hello, world</span><br><span class="line">hello, world</span><br><span class="line">good <span class="built_in">bye</span></span><br><span class="line">good <span class="built_in">bye</span></span><br><span class="line">^D</span><br></pre></td></tr></table></figure>
+<p>输入EOF后立刻执行<code>netstat</code>命令:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ netstat -a | grep 9877</span><br><span class="line">Proto Recv-Q Send-Q  Local Address    Foreign Address State</span><br><span class="line">tcp   0      0       *:9877           *:*             LISTEN</span><br><span class="line">tcp   0      0       localhost:42758  localhost:9877  TIME_WAIT</span><br></pre></td></tr></table></figure>
+<p>以下是server和client正常终止连接的整个步骤:</p>
+<ol>
+<li>client端输入EOF字符, <code>fgets()</code>返回NULL, <code>str_cli()</code>退出while循环并返回</li>
+<li>client端<code>main()</code>中调用<code>exit()</code>开始退出进程</li>
+<li>进程退出时会关闭所有开启的file descriptor, 其中client的socket会被kernel关闭. client向server发送FIN, server回应ACK. 此时TCP 4-way handshake termination进行一半, server端socket处于<code>CLOSE_WAIT</code>状态, client端socket处于<code>FIN_WAIT_2</code>状态.</li>
+<li>server收到FIN后, server子进程中<code>read()</code>返回0, <code>str_echo()</code>返回.</li>
+<li>server子进程调用<code>exit()</code>, 开始关闭所有打开的file descriptor, 这时开始完成TCP 4-way handshake termination的后半段: server向client发送FIN, client回复ACK, client socket进入<code>TIME_WAIT</code>状态.</li>
+<li>server子进程中止时向父进程发送<code>SIGCHLD</code> signal. 由于server父进程未设置signal handler, 因此server子进程成为<strong>zombie</strong>(僵尸进程):<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -t pts/6 -o pid,<span class="built_in">tty</span>,<span class="built_in">stat</span>,args,wchan</span><br><span class="line">PID    PPID   TT     STAT   COMMAND      WCHAN  </span><br><span class="line">17870  22038  pts/6  S      ./tcpserv01  wait_for_connect</span><br><span class="line">19315  17870  pts/6  Z      ./tcpserv01  do_exit</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="8-POSIX-Signal-Handling"><a href="#8-POSIX-Signal-Handling" class="headerlink" title="8. POSIX Signal Handling"></a>8. POSIX Signal Handling</h2><p>signal可以理解为发送给进程的notification, 通知进程发生了某件事, 也称为software interrupt. signal是异步的, 因此进程无法得知signal何时到达. signal可由进程发出, 也可由kernel发出. <code>SIGCHLD</code>作为signal的一种, 由kernel发出, 用于通知父进程其子进程已中止.<br>每个signal都有一个disposition, 也称为action. 调用<code>sigaction()</code>可设置当前进程对某个signal的disposition:</p>
+<ol>
+<li>为特定signal提供一个signal handler: 进程捕获该signal后自动执行signal handler (<code>SIGKILL</code>和<code>SIGSTOP</code>无法设置signal handler):<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">handler</span><span class="params">(<span class="type">int</span> signo)</span>;</span><br></pre></td></tr></table></figure></li>
+<li>忽略signal: 将disposition设置为<code>SIG_IGN</code>可忽略指定signal (SIGKILL和SIGSTOP不可忽略)</li>
+<li>默认disposition: 将disposition设置为<code>SIG_DFL</code>会启用default disposition, 一般接收到signal后会中止进程, 部分signal的默认disposition为忽略该signal</li>
+</ol>
+<h3 id="8-1-signal-Function"><a href="#8-1-signal-Function" class="headerlink" title="8.1 signal Function"></a>8.1 signal Function</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">void</span> <span class="title function_">Sigfunc</span><span class="params">(<span class="type">int</span>)</span>; <span class="comment">// a function with an integer argument</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Change the action taken by a process on </span></span><br><span class="line"><span class="comment"> *        receipt of a specific signal</span></span><br><span class="line"><span class="comment"> * @param signo: specify the signal except SIGKILL </span></span><br><span class="line"><span class="comment"> *        and SIGSTOP</span></span><br><span class="line"><span class="comment"> * @param func: A new action for signal signo</span></span><br><span class="line"><span class="comment"> * @return The previous action is return on success;</span></span><br><span class="line"><span class="comment"> *         SIG_ERR on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">Sigfunc* <span class="title function_">signal</span><span class="params">(<span class="type">int</span> signo, Sigfunc* func)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">act</span>, <span class="title">oact</span>;</span></span><br><span class="line"></span><br><span class="line">  act.sa_handler = func;</span><br><span class="line">  sigemptyset(&amp;act.sa_mask); <span class="comment">/* 不阻塞其他signal */</span></span><br><span class="line">  act.sa_flags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (signo == SIGALRM) <span class="comment">/* SIGALRM通常表示I/O操作设置超时, 需要特殊处理 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span>  SA_INTERRUPT</span></span><br><span class="line">    act.sa_flags |= SA_INTERRUPT; <span class="comment">/* SunOS 4.x */</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> SA_RESTART</span></span><br><span class="line">    act.sa_flags |= SA_RESTART; <span class="comment">/* SVR4, 44BSD */</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (sigaction(signo, &amp;act, &amp;oact) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span>(SIG_ERR);</span><br><span class="line">  <span class="keyword">return</span>(oact.sa_handler);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Sigfunc* <span class="title function_">Signal</span><span class="params">(<span class="type">int</span> signo, Sigfunc *func)</span></span><br><span class="line">&#123;</span><br><span class="line">  Sigfunc  *sigfunc;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((sigfunc = signal(signo, func)) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal error&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span>(sigfunc);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-2-POSIX-Signal-Semantics"><a href="#8-2-POSIX-Signal-Semantics" class="headerlink" title="8.2 POSIX Signal Semantics"></a>8.2 POSIX Signal Semantics</h3><p>POSIX的系统信号处理总结为以下几点:</p>
+<ol>
+<li>一旦设置了signal handler, 该signal handler会一直存在(旧版UNIX系统执行完毕后会移除signal handler)</li>
+<li>为保证一些关键代码不被signal handler中断, 需阻塞signal. <code>sigaction.sa_mask</code>指定哪些signal会被阻塞, 将<code>sa_mask</code>置为NULL表示: 除当前signal外, 不会阻塞其他signal.</li>
+<li>若多个signal被阻塞, 当进程解除阻塞时, 只会提交一个signal. 默认情况下UNIX的signal依照时序排队, 但POSIX real-time standard定义了某些signal会依照时序进入队列.</li>
+<li><code>sigpromask()</code>可阻塞或解除阻塞指定的signal集合, 这使得开发者可以保证某段代码不被signal打断.</li>
+</ol>
+<h2 id="9-Handle-SIGCHLD-Signals"><a href="#9-Handle-SIGCHLD-Signals" class="headerlink" title="9. Handle SIGCHLD Signals"></a>9. Handle SIGCHLD Signals</h2><p>Kernel将进程设置为zombie状态是为了保留子进程的信息, 让其父进程可以稍后获取这些信息, 其中包括: PID, termination status和子进程的资源利用率(CPU time, memory等). 如果父进程未处理其子进程的zombie状态且终止运行, 其所有子进程的PPID(parent PID)将置为1(init进程), 并负责清理这些zombies.</p>
+<h3 id="9-1-Handle-Zombies"><a href="#9-1-Handle-Zombies" class="headerlink" title="9.1 Handle Zombies"></a>9.1 Handle Zombies</h3><p>若不及时处理这些zombie, 会占用大量kernel空间. 当调用<code>fork()</code>产生子进程后, 应调用<code>wait()</code>防止子进程变为zombie. 因此, 可为<code>SIGCHLD</code> signal创建一个signal handler, 在handler中调用<code>wait()</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">Signal(SIGCHLD, sig_chld);</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">sig_chld</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">pid_t</span> pid;</span><br><span class="line">  <span class="type">int</span>   stat;</span><br><span class="line"></span><br><span class="line">  pid = wait(&amp;stat);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Not recommand to call I/O functions in signal handler</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;child %d terminated\n&quot;</span>, pid);</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意, 必须在调用<code>fork()</code>之前调用<code>Signal (SIGCHLD, sig_chld);</code>. 加入signal handler后的运行结果如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpserv02 &amp;</span><br><span class="line">[2] 16939</span><br><span class="line"></span><br><span class="line">$ tcpcli01 127.0.0.1</span><br><span class="line">hi there</span><br><span class="line">hi there</span><br><span class="line">^D</span><br><span class="line">child 16942 terminated</span><br><span class="line">accept error: Interrupted system call</span><br></pre></td></tr></table></figure>
+<p>具体步骤:</p>
+<ol>
+<li>client端输入EOF, client向server子进程发送FIN, server子进程回复ACK</li>
+<li>server子进程终止运行</li>
+<li>被<code>accept()</code>阻塞的server父进程被SIGCHLD signal打断, 并开始执行signal handler, 调用<code>printf()</code>输出子进程PID</li>
+<li>由于server父进程的<code>accept()</code>被打断, 返回EINTR</li>
+</ol>
+<p>部分操作系统会自动重启被signal打断的system call, 因此<code>accept()</code>不会报错, 例如4.4BSD. </p>
+<h3 id="9-2-Handle-Interrupted-System-Calls"><a href="#9-2-Handle-Interrupted-System-Calls" class="headerlink" title="9.2 Handle Interrupted System Calls"></a>9.2 Handle Interrupted System Calls</h3><p>当slow system call被阻塞时, 指代那些可能永远处于阻塞状态的system call, 绝大多数network function都属于slow system call. 例如<code>accept()</code>, 假如没有client发起连接请求, 则<code>accept()</code>将一直处于阻塞状态; server的<code>read()</code>也是同理, 假如没有client发送数据, 则<code>read()</code>将一直被阻塞.<br>当slow system call被阻塞时, 若其被signal打断, 则slow system call会将errno设置为EINTER. 不同UNIX系统对signal的中断有不同的处理方法, 即使在<code>sigaction struct</code>的flag标记为<code>SA_RESTART</code>, 也不能保证被中断的system call自动重启. 因此需要对这些可能被signal打断的slow system call进行额外处理:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">  clilen = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">  <span class="keyword">if</span> ((connfd = accept(listenfd, (SA*)&amp;cliaddr, &amp;clilen)) &lt;<span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (errno == EINTER) <span class="comment">/* back to for() */</span></span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      err_sys(<span class="string">&quot;accept error&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于上述代码来说: 若系统不支持自动重启被打断的<code>accept()</code>, 则再次进入for循环; 否则for循环中的<code>accept()</code>自动重启, 不会再次进入循环.</p>
+<h2 id="10-wait-and-waitpid-Functions"><a href="#10-wait-and-waitpid-Functions" class="headerlink" title="10. wait and waitpid Functions"></a>10. wait and waitpid Functions</h2><p><code>wait()</code>用于处理中止的子进程.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Wait for child process to change state</span></span><br><span class="line"><span class="comment"> * @param staloc: A pointer to the termination status</span></span><br><span class="line"><span class="comment"> * @return the PID of child process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">wait</span><span class="params">(<span class="type">int</span> *staloc)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Wait for the terminated child process</span></span><br><span class="line"><span class="comment"> * @param pid: specify the PID of child process</span></span><br><span class="line"><span class="comment"> * @param staloc: same as wait()</span></span><br><span class="line"><span class="comment"> * @param options: specify additional options. The most</span></span><br><span class="line"><span class="comment"> *        common option is WNOHANG to tell kernel not </span></span><br><span class="line"><span class="comment"> *        to block if there are no terminated children</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">waitpid</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">int</span> *staloc, <span class="type">int</span> options)</span>;</span><br></pre></td></tr></table></figure>
+<p>函数<code>wait()</code>和<code>waitpid()</code>均返回两个值: 子进程的PID和中止状态. 如果当前没有已中止的子进程, 那么<code>wait()</code>会一直阻塞直到有子进程终止. <code>waitpid()</code>可以指定某个进程的ID并指定附加选项, 最常用的option就是<code>WNOHANG</code>, 表示在没有终止子进程时不要阻塞.</p>
+<h3 id="10-1-Difference-between-wait-and-waitpid"><a href="#10-1-Difference-between-wait-and-waitpid" class="headerlink" title="10.1 Difference between wait and waitpid"></a>10.1 Difference between wait and waitpid</h3><p>为展示<code>wait()</code>与<code>waitpid()</code>的不同, 需要对client端代码进行修改, 让client端与server建立5个连接:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i, sockfd[<span class="number">5</span>];</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (argc != <span class="number">2</span>)</span><br><span class="line">    err_quit(<span class="string">&quot;usage: tcpcli &lt;IPaddress&gt;&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">    sockfd[i] = Socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">    servaddr.sin_family = AF_INET;</span><br><span class="line">    servaddr.sin_port = htons(SERV_PORT);</span><br><span class="line">    Inet_pton(AF_INET, argv[<span class="number">1</span>], &amp;servaddr.sin_addr);</span><br><span class="line"></span><br><span class="line">    Connect(sockfd[i], (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  str_cli(<span class="built_in">stdin</span>, sockfd[<span class="number">0</span>]);  <span class="comment">/* only the first connection send the data */</span></span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>); <span class="comment">/* Close five connections at the same time */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当client调用<code>exit(0)</code>时, 会向各自server发送FIN, server父进程同时收到5个<code>SIGCHLD</code> signal, 如下图:<br><img src="/images/Network/UNP/5-10-cli-close-all-conn.gif" alt="Client terminates, closing all five connections, terminating all five children"></p>
+<p>以下是运行结果:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpserv03 &amp;</span><br><span class="line">[1] 20419</span><br><span class="line">$ tcpcli04 127.0.0.1</span><br><span class="line">hello</span><br><span class="line">hello</span><br><span class="line">^D</span><br><span class="line">child 20426 terminated</span><br></pre></td></tr></table></figure>
+<p>只有第一个子进程的<code>SIGCHLD</code> signal被捕获, 其他4个子进程变成zombies:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">PID    TTY    TIME      COM</span><br><span class="line">20419  pts/6  00:00:00  tcpserv03</span><br><span class="line">20421  pts/6  00:00:00  tcpserv03 &lt;defanct&gt;</span><br><span class="line">20422  pts/6  00:00:00  tcpserv03 &lt;defanct&gt;</span><br><span class="line">20423  pts/6  00:00:00  tcpserv03 &lt;defanct&gt;</span><br></pre></td></tr></table></figure>
+<p>可以得知, <code>wait()</code>并不足以防止zombie出现. 因为相同类型的signal不会进入队列等待: 当第二个<code>SIGCHLD</code>到达时, 发现第一个<code>SIGCHLD</code>占用signal handler, 因而被阻塞; 但当第三个<code>SIGCHLD</code>到达时, 发现第一个<code>SIGCHLD</code>依然占用signal handler, 将会丢弃该signal. 由于不同signal handler的处理时长不同, 生成多个同类型signal时, 可能出现不同数量的zombie. 解决方法是在signal handler中使用<code>while</code>循环, 不断查询是否出现中止的child process:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">sig_chld</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">pid_t</span> pid;</span><br><span class="line">  <span class="type">int</span>   stat;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">while</span> ((pid = waitpid(<span class="number">-1</span>, &amp;stat, WNOHANG)) &gt; <span class="number">0</span>)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;child %d terminated\n&quot;</span>, pid);</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>waitpid()</code>可通过<code>WNOHANG</code>保证没有子进程中止时立即返回, <code>wait()</code>则无法设置为非阻塞模式.</p>
+<h3 id="10-2-Correct-version-of-TCP-server"><a href="#10-2-Correct-version-of-TCP-server" class="headerlink" title="10.2 Correct version of TCP server"></a>10.2 Correct version of TCP server</h3><p>以下是能够正确处理<code>accept()</code>发出的<code>EINTR</code>和防止zombie出现的server端:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>                listenfd, connfd;</span><br><span class="line">  <span class="type">pid_t</span>              childpid;</span><br><span class="line">  <span class="type">socklen_t</span>          clilen;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line">  <span class="type">void</span>               <span class="title function_">sig_chld</span><span class="params">(<span class="type">int</span>)</span>;</span><br><span class="line"></span><br><span class="line">  listenfd = Socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family      = AF_INET;</span><br><span class="line">  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">  servaddr.sin_port        = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">  Bind(listenfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  Listen(listenfd, LISTENQ);</span><br><span class="line">  Signal(SIGCHLD, sig_chld);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    clilen = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">    <span class="keyword">if</span> ( (connfd = accept(listenfd, (SA *) &amp;cliaddr, &amp;clilen)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        err_sys(<span class="string">&quot;accept error&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ( (childpid = Fork()) == <span class="number">0</span>) &#123; <span class="comment">/* child process */</span></span><br><span class="line">      Close(listenfd); <span class="comment">/* close listen socket */</span></span><br><span class="line">      str_echo(connfd);</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    Close(connfd);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="11-Connection-Abort-before-accept-Returns"><a href="#11-Connection-Abort-before-accept-Returns" class="headerlink" title="11. Connection Abort before accept Returns"></a>11. Connection Abort before accept Returns</h2><p>还有另外一种打断slow system call的情况: 在client和server完成TCP 3-way handshake后, client发送RST, 而此时连接仍在队列中等待server调用<code>accept()</code>接收.<br><img src="/images/Network/UNP/5-11-recv-rst-before-accept.gif" alt="Receiving an RST for an ESTABLISHED connection before accept is called"></p>
+<p>不同的系统对此有不同的处理:</p>
+<ol>
+<li>Berkeley-derived会自动将该completed connection从队列中移除</li>
+<li>POSIX会将errno设为<code>ECONNABORTED</code></li>
+<li>SVR4 implementation会将errno设为<code>EPROTO</code></li>
+</ol>
+<h2 id="12-Termination-of-Server-Process"><a href="#12-Termination-of-Server-Process" class="headerlink" title="12. Termination of Server Process"></a>12. Termination of Server Process</h2><p>为模拟server崩溃的情况, 需要先让client和server建立连接, 然后kill掉server的子进程, 以下是操作步骤:</p>
+<ol>
+<li>依次启动server和client, 让client发送一行文本来测试连接是否成功</li>
+<li>找到server子进程的PID并调用<strong>kill</strong>杀死. server子进程被终止后, 其所有open descriptor也会被关闭, 其connected socket会向client发送FIN, client回应ACK</li>
+<li>server父进程接收到<code>SIGCHLD</code> signal并读取termination status</li>
+<li>client的<code>fgets()</code>被阻塞, 会一直等待用户在command-line输入文本</li>
+<li><code>netstat</code>的执行结果如下:  <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ netstat -a | grep 9877</span><br><span class="line">Proto Recv-Q Send-Q  Local Address      Foreign Address  State</span><br><span class="line">tcp   0      0       *:9877             *:*              LISTEN</span><br><span class="line">tcp   0      0       localhost:9877     localhost:43604  FIN_WAIT2</span><br><span class="line">tcp   1      0       localhost:*:43604  localhost:9877   CLOSE_WAIT</span><br></pre></td></tr></table></figure>
+  可以看出, TCP 4-way handshake termination已经进行了一半.</li>
+<li>继续在client端输入文本, 结果如下:  <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpcli01 127.0.0.1</span><br><span class="line">hello</span><br><span class="line">hello</span><br><span class="line"></span><br><span class="line">// here we <span class="built_in">kill</span> the server child process</span><br><span class="line"></span><br><span class="line">another line</span><br><span class="line">str_cli: server terminated prematurely</span><br></pre></td></tr></table></figure>
+  当输入<code>another line</code>时, <code>str_cli()</code>仍会调用调用<code>writen()</code>, 因为虽然client接收到FIN, 但并不意味着server已经停止.</li>
+<li>由于server子进程已经关闭, 所以没有相对应的进程回应, kernel自动回复RST.</li>
+<li>client收到FIN, <code>readline()</code>返回0. 因此server传来的RST并没有收到, client中止运行并关闭所有file descriptor.</li>
+</ol>
+<p>若收到RST后调用<code>readline()</code>, 则返回<code>ECONNRESET</code>. 本例的问题在于: 当client收到FIN时, client正在被<code>fgets()</code>阻塞. client端有两个file descriptor: 与server相连的socket和user input. 当前<code>str_cli()</code>中只能在同一时间阻塞其中一个file descriptor, 可使用<code>select</code>或<code>poll</code>实现任意file descriptor的阻塞.</p>
+<h2 id="13-SIGPIPE-Signal"><a href="#13-SIGPIPE-Signal" class="headerlink" title="13. SIGPIPE Signal"></a>13. SIGPIPE Signal</h2><p>若client忽略<code>readline()</code>的错误并继续向server传递数据, 则client进程会收到<code>SIGPIPE</code> signal, 该signal默认中止进程, 但进程可捕获该signal, 为其设置signal handler或忽略. 若进程继续调用<code>write()</code>传送数据, 则<code>write()</code>返回<code>EPIPE</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> sendline[MAXLINE], recvline[MAXLINE];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    Writen(sockfd, sendline, <span class="number">1</span>);</span><br><span class="line">    sleep(<span class="number">1</span>);</span><br><span class="line">    Writen(sockfd, sendline+<span class="number">1</span>, <span class="built_in">strlen</span>(sendline)<span class="number">-1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (Readline(sockfd, recvline, MAXLINE) == <span class="number">0</span>)</span><br><span class="line">      err_quit(<span class="string">&quot;str_cli: server terminated prematurely&quot;</span>);</span><br><span class="line"></span><br><span class="line">    Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意: 由于第一次<code>writen()</code>只会收到RST; 只有第二次调用<code>writen()</code>才能收到<code>SIGPIPE</code> signal. 所以上述代码将<code>writen()</code>拆成两次运行, 以下是运行结果:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpcli11 127.0.0.1</span><br><span class="line">hi, there</span><br><span class="line">hi, there</span><br><span class="line"></span><br><span class="line">// here we <span class="built_in">kill</span> server child process</span><br><span class="line"></span><br><span class="line"><span class="built_in">bye</span></span><br><span class="line">Broken pipe</span><br></pre></td></tr></table></figure>
+<p>可以看出, 第二次调用<code>writen()</code>会直接触发<code>SIGPIPE</code> signal, 进程被终止运行. 可以根据应用所处的情况, 为<code>SIGPIPE</code> signal设置signal handler. 若程序中有多个socket使用<code>writen()</code>, signal handler无法告知是哪个<code>writen()</code>引起的<code>SIGPIPE</code> signal, 只能通过<code>writen()</code>的返回值是否为<code>EPIPE</code>判断.</p>
+<h2 id="14-Crash-of-Server-Host"><a href="#14-Crash-of-Server-Host" class="headerlink" title="14. Crash of Server Host"></a>14. Crash of Server Host</h2><p>为测试server host崩溃的情况, 必须将client与server分别运行在不同的host上. 先启动server, 再启动client, 在client中输入一行文字确保connection已经建立. 之后断开server的网络连接, 再在client端输入一段文字, 步骤如下:</p>
+<ol>
+<li>这里假设不是shut down, 而是crash, 所以server端不会有任何信息发送给client.</li>
+<li>当在client端输入文本后, 会调用<code>writen()</code>发送给server, 紧接着被<code>readline()</code>阻塞.</li>
+<li>由于TCP要求发送的每一个报文都必须有ACK确认, 所以client会不断重发数据, 而不同系统的重传机制不同. 当client最终放弃重传后, client进程会收到一个错误. 由于client阻塞于<code>readline()</code>, 所以<code>readline()</code>会返回<code>ETIMEDOUT</code>. 如果某个中间路由器发现server不可达, 则会回复client一个名为&quot;destination unreachable&quot;的ICMP报文, client返回<code>EHOSTUNREACH</code>或<code>ENETUNREACH</code></li>
+</ol>
+<p>倘若不想依赖于系统的重传机制, 可在<code>readline()</code>中设置倒计时来判断对端是否unreachable. 本例中只能通过向server发送数据才可得知server host crash, 也可通过设置<code>SO_KEEPALIVE</code>来获知对端是否crash.</p>
+<h2 id="15-Crash-and-Reboot-of-Server-Host"><a href="#15-Crash-and-Reboot-of-Server-Host" class="headerlink" title="15. Crash and Reboot of Server Host"></a>15. Crash and Reboot of Server Host</h2><p>为模拟server崩溃后重启的情况, 需要先建立server与client的连接, server断开网络并重启程序, 最后接入网络, 步骤如下:</p>
+<ol>
+<li>启动server和client, client端输入数据来确保连接成功</li>
+<li>server crashes and reboots</li>
+<li>client端输入数据, 并传给server</li>
+<li>由于server重启后丢失所有连接信息, 所以并不识别client的数据, 回复RST</li>
+<li>client收到RST后, <code>readline()</code>返回<code>ECONNRESET</code></li>
+</ol>
+<h2 id="16-Shutdown-of-Server-Host"><a href="#16-Shutdown-of-Server-Host" class="headerlink" title="16. Shutdown of Server Host"></a>16. Shutdown of Server Host</h2><p>当server host关机时, init进程会向所有正在运行的进程发送<code>SIGTERM</code>, 等待一定时间(一般为5-20秒)后再发出<code>SIGKILL</code>, 这给予进程一个安全结束的时间. 若server不设置signal handler捕获<code>SIGTERM</code>, 则server最后会被<code>SIGKILL</code>强制终止, 所有open file descriptor都会被关闭, 这就与<strong>Termination of Server Process</strong>情况相同.</p>
+<h2 id="17-Summary-of-TCP-Example"><a href="#17-Summary-of-TCP-Example" class="headerlink" title="17. Summary of TCP Example"></a>17. Summary of TCP Example</h2><p>无论是client还是server, 连接前需配置以下属性: </p>
+<ul>
+<li>local IP address</li>
+<li>local port</li>
+<li>foreign IP address</li>
+<li>foreign port</li>
+</ul>
+<ol>
+<li><p>从client的角度:<br>Foreign IP和foreign port作为<code>connect()</code>的参数; 而local IP address和local port可由<code>connect()</code>自动选择, 也可调用<code>bind()</code>指定local IP address和local port:<br><img src="/images/Network/UNP/5-17-tcp-from-cli.gif" alt="Summary of TCP client/server from client&#39;s perspective"></p>
+</li>
+<li><p>从server的角度:<br>server通过调用<code>bind()</code>设置local IP address和local port. 若<code>bind()</code>中使用0作为local port或使用通配符作为local IP address, 则需要调用<code>getsockname()</code>获取local IP address或local port. foreign IP address和foreign port需要调用<code>accept()</code>获取, 也可通过<code>getpeername()</code>获取.<br><img src="/images/Network/UNP/5-17-tcp-from-svr.gif" alt="Summary of TCP client/server from server&#39;s perspective"></p>
+</li>
+</ol>
+<h2 id="18-Data-Format"><a href="#18-Data-Format" class="headerlink" title="18. Data Format"></a>18. Data Format</h2><p>上述例子中server不会检查数据格式, 只会读入一行数据. 在实际项目中必须关注数据交换的格式</p>
+<h3 id="18-1-Pass-Text-Strings-between-Client-and-Server"><a href="#18-1-Pass-Text-Strings-between-Client-and-Server" class="headerlink" title="18.1 Pass Text Strings between Client and Server"></a>18.1 Pass Text Strings between Client and Server</h3><p>本例server既然从client获取一行数据, 但数据必须包含两个整数, 并以空格分割:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;unp.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">str_echo</span><span class="params">(<span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">long</span>    arg1, arg2;</span><br><span class="line">  <span class="type">ssize_t</span> n;</span><br><span class="line">  <span class="type">char</span>    line[MAXLINE];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    <span class="keyword">if</span> ( (n = Readline(sockfd, line, MAXLINE)) == <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span>; <span class="comment">/* 对端关闭连接 */</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">sscanf</span>(line, <span class="string">&quot;%ld%ld&quot;</span>, &amp;arg1, &amp;arg2) == <span class="number">2</span>) <span class="comment">/* 从字符串中提取整数 */</span></span><br><span class="line">      <span class="built_in">snprintf</span>(line, <span class="keyword">sizeof</span>(line), <span class="string">&quot;%ld\n&quot;</span>, arg1 + arg2);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      <span class="built_in">snprintf</span>(line, <span class="keyword">sizeof</span>(line), <span class="string">&quot;input error\n&quot;</span>); <span class="comment">/* 将结果转化为字符串 */</span></span><br><span class="line"></span><br><span class="line">    n = <span class="built_in">strlen</span>(line);</span><br><span class="line">    Writen(sockfd, line, n);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="18-2-Pass-Binary-Structures-between-Client-and-Server"><a href="#18-2-Pass-Binary-Structures-between-Client-and-Server" class="headerlink" title="18.2  Pass Binary Structures between Client and Server"></a>18.2  Pass Binary Structures between Client and Server</h3><p>现在将client和server修改为传递二进制值, 下面是client端的<code>str_cli()</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">args</span> &#123;</span></span><br><span class="line">  <span class="type">long</span> arg1;</span><br><span class="line">  <span class="type">long</span> arg2;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">result</span> &#123;</span></span><br><span class="line">  <span class="type">long</span> sum;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span>          sendline[MAXLINE];</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">args</span>   <span class="title">args</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">result</span> <span class="title">result</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">sscanf</span>(sendline, <span class="string">&quot;%ld%ld&quot;</span>, &amp;args.arg1, &amp;args.arg2) != <span class="number">2</span>) &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;invalid input: %s&quot;</span>, sendline);</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Writen(sockfd, &amp;args, <span class="keyword">sizeof</span>(args));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (Readn(sockfd, &amp;result, <span class="keyword">sizeof</span>(result)) == <span class="number">0</span>)</span><br><span class="line">      err_quit(<span class="string">&quot;str_cli: server terminated prematurely&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%ld\n&quot;</span>, result.sum);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">str_echo</span><span class="params">(<span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">ssize_t</span>       n;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">args</span>   <span class="title">args</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">result</span> <span class="title">result</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    <span class="keyword">if</span> ((n = Readn(sockfd, &amp;args, <span class="keyword">sizeof</span>(args))) == <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span>; <span class="comment">/* connection closed by other end */</span></span><br><span class="line"></span><br><span class="line">    result.sum = args.arg1 + args.arg2;</span><br><span class="line">    Writen(sockfd, &amp;result, <span class="keyword">sizeof</span>(result));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>测试1: 在两个SPARC主机上运行client和server<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpcli09 12.106.32.254</span><br><span class="line">11 22</span><br><span class="line">33          // correct</span><br><span class="line">-11 -44  </span><br><span class="line">-55         // correct</span><br></pre></td></tr></table></figure></li>
+<li>测试2: 在两个不同的主机上运行client和server(例如: client在big-endian order的SPARC上运行, server在little-endian order的linux上运行)<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ tcpcli09 206.168.112.96</span><br><span class="line">1 2         </span><br><span class="line">3           // correct</span><br><span class="line">-22 -77</span><br><span class="line">-16777314   // wrong</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>上述例子存在三个问题:</p>
+<ol>
+<li>不同系统以不同的格式存储二进制数, 例如: little-endian和big-endian</li>
+<li>不同系统对于相同的数据类型有不同的解释, 例如32位UNIX的<strong>long</strong>使用32bits, 64位UNIX的<strong>long</strong>使用64bits</li>
+<li>不同系统pack structure的方式不同</li>
+</ol>
+<p>两种通用的解决方法:</p>
+<ol>
+<li>将numeric data转换为text string传递</li>
+<li>显式定义所支持的数据类型的binary formats, 例如: number of bits, big or little-endian</li>
+</ol>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/e03d.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">I/O Multiplexing</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/d1c8.html">
+        <span class="next-text nav-default">Elementary TCP Sockets</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/66fb.html';
+  var disqus_title = "TCP Client/Server";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

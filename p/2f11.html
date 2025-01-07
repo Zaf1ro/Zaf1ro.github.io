@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="DP - Multidimensional Knapsack Problem"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/2f11.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/2f11.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/2f11.html"/>
+
+
+<meta name="description" content="1. Introduction多维背包问题: 有$n$件物品和一个体积容量为$W$, 重量上限为$D$的背包, 第$i$件物品的体积为$w[i]$, 重量为$d[i]$, 价值为$v[i]$, 在不超过背包的承重和容量下, 求放入背包的物品的最大价值之和. 该题目有以下几点需要考虑:  每件物品只可以放入背包一次, 也可以跳过 由于背包有承重和体积限制, 因此可能无法将所有物品放入背包 将物品放入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DP - Multidimensional Knapsack Problem">
+<meta property="og:url" content="https://zaf1ro.github.io/p/2f11.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction多维背包问题: 有$n$件物品和一个体积容量为$W$, 重量上限为$D$的背包, 第$i$件物品的体积为$w[i]$, 重量为$d[i]$, 价值为$v[i]$, 在不超过背包的承重和容量下, 求放入背包的物品的最大价值之和. 该题目有以下几点需要考虑:  每件物品只可以放入背包一次, 也可以跳过 由于背包有承重和体积限制, 因此可能无法将所有物品放入背包 将物品放入">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-04-29T20:23:47.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.025Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+DP - Multidimensional Knapsack Problem - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Dynamic-Programming"><span class="toc-text">2. Dynamic Programming</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Optimization"><span class="toc-text">3. Optimization</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Leetcode"><span class="toc-text">4. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#474-Ones-and-Zeroes"><span class="toc-text">474. Ones and Zeroes</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          DP - Multidimensional Knapsack Problem
+        
+      </h1>
+      <time class="post-time">
+          04/29/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>多维背包问题: 有$n$件物品和一个体积容量为$W$, 重量上限为$D$的背包, 第$i$件物品的体积为$w[i]$, 重量为$d[i]$, 价值为$v[i]$, 在不超过背包的承重和容量下, 求放入背包的物品的最大价值之和. 该题目有以下几点需要考虑:</p>
+<ul>
+<li>每件物品只可以放入背包一次, 也可以跳过</li>
+<li>由于背包有承重和体积限制, 因此可能无法将所有物品放入背包</li>
+<li>将物品放入背包后, 背包的价值增加, 但剩余载重和容量下降, 选择哪些物品可最大化背包价值</li>
+</ul>
+<h2 id="2-Dynamic-Programming"><a href="#2-Dynamic-Programming" class="headerlink" title="2. Dynamic Programming"></a>2. Dynamic Programming</h2><p>动态规划算法解决该问题时, 可拆分为以下步骤:</p>
+<ol>
+<li>划分阶段: 按照物品的序号, 当前背包的剩余载重, 和剩余容量上限进行阶段划分</li>
+<li>定义状态: 定义一个三维数组$dp[i][d_i][w_i]$, 表示前$i$件物品放入一个载重为$d_i$, 容量为$w_i$的背包中可获得的最大价值</li>
+<li>状态转移方程:<br>  $$<br>  dp[i][d_i][w_i] &#x3D; max(dp[i-1][d_i][w_i], dp[i-1][d_i-d[i-1]][w_i-w[i-1]] + v[i-1]), 0 \le d_i \le D, 0 \le w_i \le W<br>  $$</li>
+<li>初始条件:</li>
+</ol>
+<ul>
+<li>若$d_i &#x3D; 0$或$w_i &#x3D; 0$, 则背包无法容纳任何物品, 价值为0, 即$dp[i][d_i][0] &#x3D; 0, 0 \le i \le n, 0 \le d_i \le D$, $dp[i][0][w_i] &#x3D; 0, 0 \le i \le n, 0 \le w_i \le W$</li>
+<li>若$i &#x3D; 0$, 则没有物品可放入背包, 价值为0, 即$dp[0][d_i][w_i] &#x3D; 0, 0 le d_i \le D, 0 le w_i \le W$</li>
+</ul>
+<ol start="5">
+<li>最终结果: 根据状态定义, $dp[n][D][W]$表示前$n$件物品放入一个载重为$D$, 容量为$W$的背包中可获得的最大价值, 即为答案.</li>
+</ol>
+<p>时间复杂度为$O(n \times D \times W)$, 其中$n$为物品件数, $D$为背包载重上限, $W$为背包容量上限. 空间复杂度为$O(n \times D \times W)$</p>
+<h2 id="3-Optimization"><a href="#3-Optimization" class="headerlink" title="3. Optimization"></a>3. Optimization</h2><p>通过观察状态转移方程可知, dp[i][d_i][w_i]只与dp[i-1][d_i][w_i]和dp[i-1][d_i - d[i-1]][w_i - w[i-1]]有关, 因此可使用<strong>滚动数组</strong>将空间复杂度优化到$O(D \times W)$.</p>
+<h2 id="4-Leetcode"><a href="#4-Leetcode" class="headerlink" title="4. Leetcode"></a>4. Leetcode</h2><h3 id="474-Ones-and-Zeroes"><a href="#474-Ones-and-Zeroes" class="headerlink" title="474. Ones and Zeroes"></a>474. Ones and Zeroes</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given an array of binary strings <code>strs</code> and two integers <code>m</code> and <code>n</code>.<br>Return <strong>the size of the largest subset of strs</strong> such that there are <strong>at most</strong> <code>m</code> <code>0</code>&#39;s and <code>n</code> <code>1</code>&#39;s in the subset.<br>A set <code>x</code> is a <strong>subset</strong> of a set <code>y</code> if all elements of <code>x</code> are also elements of <code>y</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: strs = [&quot;10&quot;,&quot;0001&quot;,&quot;111001&quot;,&quot;1&quot;,&quot;0&quot;], m = 5, n = 3</span><br><span class="line">Output: 4</span><br><span class="line">Explanation: The largest subset with at most 5 0&#x27;s and 3 1&#x27;s is &#123;&quot;10&quot;, &quot;0001&quot;, &quot;1&quot;, &quot;0&quot;&#125;, so the answer is 4.</span><br><span class="line">Other valid but smaller subsets include &#123;&quot;0001&quot;, &quot;1&quot;&#125; and &#123;&quot;10&quot;, &quot;1&quot;, &quot;0&quot;&#125;.</span><br><span class="line">&#123;&quot;111001&quot;&#125; is an invalid subset because it contains 4 1&#x27;s, greater than the maximum of 3.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findMaxForm</span><span class="params">(String[] strs, <span class="type">int</span> m, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">    <span class="type">int</span>[][] count = <span class="keyword">new</span> <span class="title class_">int</span>[strs.length][<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; strs.length; i++) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="type">char</span> c: strs[i].toCharArray()) &#123;</span><br><span class="line">        ++count[i][c == <span class="string">&#x27;0&#x27;</span> ? <span class="number">0</span> : <span class="number">1</span>];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span>[][] dp = <span class="keyword">new</span> <span class="title class_">int</span>[m+<span class="number">1</span>][n+<span class="number">1</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; strs.length; i++) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> m; j &gt;= count[i][<span class="number">0</span>]; j--) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> n; k &gt;= count[i][<span class="number">1</span>]; k--) &#123;</span><br><span class="line">          dp[j][k] = Math.max(dp[j][k], dp[j-count[i][<span class="number">0</span>]][k-count[i][<span class="number">1</span>]] + <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> dp[m][n];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/9de.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">React.js</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/4c52.html">
+        <span class="next-text nav-default">System Design - Google Drive</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/2f11.html';
+  var disqus_title = "DP - Multidimensional Knapsack Problem";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

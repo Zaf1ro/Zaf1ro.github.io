@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Kafka Configuration"/>
+
+
+
+
+  <meta name="keywords" content="Distributed System," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/eef.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/eef.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/eef.html"/>
+
+
+<meta name="description" content="1. Producer Configuration1.1 Mandatory Propertiesbootstrap.servers该属性为host:port格式的列表, 表示producer与Kafka集群初次建立连接时所需的broker列表. 该属性不必包含所有broker, 但推荐包含至少两个broker地址, 若其中一个broker宕机, 可连接另外一个broker. key.serial">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka Configuration">
+<meta property="og:url" content="https://zaf1ro.github.io/p/eef.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Producer Configuration1.1 Mandatory Propertiesbootstrap.servers该属性为host:port格式的列表, 表示producer与Kafka集群初次建立连接时所需的broker列表. 该属性不必包含所有broker, 但推荐包含至少两个broker地址, 若其中一个broker宕机, 可连接另外一个broker. key.serial">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-03-05T20:21:55.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.039Z">
+<meta property="article:tag" content="Distributed System">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Kafka Configuration - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Producer-Configuration"><span class="toc-text">1. Producer Configuration</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Mandatory-Properties"><span class="toc-text">1.1 Mandatory Properties</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#bootstrap-servers"><span class="toc-text">bootstrap.servers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#key-serializer"><span class="toc-text">key.serializer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#value-serializer"><span class="toc-text">value.serializer</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Optional-Properties"><span class="toc-text">1.2 Optional Properties</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#client-id"><span class="toc-text">client.id</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#acks"><span class="toc-text">acks</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#max-block-ms"><span class="toc-text">max.block.ms</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#request-timeout-ms"><span class="toc-text">request.timeout.ms</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#linger-ms"><span class="toc-text">linger.ms</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#delivery-timeout-ms"><span class="toc-text">delivery.timeout.ms</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#retries"><span class="toc-text">retries</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#retry-backoff-ms"><span class="toc-text">retry.backoff.ms</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#buffer-memory"><span class="toc-text">buffer.memory</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#compression-type"><span class="toc-text">compression.type</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#batch-size"><span class="toc-text">batch.size</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#max-in-flight-requests-per-connection"><span class="toc-text">max.in.flight.requests.per.connection</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#max-request-size"><span class="toc-text">max.request.size</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#receive-buffer-bytes-and-send-buffer-bytes"><span class="toc-text">receive.buffer.bytes and send.buffer.bytes</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#enable-idempotence"><span class="toc-text">enable.idempotence</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Kafka Configuration
+        
+      </h1>
+      <time class="post-time">
+          03/05/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Producer-Configuration"><a href="#1-Producer-Configuration" class="headerlink" title="1. Producer Configuration"></a>1. Producer Configuration</h2><h3 id="1-1-Mandatory-Properties"><a href="#1-1-Mandatory-Properties" class="headerlink" title="1.1 Mandatory Properties"></a>1.1 Mandatory Properties</h3><h4 id="bootstrap-servers"><a href="#bootstrap-servers" class="headerlink" title="bootstrap.servers"></a>bootstrap.servers</h4><p>该属性为<code>host:port</code>格式的列表, 表示producer与Kafka集群初次建立连接时所需的broker列表. 该属性不必包含所有broker, 但推荐包含至少两个broker地址, 若其中一个broker宕机, 可连接另外一个broker.</p>
+<h4 id="key-serializer"><a href="#key-serializer" class="headerlink" title="key.serializer"></a>key.serializer</h4><p>该属性为一个class名称, 用于序列化record的key. 任何Java object都可作为key, 因此serializer必须知道如何将object转换为byte array, 因此该属性对应的class应实现<code>org.apache.kafka.common.serialization.Serializer</code>接口. kafka client已经提供了一个serializer, <code>如ByteArraySerializer</code>, <code>String​Serial⁠izer</code>, <code>IntegerSerializer</code>, <code>VoidSerializer</code>. 即使record中的key为空, 也必须设置属性.</p>
+<h4 id="value-serializer"><a href="#value-serializer" class="headerlink" title="value.serializer"></a>value.serializer</h4><p>该属性为一个class名称, 用于序列化record的value. </p>
+<h3 id="1-2-Optional-Properties"><a href="#1-2-Optional-Properties" class="headerlink" title="1.2 Optional Properties"></a>1.2 Optional Properties</h3><h4 id="client-id"><a href="#client-id" class="headerlink" title="client.id"></a>client.id</h4><p>该属性可为任意字符串, 表示client的标识符. Broker用其区分不同的client, 通常用于日志记录和配额. 推荐将该属性配置为client所处的服务名称, 如<code>order service</code>. 默认为空字符串.</p>
+<h4 id="acks"><a href="#acks" class="headerlink" title="acks"></a>acks</h4><p>该属性表示在producer认为写入成功前, 需有多少个partition replica接收到该record. 默认情况下, 当leader接收到record时, client就认为该record已成功写入. 以下是该属性的三种选项:</p>
+<ul>
+<li><code>ack=0</code>: producer不等待任何broker回复, 默认信息成功发送, 因此producer不知道信息是否发送至broker, 虽然可能发生信息丢失, 但信息吞吐量最高.</li>
+<li><code>ack=1</code>: leader replica收到信息并回复producer时, producer认为信息已成功写入; 若leader宕机或还没选举出leader, producer会受到错误回复, 并重新发送信息. 若leader收到信息后宕机, 但信息还没复制到其他replica, 则信息丢失.</li>
+<li><code>acks=all</code>: 所有sync replica都受到信息时, producer认为信息已成功写入. 该选项可确保即使leader宕机, 信息依然不会丢失, 但延迟最高, 因为producer需等待所有replica收到信息.</li>
+</ul>
+<p>需要注意的是, 该选项只影响<code>producer latency</code>, 不影响<code>end-to-end latency</code>. Producer latency表示从<code>producer生成一个record</code>, 到<code>producer确认该消息写入Kafka集群</code>的时间; end-to-end latency表示从<code>producer生成一个record</code>, 到<code>consumer可读取该record</code>的时间. 由于一条record只有被所有replica写入后才能被consumer消费, 因此上述三个选项的end-to-end latency相同.</p>
+<h4 id="max-block-ms"><a href="#max-block-ms" class="headerlink" title="max.block.ms"></a>max.block.ms</h4><p>该属性针对两个KafkaProducer的两个函数:</p>
+<ul>
+<li><code>send()</code>: 获取metadata和申请buffer的最长时长</li>
+<li><code>partitionFor()</code>: 当metadata不可用, 等待新的metadata的最长时长</li>
+</ul>
+<p>若调用上述函数时, 对应的操作阻塞达到该属性指定的时长, 则返回timeout exception.</p>
+<h4 id="request-timeout-ms"><a href="#request-timeout-ms" class="headerlink" title="request.timeout.ms"></a>request.timeout.ms</h4><p>该属性规定了从<code>producer发送数据</code>到<code>接收到broker的响应</code>之间的最大时长, 不包括重试时间. 若超出该时长, 则返回timeout exception.</p>
+<h4 id="linger-ms"><a href="#linger-ms" class="headerlink" title="linger.ms"></a>linger.ms</h4><p>该属性规定了发送batch前等待下一条消息的最长时长. producer在生成一条消息后不会立即发送, 而是一次发送多个消息, 从而降低网络; 但producer无法确定下一条消息何时生成, 若等待时间超过该属性, 则直接发送当前batch.</p>
+<h4 id="delivery-timeout-ms"><a href="#delivery-timeout-ms" class="headerlink" title="delivery.timeout.ms"></a>delivery.timeout.ms</h4><p>该属性规定了从<code>send()成功返回</code>(将record放入batch中)到<code>broker响应或producer放弃重试</code>之间的最大时长, 其中包括重试所需的时间. 该属性需大于<code>linger.ms</code>和<code>request.timeout.ms</code>, 否则返回exception. 若重试时超出该属性值, 则抛出重试之前错误对应的exception; 若还没重试前就超出属性值, 则返回timeout exception.</p>
+<h4 id="retries"><a href="#retries" class="headerlink" title="retries"></a>retries</h4><p>该属性表示producer在放弃向broker发送前需重试多少次. 需要注意的是, 并不是错误都会让producer重试, 若消息大小超出阈值, 则producer不会重试. 若不想让producer重试, 则设置<code>retries=0</code>.</p>
+<h4 id="retry-backoff-ms"><a href="#retry-backoff-ms" class="headerlink" title="retry.backoff.ms"></a>retry.backoff.ms</h4><p>该属性表示每次重试的间隔时间, 避免在某些故障发生时重复发送请求.</p>
+<h4 id="buffer-memory"><a href="#buffer-memory" class="headerlink" title="buffer.memory"></a>buffer.memory</h4><p>该属性为producer用于临时存放消息的内存大小, 若消息发送速率比消息生成速度低, 则会导致buffer耗尽, 下次调用<code>send()</code>时会阻塞进程, 直到超过<code>max.block.ms</code>时间并抛出exception.</p>
+<h4 id="compression-type"><a href="#compression-type" class="headerlink" title="compression.type"></a>compression.type</h4><p>该属性为producer压缩消息的算法, 默认不压缩, 可选项为<code>snappy</code>, <code>gzip</code>, <code>lz4</code>和<code>zstd</code>.</p>
+<ul>
+<li>snappy: CPU负载低, 且压缩率优秀</li>
+<li>gzip: CPU负载高, 但压缩率最高</li>
+</ul>
+<h4 id="batch-size"><a href="#batch-size" class="headerlink" title="batch.size"></a>batch.size</h4><p>该属性为一个batch的最大内存大小. batch中消息的总内存量超过该属性时, producer会立即发送该batch; 但即使调高该属性值, producer也不会一直等待, 而是等待<code>linger.ms</code>时长后发送batch.</p>
+<h4 id="max-in-flight-requests-per-connection"><a href="#max-in-flight-requests-per-connection" class="headerlink" title="max.in.flight.requests.per.connection"></a>max.in.flight.requests.per.connection</h4><p>该属性为producer可以同时发送的batch数量, 该属性值越高, producer的吞吐量越大. 需要注意的是, 若该属性值大于1且<code>entries</code>不为0, 则可能无法保证一个partition内的消息顺序存储: 假设producer先发送消息A, 之后发送消息B, A由于网络故障而发送失败, B成功被broker写入partition, producer再次尝试发送A并成功被broker写入. 两条消息都被成功写入, 但写入顺序与发送顺序颠倒, 导致consumer也会按照错误顺序消费. 为保证顺序一致性, 可设置<code>enable.idempotence=true</code>, 这样可以保证在最多5个并发请求的情况下依然保证顺序一致, 且不会因重试产生重复写入.</p>
+<h4 id="max-request-size"><a href="#max-request-size" class="headerlink" title="max.request.size"></a>max.request.size</h4><p>该属性为单个请求的最大大小, 既表示单个消息的最大值, 也表示单个请求的最大值. 默认下该属性为1MB, 因此可以发送一个1MB大小的消息, 也可以发送包含1024个1KB大小消息的batch. 需要注意的是, broker端也会限制可收到消息的最大值(<code>message.max.bytes</code>), 超出大小会被broker拒绝.</p>
+<h4 id="receive-buffer-bytes-and-send-buffer-bytes"><a href="#receive-buffer-bytes-and-send-buffer-bytes" class="headerlink" title="receive.buffer.bytes and send.buffer.bytes"></a>receive.buffer.bytes and send.buffer.bytes</h4><p>该属性为TCP send&#x2F;receive buffer的大小, 若设置为-1, 则使用操作系统的默认值.</p>
+<h4 id="enable-idempotence"><a href="#enable-idempotence" class="headerlink" title="enable.idempotence"></a>enable.idempotence</h4><p>从0.11版本开始, kafka支持<strong>exacylt once</strong>语义, 将该属性设置为<code>true</code>可保证producer端生成消息的顺序和broker端的写入顺序相同, 且不会造成重复写入(若producer发送后, leader写入消息并宕机, producer未收到确认并再次发送消息, 新的leader会返回<code>DuplicateSequenceException</code>).</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Distributed-System/">Distributed System</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/9d13.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Backtracking</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/9478.html">
+        <span class="next-text nav-default">Maven</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/eef.html';
+  var disqus_title = "Kafka Configuration";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

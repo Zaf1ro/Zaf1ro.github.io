@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Elementary UDP Sockets"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/80a7.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/80a7.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/80a7.html"/>
+
+
+<meta name="description" content="1. IntroductionUDP作为一种无连接, 不可靠的datagram protocol, 与面向连接, 可靠的byte stream相比, 其network application实现上有很大不同. 在UDP client&#x2F;server架构中, 由于client不需要建立连接, 可直接调用sendto()发送数据; server也不需要accept connection, 只需">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Elementary UDP Sockets">
+<meta property="og:url" content="https://zaf1ro.github.io/p/80a7.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionUDP作为一种无连接, 不可靠的datagram protocol, 与面向连接, 可靠的byte stream相比, 其network application实现上有很大不同. 在UDP client&#x2F;server架构中, 由于client不需要建立连接, 可直接调用sendto()发送数据; server也不需要accept connection, 只需">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/8-1-udp-sock-func.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/8-8-udp-from-cli.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/8-8-udp-from-svr.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/8-9-udp-sock.gif">
+<meta property="article:published_time" content="2019-12-16T13:40:26.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.044Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/8-1-udp-sock-func.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Elementary UDP Sockets - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-recvfrom-and-sendto-Functions"><span class="toc-text">2. recvfrom and sendto Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-UDP-Echo-Server"><span class="toc-text">3. UDP Echo Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-UDP-Echo-Client"><span class="toc-text">4. UDP Echo Client</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Lost-Datagrams"><span class="toc-text">5. Lost Datagrams</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Verify-Received-Response"><span class="toc-text">6. Verify Received Response</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Server-Not-Running"><span class="toc-text">7. Server Not Running</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Summary-of-UDP-Example"><span class="toc-text">8. Summary of UDP Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-connect-Function-with-UDP"><span class="toc-text">9. connect Function with UDP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-dg-cli-Function-Revisited"><span class="toc-text">10. dg_cli Function (Revisited)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Lack-of-Flow-Control-with-UDP"><span class="toc-text">11. Lack of Flow Control with UDP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-Determine-Outgoing-Interface-with-UDP"><span class="toc-text">12. Determine Outgoing Interface with UDP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-TCP-and-UDP-Echo-Server-Using-select"><span class="toc-text">13. TCP and UDP Echo Server Using select</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Elementary UDP Sockets
+        
+      </h1>
+      <time class="post-time">
+          12/16/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>UDP作为一种无连接, 不可靠的datagram protocol, 与面向连接, 可靠的byte stream相比, 其network application实现上有很大不同. 在UDP client&#x2F;server架构中, 由于client不需要建立连接, 可直接调用<code>sendto()</code>发送数据; server也不需要accept connection, 只需要调用<code>recvfrom()</code>接收数据即可, 如下图:<br><img src="/images/Network/UNP/8-1-udp-sock-func.gif" alt="Socket functions for UDP client/server"></p>
+<h2 id="2-recvfrom-and-sendto-Functions"><a href="#2-recvfrom-and-sendto-Functions" class="headerlink" title="2. recvfrom and sendto Functions"></a>2. recvfrom and sendto Functions</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief receive message from the socket sockfd</span></span><br><span class="line"><span class="comment"> * @param src_addr: if src_addr is not NULL, the underlying protocol </span></span><br><span class="line"><span class="comment"> *        provides the source address; If src_addr is NULL, nothing </span></span><br><span class="line"><span class="comment"> *        is filled in</span></span><br><span class="line"><span class="comment"> * @return the number of bytes received on success; -1 on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">recvfrom</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">void</span> *buf, <span class="type">size_t</span> len, <span class="type">int</span> flags,</span></span><br><span class="line"><span class="params">                 <span class="keyword">struct</span> sockaddr *src_addr, <span class="type">socklen_t</span> *addrlen)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief transit a message to another socket</span></span><br><span class="line"><span class="comment"> * @param dest_addr: if sendto() is used on a connection-oriented </span></span><br><span class="line"><span class="comment"> *        socket, the dest_addr and addrlen is ignored. Otherwise, </span></span><br><span class="line"><span class="comment"> *        the address of the target is given by dest_addr</span></span><br><span class="line"><span class="comment"> * @return the number of characters sent on success; -1 on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">sendto</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="type">void</span> *buf, <span class="type">size_t</span> len, <span class="type">int</span> flags,</span></span><br><span class="line"><span class="params">               <span class="type">const</span> <span class="keyword">struct</span> sockaddr *dest_addr, <span class="type">socklen_t</span> addrlen)</span>;</span><br></pre></td></tr></table></figure>
+<p>对于UDP server, 由于无需调用<code>accept()</code>, 所以只能通过<code>recvfrom()</code>中的<code>src_addr</code>参数得知client端IP address; 对于UDP client, 由于无需调用<code>connect()</code>, 所以需要在<code>sendto()</code>中通过<code>dest_addr</code>指明server端IP address.<br>UDP允许发送的datagram长度为0, 也可以接收datagram长度为0的packet. <code>recvfrom()</code>返回0并不意味着断开connection, 因为UDP不存在connection的概念.</p>
+<h2 id="3-UDP-Echo-Server"><a href="#3-UDP-Echo-Server" class="headerlink" title="3. UDP Echo Server"></a>3. UDP Echo Server</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>                sockfd;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">servaddr</span>, <span class="title">cliaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  sockfd = Socket(AF_INET, SOCK_DGRAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family      = AF_INET;</span><br><span class="line">  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">  servaddr.sin_port        = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">  Bind(sockfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* perform server processing */</span></span><br><span class="line">  dg_echo(sockfd, (SA *) &amp;cliaddr, <span class="keyword">sizeof</span>(cliaddr));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">dg_echo</span><span class="params">(<span class="type">int</span> sockfd, SA *pcliaddr, <span class="type">socklen_t</span> clilen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>       n;</span><br><span class="line">  <span class="type">socklen_t</span> len;</span><br><span class="line">  <span class="type">char</span>      mesg[MAXLINE];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    len = clilen;</span><br><span class="line">    n = Recvfrom(sockfd, mesg, MAXLINE, <span class="number">0</span>, pcliaddr, &amp;len);</span><br><span class="line"></span><br><span class="line">    Sendto(sockfd, mesg, n, <span class="number">0</span>, pcliaddr, len);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述UDP server十分简洁, 但这其中也存在问题:</p>
+<ol>
+<li>由于UDP是connectionless protocol, 所以不存在EOF, 导致UDP server无法终止</li>
+<li>该UDP server为iterative server, 不是concurrent server. 通常来说, TCO server为concurrent, UDP server为iterative</li>
+<li>UDP socket读取数据时, 需要从receive buffer中读入到进程中, 遵循FIFO的顺序. 每个socket receive buffer都有上限值, 传入流量过大会导致数据丢失</li>
+</ol>
+<h2 id="4-UDP-Echo-Client"><a href="#4-UDP-Echo-Client" class="headerlink" title="4. UDP Echo Client"></a>4. UDP Echo Client</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>                sockfd;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (argc != <span class="number">2</span>)</span><br><span class="line">    err_quit(<span class="string">&quot;usage: udpcli &lt;IPaddress&gt;&quot;</span>);</span><br><span class="line"></span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family = AF_INET;</span><br><span class="line">  servaddr.sin_port = htons(SERV_PORT);</span><br><span class="line">  Inet_pton(AF_INET, argv[<span class="number">1</span>], &amp;servaddr.sin_addr);</span><br><span class="line"></span><br><span class="line">  sockfd = Socket(AF_INET, SOCK_DGRAM, <span class="number">0</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* perform client processing */</span></span><br><span class="line">  dg_cli(<span class="built_in">stdin</span>, sockfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">dg_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd, <span class="type">const</span> SA *pservaddr, <span class="type">socklen_t</span> servlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>  n;</span><br><span class="line">  <span class="type">char</span> sendline[MAXLINE], recvline[MAXLINE + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Read a line from standard input */</span></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* send the line to the server */</span></span><br><span class="line">    Sendto(sockfd, sendline, <span class="built_in">strlen</span>(sendline), <span class="number">0</span>, pservaddr, servlen);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* read vacj the server&#x27;s echo */</span></span><br><span class="line">    n = Recvfrom(sockfd, recvline, MAXLINE, <span class="number">0</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    recvline[n] = <span class="number">0</span>;  <span class="comment">/* null terminate */</span></span><br><span class="line">    Fputs(recvline, <span class="built_in">stdout</span>); <span class="comment">/* print the echoed line to standard output */</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>UDP client调用<code>sendto()</code>时, kernel会自动分配一个临时port. 因此与TCP相同, UDP client不需要调用<code>bind()</code>. 若<code>recvfrom()</code>的<code>src_addr</code>和<code>addrlen</code>为NULL, 说明接收端并不需要知道对端的IP address. </p>
+<h2 id="5-Lost-Datagrams"><a href="#5-Lost-Datagrams" class="headerlink" title="5. Lost Datagrams"></a>5. Lost Datagrams</h2><p>上述UDP client&#x2F;server并不可靠. 当client的datagram在传输过程中丢失后, client将被阻塞在<code>recvfrom()</code>; 当server回复的datagram在传输过程中丢失后, client也会被阻塞在<code>recvfrom()</code>. 其中一种解决方案: 为<code>recvfrom()</code>设置倒计时.<br>仅仅在<code>recvfrom()</code>中添加倒计时器还不足以解决问题, 因为当倒计时结束后, client无法分辨数据丢失是因为datagram没有传给server, 还是server端回复丢失. </p>
+<h2 id="6-Verify-Received-Response"><a href="#6-Verify-Received-Response" class="headerlink" title="6. Verify Received Response"></a>6. Verify Received Response</h2><p>由于只要知道client的port number就可以向client发送数据, 因为client所接收的数据可能来自不同的server. 这时就需要从<code>recvfrom()</code>中获取对端IP address和port, 从而判断数据是否来自指定server. 以下是修改后的client端:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">dg_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd, <span class="type">const</span> SA *pservaddr, <span class="type">socklen_t</span> servlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>             n;</span><br><span class="line">  <span class="type">char</span>            sendline[MAXLINE], recvline[MAXLINE + <span class="number">1</span>];</span><br><span class="line">  <span class="type">socklen_t</span>       len;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr</span> *<span class="title">preply_addr</span>;</span></span><br><span class="line"></span><br><span class="line">  preply_addr = Malloc(servlen);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    Sendto(sockfd, sendline, <span class="built_in">strlen</span>(sendline), <span class="number">0</span>, pservaddr, servlen);</span><br><span class="line"></span><br><span class="line">    len = servlen;</span><br><span class="line">    n = Recvfrom(sockfd, recvline, MAXLINE, <span class="number">0</span>, preply_addr, &amp;len);</span><br><span class="line">    <span class="keyword">if</span> (len != servlen || <span class="built_in">memcmp</span>(pservaddr, preply_addr, len) != <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;reply from %s (ignored)\n&quot;</span>,</span><br><span class="line">          Sock_ntop(preply_addr, len));</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    recvline[n] = <span class="number">0</span>;  <span class="comment">/* null terminate */</span></span><br><span class="line">    Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但上述方法存在一个问题: 当server并没有绑定某个IP address时, kernel会为server选择一个IP address. 当server存在多个outgoing interfaces时, 也就拥有多个IP address of the interfaces. 当server使用nonprimary IP address时, 会导致发送的数据被client忽略.<br>其中一个解决方案为: client不对IP address进行甄别, 而通过domain name判断数据是否来自指定server, 这就需要DNS的帮助. 另一种方法为: server为每个IP address分配一个socket, 并各自调用<code>bind()</code>绑定一个IP address, 使用<code>select()</code>监听所有socket. </p>
+<h2 id="7-Server-Not-Running"><a href="#7-Server-Not-Running" class="headerlink" title="7. Server Not Running"></a>7. Server Not Running</h2><p>当server并未运行, 但client依然发送数据时, client会被一直阻塞在<code>recvfrom()</code>. 当client发送数据后, 会收到ICM port unreachable, 但该ICMP error不会被client process返回, 因此client会一直阻塞在<code>recvfrom()</code>.<br>上述ICMP error称为<strong>asynchronous error</strong>, 由<code>sendto()</code>产生. <code>sendto()</code>成功返回只说明socket send buffer有足够空间放置数据, 只有在UDP socket调用<code>connect()</code>建立连接后, asynchronous error才会返回到UDP socket.<br>假设UDP client向三个不同的server发送数据, client使用loop调用<code>recvfrom()</code>来获取server回复; 前两个server成功回复client, 第三个主机上server没有运行, 回复ICMP port unreachable error message. 这时client需要知道datagram的destination IP address和destination UDP port, 但<code>recvfrom()</code>只返回errno, 只有UDP socket调用<code>connect()</code>绑定IP asynchronous error并获取额外信息. 对于Linux, 即使是unconnected socket, 也可以收到ICMP <strong>destination unreachable</strong> error, 前提是未设置<strong>SO_BSDCOMPAT</strong> socket option. </p>
+<h2 id="8-Summary-of-UDP-Example"><a href="#8-Summary-of-UDP-Example" class="headerlink" title="8. Summary of UDP Example"></a>8. Summary of UDP Example</h2><p><img src="/images/Network/UNP/8-8-udp-from-cli.gif" alt="Summary of UDP client/server from client&#39;s perspective"><br>client必须在<code>sendto()</code>中指定server的IP address和port number, 但一般不指定自己的IP address和port number, 会在client第一次调用<code>sendto()</code>时由kernel自动分配. client的临时port number不会改变, 但IP address会改变: 当client所在的主机多有个IP address时, 会由于出接口不同而导致IP address不同; 当client绑定一个IP address, 但kernel发送的出接口使用其他IP address时, datagram中的source IP address还是会修改为绑定的IP address.</p>
+<p><img src="/images/Network/UNP/8-8-udp-from-svr.gif" alt="Summary of UDP client/server from  server&#39;s perspective"><br>server可能需要获得四种数据: source IP address, destination IP address, source port number, destination port number. 以下是TCP server和UDP server所需调用的函数:</p>
+<table>
+<thead>
+<tr>
+<th align="center">From client&#39;s IP datagram</th>
+<th align="center">TCP server</th>
+<th align="center">UDP server</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Source IP address</td>
+<td align="center">accept</td>
+<td align="center">recvfrom</td>
+</tr>
+<tr>
+<td align="center">Source port number</td>
+<td align="center">accept</td>
+<td align="center">recvfrom</td>
+</tr>
+<tr>
+<td align="center">Destination IP address</td>
+<td align="center">getsockname</td>
+<td align="center">recvmsg</td>
+</tr>
+<tr>
+<td align="center">Destination port number</td>
+<td align="center">getsockname</td>
+<td align="center">getsockname</td>
+</tr>
+</tbody></table>
+<p>TCP server可以轻松地获取socket任何信息, 但UDP server需要设置<code>IP_RECVDSTADDR</code> socket option(IPv4)或<strong>IPV6_PKTINFO</strong> socket option(IPv6), 并通过<code>recvmsg()</code>获取destination IP address. 由于UDP是无连接的, 所以每个接收到的datagram的destination IP address都可能不同. </p>
+<h2 id="9-connect-Function-with-UDP"><a href="#9-connect-Function-with-UDP" class="headerlink" title="9. connect Function with UDP"></a>9. connect Function with UDP</h2><p>当UDP socket调用<code>connect()</code>时, 并不会像TCP connection一样进行three-way handshake. kernel保留foreign IP address和foreign port number, 返回所有connection error(例如: unreachable destination), 并且. 相对于unconnected UDP socket, connected UDP socket有以下几点不同:</p>
+<ol>
+<li>connected UDP socket无法指定destination IP address和port, 一切发出的datagram都会使用<code>connect()</code>指定的IP address和port. 因此使用<code>write()</code>或<code>send()</code>发送数据, 而不是<code>sendto()</code></li>
+<li>connected UDP socket不再调用<code>recvfrom()</code>接收数据, 而使用<code>read()</code>, <code>recv()</code>或<code>recvmsg()</code>, 且kernel只会为connected UDP socket返回特定datagram(datagram中的source IP address和port与<code>connect()</code>中一致)</li>
+<li>connected UDP socket返回asynchronous error</li>
+</ol>
+<p>以下是TCP和UDP socket对于不同发送和接收函数的处理:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Type of socket</th>
+<th align="center">write or send</th>
+<th align="center">sendto that doesn&#39;t specify a destination</th>
+<th align="center">sendto that specifies a destination</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">TCP socket</td>
+<td align="center">OK</td>
+<td align="center">OK</td>
+<td align="center">EISCONN</td>
+</tr>
+<tr>
+<td align="center">connected UDP socket</td>
+<td align="center">OK</td>
+<td align="center">OK</td>
+<td align="center">EISCONN</td>
+</tr>
+<tr>
+<td align="center">unconnected TCP socket</td>
+<td align="center">EDESTADDRREQ</td>
+<td align="center">EDESTADDRREQ</td>
+<td align="center">OK</td>
+</tr>
+</tbody></table>
+<p>以下是connected UDP socket流程图:<br><img src="/images/Network/UNP/8-9-udp-sock.gif" alt="Connected UDP socket"></p>
+<p>当kernel发现接收到的datagram中source IP address或port与<code>connect()</code>中指定的IP address或port不符时, 会将该datagram传给其他UDP socket; 若没有UDP socket匹配该datagram, 则产生ICMP port unreachable error. 当UDP socket使用<code>connect()</code>后, 就只能与指定对端通信; 但connected UDP socket可再次调用<code>connect()</code>与另一个对端建立连接, 原因如下:</p>
+<ul>
+<li>需要指定其他IP address和port</li>
+<li>与指定对端断开连接</li>
+</ul>
+<p>与UDP socket不同, 每个TCP socket只能调用一次<code>connect()</code>. 对于unconnected UDP socket, 将<code>connect()</code>中socket address structure的family member设置为<strong>AF_UNSPEC</strong>, 可能返回<strong>EAFNOSUPPORT</strong> error; 但对于connected UDP socket, 设置<strong>AF_UNSPEC</strong>意味着该socket断开连接.<br>对于Berkeley-derived kernel, 当进程对unconnected UDP socket调用<code>sendto()</code>时, kernel会先connect socket(指定foreign IP address和foreign port number, 其中包括检查struct sockadd_in参数, 处理特殊IP address, 决定outgoing interface), 发送datagram, 最后unconnect socket(将foreign IP address和foreign port number置零). 若unconnected UDP socket调用<code>sendto()</code>发送两个datagram, 步骤如下:</p>
+<ol>
+<li>Connect the socket</li>
+<li>Output the first datagram</li>
+<li>Unconnect the socket</li>
+<li>Connect the socket</li>
+<li>Output the second datagram</li>
+<li>Unconnect the socket</li>
+</ol>
+<p>第一次调用<code>sendto()</code>会在routing table中查找并保存destination IP address对应的outgoing interface; 第二次调用<code>sendto()</code>则跳过查找步骤, 直接从cached routing table information中找到destination IP address对应的outgoing interface.<br>当socket调用<code>connect()</code>后再调用<code>write()</code>发送两个datagram时, 步骤如下:</p>
+<ol>
+<li>Connect the socket</li>
+<li>Output first datagram</li>
+<li>Output second datagram</li>
+</ol>
+<p>可以看到, kernel只copy了一次foreign IP address和foreign port number. 当socket需要向特定IP address发送多个数据时, 可调用<code>connect()</code>提高发送效率.</p>
+<h2 id="10-dg-cli-Function-Revisited"><a href="#10-dg-cli-Function-Revisited" class="headerlink" title="10. dg_cli Function (Revisited)"></a>10. dg_cli Function (Revisited)</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">dg_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd, <span class="type">const</span> SA *pservaddr, </span></span><br><span class="line"><span class="params">            <span class="type">socklen_t</span> servlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>  n;</span><br><span class="line">  <span class="type">char</span> sendline[MAXLINE], recvline[MAXLINE + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">  Connect(sockfd, (SA *) pservaddr, servlen);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    Write(sockfd, sendline, <span class="built_in">strlen</span>(sendline));</span><br><span class="line">    n = Read(sockfd, recvline, MAXLINE);</span><br><span class="line">    recvline[n] = <span class="number">0</span>;  <span class="comment">/* null terminate */</span></span><br><span class="line">    Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当修改后的client端向没有运行server程序的主机发送数据时, <code>recvline()</code>会捕获ICMP error. 但与TCP client不同, UDP client只有在发送第一个数据后才能接收到ICMP error, 而TCP client在调用<code>connect()</code>时就收到error. 大部分kernel都支持connected UDP socket返回ICMP error, 只要少数kernel不支持该特性.</p>
+<h2 id="11-Lack-of-Flow-Control-with-UDP"><a href="#11-Lack-of-Flow-Control-with-UDP" class="headerlink" title="11. Lack of Flow Control with UDP"></a>11. Lack of Flow Control with UDP</h2><p>假设UDP client向server发送2000个datagram, 每个datagram为1400 bytes, 以下是client端:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span>  NDG   2000  <span class="comment">/* datagrams to send */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span>  DGLEN 1400  <span class="comment">/* length of each datagram */</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">dg_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd, <span class="type">const</span> SA *pservaddr, </span></span><br><span class="line"><span class="params">            <span class="type">socklen_t</span> servlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>  i;</span><br><span class="line">  <span class="type">char</span> sendline[DGLEN];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; NDG; i++) &#123;</span><br><span class="line">    Sendto(sockfd, sendline, DGLEN, <span class="number">0</span>, pservaddr, servlen);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是server端:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">recvfrom_int</span><span class="params">(<span class="type">int</span>)</span>;</span><br><span class="line"><span class="type">static</span> <span class="type">int</span>  count;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">dg_echo</span><span class="params">(<span class="type">int</span> sockfd, SA *pcliaddr, <span class="type">socklen_t</span> clilen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">socklen_t</span> len;</span><br><span class="line">  <span class="type">char</span>      mesg[MAXLINE];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// terminate the server with interrupt key</span></span><br><span class="line">  Signal(SIGINT, recvfrom_int); </span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    len = clilen;</span><br><span class="line">    Recvfrom(sockfd, mesg, MAXLINE, <span class="number">0</span>, pcliaddr, &amp;len);</span><br><span class="line">    count++;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">recvfrom_int</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;\nreceived %d datagrams\n&quot;</span>, count);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行client&#x2F;server后发现, 只有30个datagram被server调用<code>recvfrom()</code>接收, 剩下的datagram都因为socket receive buffer空间不足而丢弃. 为提高接受率, 可选择扩大socket receive buffer容量:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">recvfrom_int</span><span class="params">(<span class="type">int</span>)</span>;</span><br><span class="line"><span class="type">static</span> <span class="type">int</span>  count;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">dg_echo</span><span class="params">(<span class="type">int</span> sockfd, SA *pcliaddr, <span class="type">socklen_t</span> clilen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>       n;</span><br><span class="line">  <span class="type">socklen_t</span> len;</span><br><span class="line">  <span class="type">char</span>      mesg[MAXLINE];</span><br><span class="line"></span><br><span class="line">  Signal(SIGINT, recvfrom_int);</span><br><span class="line"></span><br><span class="line">  n = <span class="number">220</span> * <span class="number">1024</span>;</span><br><span class="line">  Setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &amp;n, <span class="keyword">sizeof</span>(n));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    len = clilen;</span><br><span class="line">    Recvfrom(sockfd, mesg, MAXLINE, <span class="number">0</span>, pcliaddr, &amp;len);</span><br><span class="line">    count++;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">recvfrom_int</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;\nreceived %d datagrams\n&quot;</span>, count);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再次运行client&#x2F;server后, 成功接收的datagram数量上升至103, 虽然并没有全部接收, 但已经比之前情况好一些. 根据不同的kernel, socket receive buffer上限也不同. </p>
+<h2 id="12-Determine-Outgoing-Interface-with-UDP"><a href="#12-Determine-Outgoing-Interface-with-UDP" class="headerlink" title="12. Determine Outgoing Interface with UDP"></a>12. Determine Outgoing Interface with UDP</h2><p>connected UDP socket在传输期间会锁定一个outgoing interface, 因为UDP socket调用<code>connect()</code>后, kernel会为该socket分配一个local IP address, 该IP address根据destination IP address和routing table决定, 并使用outgoing interface上的primary IP address.<br>UDP socket调用<code>connect()</code>后可使用<code>getsockname()</code>获取local IP address和port number:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>                sockfd;</span><br><span class="line">  <span class="type">socklen_t</span>          len;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  sockfd = Socket(AF_INET, SOCK_DGRAM, <span class="number">0</span>);</span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family = AF_INET;</span><br><span class="line">  servaddr.sin_port = htons(SERV_PORT);</span><br><span class="line">  Inet_pton(AF_INET, argv[<span class="number">1</span>], &amp;servaddr.sin_addr);</span><br><span class="line"></span><br><span class="line">  Connect(sockfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  len = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">  Getsockname(sockfd, (SA *) &amp;cliaddr, &amp;len);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;local address %s\n&quot;</span>, Sock_ntop((SA *) &amp;cliaddr, len));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但并不是所有kernel都支持该特性.</p>
+<h2 id="13-TCP-and-UDP-Echo-Server-Using-select"><a href="#13-TCP-and-UDP-Echo-Server-Using-select" class="headerlink" title="13. TCP and UDP Echo Server Using select"></a>13. TCP and UDP Echo Server Using select</h2><p>以下代码使用<strong>select</strong>同时监听UDP socket和TCP socket:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>                listenfd, connfd, udpfd, nready, maxfdp1;</span><br><span class="line">  <span class="type">char</span>               mesg[MAXLINE];</span><br><span class="line">  <span class="type">pid_t</span>              childpid;</span><br><span class="line">  fd_set             rset;</span><br><span class="line">  <span class="type">ssize_t</span>            n;</span><br><span class="line">  <span class="type">socklen_t</span>          len;</span><br><span class="line">  <span class="type">const</span> <span class="type">int</span>          on = <span class="number">1</span>;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line">  <span class="type">void</span>               <span class="title function_">sig_chld</span><span class="params">(<span class="type">int</span>)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* create listening TCP socket */</span></span><br><span class="line">  listenfd = Socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family      = AF_INET;</span><br><span class="line">  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">  servaddr.sin_port        = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* allow socket to be bound to an identical socket address */</span></span><br><span class="line">  Setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &amp;on, <span class="keyword">sizeof</span>(on));</span><br><span class="line">  Bind(listenfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  Listen(listenfd, LISTENQ);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* create UDP socket */</span></span><br><span class="line">  udpfd = Socket(AF_INET, SOCK_DGRAM, <span class="number">0</span>);</span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family      = AF_INET;</span><br><span class="line">  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">  servaddr.sin_port        = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">  Bind(udpfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  Signal(SIGCHLD, sig_chld);  <span class="comment">/* must call waitpid() */</span></span><br><span class="line"></span><br><span class="line">  FD_ZERO(&amp;rset);</span><br><span class="line">  maxfdp1 = max(listenfd, udpfd) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    FD_SET(listenfd, &amp;rset);</span><br><span class="line">    FD_SET(udpfd, &amp;rset);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* wait only for readability on the TCP and UDP sockets */</span></span><br><span class="line">    <span class="keyword">if</span> ( (nready = select(maxfdp1, &amp;rset, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">        <span class="keyword">continue</span>; <span class="comment">/* back to for() */</span></span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        err_sys(<span class="string">&quot;select error&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(listenfd, &amp;rset)) &#123;</span><br><span class="line">      len = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">      connfd = Accept(listenfd, (SA *) &amp;cliaddr, &amp;len);</span><br><span class="line">  </span><br><span class="line">      <span class="keyword">if</span> ( (childpid = Fork()) == <span class="number">0</span>) &#123;  <span class="comment">/* child process */</span></span><br><span class="line">        Close(listenfd);  <span class="comment">/* close listening socket */</span></span><br><span class="line">        str_echo(connfd); <span class="comment">/* process the request */</span></span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      Close(connfd);  <span class="comment">/* parent closes connected socket */</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(udpfd, &amp;rset)) &#123;</span><br><span class="line">      len = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">      n = Recvfrom(udpfd, mesg, MAXLINE, <span class="number">0</span>, (SA *) &amp;cliaddr, &amp;len);</span><br><span class="line"></span><br><span class="line">      Sendto(udpfd, mesg, n, <span class="number">0</span>, (SA *) &amp;cliaddr, len);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/2b71.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Name and Address Conversions</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/abba.html">
+        <span class="next-text nav-default">Socket Options</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/80a7.html';
+  var disqus_title = "Elementary UDP Sockets";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

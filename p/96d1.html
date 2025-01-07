@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Nonblocking I/O"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/96d1.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/96d1.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/96d1.html"/>
+
+
+<meta name="description" content="1. Introduction默认情况下socket是blocking, 若socket的操作无法立即完成, 则进程进入睡眠, 直到完成操作. 对于socket的操作分为以下4种类别:  Input Operation: 包括read(), readv(), recv(), recvfrom()和recvmsg(). 若进程对blocking socket调用上述任何一个input operati">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nonblocking I&#x2F;O">
+<meta property="og:url" content="https://zaf1ro.github.io/p/96d1.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction默认情况下socket是blocking, 若socket的操作无法立即完成, 则进程进入睡眠, 直到完成操作. 对于socket的操作分为以下4种类别:  Input Operation: 包括read(), readv(), recv(), recvfrom()和recvmsg(). 若进程对blocking socket调用上述任何一个input operati">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/16-2-data-from-stdio-to-sock.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/16-2-data-from-sock-to-stdout.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/16-2-timeline-of-nonblocking.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/16-2-proc-of-str_cli.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/16-5-multi-conn-in-parallel.gif">
+<meta property="article:published_time" content="2020-01-20T14:47:20.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.042Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/16-2-data-from-stdio-to-sock.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Nonblocking I/O - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Nonblocking-Reads-and-Writes-str-cli-Function-Revisited"><span class="toc-text">2. Nonblocking Reads and Writes: str_cli Function (Revisited)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Nonblocking-connect"><span class="toc-text">3. Nonblocking connect</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Nonblocking-connect-Daytime-Client"><span class="toc-text">4. Nonblocking connect: Daytime Client</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Nonblocking-connect-Web-Client"><span class="toc-text">5. Nonblocking connect: Web Client</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Nonblocking-accept"><span class="toc-text">6. Nonblocking accept</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Nonblocking I/O
+        
+      </h1>
+      <time class="post-time">
+          01/20/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>默认情况下socket是blocking, 若socket的操作无法立即完成, 则进程进入睡眠, 直到完成操作. 对于socket的操作分为以下4种类别:</p>
+<ol>
+<li>Input Operation: 包括<code>read()</code>, <code>readv()</code>, <code>recv()</code>, <code>recvfrom()</code>和<code>recvmsg()</code>. 若进程对blocking socket调用上述任何一个input operation, 且socket receive buffer中没有数据, 则进程进入睡眠. 由于TCP为byte stream, 无论socket receive buffer中接收到单个byte数据或整个TCP segment, socket都会被唤醒; 由于UDP为datagram protocol, socket会在接收到UDP datagram后被唤醒; 对于nonblocking socket, 若input operation(TCP socket接收到一个byte, 或UDP socket接收到一个完整的datagram)无法被满足, 则返回<strong>EWOULDBLOCK</strong>.</li>
+<li>Output Operation: 包括<code>write()</code>, <code>writev()</code>, <code>send()</code>, <code>sendto()</code>和<code>sendmsg()</code>. 对于blocking TCP socket, kernel会将进程中的数据复制到socket send buffer. 若socket send buffer中没有空间, 则进程进入睡眠; 对于nonblocking TCP socket, 若socket send buffer中没有空间, 则返回<code>EWOULDBLOCK</code>; 若socket send buffer还有空间, 则返回复制到buffer的数据字节数. 对于UDP output operation, 由于UDP没有socket send buffer, kernel会直接将进程中的数据复制到TCP&#x2F;IP stack中, 因此即使是blocking UDP socket也不会阻塞.</li>
+<li>Accept connection: 包括<code>accept()</code>. 若blocking socket调用<code>accept()</code>, 直到socket接收到连接之前之前, 进程都处于睡眠状态. 若nonblocking socket调用<code>accept()</code>, 且没有新的连接, 则返回<code>EWOULDBLOCK</code>.</li>
+<li>Initiate connection: 包括TCP的<code>connect()</code>. 由于TCP connection需要three-way handshake, 对于blocking TCP socket, 直到连接建立完成之前, 进程都处于睡眠状态; 对于nonblocking TCP socket, 若connection还没建立, 则返回<code>EINPROGRESS</code>. 但并不是所有UNIX都会返回相同error, System V返回EAGAIN, Berkeley-derived返回EWOULDBLOCK, POSIX spcecification允许<code>connect()</code>返回其中任何一个错误.</li>
+</ol>
+<h2 id="2-Nonblocking-Reads-and-Writes-str-cli-Function-Revisited"><a href="#2-Nonblocking-Reads-and-Writes-str-cli-Function-Revisited" class="headerlink" title="2. Nonblocking Reads and Writes: str_cli Function (Revisited)"></a>2. Nonblocking Reads and Writes: str_cli Function (Revisited)</h2><p>Nonblocking I&#x2F;O的一大优势在于阻塞进程, 例如: 当进程调用<code>write()</code>向TCP blocking socket发送数据时, 可能因为socket send buffer已满而被阻塞. 这时可用nonblocking I&#x2F;O来防止阻塞, 并去做其他事情. 但nonblocking I&#x2F;O会复杂化buffer management, 假设client需要从stdin获取数据并发送至server; 从server接收数据并输出到stdout. 以下是程序需要维护的两个buffers: </p>
+<ol>
+<li>to: 负责缓冲stdin到server的数据. 其中toiptr指针表示socket发送数据的开端, tooptr指针表示stdin读取数据的开端, 每次从stdin读取的数据上限为$\text{to[MAXLINE]} - \text{toiptr}$, 若$\text{tooptr} &#x3D;&#x3D; \text{toiptr}$时, 则将这两个指针重置到buffer头部.<br><img src="/images/Network/UNP/16-2-data-from-stdio-to-sock.gif" alt="Buffer containing data from standard input going to the socket"></li>
+<li>fr: 负责缓冲server到stdout的数据. 其中froptr指针表示stdout输出数据的开端, friptr指针表示server传来数据的开端.<br><img src="/images/Network/UNP/16-2-data-from-sock-to-stdout.gif" alt="Buffer containing data from the socket going to standard output"></li>
+</ol>
+<p>以下是client端使用nonblocking socket接收并发送数据的代码:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> maxfdp1, val, stdineof;</span><br><span class="line">  <span class="type">ssize_t</span> n, nwritten;</span><br><span class="line">  fd_set rset, wset;</span><br><span class="line">  <span class="type">char</span> to[MAXLINE], fr[MAXLINE];</span><br><span class="line">  <span class="type">char</span> *toiptr, *tooptr, *friptr, *froptr;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* set all descriptors to nonblocking */</span></span><br><span class="line">  val = Fcntl(sockfd, F_GETFL, <span class="number">0</span>);</span><br><span class="line">  Fcntl(sockfd, F_SETFL, val | O_NONBLOCK);</span><br><span class="line"></span><br><span class="line">  val = Fcntl(STDIN_FILENO, F_GETFL, <span class="number">0</span>);</span><br><span class="line">  Fcntl(STDIN_FILENO, F_SETFL, val | O_NONBLOCK);</span><br><span class="line"></span><br><span class="line">  val = Fcntl(STDOUT_FILENO, F_GETFL, <span class="number">0</span>);</span><br><span class="line">  Fcntl(STDOUT_FILENO, F_SETFL, val | O_NONBLOCK);</span><br><span class="line"></span><br><span class="line">  toiptr = tooptr = to;  <span class="comment">/* initialize buffer pointers */</span></span><br><span class="line">  friptr = froptr = fr;</span><br><span class="line">  stdineof = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  maxfdp1 = max(max(STDIN_FILENO, STDOUT_FILENO), sockfd) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    FD_ZERO(&amp;rset);</span><br><span class="line">    FD_ZERO(&amp;wset);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// have not yet read an EOF on stdin, and at least one </span></span><br><span class="line">    <span class="comment">// byte of data in the to buffer</span></span><br><span class="line">    <span class="keyword">if</span> (stdineof == <span class="number">0</span> &amp;&amp; toiptr &lt; &amp;to[MAXLINE])</span><br><span class="line">      FD_SET(STDIN_FILENO, &amp;rset); <span class="comment">/* read from stdin */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// at least one byte if data in the fr buffer</span></span><br><span class="line">    <span class="keyword">if</span> (friptr &lt; &amp;fr[MAXLINE])</span><br><span class="line">      FD_SET(sockfd, &amp;rset); <span class="comment">/* read from socket */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// there is data to write to server in the to buffer</span></span><br><span class="line">    <span class="keyword">if</span> (tooptr != toiptr)</span><br><span class="line">      FD_SET(sockfd, &amp;wset); <span class="comment">/* data to write to socket */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// there is data to send to stdout in the fr buffer</span></span><br><span class="line">    <span class="keyword">if</span> (froptr != friptr)</span><br><span class="line">      FD_SET(STDOUT_FILENO, &amp;wset); <span class="comment">/* data to write to stdout */</span></span><br><span class="line"></span><br><span class="line">    Select(maxfdp1, &amp;rset, &amp;wset, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(STDIN_FILENO, &amp;rset)) &#123; <span class="comment">// stdin is readable</span></span><br><span class="line">      <span class="keyword">if</span> ((n = read(STDIN_FILENO, toiptr, &amp;to[MAXLINE] - toiptr)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (errno != EWOULDBLOCK)</span><br><span class="line">          err_sys(<span class="string">&quot;read error on stdin&quot;</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123; <span class="comment">// receive EOF from stdin</span></span><br><span class="line">        stdineof = <span class="number">1</span>; <span class="comment">/* all done with stdin */</span></span><br><span class="line">        <span class="keyword">if</span> (tooptr == toiptr) <span class="comment">// no data in the to buffer</span></span><br><span class="line">          Shutdown(sockfd, SHUT_WR); <span class="comment">/* send FIN */</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        toiptr += n; <span class="comment">/* read data from stdin */</span></span><br><span class="line">        FD_SET(sockfd, &amp;wset); <span class="comment">/* try and write to socket below */</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(sockfd, &amp;rset)) &#123; <span class="comment">// socket is readable</span></span><br><span class="line">      <span class="keyword">if</span> ((n = read(sockfd, friptr, &amp;fr[MAXLINE] - friptr)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (errno != EWOULDBLOCK)</span><br><span class="line">          err_sys(<span class="string">&quot;read error on socket&quot;</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123; <span class="comment">// server closed</span></span><br><span class="line">        <span class="keyword">if</span> (stdineof)</span><br><span class="line">          <span class="keyword">return</span>; <span class="comment">/* normal termination */</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">          err_quit(<span class="string">&quot;str_cli: server terminated prematurely&quot;</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        friptr += n; <span class="comment">/* read data from socket */</span></span><br><span class="line">        FD_SET(STDOUT_FILENO, &amp;wset); <span class="comment">/* try and write below */</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// stdout is writable and there&#x27;s data in the fr buffer</span></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(STDOUT_FILENO, &amp;wset) &amp;&amp; ((n = friptr - froptr) &gt; <span class="number">0</span>)) &#123;</span><br><span class="line">      <span class="keyword">if</span> ((nwritten = write(STDOUT_FILENO, froptr, n)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (errno != EWOULDBLOCK)</span><br><span class="line">          err_sys(<span class="string">&quot;write error to stdout&quot;</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        froptr += nwritten; <span class="comment">/* writte data into stdout */</span></span><br><span class="line">        <span class="keyword">if</span> (froptr == friptr)</span><br><span class="line">          froptr = friptr = fr; <span class="comment">/* back to beginning of buffer */</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// socket is writable and there&#x27;s data in the to buffer</span></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(sockfd, &amp;wset) &amp;&amp; ((n = toiptr - tooptr) &gt; <span class="number">0</span>)) &#123;</span><br><span class="line">      <span class="keyword">if</span> ((nwritten = write(sockfd, tooptr, n)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (errno != EWOULDBLOCK)</span><br><span class="line">          err_sys(<span class="string">&quot;write error to socket&quot;</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123; </span><br><span class="line">        tooptr += nwritten; <span class="comment">/* write data into socket */</span></span><br><span class="line">        <span class="keyword">if</span> (tooptr == toiptr) &#123;</span><br><span class="line">          toiptr = tooptr = to; <span class="comment">/* back to beginning of buffer */</span></span><br><span class="line">          <span class="keyword">if</span> (stdineof)</span><br><span class="line">            Shutdown(sockfd, SHUT_WR); <span class="comment">/* send FIN */</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下图中没有展示ACK segment, 但也能大概表示整个数据传输的过程:<br><img src="/images/Network/UNP/16-2-timeline-of-nonblocking.gif" alt="Timeline of nonblocking example"></p>
+<p>Nonblocking的<code>str_cli()</code>虽然提高了传输速率, 但代码也随之变得复杂, 很容易产生bug. 以下是改进后的<code>str_cli()</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">pid_t</span> pid;</span><br><span class="line">  <span class="type">char</span> sendline[MAXLINE], recvline[MAXLINE];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((pid = Fork()) == <span class="number">0</span>) &#123; <span class="comment">/* child: server -&gt; stdout */</span></span><br><span class="line">    <span class="keyword">while</span> (Readline(sockfd, recvline, MAXLINE) &gt; <span class="number">0</span>)</span><br><span class="line">      Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line"></span><br><span class="line">    kill(getppid(), SIGTERM); <span class="comment">/* in case parent still running */</span></span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* parent: stdin -&gt; server */</span></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>)</span><br><span class="line">    Writen(sockfd, sendline, <span class="built_in">strlen</span>(sendline));</span><br><span class="line"></span><br><span class="line">  Shutdown(sockfd, SHUT_WR); <span class="comment">/* EOF on stdin, send FIN */</span></span><br><span class="line">  pause();</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用<code>fork()</code>产生子进程来分工处理. TCP connection为全双工, 父进程和子进程共享一个socket descriptor. 父进程负责从stdin读取数据, 并发送至server; 子进程负责从server获取数据, 并输出到stdout. 如下图:<br><img src="/images/Network/UNP/16-2-proc-of-str_cli.gif" alt="str_cli function using two processes"></p>
+<p>但还有一个问题需要注意: 如何在stdin返回EOF后, 确保TCP termination正常执行. 当父进程收到来自stdin的EOF后调用<code>shutdown()</code>向server端发送FIN, 但子进程会继续从server端接收数据并输出到stdout, 直到server端返回EOF. 当server端意外终止运行时, 子进程会收到EOF, 并需通知父进程停止向socket发送数据. 本例中子进程会向父进程发送<code>SIGTERM</code> signal.<br>当父进程从stdin收到EOF后会向server发送FIN, 并调用<code>pause()</code>等待子进程发送signal. <code>SIGTERM</code> signal默认会直接停止父进程运行.<br>由于将原先的4个I&#x2F;O stream拆分为2组, 因此没必要使用nonblocking I&#x2F;O: 当父进程没有接收到stdin数据时, 无需向server发送数据; 当子进程没有接收来自server端的数据时, 无需向stdout输出数据. 以下是使用不同版本的<code>str_cli()</code>发送2000行文本的所需时间:</p>
+<table>
+<thead>
+<tr>
+<th align="center">str_cli() version</th>
+<th align="center">clock time (sec)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">stop-and-wait</td>
+<td align="center">354.0</td>
+</tr>
+<tr>
+<td align="center">select and blocking I&#x2F;O</td>
+<td align="center">12.3</td>
+</tr>
+<tr>
+<td align="center">nonblocking I&#x2F;O</td>
+<td align="center">6.9</td>
+</tr>
+<tr>
+<td align="center">fork</td>
+<td align="center">8.7</td>
+</tr>
+<tr>
+<td align="center">threaded version</td>
+<td align="center">8.5</td>
+</tr>
+</tbody></table>
+<h2 id="3-Nonblocking-connect"><a href="#3-Nonblocking-connect" class="headerlink" title="3. Nonblocking connect"></a>3. Nonblocking connect</h2><p><code>connect()</code>调用nonblocking TCP socket时, 会立即返回<code>EINPROGRESS</code>, 并继续执行TCP three-way handshake. 之后调用<code>select()</code>检查<code>connect()</code>是否完成连接. 以下是nonblocking connect的用途:</p>
+<ol>
+<li>由于three-way handshake至少需要一个RTT才能完成, 因此进程可在等待<code>connect()</code>完成之前做其他事情</li>
+<li>同一时间建立多个connections</li>
+<li>为<code>connect()</code>设置计时器</li>
+</ol>
+<p>Nonblocking connect还有一些需要注意的点:</p>
+<ul>
+<li>即使socket为nonblocking, 若server与client处于同一host, 则<code>connect()</code>不会返回error, 而直接返回连接结果</li>
+<li>POSIX specification对于nonblocking connect有以下说明:<ul>
+<li>当连接成功建立时, socket descriptor变为可写状态. 当socket descriptor的socket send buffer有足够空间时, 也会处于可写状态.</li>
+<li>当连接失败时, socket descriptor变为可读可写状态</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-Nonblocking-connect-Daytime-Client"><a href="#4-Nonblocking-connect-Daytime-Client" class="headerlink" title="4. Nonblocking connect: Daytime Client"></a>4. Nonblocking connect: Daytime Client</h2><p>以下<code>connect_nonb()</code>表示nonblocking connect:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">connect_nonb</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> SA *saptr, <span class="type">socklen_t</span> salen, <span class="type">int</span> nsec)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> flags, n, error;</span><br><span class="line">  <span class="type">socklen_t</span> len;</span><br><span class="line">  fd_set rset, wset;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">tval</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// set the socket to nonblocking</span></span><br><span class="line">  flags = Fcntl(sockfd, F_GETFL, <span class="number">0</span>);</span><br><span class="line">  Fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);</span><br><span class="line"></span><br><span class="line">  error = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> ((n = connect(sockfd, saptr, salen)) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">if</span> (errno != EINPROGRESS)</span><br><span class="line">      <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Do whatever we want while the connect is taking place. */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="comment">// connection is complete</span></span><br><span class="line">    <span class="keyword">goto</span> done;</span><br><span class="line"></span><br><span class="line">  FD_ZERO(&amp;rset);</span><br><span class="line">  FD_SET(sockfd, &amp;rset);</span><br><span class="line">  wset = rset;</span><br><span class="line">  tval.tv_sec = nsec; <span class="comment">// initialize the timeval structure</span></span><br><span class="line">  tval.tv_usec = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((n = Select(sockfd+<span class="number">1</span>, &amp;rset, &amp;wset, <span class="literal">NULL</span>, nsec ? &amp;tval</span><br><span class="line">       : <span class="literal">NULL</span>)) == <span class="number">0</span>) &#123;</span><br><span class="line">    close(sockfd); <span class="comment">/* timer expires */</span></span><br><span class="line">    errno = ETIMEDOUT;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (FD_ISSET(sockfd, &amp;rset) || FD_ISSET(sockfd, &amp;wset)) &#123;</span><br><span class="line">    len = <span class="keyword">sizeof</span>(error);</span><br><span class="line">    <span class="keyword">if</span> (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &amp;error, </span><br><span class="line">        &amp;len) &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="number">-1</span>; <span class="comment">/* find pending error */</span></span><br><span class="line">  &#125; <span class="keyword">else</span></span><br><span class="line">    err_quit(<span class="string">&quot;select error: sockfd not set&quot;</span>);</span><br><span class="line"></span><br><span class="line">done:</span><br><span class="line">  <span class="comment">/* restore file status flags */</span></span><br><span class="line">  Fcntl(sockfd, F_SETFL, flags); </span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (error) &#123;</span><br><span class="line">    close(sockfd); <span class="comment">/* just in case */</span></span><br><span class="line">    errno = error;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>若调用<code>select()</code>前连接建立完成, 且对端传来数据时, <code>select()</code>会通知进程该socket descriptor可读可写, 与连接出错的结果相同, 因此需调用<code>getsockopt()</code>查看是否存在pending error. 除了<code>getsockopt()</code>, 以下方法也可判断连接是否建立成功:</p>
+<ul>
+<li>调用<code>getpeername()</code>, 返回<code>ENOTCONN</code>: 连接建立失败, 需调用<code>getsockopt()</code>和<code>SO_ERROR</code>获取error</li>
+<li>调用length为0的<code>read()</code>:<ul>
+<li>返回-1: 连接建立失败</li>
+<li>返回0: 连接建立成功</li>
+</ul>
+</li>
+<li>再次调用<code>connect()</code>, 返回<code>EISCONN</code>: 连接建立成功.</li>
+</ul>
+<p>若blocking connect被中断, <code>connect()</code>立即返回<code>EINTR</code>, 但这并不意味着连接就此中断. 实际上, kernel还会继续完成剩下的连接, 因此不能再次调用<code>connect()</code>, 否则返回<code>EADDRINUSE</code>. 这时应调用<code>select()</code>等待连接完成, select的返回结果与nonblocking connect相同: 若连接成功建立, 则socket处于可写状态; 若连接建立失败, 则socket处于可读可写状态.</p>
+<h2 id="5-Nonblocking-connect-Web-Client"><a href="#5-Nonblocking-connect-Web-Client" class="headerlink" title="5. Nonblocking connect: Web Client"></a>5. Nonblocking connect: Web Client</h2><p>Web client作为nonblocking connect的典型实例, 使用nonblocking connect与web server建立HTTP连接. 由于一个web page经常需要访问多个web server, 所以不能顺序访问各个web server, 需要调用nonblocking connect同一时间与多个web server建立连接. 假设web client需要建立三个connections:</p>
+<ul>
+<li>1st connection: 建立连接需要10个单位时间</li>
+<li>2nd connection: 建立连接需要15个单位时间</li>
+<li>3rd connection: 建立连接需要4个单位时间</li>
+</ul>
+<p>以下是不同方式建立连接的时序图:<br><img src="/images/Network/UNP/16-5-multi-conn-in-parallel.gif" alt="Establishing multiple connections in parallel"></p>
+<p>由于平行连接会共享同一网络带宽, 且需要考虑到TCP slow start等算法的影响, 所以实际建立连接所需时间会比上图所示的要长. 但可以看到, 并行建立连接的确比顺序建立连接消耗更少时间.<br>但上一节所用的<code>connect_nonb()</code>在这里并不适用, 因为<code>connect_nonb()</code>只有连接建立完成后返回, 而web client需要跟踪所有正在建立的connections. 假设web client需要从web server读取文件, 以下是一个示例:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">% web 2 www.foobar.com / image1.gif image2.gif image3.gif image4.gif</span><br></pre></td></tr></table></figure>
+<p>上述command-line arguments中: </p>
+<ul>
+<li>需要建立的connections数量: <code>2</code></li>
+<li>web server的host为<code>www.foobar.com</code></li>
+<li>server的home page路径为<code>/</code></li>
+<li>需要从server获取的4个文件: <code>image1.gif</code>, <code>image2.gif</code>, <code>image3.gif</code>, <code>image4.gif</code></li>
+</ul>
+<p>以下是web程序的header file:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* web.h */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAXFILES 20 <span class="comment">/* Maximum number of files */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SERV <span class="string">&quot;80&quot;</span>   <span class="comment">/* port number or service name */</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">file</span> &#123;</span></span><br><span class="line">  <span class="type">char</span> *f_name; <span class="comment">/* filename */</span></span><br><span class="line">  <span class="type">char</span> *f_host; <span class="comment">/* hostname or IPv4/IPv6 address */</span></span><br><span class="line">  <span class="type">int</span> f_fd;     <span class="comment">/* descriptor */</span></span><br><span class="line">  <span class="type">int</span> f_flags;  <span class="comment">/* F_xxx below */</span></span><br><span class="line">&#125; file[MAXFILES];</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span>  F_CONNECTING 1  <span class="comment">/* connect() in progress */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span>  F_READING 2     <span class="comment">/* connect() complete; now reading */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span>  F_DONE 4        <span class="comment">/* all done */</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> GET_CMD <span class="string">&quot;GET %s HTTP/1.0\r\n\r\n&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* globals */</span></span><br><span class="line"><span class="type">int</span> nconn, nfiles, nlefttoconn, nlefttoread, maxfd;</span><br><span class="line">fd_set rset, wset;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* function prototypes */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">home_page</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *, <span class="type">const</span> <span class="type">char</span> *)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">start_connect</span><span class="params">(<span class="keyword">struct</span> file *)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">write_get_cmd</span><span class="params">(<span class="keyword">struct</span> file *)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下web程序的代码:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span>  <span class="string">&quot;web.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i, fd, n, maxnconn, flags, error;</span><br><span class="line">  <span class="type">char</span> buf[MAXLINE];</span><br><span class="line">  fd_set rs, ws;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (argc &lt; <span class="number">5</span>)</span><br><span class="line">    err_quit(<span class="string">&quot;usage: web &lt;nconn&gt; &lt;hostname&gt; &lt;homepage&gt; &lt;file1&gt; ...&quot;</span>);</span><br><span class="line">  </span><br><span class="line">  maxnconn = atoi(argv[<span class="number">1</span>]); <span class="comment">/* maximum number of connections */</span></span><br><span class="line">  nfiles = min(argc - <span class="number">4</span>, MAXFILES); <span class="comment">/* number of files */</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* fill in with the information from the command-line arguments */</span></span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; nfiles; i++) &#123; </span><br><span class="line">    file[i].f_name = argv[i + <span class="number">4</span>];</span><br><span class="line">    file[i].f_host = argv[<span class="number">2</span>];</span><br><span class="line">    file[i].f_flags = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* create a TCP connection to he server&#x27;s home page */</span></span><br><span class="line">  home_page(argv[<span class="number">2</span>], argv[<span class="number">3</span>]);</span><br><span class="line"></span><br><span class="line">  FD_ZERO(&amp;rset);</span><br><span class="line">  FD_ZERO(&amp;wset);</span><br><span class="line">  maxfd = <span class="number">-1</span>;</span><br><span class="line">  nlefttoread = nlefttoconn = nfiles;</span><br><span class="line">  nconn = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (nlefttoread &gt; <span class="number">0</span>) &#123; </span><br><span class="line">    <span class="comment">/* there are additional connections to establish */</span></span><br><span class="line">    <span class="keyword">while</span> (nconn &lt; maxnconn &amp;&amp; nlefttoconn &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">for</span> (i = <span class="number">0</span> ; i &lt; nfiles; i++) <span class="comment">// find a nonconnected file</span></span><br><span class="line">        <span class="keyword">if</span> (file[i].f_flags == <span class="number">0</span>)</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">if</span> (i == nfiles) <span class="comment">/* no files need to be connected */</span> </span><br><span class="line">        err_quit(<span class="string">&quot;nlefttoconn = %d but nothing found&quot;</span>, nlefttoconn);</span><br><span class="line">      start_connect(&amp;file[i]);</span><br><span class="line">      nconn++;</span><br><span class="line">      nlefttoconn--;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    rs = rset;</span><br><span class="line">    ws = wset;</span><br><span class="line">    n = Select(maxfd+<span class="number">1</span>, &amp;rs, &amp;ws, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; nfiles; i++) &#123;</span><br><span class="line">      flags = file[i].f_flags;</span><br><span class="line">      <span class="keyword">if</span> (flags == <span class="number">0</span> || flags &amp; F_DONE)</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      fd = file[i].f_fd;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* nonblocking connect is finished */</span></span><br><span class="line">      <span class="keyword">if</span> (flags &amp; F_CONNECTING &amp;&amp; (FD_ISSET(fd, &amp;rs) || </span><br><span class="line">          FD_ISSET(fd, &amp;ws))) &#123; </span><br><span class="line">        n = <span class="keyword">sizeof</span>(error);</span><br><span class="line">        <span class="keyword">if</span> (getsockopt(fd, SOL_SOCKET, SO_ERROR, &amp;error, &amp;n) &lt; <span class="number">0</span> ||</span><br><span class="line">            error != <span class="number">0</span>) &#123;</span><br><span class="line">          err_ret(<span class="string">&quot;nonblocking connect failed for %s&quot;</span>, file[i].f_name);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">/* connection established */</span></span><br><span class="line">        FD_CLR(fd, &amp;wset); <span class="comment">/* no more writeability test */</span></span><br><span class="line">        write_get_cmd(&amp;file[i]); <span class="comment">/* send HTTP request to the server */</span></span><br><span class="line">      &#125; </span><br><span class="line">      <span class="comment">/* socket descriptor is ready for reading data from server */</span></span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> (flags &amp; F_READING &amp;&amp; FD_ISSET(fd, &amp;rs)) &#123;</span><br><span class="line">        <span class="comment">/* connection is closed by the server */</span></span><br><span class="line">        <span class="keyword">if</span> ((n = Read(fd, buf, <span class="keyword">sizeof</span>(buf))) == <span class="number">0</span>) &#123; </span><br><span class="line">          Close(fd);</span><br><span class="line">          file[i].f_flags = F_DONE; <span class="comment">/* clears F_READING */</span></span><br><span class="line">          FD_CLR(fd, &amp;rset);</span><br><span class="line">          nconn--;</span><br><span class="line">          nlefttoread--;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="built_in">printf</span>(<span class="string">&quot;read %d bytes from %s\n&quot;</span>, n, file[i].f_name);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是<code>home_page()</code>的实现. 由于只是读取server的home page, 所以并不需要使用nonblocking connect:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;web.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">home_page</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *host, <span class="type">const</span> <span class="type">char</span> *fname)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> fd, n;</span><br><span class="line">  <span class="type">char</span> line[MAXLINE];</span><br><span class="line"></span><br><span class="line">  fd = Tcp_connect(host, SERV); <span class="comment">/* blocking connect() */</span></span><br><span class="line"></span><br><span class="line">  n = <span class="built_in">snprintf</span>(line, <span class="keyword">sizeof</span>(line), GET_CMD, fname);</span><br><span class="line">  Writen(fd, line, n); <span class="comment">/* send an HTTP GET command */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; )</span><br><span class="line">    <span class="keyword">if</span> ((n = Read(fd, line, MAXLINE)) == <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">break</span>; <span class="comment">/* server closed connection */</span></span><br><span class="line"></span><br><span class="line">  Close(fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是start_connect(), 该函数负责实现nonblocking connect:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;web.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">start_connect</span><span class="params">(<span class="keyword">struct</span> file *fptr)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> fd, flags, n;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">addrinfo</span> *<span class="title">ai</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* convert the hostname and service name to addrinfo structure */</span></span><br><span class="line">  ai = Host_serv(fptr-&gt;f_host, SERV, <span class="number">0</span>, SOCK_STREAM);</span><br><span class="line"></span><br><span class="line">  fd = Socket(ai-&gt;ai_family, ai-&gt;ai_socktype, ai-&gt;ai_protocol);</span><br><span class="line">  fptr-&gt;f_fd = fd;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* set socket nonblocking */</span></span><br><span class="line">  flags = Fcntl(fd, F_GETFL, <span class="number">0</span>);</span><br><span class="line">  Fcntl(fd, F_SETFL, flags | O_NONBLOCK);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* initiate nonblocking connect to the server. */</span></span><br><span class="line">  <span class="keyword">if</span> ((n = connect(fd, ai-&gt;ai_addr, ai-&gt;ai_addrlen)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (errno != EINPROGRESS)</span><br><span class="line">      err_sys(<span class="string">&quot;nonblocking connect error&quot;</span>);</span><br><span class="line">    fptr-&gt;f_flags = F_CONNECTING;</span><br><span class="line">    FD_SET(fd, &amp;rset); <span class="comment">/* wait for read and write */</span></span><br><span class="line">    FD_SET(fd, &amp;wset);</span><br><span class="line">    <span class="keyword">if</span> (fd &gt; maxfd) <span class="comment">/* update maxfd if necessary */</span> </span><br><span class="line">      maxfd = fd;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n &gt;= <span class="number">0</span>) <span class="comment">/* connect is already done */</span></span><br><span class="line">    write_get_cmd(fptr); <span class="comment">/* send the GET command to the server */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是<code>write_get_cmd()</code>的实现:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;web.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">write_get_cmd</span><span class="params">(<span class="keyword">struct</span> file *fptr)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line">  <span class="type">char</span> line[MAXLINE];</span><br><span class="line"></span><br><span class="line">  n = <span class="built_in">snprintf</span>(line, <span class="keyword">sizeof</span>(line), GET_CMD, fptr-&gt;f_name);</span><br><span class="line">  Writen(fptr-&gt;f_fd, line, n); <span class="comment">/* write GET command to the server */</span></span><br><span class="line"></span><br><span class="line">  fptr-&gt;f_flags = F_READING; <span class="comment">/* convert to F_CONNECTING */</span></span><br><span class="line">  FD_SET(fptr-&gt;f_fd, &amp;rset); <span class="comment">/* will read server&#x27;s reply */</span></span><br><span class="line">  <span class="keyword">if</span> (fptr-&gt;f_fd &gt; maxfd)</span><br><span class="line">    maxfd = fptr-&gt;f_fd;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-Nonblocking-accept"><a href="#6-Nonblocking-accept" class="headerlink" title="6. Nonblocking accept"></a>6. Nonblocking accept</h2><p>当server使用<code>select()</code>后, <code>select()</code>负责检测listening socket是否可读, 因此只要在<code>select()</code>检测到可读后调用<code>accept()</code>即可, <code>accept()</code>也不必设为nonblocking. 但存在一个特殊情况: TCP client建立连接后立即向server发送RST. 以下是整个通信过程:</p>
+<ol>
+<li>client与server进行TCP three-way handshake</li>
+<li>server端的<code>select()</code>检测listening socket可读并返回</li>
+<li>client向server发送RST</li>
+<li>server收到RST, kernel自动抛弃已经建立的连接</li>
+<li>server调用<code>accept()</code>后发现无连接, 进入阻塞, 直到其他连接到来</li>
+</ol>
+<p>以下是解决方法的步骤:</p>
+<ol>
+<li>将listening socket设为nonblocking</li>
+<li>忽略<code>accpet()</code>返回的error (Berkeley-derived: <code>EWOULDBLOCK</code>, POSIX: <code>ECONNABORTED</code>, SVR4: <code>EPROTO</code>, signal: <code>EINTR</code>)</li>
+</ol>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/73c1.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Overview of Compilation</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/14f4.html">
+        <span class="next-text nav-default">UNIX Domain Protocols</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/96d1.html';
+  var disqus_title = "Nonblocking I/O";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

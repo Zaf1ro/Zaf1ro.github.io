@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Files and Directories"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/49f7.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/49f7.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/49f7.html"/>
+
+
+<meta name="description" content="1. stat, fstat, fstatat, lstat&#x2F;** * @brief retrieve information about the file pointed to by  *        pathname to buf. It returns information of file  *        pointed by pathname if pathname is a sy">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Files and Directories">
+<meta property="og:url" content="https://zaf1ro.github.io/p/49f7.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. stat, fstat, fstatat, lstat&#x2F;** * @brief retrieve information about the file pointed to by  *        pathname to buf. It returns information of file  *        pointed by pathname if pathname is a sy">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/4-11-unix-file-system.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/4-11-inode-indirect-block-pointer.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/4-11-inode-data-block.jpg">
+<meta property="article:published_time" content="2019-08-05T20:30:42.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.056Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/4-11-unix-file-system.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Files and Directories - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-stat-fstat-fstatat-lstat"><span class="toc-text">1. stat, fstat, fstatat, lstat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-File-Types"><span class="toc-text">2. File Types</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-User-ID-and-Group-ID"><span class="toc-text">3. User ID and Group ID</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-File-Access-Permissions"><span class="toc-text">4. File Access Permissions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-access-and-faccessat"><span class="toc-text">5. access and faccessat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-umask"><span class="toc-text">6. umask</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-chmod-fchmod-fchmodat"><span class="toc-text">7. chmod, fchmod, fchmodat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-chown-fchown-fchownat-lchown"><span class="toc-text">8. chown, fchown, fchownat, lchown</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-File-Size"><span class="toc-text">9. File Size</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-File-Truction"><span class="toc-text">10. File Truction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-File-System"><span class="toc-text">11. File System</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-link-linkat-unlink-unlinkat-remove"><span class="toc-text">12. link, linkat, unlink, unlinkat, remove</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-rename-renameat"><span class="toc-text">13. rename, renameat</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-Symbolic-Links"><span class="toc-text">14. Symbolic Links</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-File-Times"><span class="toc-text">15. File Times</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-futimens-utimenset-and-utimes"><span class="toc-text">16. futimens, utimenset and utimes</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-mkdir-mkdirat-rmdir"><span class="toc-text">17. mkdir, mkdirat, rmdir</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#18-Reading-Directories"><span class="toc-text">18. Reading Directories</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#19-chdir-fchdir-getcwd"><span class="toc-text">19. chdir, fchdir, getcwd</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Files and Directories
+        
+      </h1>
+      <time class="post-time">
+          08/05/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-stat-fstat-fstatat-lstat"><a href="#1-stat-fstat-fstatat-lstat" class="headerlink" title="1. stat, fstat, fstatat, lstat"></a>1. stat, fstat, fstatat, lstat</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief retrieve information about the file pointed to by </span></span><br><span class="line"><span class="comment"> *        pathname to buf. It returns information of file </span></span><br><span class="line"><span class="comment"> *        pointed by pathname if pathname is a symbolic link.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">stat</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="keyword">struct</span> stat* buf)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as stat(), except the file about which information</span></span><br><span class="line"><span class="comment"> *        is to be retrieved is specified by file descriptor.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fstat</span><span class="params">(<span class="type">int</span> fd, <span class="keyword">struct</span> stat* buf)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as stat(), except returns the information of itself </span></span><br><span class="line"><span class="comment"> *        if pathname is a symbolic link.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">lstat</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="keyword">struct</span> stat* buf)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief provide a general interface for accessing file</span></span><br><span class="line"><span class="comment"> *        information which can still provide the function of </span></span><br><span class="line"><span class="comment"> *        stat(), lstat() and fstat().</span></span><br><span class="line"><span class="comment"> * @param flag can be either 0, or include one of the followings:</span></span><br><span class="line"><span class="comment"> *        1. AT_EMPTY_PATH: If pathname is an empty string, operate</span></span><br><span class="line"><span class="comment"> *           on the file referred by dirfd.</span></span><br><span class="line"><span class="comment"> *        2. AT_SYMLINK_NOFOLLOW: Same as lstat(), returns the </span></span><br><span class="line"><span class="comment"> *           information of symbolic link instead the file referred </span></span><br><span class="line"><span class="comment"> *           by the link.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fstatat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span>* pathname, <span class="keyword">struct</span> stat* buf, <span class="type">int</span> flag)</span>;</span><br></pre></td></tr></table></figure>
+<p>参数<code>buf</code>是为指向stat结构体的指针, stat的定义如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stat</span> &#123;</span></span><br><span class="line">  <span class="type">mode_t</span> st_mode;          <span class="comment">/* file type &amp; mode (permissions) */</span></span><br><span class="line">  <span class="type">ino_t</span> st_ino;            <span class="comment">/* i-node number (serial number) */</span></span><br><span class="line">  <span class="type">dev_t</span> st_dev;            <span class="comment">/* major device number */</span></span><br><span class="line">  <span class="type">dev_t</span> st_rdev;           <span class="comment">/* minor device number */</span></span><br><span class="line">  <span class="type">nlink_t</span> st_nlink;        <span class="comment">/* number of hard links */</span></span><br><span class="line">  <span class="type">uid_t</span> st_uid;            <span class="comment">/* user ID of owner */</span></span><br><span class="line">  <span class="type">gid_t</span> st_gid;            <span class="comment">/* group ID of owner */</span></span><br><span class="line">  <span class="type">dev_t</span> st_rdev;           <span class="comment">/* device ID (if special file) */</span></span><br><span class="line">  <span class="type">off_t</span> st_size;           <span class="comment">/* total size in bytes */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_atim</span>;</span> <span class="comment">/* time of last access */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_mtim</span>;</span> <span class="comment">/* time of last modification */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_ctim</span>;</span> <span class="comment">/* time of last file status change */</span></span><br><span class="line">  <span class="type">blksize_t</span> st_blksize;    <span class="comment">/* preferred block size for filesystem I/O */</span></span><br><span class="line">  <span class="type">blkcnt_t</span> st_blocks;      <span class="comment">/* number of 512-byte blocks allocated */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>timespec的定义如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> &#123;</span></span><br><span class="line">  <span class="type">time_t</span> tv_sec; <span class="comment">/* second */</span></span><br><span class="line">  <span class="type">long</span> tv_nsec;  <span class="comment">/* nanosecond */</span> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-File-Types"><a href="#2-File-Types" class="headerlink" title="2. File Types"></a>2. File Types</h2><p>以下是UNIX的文件类型:</p>
+<ul>
+<li>Regular File(<code>S_IFREG</code>): 最常见的文件类型, 该文件类型负责保存数据, 无论二进制还是文本数据, 应用程序读取或更新该文件.</li>
+<li>Directory File(<code>S_IFDIR</code>): 该文件可包含一些文件的名字或指向文件的指针, 可读取directory file, 但程序只能调用kernel function通过kernel向directory file写入文件</li>
+<li>Special File: 也称为<strong>device file</strong>, 其意义在于将device呈现为文件系统中的一个file, 开发者可以像操作<strong>传统文件系统中的文件</strong>一样操作<strong>hardware device</strong>, 读写该类文件时, 请求会转交给device driver, 而不是由文件系统处理. 根据<strong>操作模式</strong>两种special file:<ul>
+<li>Block Special File(<code>S_IFBLK</code>): 该设备上的数据会被持久化, 反复读取, 且每次访问取出一块连续数据的block, 因此称为<strong>block device</strong>, 如<code>/dev/disk0</code></li>
+<li>Character Special File(<code>S_IFCHR</code>): 该设备上的数据只被读取一次, 顺序执行, 且每次访问只取1 byte, 因此称为<strong>character device</strong>, 如<code>/dev/stdin</code></li>
+</ul>
+</li>
+<li>FIFO(<code>S_IFIFO</code>): 也称为<strong>pipe</strong>. UNIX的一大优势为IPC(进程间通信), 当一个进程与其他进程通信时, 可创建pipe向其他进程发送数据</li>
+<li>Socket(<code>S_IFSOCK</code>): 可用于IPC, 但也可以通过网络传输数据</li>
+<li>Symbolic Link(<code>S_IFLNK</code>): 该文件类型是对另一个文件的引用, 存储了引用文件的路径</li>
+</ul>
+<p>stat结构体的st_mode表示文件类型, 可用以下macro判断文件是什么类型(m表示<code>stat.st_mode</code>):</p>
+<ol>
+<li><code>S_ISREG(m)</code>: 是否为regular file</li>
+<li><code>S_ISDIR(m)</code>: 是否为directory file</li>
+<li><code>S_ISCHR(m)</code>: 是否为character special file</li>
+<li><code>S_ISBLK(m)</code>: 是否为block special file</li>
+<li><code>S_ISFIFO(m)</code>: 是否为FIFO</li>
+<li><code>S_ISLNK(m)</code>: 是否为symbolic link</li>
+<li><code>S_ISSOCK(m)</code>: 是否为socket</li>
+</ol>
+<h2 id="3-User-ID-and-Group-ID"><a href="#3-User-ID-and-Group-ID" class="headerlink" title="3. User ID and Group ID"></a>3. User ID and Group ID</h2><p>当用户使用计算机时, 需登录一个username, 通常来说, 一个username对应一个<strong>user ID</strong>. User通过group分类, 每个user可属于多个group, 同一group内的user可共享资源. 每个group有一个group name和<strong>group ID</strong>.<br>用户无法直接访问资源, 而是通过process(进程), POSIX standard为process规定了三种user ID:</p>
+<ul>
+<li>Real User ID(RUID): 创建当前process的用户的user id, 表示当前进程属于哪个用户</li>
+<li>Effective User ID(EUID): 系统用EUID判断当前process是否有权限访问资源, 创建进程时为RUID, 可通过<code>seteuid</code>将EUID改为执行文件所有者的user id.</li>
+<li>Saved User ID(SUID): 当privileged process(EUID为root)降低自身权限时, 会先将EUID保存在SUID, 执行完毕后, 将EUID改回SUID.</li>
+</ul>
+<p>POSIX Standard还为process规定了三种group ID:</p>
+<ul>
+<li>Real Group ID(RGID): 创建当前process的用户所在的group的group id</li>
+<li>Effective Group ID(EGID): 系统用EGID判断当前process是否有权限访问资源, 创建进程时维RGID, 可通过<code>setegid</code>将EGID改为执行文件所有者的group id</li>
+<li>Saved Group ID(SGID): 当privileged process(EGID为root)降低自身权限时, 会先将EGID保存在SGID, 执行完毕后, 将EGID改回SGID</li>
+</ul>
+<h2 id="4-File-Access-Permissions"><a href="#4-File-Access-Permissions" class="headerlink" title="4. File Access Permissions"></a>4. File Access Permissions</h2><p>UNIX中的每一个文件都有权限设置, 由9个bit组成, 如<code>rwxrwxrwx</code>, 并分为三类:</p>
+<ul>
+<li>owner: 第一组<code>rwx</code>, 文件所有者的权限</li>
+<li>group: 第二组<code>rwx</code>, 文件所属组的权限</li>
+<li>other: 第三组<code>rwx</code>, 其他人的权限</li>
+</ul>
+<p>每组权限包含三种权限:</p>
+<ul>
+<li>r: 查看文件内容, 或查看文件夹内的文件列表</li>
+<li>w: 修改或删除文件, 或从文件夹中添加或删除文件</li>
+<li>x: 运行可执行文件, 或搜索文件夹内文件, 但不能读取文件夹内的文件列表</li>
+</ul>
+<p>有时文件的拥有者并不想其他进程修改或读取文件内容, 但需要其他进程执行该文件. 因此UNIX还增加三种额外的权限模式:</p>
+<ul>
+<li>setuid(SUID): 进程执行该文件期间, 当前进程的EUID改为文件所有者的user id, 如<code>rwsrwxrwx</code></li>
+<li>setgid(SGID): 进程执行该文件期间, 当前进程的EGID改为文件所有者的group id, 如<code>rwxrwsrwx</code></li>
+<li>sticky(SBIT): 对于可执行文件, 即使进程运行结束, kernel也会将text segment保留在内存中, 但目前只有极少数UNIX系统应用; 对于文件夹, 即使进程拥有写入权限, 如果不是文件夹拥有者或root, 则不能重命名, 移动或删除里面的文件.</li>
+</ul>
+<p>调用<code>open</code>或<code>chmod</code>时, 可通过以下mode设置文件权限, 多个mode可通过<strong>OR</strong>(或运算)相连:</p>
+<table>
+<thead>
+<tr>
+<th align="center">mode</th>
+<th align="center">mask</th>
+<th align="center">class</th>
+<th align="center">permission</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">S_IRWXU</td>
+<td align="center">00700</td>
+<td align="center">user</td>
+<td align="center">read, write, execute</td>
+</tr>
+<tr>
+<td align="center">S_IRUSR</td>
+<td align="center">00400</td>
+<td align="center">user</td>
+<td align="center">read</td>
+</tr>
+<tr>
+<td align="center">S_IWUSR</td>
+<td align="center">00200</td>
+<td align="center">user</td>
+<td align="center">write</td>
+</tr>
+<tr>
+<td align="center">S_IXUSR</td>
+<td align="center">00100</td>
+<td align="center">user</td>
+<td align="center">execute</td>
+</tr>
+<tr>
+<td align="center">S_IRWXG</td>
+<td align="center">00070</td>
+<td align="center">group</td>
+<td align="center">read, write, execute</td>
+</tr>
+<tr>
+<td align="center">S_IRGRP</td>
+<td align="center">00040</td>
+<td align="center">read</td>
+<td align="center">read</td>
+</tr>
+<tr>
+<td align="center">S_IWGRP</td>
+<td align="center">00020</td>
+<td align="center">group</td>
+<td align="center">write</td>
+</tr>
+<tr>
+<td align="center">S_IXGRP</td>
+<td align="center">00010</td>
+<td align="center">group</td>
+<td align="center">execute</td>
+</tr>
+<tr>
+<td align="center">S_IRWXO</td>
+<td align="center">00007</td>
+<td align="center">other</td>
+<td align="center">read, write, execute</td>
+</tr>
+<tr>
+<td align="center">S_IROTH</td>
+<td align="center">00004</td>
+<td align="center">other</td>
+<td align="center">read</td>
+</tr>
+<tr>
+<td align="center">S_IWOTH</td>
+<td align="center">00002</td>
+<td align="center">other</td>
+<td align="center">write</td>
+</tr>
+<tr>
+<td align="center">S_IXOTH</td>
+<td align="center">00001</td>
+<td align="center">other</td>
+<td align="center">execute</td>
+</tr>
+<tr>
+<td align="center">S_ISUID</td>
+<td align="center">0004000</td>
+<td align="center">user</td>
+<td align="center">set-user-ID</td>
+</tr>
+<tr>
+<td align="center">S_ISGID</td>
+<td align="center">0002000</td>
+<td align="center">group</td>
+<td align="center">set-group-ID</td>
+</tr>
+<tr>
+<td align="center">S_ISVTX</td>
+<td align="center">0001000</td>
+<td align="center">other</td>
+<td align="center">sticky bit</td>
+</tr>
+</tbody></table>
+<p>Kernel以一套规则来判断当前进程是否有权限来对文件进行操作:</p>
+<ol>
+<li>若EUID为0, 则当前进程为root, 允许操作</li>
+<li>若当前进程的EUID与文件所有者的user ID相同, 则使用文件owner的权限模式</li>
+<li>若当前进程的EGID与文件所有者的group ID相同, 则使用文件group的权限模式</li>
+<li>使用other的权限模式</li>
+</ol>
+<h2 id="5-access-and-faccessat"><a href="#5-access-and-faccessat" class="headerlink" title="5. access and faccessat"></a>5. access and faccessat</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * @brief check whether the calling process can access the file. </span></span><br><span class="line"><span class="comment"> *        If pathname is a symbolic link, it is deferenced.</span></span><br><span class="line"><span class="comment"> * @param mode: specifies the accessibility of file. </span></span><br><span class="line"><span class="comment"> *        * F_OK: the existence of the file</span></span><br><span class="line"><span class="comment"> *        * R_OK: whether the file has read permission</span></span><br><span class="line"><span class="comment"> *        * W_OK: whether the file has write permission</span></span><br><span class="line"><span class="comment"> *        * X_OK: whether the file has execute permission</span></span><br><span class="line"><span class="comment"> * @return zero is returned as all requested permissions granted; </span></span><br><span class="line"><span class="comment"> *         -1 is returned as error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">access</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">int</span> mode)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as access(), but if the pathname is relative, it is</span></span><br><span class="line"><span class="comment"> *        interpreted relative to the directory referred to by dirfd.</span></span><br><span class="line"><span class="comment"> * @param dirfd interpreted relative to the directory referred to by </span></span><br><span class="line"><span class="comment">          dirfd if it is file descriptor; interpreted relative to the </span></span><br><span class="line"><span class="comment">          current working directory of the calling process if dirfd is</span></span><br><span class="line"><span class="comment">          the special value AT_FDCWD</span></span><br><span class="line"><span class="comment"> * @param flag constructed by OR together zero or more of the</span></span><br><span class="line"><span class="comment"> *        following value:</span></span><br><span class="line"><span class="comment"> *        * AT_EACCESS: perform access checks using the effective </span></span><br><span class="line"><span class="comment"> *          user and group ID.</span></span><br><span class="line"><span class="comment"> *        * AT_SYMLINK_NOFOLLOW: If pathname is a symbolic link, </span></span><br><span class="line"><span class="comment"> *          do not deference it.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">faccessat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">int</span> mode, <span class="type">int</span> flag)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-umask"><a href="#6-umask" class="headerlink" title="6. umask"></a>6. umask</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the calling process&#x27;s file mode creation to `mask` &amp; 0777,</span></span><br><span class="line"><span class="comment"> *        used by open(), mkdir() and other system call.</span></span><br><span class="line"><span class="comment"> * @return the previous value of the mask.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">mode_t</span> <span class="title function_">umask</span><span class="params">(<span class="type">mode_t</span> mask)</span>; </span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-chmod-fchmod-fchmodat"><a href="#7-chmod-fchmod-fchmodat" class="headerlink" title="7. chmod, fchmod, fchmodat"></a>7. chmod, fchmod, fchmodat</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief changes the mode of the file specified whose pathname</span></span><br><span class="line"><span class="comment"> *        is given in pathname (include file permission bits, </span></span><br><span class="line"><span class="comment"> *        set-user-ID, set-group-ID, and sticky bits)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">chmod</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">mode_t</span> mode)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the mode of the file referred to by the open file </span></span><br><span class="line"><span class="comment"> *        descriptor `fd` </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fchmod</span><span class="params">(<span class="type">int</span> fd, <span class="type">mode_t</span> mode)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as chmod(), but pathname can be relative path </span></span><br><span class="line"><span class="comment"> *        relative to directory referred to by dirfd.</span></span><br><span class="line"><span class="comment"> * @param flag same as flag in faccessat()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fchmodat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">mode_t</span> mode, <span class="type">int</span> flag)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>chmod</code>不会更改symbolic link的权限, 因为从不使用symbolic link的权限设置, 但<code>chmod</code>会更改symbolic link指向的文件的权限, 也会无视循环指向的symbolic link.</li>
+<li>只有当前进程的EUID与文件所有者的UID相同, 或为root权限时, 才能修改目标文件的mode.</li>
+<li>当前进程没有root权限, 且EGID不匹配文件的group id, 则无视<code>S_ISGID</code> 并返回错误</li>
+<li>一些UNIX系统只允许拥有root权限的用户在文件上设置sticky bit, 且拥有特殊意义</li>
+</ul>
+<h2 id="8-chown-fchown-fchownat-lchown"><a href="#8-chown-fchown-fchownat-lchown" class="headerlink" title="8. chown, fchown, fchownat, lchown"></a>8. chown, fchown, fchownat, lchown</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change owner and group of a file specified by `pathname`, </span></span><br><span class="line"><span class="comment"> *        dereferenced if it is a symbolic link</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">chown</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">uid_t</span> owner, <span class="type">gid_t</span> group)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment"> * @brief changes the ownership of the file referred to by the open file</span></span><br><span class="line"><span class="comment"> *        descriptor `fd`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fchown</span><span class="params">(<span class="type">int</span> fd, <span class="type">uid_t</span> owner, <span class="type">gid_t</span> group)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as chown()</span></span><br><span class="line"><span class="comment"> * @param flags a bit mask created by ORing of the following values:</span></span><br><span class="line"><span class="comment"> *        * AT_EMPTY_PATH: If `pathname` is an empty string, operate on the </span></span><br><span class="line"><span class="comment"> *          file referred to by `dirfd`</span></span><br><span class="line"><span class="comment"> *        * AT_SYMLINK_NOFOLLOW: If `pathname` is a symbolic link, do not </span></span><br><span class="line"><span class="comment"> *          dereference it.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fchownat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">uid_t</span> owner, <span class="type">gid_t</span> group, <span class="type">int</span> flag)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as chown(), but does not deference symbolic links</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">lchown</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">uid_t</span> owner, <span class="type">gid_t</span> group)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>只有privileged process才能更改文件的owner; 文件的owner和privileged process都更改文件所属的group</li>
+<li>若<code>chown</code>的参数<code>owner</code>或<code>group</code>为-1, 则不作任何更改</li>
+<li>若目标文件为可执行文件, 且当前进程为privileged process, 则目标文件的<code>S_ISUID</code>和<code>S_ISGID</code>会被清除</li>
+</ul>
+<h2 id="9-File-Size"><a href="#9-File-Size" class="headerlink" title="9. File Size"></a>9. File Size</h2><p>若文件为regular file, directory或symbolic link, stat的<code>st_size</code>表示文件占多少byte. 以下是一些特殊情况:</p>
+<ul>
+<li>若文件为regular file, <code>st_size</code>可为0, 文件的唯一字符为EOF.</li>
+<li>若文件为directory, 则<code>st_size</code>无法告知文件夹内的文件总大小, 只能通过递归不断查看每个文件的大小</li>
+<li>若文件为symbolic link, <code>st_size</code>表示pathname的长度</li>
+</ul>
+<h2 id="10-File-Truction"><a href="#10-File-Truction" class="headerlink" title="10. File Truction"></a>10. File Truction</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief shrink or extend the size of a file to the specified </span></span><br><span class="line"><span class="comment"> *        size. If the file previously was shorter, extended part</span></span><br><span class="line"><span class="comment"> *        reads as null bytes. If the file previously was larger </span></span><br><span class="line"><span class="comment"> *        than this size, the extra data lost.</span></span><br><span class="line"><span class="comment"> * @return zero is returned on success; -1 is returned on error</span></span><br><span class="line"><span class="comment"> *         and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">truncate</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">off_t</span> length)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">ftruncate</span><span class="params">(<span class="type">int</span> fd, <span class="type">off_t</span> length)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="11-File-System"><a href="#11-File-System" class="headerlink" title="11. File System"></a>11. File System</h2><p>File System(FS)负责数据存储和检索, 并通过device file提供对外部资源的访问(如打印机, 鼠标等). UNIX File System(UFS)受Berkley Fast File System启发, 是操作系统的核心组件,<br>UFS中, 每个device类型有一个固定的<strong>major device number</strong>, 每个device类型下的每个device都有一个<strong>minor device number</strong>. 以RAM为例, 其major device number为1, device类别为block, 第一个RAM的minor device number为0, 第二个为1, 其次递归.<br>Kernel通过<strong>block device switch table</strong>和<strong>character device switch table</strong>与device driver沟通, 每个device类型占一项, 里面包含系统调用(如open)对应的device driver接口(如软盘driver的open). 调用device driver时, kernel需将minor device number作为参数传给driver, 保证driver使用正确的device.<br>UFS中, 物理磁盘被拆分为多个逻辑磁盘, 称为<strong>partition</strong>, 每个partition都是一个独立的FS, 因此当我们讨论FS时, 指代的是单个partition.<br>讨论文件存储前, 需先了解磁盘: 磁盘的最小存储单元为<strong>sector</strong>(扇区, 通常为512kb). 由于磁盘读取操作是一个费时操作, 因此UNIX不会一次只读取一个sector, 而是读取多个sector, 称为<strong>block</strong>, 通常block包含8个sector, 也就是4KB. 但UNIX需要一种方法来跟踪每个文件对应的block, 也就是<strong>inode</strong>. 以下是UFS中文件存储结构图:<br><img src="/images/UNIX/APUE/4-11-unix-file-system.jpg" alt="Disk drive, partitions, and a file system"></p>
+<ul>
+<li>Boot Block: FS的第一个block, 其中包含bootstrap程序, 负责系统启动</li>
+<li>Super Block:<ul>
+<li>inode数量, block总数, 空闲block数量, 空闲inode数量</li>
+<li>第一个block, block大小</li>
+<li>cylinder group的data block数量</li>
+<li>mount时长, write时长</li>
+<li>兼容性, volume信息</li>
+<li>FS状态</li>
+</ul>
+</li>
+<li>cylinder group: 一个disk slice(磁盘片)拆为多个cylinder group, 一个cylinder group包含一个或多个连续disk cylinder(磁盘柱面). 一个cylinder group由以下组成:<ul>
+<li>superblock的copy</li>
+<li>inode map: 指向每个inode的位置表</li>
+<li>可用block的bitmap</li>
+<li>inode列表</li>
+<li>data block略表: 包含文件的具体内容</li>
+</ul>
+</li>
+<li>inode: 包含一个文件的所有信息, 除了文件名(包含在文件夹内, 文件夹内的filename其实是指向inode的hard link), 每个inode占128字节.<ul>
+<li>文件类型, 文件权限</li>
+<li>UID, GID</li>
+<li>文件大小(byte)</li>
+<li>访问时间, 创建时间, 修改时间, 删除时间</li>
+<li>Hard Link数量: 当该值为0, 文件将被删除</li>
+<li>Flags</li>
+</ul>
+</li>
+</ul>
+<p>inode包含15个block pointer, 分别指向不同的data block. 前12个block为<strong>direct block pointer</strong>, 也就是说, 地址直接指向包含文件数据的block, 总共48KB; 若文件大于48KB, 则使用<strong>indirect block pointer</strong>:</p>
+<ul>
+<li>第13个block pointer: <strong>indirect block pointer</strong>, 该pointer指向的block只有direct block pointer, 总共<code>4KB/4B*4KB = 4MB</code>数据.</li>
+<li>第14个block pointer: <strong>double indirect block pointer</strong>, 该pointer指向的block只有<strong>indirect block pointer</strong>, 二级pointer指向含有数据的block, 总共<code>(4KB/4B)*(4KB/4B)*4KB = 4GB</code>数据.</li>
+<li>第15个block pointer: <strong>triple indirect block pointer</strong>, 该pointer指向的block只有<strong>double indirect block pointer</strong>, 三级pointer指向含有数据的block, 总共<code>(4KB/4B)*(4KB/4B)*(4KB/4B)*4KB = 4TB</code>数据</li>
+</ul>
+<p><img src="/images/UNIX/APUE/4-11-inode-indirect-block-pointer.png" alt="An inode with indirect and double indirect data blocks"></p>
+<p>Data block: inode指向data block, 分为以下三种:</p>
+<ul>
+<li>Plain data block: 包含文件的数据</li>
+<li>Symbolic-link data block: 包含路径名的symbolic link</li>
+<li>Directory data block: 包含一组文件名和对应的inode</li>
+</ul>
+<p><img src="/images/UNIX/APUE/4-11-inode-data-block.jpg" alt="Cylinder group’s i-nodes and data blocks in more detail"></p>
+<h2 id="12-link-linkat-unlink-unlinkat-remove"><a href="#12-link-linkat-unlink-unlinkat-remove" class="headerlink" title="12. link, linkat, unlink, unlinkat, remove"></a>12. link, linkat, unlink, unlinkat, remove</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a new link(hard link) to an existing file</span></span><br><span class="line"><span class="comment"> * @param oldpath pathname referred to an existing file</span></span><br><span class="line"><span class="comment"> * @param newpath pathname referred to a new path. If `newpath` exists, </span></span><br><span class="line"><span class="comment"> *        it will not be overwritten</span></span><br><span class="line"><span class="comment"> * @return 0 for success; -1 for error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">link</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* oldpath, <span class="type">const</span> <span class="type">char</span>* newpath)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as link()</span></span><br><span class="line"><span class="comment"> * @param oldpath if it is relative, it is interpreted relative to the</span></span><br><span class="line"><span class="comment"> *        directory referred to by the file descriptor `olddirfd`</span></span><br><span class="line"><span class="comment"> * @param flag the following values can be bitwise ORed:</span></span><br><span class="line"><span class="comment"> *        * AT_EMPTY_PATH: If `oldpath` is an empty string, create a </span></span><br><span class="line"><span class="comment"> *          link to the file referenced by `olddirfd`</span></span><br><span class="line"><span class="comment"> *        * AT_SYMLINK_FOLLOW: dereferenced `oldpath` if it is a </span></span><br><span class="line"><span class="comment"> *          symbolic link</span></span><br><span class="line"><span class="comment"> * @return 0 for success; -1 for error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">linkat</span><span class="params">(<span class="type">int</span> olddirfd, <span class="type">const</span> <span class="type">char</span>* oldpath, <span class="type">int</span> newdirfd, </span></span><br><span class="line"><span class="params">           <span class="type">const</span> <span class="type">char</span>* newpath, <span class="type">int</span> flag)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief delete a hard link from the filesystem. If it is the last </span></span><br><span class="line"><span class="comment"> *        link to a file and no process have the file open, the file </span></span><br><span class="line"><span class="comment"> *        is deleted and the space is made available for reuse</span></span><br><span class="line"><span class="comment"> * @param pathname If `pathname` refer to a symbolic link, the link is</span></span><br><span class="line"><span class="comment"> *        removed; If `pathname` refer to a socket, FIFO, or device, </span></span><br><span class="line"><span class="comment"> *        the link is removed but processes which opened the file still</span></span><br><span class="line"><span class="comment"> *        continue to use it.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">unlink</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as unlink()</span></span><br><span class="line"><span class="comment"> * @param pathname if `pathname` is relative, then it is interpreted </span></span><br><span class="line"><span class="comment"> *        relative to the directory referred to by `dirfd`</span></span><br><span class="line"><span class="comment"> * @param flag a bit mask that can either be specified as 0. Currently,</span></span><br><span class="line"><span class="comment"> *             only one flag is defined:</span></span><br><span class="line"><span class="comment"> *             * AT_REMOVEDIR: perform the equivalent of rmdir() on </span></span><br><span class="line"><span class="comment"> *               `pathname`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">unlinkat</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">int</span> flag)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief if `pathname` is a file, same as unlink(); if `pathname` is </span></span><br><span class="line"><span class="comment"> *        a directory, same as rmdir().</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">remove</span><span class="params">(<span class="type">const</span> <span class="type">char</span>*pathname)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>若系统允许创建hard link, 只有root权限用户才能创建, 因为hard link可能导致循环访问. </li>
+<li>有些系统不支持对directory使用<code>unlink</code>, 需使用<code>rmdir</code></li>
+</ul>
+<h2 id="13-rename-renameat"><a href="#13-rename-renameat" class="headerlink" title="13. rename, renameat"></a>13. rename, renameat</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief rename a file, moving it between directories if required. Other </span></span><br><span class="line"><span class="comment"> *        hard links to the file(created using link()) are unaffected</span></span><br><span class="line"><span class="comment"> * @param old: points to the pathname of file to be changed</span></span><br><span class="line"><span class="comment"> * @param new: points to the new pathname of the file</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">rename</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* oldpath, <span class="type">const</span> <span class="type">char</span>* newpath)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the name or location of a file</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">renameat</span><span class="params">(<span class="type">int</span> olddirfd, <span class="type">const</span> <span class="type">char</span> *oldpath, <span class="type">int</span> newdirfd, <span class="type">const</span> <span class="type">char</span> *newpath)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="14-Symbolic-Links"><a href="#14-Symbolic-Links" class="headerlink" title="14. Symbolic Links"></a>14. Symbolic Links</h2><p>Symbolic link也称为<strong>soft link</strong>, 以下是其与hard link的不同之处:</p>
+<ul>
+<li>hard link指向inode, 删除文件, 重命名文件, 或移动文件都不会影响inode, 因此不会影响hard link</li>
+<li>symbolic link只包含pathname</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief creates a symbolic link named `linkpath` which contains</span></span><br><span class="line"><span class="comment"> *        the string `target`</span></span><br><span class="line"><span class="comment"> * @param linkpath if it exists, it will not be overwritten</span></span><br><span class="line"><span class="comment"> * @return 0 on success, -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">symlink</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* target, <span class="type">const</span> <span class="type">char</span>* linkpath)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same way as symlink(), but if `linkpath` is relative, it is</span></span><br><span class="line"><span class="comment"> *        intrepreted relative to the directory referred to by the file</span></span><br><span class="line"><span class="comment"> *        `dirfd`</span></span><br><span class="line"><span class="comment"> * @param dirfd if it is AT_FDCWD, and `linkpath` is relative, `linkpath`</span></span><br><span class="line"><span class="comment"> *        is interpreted relative to the current working directory of </span></span><br><span class="line"><span class="comment"> *        the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">symlinkat</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* target, <span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span>* linkpath)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief place the content of the symbolic link `pathname` in the buffer</span></span><br><span class="line"><span class="comment"> *        `buf`, which has size `bufsize`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">readlink</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">char</span>* buf, <span class="type">size_t</span> bufsize)</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same way as readlink(). If `pathname` is relative, it is </span></span><br><span class="line"><span class="comment"> *        interpreted relative to the directory referred to by `dirfd`</span></span><br><span class="line"><span class="comment"> * @param dirfd if it is AT_FDCWD, and `pathname is relative`, `pathname`</span></span><br><span class="line"><span class="comment"> *        is interpreted relative to the current working directory of </span></span><br><span class="line"><span class="comment"> *        the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">readlinkat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">char</span> *buf, <span class="type">size_t</span> bufsize)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>系统解析symbolic link时, 会将symbolic link里的内容当做path, 用于搜索文件或路径. 若symbolic link包含<code>..</code>, 则该path为symbolic link所在的文件夹的相对路径.</li>
+<li><code>readlink()</code>不会在<code>buf</code>中追加空字符(<code>\0</code>), 若<code>pathname</code>的内容长度超出<code>bufsize</code>, 会自动截断.</li>
+</ul>
+<h2 id="15-File-Times"><a href="#15-File-Times" class="headerlink" title="15. File Times"></a>15. File Times</h2><table>
+<thead>
+<tr>
+<th align="center">Field</th>
+<th align="center">Description</th>
+<th align="center">Example</th>
+<th align="center">ls option</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">st_atim</td>
+<td align="center">last-access time of file data</td>
+<td align="center">read</td>
+<td align="center">-u</td>
+</tr>
+<tr>
+<td align="center">st_mtim</td>
+<td align="center">last-modification time of file data</td>
+<td align="center">write</td>
+<td align="center">default</td>
+</tr>
+<tr>
+<td align="center">st_ctim</td>
+<td align="center">last-change time of i-node status</td>
+<td align="center">chmod, chown</td>
+<td align="center">-c</td>
+</tr>
+</tbody></table>
+<ul>
+<li><code>st_ctim</code>: 修改权限, UID, 添加或删除Hard Link等操作都会更新<code>st_ctim</code></li>
+<li><code>access()</code>和<code>stat()</code>只访问inode, 不访问文件内的数据, 因此不更新<code>st_atim</code></li>
+</ul>
+<h2 id="16-futimens-utimenset-and-utimes"><a href="#16-futimens-utimenset-and-utimes" class="headerlink" title="16. futimens, utimenset and utimes"></a>16. futimens, utimenset and utimes</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> &#123;</span></span><br><span class="line">  <span class="type">time_t</span> tv_sec;  <span class="comment">/* seconds */</span></span><br><span class="line">  <span class="type">long</span>   tv_nsec; <span class="comment">/* nanoseconds */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set file access and modification time with nanosecond precision</span></span><br><span class="line"><span class="comment"> * @param times access time and modification time. There are four ways of </span></span><br><span class="line"><span class="comment"> *        times argument:</span></span><br><span class="line"><span class="comment"> *        * null: both timestamps are set to current time</span></span><br><span class="line"><span class="comment"> *        * array of two timespec: If either tv_nsec is set to UTIME_NOW,</span></span><br><span class="line"><span class="comment"> *          the corresponding timestamp is set to current time.</span></span><br><span class="line"><span class="comment"> *        * array of two timespec: If either tv_nsec is set to UTIME_OMIT,</span></span><br><span class="line"><span class="comment"> *          the corresponding timestamp is unchanged</span></span><br><span class="line"><span class="comment"> *        * array of two timespec: tv_nsec field has a value other than</span></span><br><span class="line"><span class="comment"> *          UTIME_OMIT or UTIME_NOW, the corresponding timestamp is set to</span></span><br><span class="line"><span class="comment"> *          the value specified by the tc_sec and tv_nsec </span></span><br><span class="line"><span class="comment"> *          </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">futimens</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="keyword">struct</span> timespec times[<span class="number">2</span>])</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as futimens. </span></span><br><span class="line"><span class="comment"> * @param flag: follow or not symbolic link</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">utimensat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span> *path, <span class="type">const</span> <span class="keyword">struct</span> timespec times[<span class="number">2</span>], </span></span><br><span class="line"><span class="params">              <span class="type">int</span> flag)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">utimes</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">const</span> <span class="keyword">struct</span> timeval times[<span class="number">2</span>])</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="17-mkdir-mkdirat-rmdir"><a href="#17-mkdir-mkdirat-rmdir" class="headerlink" title="17. mkdir, mkdirat, rmdir"></a>17. mkdir, mkdirat, rmdir</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a directory named `pathname`</span></span><br><span class="line"><span class="comment"> * @param mode file permission bits</span></span><br><span class="line"><span class="comment"> * @return 0 on success, -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">mkdir</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">mode_t</span> mode)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same way as mkdir(). If `pathname` is relative, it it interpreted</span></span><br><span class="line"><span class="comment"> *        relative to the directory referred to by `dirfd`. If `pathname` </span></span><br><span class="line"><span class="comment"> *        is relative and `dirfd` is AT_FDCWD, `pathname` is interpreted </span></span><br><span class="line"><span class="comment"> *        relative to the current working directory of the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">mkdirat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">mode_t</span> mode)</span>;</span><br></pre></td></tr></table></figure>
+<p>新建文件夹的UID为当前进程的EUID. 若<code>mode</code>设置了<code>set-group-ID</code>, 则新建文件夹的GID为父文件夹的owner, 否则为当前进程的EGID.</p>
+<h2 id="18-Reading-Directories"><a href="#18-Reading-Directories" class="headerlink" title="18. Reading Directories"></a>18. Reading Directories</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open a directory with name pathname.</span></span><br><span class="line"><span class="comment"> * @return a pointer to the directory stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">DIR* <span class="title function_">opendir</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname)</span>;</span><br><span class="line">DIR* <span class="title function_">fdopendir</span><span class="params">(<span class="type">int</span> fd)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read a directory</span></span><br><span class="line"><span class="comment"> * @return a pointer to a dirent structure representing the next</span></span><br><span class="line"><span class="comment"> *         directory entry </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> dirent *<span class="title function_">readdir</span><span class="params">(DIR *dp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief reset the position of the directory stream dp to the</span></span><br><span class="line"><span class="comment"> *        beginning of the directory</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">rewinddir</span><span class="params">(DIR *dp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief closes the directory stream associated with dp</span></span><br><span class="line"><span class="comment"> * @return return 0 on success, -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">closedir</span><span class="params">(DIR *dp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the current location associated with the </span></span><br><span class="line"><span class="comment"> *        directory stream dp</span></span><br><span class="line"><span class="comment"> * @return the current location in the directory stream on </span></span><br><span class="line"><span class="comment"> *         success, -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">long</span> <span class="title function_">telldir</span><span class="params">(DIR *dp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the position of the next readdir() call</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">seekdir</span><span class="params">(DIR *dp, <span class="type">long</span> loc)</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dirent</span> &#123;</span></span><br><span class="line">  <span class="type">ino_t</span> d_ino;             <span class="comment">/* inode number */</span></span><br><span class="line">  <span class="type">off_t</span> d_off;             <span class="comment">/* current location in the directory */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">short</span> d_reclen; <span class="comment">/* length of this record */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>  d_type;   <span class="comment">/* file type */</span></span><br><span class="line">  <span class="type">char</span> d_name[<span class="number">256</span>];        <span class="comment">/* null terminated filename */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="19-chdir-fchdir-getcwd"><a href="#19-chdir-fchdir-getcwd" class="headerlink" title="19. chdir, fchdir, getcwd"></a>19. chdir, fchdir, getcwd</h2><p>每个进程都有一个当前操作的文件夹. 可通过以下函数来查看或更改当前进程所在的文件夹.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change current working directory of the calling process to the </span></span><br><span class="line"><span class="comment"> *        directory specified in `path`</span></span><br><span class="line"><span class="comment"> * @return 0 on success, -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">chdir</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* path)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">fchdir</span><span class="params">(<span class="type">int</span> fd)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief copy an absolute pathname of the current working directory to </span></span><br><span class="line"><span class="comment"> *        the array pointed to by `buf`.</span></span><br><span class="line"><span class="comment"> *        If the length of the pathname of current working directory, </span></span><br><span class="line"><span class="comment"> *        including the terminating null byte, exceeds size bytes, NULL is </span></span><br><span class="line"><span class="comment"> *        returned.</span></span><br><span class="line"><span class="comment"> * @return a pointer to a string containing the pathname of current</span></span><br><span class="line"><span class="comment"> *         working directory on success; NULL on error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">char</span>* <span class="title function_">getcwd</span><span class="params">(<span class="type">char</span>* buf, <span class="type">size_t</span> size)</span>;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/f946.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Standard I/O</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/aabf.html">
+        <span class="next-text nav-default">File I/O</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/49f7.html';
+  var disqus_title = "Files and Directories";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

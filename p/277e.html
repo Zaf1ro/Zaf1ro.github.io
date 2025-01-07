@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Signals"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/277e.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/277e.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/277e.html"/>
+
+
+<meta name="description" content="1. Introduction电子计算机中, interrupt(中断, 也称为trap)会中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Signals">
+<meta property="og:url" content="https://zaf1ro.github.io/p/277e.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction电子计算机中, interrupt(中断, 也称为trap)会中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/10-5-signal-semantics.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/10-6-reentrant-func.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/10-18-proc-when-editor-running.png">
+<meta property="article:published_time" content="2019-09-17T18:12:52.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.055Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/10-5-signal-semantics.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Signals - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Signal-Concepts"><span class="toc-text">2. Signal Concepts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Signal-Disposition"><span class="toc-text">2.1 Signal Disposition</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-UNIX-System-Signals"><span class="toc-text">2.2 UNIX System Signals</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-signal-Function"><span class="toc-text">3. signal Function</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Program-Start-Up"><span class="toc-text">3.1 Program Start-Up</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Process-Creation"><span class="toc-text">3.2 Process Creation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Unreliable-Signals"><span class="toc-text">4. Unreliable Signals</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Interrupted-System-Calls"><span class="toc-text">5. Interrupted System Calls</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Slow-System-Calls"><span class="toc-text">5.1 Slow System Calls</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Automatic-Restarts-of-Interrupted-System-Calls"><span class="toc-text">5.2 Automatic Restarts of Interrupted System Calls</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Reentrant-Functions"><span class="toc-text">6. Reentrant Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-SIFCLD-Semantics"><span class="toc-text">7. SIFCLD Semantics</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Reliable-Signal-Terminology-and-Semantics"><span class="toc-text">8. Reliable-Signal Terminology and Semantics</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-kill-and-raise-Functions"><span class="toc-text">9. kill and raise Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-alarm-and-pause-Functions"><span class="toc-text">10. alarm and pause Functions</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-sleep1-example"><span class="toc-text">10.1 sleep1 example</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-sleep2-example"><span class="toc-text">10.2 sleep2 example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Signal-Sets"><span class="toc-text">11. Signal Sets</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-sigprocmask-Function"><span class="toc-text">12. sigprocmask Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-sigpending-Function"><span class="toc-text">13. sigpending Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-sigaction-Function"><span class="toc-text">14. sigaction Function</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-1-Example-signal-Function"><span class="toc-text">14.1 Example: signal Function</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-Example-signal-intr-Function"><span class="toc-text">14.2 Example: signal_intr Function</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-sigsetjmp-and-siglongjmp-Functions"><span class="toc-text">15. sigsetjmp and siglongjmp Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-sigsuspend-Function"><span class="toc-text">16. sigsuspend Function</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#16-1-Example-of-sigsuspend-to-protect-a-critial-region"><span class="toc-text">16.1 Example of sigsuspend to protect a critial region</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-2-Example-of-sigsuspend-to-wait-for-a-signal-handler-to-set-a-global-variable"><span class="toc-text">16.2 Example of sigsuspend to wait for a signal handler to set a global variable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-3-Example-of-signals-that-synchronize-a-parent-and-child"><span class="toc-text">16.3 Example of signals that synchronize a parent and child</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-abort-Function"><span class="toc-text">17. abort Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#18-system-Function"><span class="toc-text">18. system Function</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#18-1-Example-of-system-invoking-ed-editor"><span class="toc-text">18.1 Example of system invoking ed editor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#18-2-Implementation-of-system-with-signal-handling"><span class="toc-text">18.2 Implementation of system with signal handling</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#19-sleep-nanosleep-and-clock-nanosleep-Functions"><span class="toc-text">19. sleep, nanosleep and clock_nanosleep Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#20-sigqueue-Function"><span class="toc-text">20. sigqueue Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#21-Job-Control-Signals"><span class="toc-text">21. Job Control Signals</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-Signal-Names-and-Numbers"><span class="toc-text">22. Signal Names and Numbers</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Signals
+        
+      </h1>
+      <time class="post-time">
+          09/17/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>电子计算机中, <strong>interrupt</strong>(中断, 也称为<strong>trap</strong>)会中断CPU正在执行的代码, 以便及时处理事件. 若interrupt被接受, CPU会暂停当前活动, 保存其状态, 并执行一个interrupt handler来处理该事件. interrupt通常比较短暂, 允许中断处理完毕后恢复原本的程序. Interrupt通常由硬件设备生成, 用于标识外部设备的状态变化.<br>Signal是软件层面的interrupt, 其是一种处理异步事件的方式, 大多数应用程序都需要处理signal. UNIX系统的早期版本就支持signal, 但并不可靠, signal会丢失, 且进程执行某些关键代码时无法屏蔽特定signal. 4.3BSD和SVR3对signal model做出了调整, 让其变得可靠. POSIX.1标准化了signal model.<br>假设存在两个进程A和B, A无法直接向B发送signal, 必须通过kernel转发. 之所以需要通过kernel转发, 是出于安全考虑. Kernel收到signal后会检查A是否有权限向B发送signal, 若通过检查, 则会在B的PCB(进程控制块)中的信号表设置该signal, 并向B发送中断请求, B进入内核态, Kernel会查看该signal对应的处理函数, 并跳回到用户态执行该函数. 以下是signal的一些特性:</p>
+<ul>
+<li>Signal可由异常(非法内存访问), 硬件(Ctrl-C), 或程序产生(<code>kill</code>)</li>
+<li>Signal是异步的, signal的触发时间无法确定, 也无法确定产生何种signal</li>
+<li>Signal的处理不是即时的, 发送方发送signal时, 接收方不会立即收到</li>
+<li>Signal没有队列: 若某个进程同一时间收到多次同一类型的signal, 该进程只处理一次该signal</li>
+</ul>
+<h2 id="2-Signal-Concepts"><a href="#2-Signal-Concepts" class="headerlink" title="2. Signal Concepts"></a>2. Signal Concepts</h2><ul>
+<li>每个signal都有一个名字, 以<strong>SIG</strong>开头. 例如:<ul>
+<li><code>SIGABRT</code>: 进程调用<code>abort()</code>时产生的abort signal</li>
+<li><code>SIGALRM</code>: <code>alarm()</code>设置的timer响起产生的alarm signal<br>FreeBSD 8.0支持32种不同的signal. Mac OS X 10.6.8和Linux 3.2.0支持31种signal, 而Solaris 10支持40种signal. FreeBSD, Linux, 和Solaris支持应用程序自定义的signal.</li>
+</ul>
+</li>
+<li>signal以正整数常数的形式定义在<code>&lt;signal.h&gt;</code>中<ul>
+<li>实现上, 不同signal定义在不同header文件中, 但都包含在<code>&lt;signal.h&gt;</code>中</li>
+<li>kernel不应包含应用程序的header文件, 因此signal包含在kernel的header文件中, 再包含在用户级的header文件中:<ul>
+<li><code>&lt;sys/signal.h&gt;</code>: FreeBSD 8.0和Mac OS X 10.6.8</li>
+<li><code>&lt;bits/signum.h&gt;</code>: Linux 3.2.0</li>
+<li><code>&lt;sys/iso/signal_iso.h&gt;</code>: Solaris 10</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>signal不能为0, <code>kill()</code>的参数0表示process group中的所有进程, POSIX.1将其命名为null signal</li>
+<li>以下是生成signal的几种方式:<ul>
+<li>当用户按下某些按键时, 会生成terminal-generated signal. 例如: DELETE或Control-C会生成<code>SIGINT</code></li>
+<li>硬件异常生成的signal. 硬件检测到异常后会通知kernel, kernel生成相应的signal. 例如, 访问无效内存地址时生成<code>SIGSEGV</code></li>
+<li><code>kill()</code>允许一个进程向另一个进程发送signal, 通常用于中止background process.</li>
+<li>软件层面检测到异常会生成signal, 例如: <ul>
+<li><code>SIGURG</code>: out-of-band数据通过网络连接成功传输时产生该signal</li>
+<li><code>SIGPIPE</code>: 进程向pipe写入数据, 但没有reader时生成该signal</li>
+<li><code>SIGALRM</code>: 进程设置的alamrm clock到时间时生成该signal</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Signal作为一种经典的异步事件, 随时都可能发生, 因此进程无法通过检查一个变量(如<code>error</code>)来判断signal是否到来; 进程必须告诉kernel: 出现signal时应如何处理.</p>
+<h3 id="2-1-Signal-Disposition"><a href="#2-1-Signal-Disposition" class="headerlink" title="2.1 Signal Disposition"></a>2.1 Signal Disposition</h3><p>以下是处理signal的三种方式:</p>
+<ul>
+<li>无视signal: 除了<code>SIGKILL</code>和<code>SIGSTOP</code>, 其他signal均可被忽略或捕获<ul>
+<li>上面两个signal为kernel和superuser提供了中止进程的方式, 因此无法被忽略</li>
+<li>无视硬件异常产生的signal可能导致undefined behavior.</li>
+</ul>
+</li>
+<li>捕获signal: 为捕获signal, 程序必须传给kernel一个signal-catching function(signal捕获函数), 该函数用于处理某一signal的情况<ul>
+<li>signal通常表示该进程之外突发的事件, 例如: 当进程接收到<code>SIGCHLD</code>, 说明其child process已中止, 因此signal-catching function中需调用<code>waitpid()</code>获取child process的PID和termination status</li>
+<li>当进程创建临时文件时, 需在<code>SIGTERM</code>(<code>kill()</code>发出的termination signal)的signal-catching function内清理临时文件</li>
+</ul>
+</li>
+<li>默认操作: 每个signal都有一个默认操作, 绝大多数signal的默认操作为<strong>中止进程</strong></li>
+</ul>
+<h3 id="2-2-UNIX-System-Signals"><a href="#2-2-UNIX-System-Signals" class="headerlink" title="2.2 UNIX System Signals"></a>2.2 UNIX System Signals</h3><p>以下是所有signal的详细信息:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Name</th>
+<th align="center">Description</th>
+<th align="center">Default Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">SIGABRT</td>
+<td align="center"><code>abort()</code>生成, 进程异常退出</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGALRM</td>
+<td align="center"><code>alarm()</code>或<code>setitimer()</code>创建的timer超时后生成</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGBUS</td>
+<td align="center">表示硬件错误, 通常由某些类型的内存故障生成</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGCHLD</td>
+<td align="center">进程暂停或中止时向parent process发送该signal, 若parent process需要得知child process的状态变化, 可在handler内调用<code>wait()</code></td>
+<td align="center">ignore</td>
+</tr>
+<tr>
+<td align="center">SIGCONT</td>
+<td align="center">让暂停的进程继续运行, 进程无法阻塞该signal</td>
+<td align="center">continue&#x2F;ignore</td>
+</tr>
+<tr>
+<td align="center">SIGFPE</td>
+<td align="center">算数异常引发的signal, 例如: 除零活浮点溢出</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGHUP</td>
+<td align="center">与terminal中断时向session leader发送该signal. session leader进程终止时会向foreground process group中的所有进程发送该signal</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGEMT</td>
+<td align="center">hardware fault触发的signal, 视系统而定</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGILL</td>
+<td align="center">进程执行非法硬件指令时发送该signal</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGINFO</td>
+<td align="center">当用户按下status key(通常为Control-T)时, terminal driver向foreground process group中的所有进程发送该signal, 通常用于获取foreground process group中所有进程的状态信息</td>
+<td align="center">ignore</td>
+</tr>
+<tr>
+<td align="center">SIGINT</td>
+<td align="center">当用户按下interrupt key(通常为Control-C)时, terminal driver向foreground process group中的所有进程发送该signal, 用于中止失控的程序</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGQUIT</td>
+<td align="center">当用户按下terminal quit key(通常为Control-backslash)时, terminal driver向foreground process group中的所有进程发送该signal, 通常会中止foreground process group的所有进程, 并生成core文件</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGIO</td>
+<td align="center">异步I&#x2F;O事件(例如file descriptor准备写入或输出)</td>
+<td align="center">terminate&#x2F;ignore</td>
+</tr>
+<tr>
+<td align="center">SIGIOT</td>
+<td align="center">硬件故障</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGKILL</td>
+<td align="center">kill进程, 无法被捕获或无视</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGPIPE</td>
+<td align="center">进程向pipe或FIFO写入数据, 但pipe的reader已中止</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGPWR</td>
+<td align="center">断电时uninterruptible power supply(UPS)提供电力, 或电量过低</td>
+<td align="center">terminate&#x2F;ignore</td>
+</tr>
+<tr>
+<td align="center">SIGSEGV</td>
+<td align="center">进程进行了无效内存引用</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGSTOP</td>
+<td align="center">用于暂停进程, 无法被捕获或无视</td>
+<td align="center">stop process</td>
+</tr>
+<tr>
+<td align="center">SIGSYS</td>
+<td align="center">进程调用非法的system call</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGTERM</td>
+<td align="center">kill触发, 通知进程终止运行, 用于调用结束前的清理工作</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGTRAP</td>
+<td align="center">hardware fault触发的signal, 视系统而定</td>
+<td align="center">terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGTSTP</td>
+<td align="center">按下terminal suspend key(Control-Z)触发该signal, 用于停止进程运行</td>
+<td align="center">stop process</td>
+</tr>
+<tr>
+<td align="center">SIGTTIN</td>
+<td align="center">background process group中的进程尝试读取controlling terminal的数据</td>
+<td align="center">stop process</td>
+</tr>
+<tr>
+<td align="center">SIGTTOU</td>
+<td align="center">background process group中的进程尝试写入controlling terminal</td>
+<td align="center">stop process</td>
+</tr>
+<tr>
+<td align="center">SIGURG</td>
+<td align="center">表示发生紧急情况, 接收到out-of-band data时也生成该signal</td>
+<td align="center">ignore</td>
+</tr>
+<tr>
+<td align="center">SIGUSR1</td>
+<td align="center">用户自定义的signal</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGUSR2</td>
+<td align="center">用户自定义的signal</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGVTALRM</td>
+<td align="center"><code>setitimer()</code>创建的virtual interval timer超时</td>
+<td align="center">terminate</td>
+</tr>
+<tr>
+<td align="center">SIGWINCH</td>
+<td align="center">进程调用<code>ioctl()</code>修改terminal的window size时, kernel向foreground process group中的所有进程发送该signal</td>
+<td align="center">ignore</td>
+</tr>
+<tr>
+<td align="center">SIGXCPU</td>
+<td align="center">进程超过soft CPU time limit</td>
+<td align="center">terminate or terminate+core</td>
+</tr>
+<tr>
+<td align="center">SIGXFSZ</td>
+<td align="center">进程超过soft file size limit</td>
+<td align="center">terminate or terminate+core</td>
+</tr>
+</tbody></table>
+<p>表格中<code>terminate</code>表示中止进程; core表示在进程的工作目录中创建一个名为<strong>core</strong>的文件, 其中保存进程的内存映像, 该文件用于debugger检查进程被中止时的状态; stop表示暂停当前进程.<br>以下情况不会生成core文件:</p>
+<ul>
+<li>程序设置了set-user-ID, 但当前用户不是程序所有者</li>
+<li>程序设置了set-group-ID, 但当前用户不是程序所有者</li>
+<li>用户无权写入当前目录</li>
+<li>core文件已存在, 且用户无权写入</li>
+<li>core体积过大</li>
+</ul>
+<h2 id="3-signal-Function"><a href="#3-signal-Function" class="headerlink" title="3. signal Function"></a>3. signal Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="title function_">void</span> <span class="params">(*<span class="type">sighandler_t</span>)</span><span class="params">(<span class="type">int</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the disposition of the signal `signum` to </span></span><br><span class="line"><span class="comment"> *        `handler`, which is either SIG_IGN, SIG_DFL, </span></span><br><span class="line"><span class="comment"> *        or the address of a function</span></span><br><span class="line"><span class="comment"> * @param handler one of the following options:</span></span><br><span class="line"><span class="comment"> *        * SIG_IGN: ignore the signal</span></span><br><span class="line"><span class="comment"> *        * SIG_DFL: use the default action</span></span><br><span class="line"><span class="comment"> *        * address of function: call the func when </span></span><br><span class="line"><span class="comment"> *          the signal occurs</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">sighandler_t</span> <span class="title function_">signal</span><span class="params">(<span class="type">int</span> signum, <span class="type">sighandler_t</span> handler)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-Program-Start-Up"><a href="#3-1-Program-Start-Up" class="headerlink" title="3.1 Program Start-Up"></a>3.1 Program Start-Up</h3><p>启动程序时, 所有signal都是默认行为. 调用<code>exec</code>时, 会有三种情况:</p>
+<ul>
+<li>进程忽略某个signal, <code>exec</code>执行的程序仍忽略该signal</li>
+<li>进程捕获某个signal, <code>exec</code>执行的程序将其改为默认行为</li>
+<li>进程采用默认行为处理signal, <code>exec</code>执行的程序仍采用默认行为</li>
+</ul>
+<p>由于<code>exec</code>不保存原程序的内存空间, 因此任何自定义的signal handler都会改为默认行为. 若shell不支持job control, 用户执行background process时(如<code>cc main.c &amp;</code>), shell会将interrupt signal和quit signal的行为设置为<strong>ignore</strong>, 这样用户按下interrupt character时, background process不会受到影响.<br><code>signal()</code>存在一个限制: 在不修改当前signal handler的前提下, 无法得知该signal的handler, 因此引入了<code>sigaction()</code>.</p>
+<h3 id="3-2-Process-Creation"><a href="#3-2-Process-Creation" class="headerlink" title="3.2 Process Creation"></a>3.2 Process Creation</h3><p>当进程调用<code>fork()</code>时, child process会继承parent process的signal handler. 由于child process会复制parent process的内存映像, signal handler的地址也会复制到child process中.</p>
+<h2 id="4-Unreliable-Signals"><a href="#4-Unreliable-Signals" class="headerlink" title="4. Unreliable Signals"></a>4. Unreliable Signals</h2><p>早期UNIX系统的signal不可靠: 生成signal, 但进程没有接收到, 其中一个问题在于: 生成signal后, 会将handler重置为默认动作, 因此handler被调用后需调用<code>signal()</code>重新设置. 由于signal handler并不是一个原子操作, 因此会产生竞争:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">sig_int</span><span class="params">()</span>; <span class="comment">/* signal handler */</span></span><br><span class="line">signal(SIGINT, sig_int); <span class="comment">/* establish handler */</span></span><br><span class="line"></span><br><span class="line">sig_int()</span><br><span class="line">&#123;</span><br><span class="line">  signal(SIGINT, sig_int); <span class="comment">/* reestablish handler for next time */</span></span><br><span class="line">  <span class="comment">/* process the signal ... */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码中, 调用<code>sig_int()</code>时会立刻调用<code>signal()</code>重新设置signal handler, 但存在一个特殊情况: 调用<code>sig_int()</code>之后与调用<code>signal()</code>之前存在一个时间间隙, 此时若生成<code>SIGINT</code>, 会使用默认行为处理该signal, 而不是调用<code>sig_int()</code>.<br>早期UNIX系统还存在一个问题: 进程没有一个atomic pause function. 以下面代码为例:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">sig_int</span><span class="params">()</span>; <span class="comment">/* my signal handling function */</span></span><br><span class="line"><span class="type">int</span> sig_int_flag = <span class="number">0</span>; <span class="comment">/* set nonzero when signal occurs */</span></span><br><span class="line"></span><br><span class="line">main()</span><br><span class="line">&#123;</span><br><span class="line">  signal(SIGINT, sig_int); <span class="comment">/* establish handler */</span></span><br><span class="line">  <span class="comment">/* ... */</span></span><br><span class="line">  <span class="keyword">while</span> (sig_int_flag == <span class="number">0</span>)</span><br><span class="line">    pause(); <span class="comment">/* go to sleep, waiting for signal */</span></span><br><span class="line">  <span class="comment">/* ... */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sig_int()</span><br><span class="line">&#123;</span><br><span class="line">  signal(SIGINT, sig_int); <span class="comment">/* reestablish handler for next time */</span></span><br><span class="line">  sig_int_flag = <span class="number">1</span>; <span class="comment">/* set flag for main loop to examine */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>进程调用<code>pause()</code>进入睡眠状态, 捕获到<code>SIGINT</code>时进程被唤醒, signal handler将<code>sig_int_flag</code>设置为非零值, 因此不会再次陷入休眠. 但存在一种特殊情况: <strong>进入while循环之后</strong>和调用pauae()之前存在一个时间间隙, 若此时接收到<code>SIGINT</code>, 则<code>sig_int_flag</code>变为非零值, 且调用<code>pause()</code>后进程永远不会醒来.</p>
+<h2 id="5-Interrupted-System-Calls"><a href="#5-Interrupted-System-Calls" class="headerlink" title="5. Interrupted System Calls"></a>5. Interrupted System Calls</h2><p>早期UNIX系统中, 若进程被一个较慢的system call阻塞时收到signal, 该system call会被中断, 返回错误并将<code>errno</code>设置为<code>EINTR</code>.</p>
+<h3 id="5-1-Slow-System-Calls"><a href="#5-1-Slow-System-Calls" class="headerlink" title="5.1 Slow System Calls"></a>5.1 Slow System Calls</h3><p>system call分为两种: <strong>slow system call</strong>和<strong>fast system call</strong>. slow system call会一直阻塞进程, 直到完成操作, 如下:</p>
+<ul>
+<li>读取文件但当前没有数据(pipes, terminal device, 和network device)</li>
+<li>写入文件但数据不能立即被接受(buffer溢出或其他原因)</li>
+<li>打开文件但需要满足某些条件(modem响应后才可打开terminal device)</li>
+<li>调用<code>pause()</code>或<code>wait()</code></li>
+<li>部分<code>ioctl()</code>操作</li>
+<li>部分IPC函数</li>
+</ul>
+<p>Disk I&#x2F;O并不算作slow system call, 虽然读取或写入一个磁盘文件会暂时阻塞进程, 但除非硬件出错, I&#x2F;O操作会很快返回.<br>可被中断的system call存在一个问题: 我们必须显式处理返回的错误. 假设被中断时需要重新数据, 如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">again:</span><br><span class="line">  <span class="keyword">if</span> ((n = read(fd, buf, BUFFSIZE)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">      <span class="keyword">goto</span> again; <span class="comment">/* just an interrupted system call */</span></span><br><span class="line">    <span class="comment">/* handle other errors */</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-Automatic-Restarts-of-Interrupted-System-Calls"><a href="#5-2-Automatic-Restarts-of-Interrupted-System-Calls" class="headerlink" title="5.2 Automatic Restarts of Interrupted System Calls"></a>5.2 Automatic Restarts of Interrupted System Calls</h3><p>4.2BSD引入了新机制: 自动重启被中断的system call. 以下是可自动重启的system call:</p>
+<ul>
+<li>只在slow device上才能被signal中断的函数:<ul>
+<li><code>ioctl</code></li>
+<li><code>read</code></li>
+<li><code>readv</code></li>
+<li><code>write</code></li>
+<li><code>writev</code></li>
+</ul>
+</li>
+<li>总会被signal中断的函数:<ul>
+<li><code>wait</code></li>
+<li><code>waitpid</code></li>
+</ul>
+</li>
+</ul>
+<p>有些应用程序不想在signal打断时自动重试, 4.3BSD允许进程关闭该特性. POSIX.1要求system call只有设置了<code>SA_RESTART</code>时才会在signal中断时重试. 该flag可通过调用<code>sigaction()</code>设置.<br>对于可被signal中断的system call, 不同系统上的实现各不相同: System V默认不会重试被中断的system call; BSD则默认重试被中断的system call. FreeBSD 8.0, Linux 3.2.0和Mac OS X 10.6.8只会重试部分被signal打断的system call, 这些signal必须调用<code>signal()</code>注册了handler.<br>4.2BSD之所以选择自动重试system call, 因为有时用户并不清楚输入或输出设备是否为slow device. 以下是不同UNIX系统实现下的signal函数及其语义.<br><img src="/images/UNIX/APUE/10-5-signal-semantics.png" alt="signal function and their semantics"></p>
+<h2 id="6-Reentrant-Functions"><a href="#6-Reentrant-Functions" class="headerlink" title="6. Reentrant Functions"></a>6. Reentrant Functions</h2><p>进程收到signal后, 正在运行的指令会被signal handler中断. handler运行结束后会继续执行被暂停的命令, 与硬件中断类似.<br>在signal handler中, 我们无法得知当前进程执行到哪一步:</p>
+<ul>
+<li>若进程在运行<code>malloc()</code>时收到signal, 并将执行权转移给signal handler, signal handler中再次调用<code>malloc()</code>, 从而导致进程中的<code>malloc()</code>维护的列表被中途修改, 进而导致无法预测的异常.</li>
+<li>进程正在执行某个函数, 如<code>getpwnam()</code>, 该函数会将运行结果保存在一个静态位置, 而signal handler内也会执行该函数, 从而导致进程的运行结果被signal handler覆盖.</li>
+</ul>
+<p>The Single UNIX Specification规定了signal handler内可安全使用的函数, 这些函数都是reentrant(可重入的), 被称为<strong>async-signal safe</strong>. 以下是所有的reentrant functions:<br><img src="/images/UNIX/APUE/10-6-reentrant-func.png" alt="Reentrant functions that may be called from a signal handler"></p>
+<p>大部分函数都没有囊括在内, 主要因为以下几点原因:</p>
+<ol>
+<li>使用了static data structure</li>
+<li>调用了<code>malloc()</code>或<code>free()</code></li>
+<li>standard I&#x2F;O library的一部分</li>
+</ol>
+<p>使用上述函数时需主要几点:</p>
+<ul>
+<li>standard I&#x2F;O library的大多数实现都会用到global data structure</li>
+<li>即使在signal handler内使用安全函数, 也需要注意: 每个线程只有一个<code>errno</code>变量, 例如, signal handler内调用<code>read()</code>可能会修改<code>main()</code>的<code>errno</code>值. 因此在signal handler内调用函数时要保存并之后恢复<code>errno</code></li>
+<li><code>longjmp</code>和<code>siglongjmp</code>不是安全函数, 因为进程收到signal时可能正在更新某个data structure. 调用<code>siglongjmp</code>会让进程执行其他操作, 而不是继续未完成的data structure.</li>
+</ul>
+<h2 id="7-SIFCLD-Semantics"><a href="#7-SIFCLD-Semantics" class="headerlink" title="7. SIFCLD Semantics"></a>7. SIFCLD Semantics</h2><p><code>SIGCLD</code>和<code>SIGCHLD</code>存在一些混淆: <code>SIGCLD</code>源自System V, 与BSD的<code>SIGCHLD</code>有不同的语义. POSIX.1也命名为<code>SIGCHLD</code>.<br>当child process状态发生变化时, parent process会收到<code>SIGCHLD</code>, parent process可通过调用<code>wait()</code>获取child process的termination status.<br>System V处理<code>SIGCLD</code>的方式则不同: </p>
+<ol>
+<li>SIG_DFL: <code>SIGCLD</code>的默认动作为无视该signal, 但也不会丢弃该signal, parent process可用<code>wait()</code>来获取child parent的信息, 否则child process变为zombie.</li>
+<li>SIG_IGN: 若将<code>SIGCLD</code>的handler设置为<code>SIG_IGN</code>, 则child process的信息会被无视并丢弃. <code>wait()</code>会阻塞parent process, 直到child process中止, 并将<code>errno</code>设为<code>ECHILD</code>, child process不会变为zombie.</li>
+<li>自定义处理方式: kernel会在<code>signal()</code>执行后立即检查是否存在child process状态改变.</li>
+</ol>
+<h2 id="8-Reliable-Signal-Terminology-and-Semantics"><a href="#8-Reliable-Signal-Terminology-and-Semantics" class="headerlink" title="8. Reliable-Signal Terminology and Semantics"></a>8. Reliable-Signal Terminology and Semantics</h2><p>以下是有关signal的一些名词定义:</p>
+<ul>
+<li>发生某些事件时, 会向进程<strong>generate</strong>(生成)对应的signal, 以下是可触发signal的事件:<ul>
+<li>硬件故障</li>
+<li>软件状况(alarm timer到时间)</li>
+<li>terminal-generated signal</li>
+<li>调用<code>kill()</code></li>
+</ul>
+</li>
+<li>当需要对signal采取行动时, 会向进程<strong>deliver</strong>(发送)signal</li>
+<li>signal的generate和delivery之间的时间称为<strong>pending</strong>(待定)</li>
+<li>进程可以选择<strong>block</strong>(阻塞)signal的delivery. 若signal被阻塞, 且signal的handler为默认行为或捕获signal, 则signal维持pending状态, 直到:<ul>
+<li>进程unblock(解除阻塞)signal</li>
+<li>将signal handler改为<code>SIG_IGN</code>(忽略该signal)</li>
+</ul>
+</li>
+<li>只有delivery时系统才判断是否将signal阻塞, 而不是generate, 这么做允许进程在signal发送前修改signal的handler. <code>sigpending()</code>可可查看哪些signal被block或处于pending状态.</li>
+<li>若进程解除阻塞signal前, 已存在多个被阻塞signal, POSIX.1允许系统向该进程传递一次或多次signal. 若系统传递signal多次, 我们可以说signal被queue(排队). 绝大多数UNIX系统不会对signal排队, 只会传递一次signal.</li>
+<li>POSIX.1没有规定signal的传递顺序, 因此, 与进程当前状态相关的signal会比其他signal提前到达.</li>
+<li>每个进程都有一个signal mask, 其决定了哪些signal可以被传递给当前进程, 哪些signal被阻塞. 每种signal占一个bit, 若bit为1, 表示该signal被阻塞. 进程可调用<code>sigprocmask()</code>来检查和修改signal mask. 由于signal数量超出integer的bit数, POSIX.1规定了一种新的数据类型: <code>sigset_t</code>.</li>
+</ul>
+<h2 id="9-kill-and-raise-Functions"><a href="#9-kill-and-raise-Functions" class="headerlink" title="9. kill and raise Functions"></a>9. kill and raise Functions</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief send any signal to any process or process. </span></span><br><span class="line"><span class="comment"> *        group. A process needs permission to send</span></span><br><span class="line"><span class="comment"> *        a signal:</span></span><br><span class="line"><span class="comment"> *        * The superuser can send a signal to any </span></span><br><span class="line"><span class="comment"> *          process</span></span><br><span class="line"><span class="comment"> *        * The RUID or EUID of the sending process</span></span><br><span class="line"><span class="comment"> *          must equal the RUID or saved set-user-ID</span></span><br><span class="line"><span class="comment"> *          of the target process</span></span><br><span class="line"><span class="comment"> * @param pid must be one of the following value</span></span><br><span class="line"><span class="comment"> *        * pid &gt; 0: signal is sent to the process  </span></span><br><span class="line"><span class="comment"> *          with the ID specified by pid</span></span><br><span class="line"><span class="comment"> *        * pid = 0: no signal is sent, but but  </span></span><br><span class="line"><span class="comment"> *          existence and permission checks are still</span></span><br><span class="line"><span class="comment"> *          performed</span></span><br><span class="line"><span class="comment"> *        * pid = -1: signal is sent to all process </span></span><br><span class="line"><span class="comment"> *          for which the calling process has permission</span></span><br><span class="line"><span class="comment"> *          to send signals, except for init</span></span><br><span class="line"><span class="comment"> *        * pid &lt; -1: signal is sent to every process </span></span><br><span class="line"><span class="comment"> *          in the process group whose ID is -pid</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">kill</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">int</span> signo)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief send a signal to the calling process. In a </span></span><br><span class="line"><span class="comment"> *        single-threaded program it is equivalent to</span></span><br><span class="line"><span class="comment"> *        kill(getpid(), signo);</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">raise</span><span class="params">(<span class="type">int</span> signo)</span>;</span><br></pre></td></tr></table></figure>
+<p>若<code>kill()</code>的参数<code>signo</code>为0, <code>kill()</code>不会发送任何signal, 但会检查其他错误, 通常用于检查目标进程是否存在; 若目标进程不存在, <code>kill()</code>返回-1, 并将<code>errno</code>设为<code>ESRCH</code>.</p>
+<h2 id="10-alarm-and-pause-Functions"><a href="#10-alarm-and-pause-Functions" class="headerlink" title="10. alarm and pause Functions"></a>10. alarm and pause Functions</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief arrange for a SIGALRM signal to be delivered </span></span><br><span class="line"><span class="comment"> *        to the calling process in `sec` seconds.</span></span><br><span class="line"><span class="comment"> * @param sec if it is 0, any pending alarm is canceled</span></span><br><span class="line"><span class="comment"> * @return return the number of seconds remaining until</span></span><br><span class="line"><span class="comment"> *         any previously scheduled alarm was due to be</span></span><br><span class="line"><span class="comment"> *         delivered, or zero if there was no previously</span></span><br><span class="line"><span class="comment"> *         scheduled alarm.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">alarm</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> sec)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief suspend the calling thread until a signal</span></span><br><span class="line"><span class="comment"> * @return -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pause</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>每个进程的线程共享一个timer, 因此<code>alarm()</code>会覆盖当前正在运行的timer, 并返回之前timer剩余的时间</li>
+<li><code>alaram()</code>和<code>setitimer()</code>共享一个timer, 调用其中一个函数会影响另一个函数. </li>
+<li><code>execve()</code>会保留<code>alarm()</code>生成的timer, 但<code>fork()</code>不会保留</li>
+<li><code>sleep()</code>可能使用<code>SIGALRM</code>, 因此不要混用<code>sleep()</code>和<code>alarm()</code></li>
+<li>由于<code>SIGALRM</code>的默认中止进程, 因此大多数进程都会选择捕获该信号</li>
+</ul>
+<h3 id="10-1-sleep1-example"><a href="#10-1-sleep1-example" class="headerlink" title="10.1 sleep1 example"></a>10.1 sleep1 example</h3><p>使用<code>alarm()</code>和<code>pause()</code>可实现一个简易sleep function</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_alrm</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* nothing to do, just return to wake up the pause */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">sleep1</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> seconds)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (signal(SIGALRM, sig_alrm) == SIG_ERR)</span><br><span class="line">    <span class="keyword">return</span> seconds;</span><br><span class="line">  alarm(seconds);   <span class="comment">/* start the timer */</span></span><br><span class="line">  pause();          <span class="comment">/* next caught signal wakes us up */</span></span><br><span class="line">  <span class="keyword">return</span> alarm(<span class="number">0</span>);  <span class="comment">/* turn off timer, return unslept time */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码存在三个问题:</p>
+<ul>
+<li>调用<code>alarm()</code>会替代进程设置的timer, 需保存<code>alarm()</code>的返回值并依情况而定: <ul>
+<li>若返回值小于<code>seconds</code>, 则需等待之前timer</li>
+<li>若返回值大于<code>seconds</code>, 则在<code>sleep1()</code>返回前调用<code>alarm()</code>完成接下来的倒计时</li>
+</ul>
+</li>
+<li><code>sleep1()</code>调用<code>signal()</code>修改<code>SIGALRM</code>的handler, 需保存<code>signal()</code>的返回值, 并在<code>sleep1()</code>返回前恢复之前的handler</li>
+<li>第一次调用<code>alarm()</code>与<code>pause()</code>之间存在竞争条件, 若调用<code>pause()</code>之前进程收到signal, 进程会被一直挂起</li>
+</ul>
+<h3 id="10-2-sleep2-example"><a href="#10-2-sleep2-example" class="headerlink" title="10.2 sleep2 example"></a>10.2 sleep2 example</h3><p>以下是修改过后的sleep function:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;setjmp.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> jmp_buf env_alrm;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_alrm</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  longjmp(env_alrm, <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">sleep2</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> seconds)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (signal(SIGALRM, sig_alrm) == SIG_ERR)</span><br><span class="line">    <span class="keyword">return</span> seconds;</span><br><span class="line">  <span class="keyword">if</span> (setjmp(env_alrm) == <span class="number">0</span>) &#123;</span><br><span class="line">    alarm(seconds); <span class="comment">/* start the timer */</span></span><br><span class="line">    pause(); <span class="comment">/* next caught signal wakes us up */</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> alarm(<span class="number">0</span>); <span class="comment">/* turn off timer, return unslept time */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码还存在一个隐患: 若<code>SIGALRM</code>还存在其他handler, 处理完signal后调用<code>longjmp()</code>不会还原进程设置的handler.<br><code>alarm()</code>一般用于中断I&#x2F;O操作, 如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line">  <span class="type">char</span> line[MAXLINE];</span><br><span class="line">  <span class="keyword">if</span> (signal(SIGALRM, sig_alrm) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal(SIGALRM) error&quot;</span>);</span><br><span class="line">  </span><br><span class="line">  alarm(<span class="number">10</span>);</span><br><span class="line">  <span class="keyword">if</span> ((n = read(STDIN_FILENO, line, MAXLINE)) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;read error&quot;</span>);</span><br><span class="line">  alarm(<span class="number">0</span>);</span><br><span class="line">  </span><br><span class="line">  write(STDOUT_FILENO, line, n);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_alrm</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* nothing to do, just return to interrupt the read */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>某些UNIX系统的<code>read()</code>会自动启动, 则<code>SIGALRM</code>无法打断<code>read()</code>, 仍需调用<code>longjmp()</code></p>
+<h2 id="11-Signal-Sets"><a href="#11-Signal-Sets" class="headerlink" title="11. Signal Sets"></a>11. Signal Sets</h2><p><strong>signal set</strong>是一种表示多个signal的数据类型, 用于<code>sigprocmask()</code>阻塞某些signal. 以下是设置<code>sigset_t</code>的函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize and empty a signal set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigemptyset</span><span class="params">(<span class="type">sigset_t</span> *<span class="built_in">set</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize the signal set pointed to by set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigfillset</span><span class="params">(<span class="type">sigset_t</span> *<span class="built_in">set</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief add a signal to a signal set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigaddset</span><span class="params">(<span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">int</span> signo)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief delete a signal from a signal set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigdelset</span><span class="params">(<span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">int</span> signo)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief test whether the signal specified by `signo`</span></span><br><span class="line"><span class="comment"> *        is a member of the set pointed to by `set`</span></span><br><span class="line"><span class="comment"> * @return 1 if the specified signal is a member of </span></span><br><span class="line"><span class="comment"> *         the specified set, or 0 if it is not</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigismember</span><span class="params">(<span class="type">const</span> <span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">int</span> signo)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下是<code>&lt;signal.h&gt;</code>的实现:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> sigemptyset(ptr) (*(ptr) = 0)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> sigfillset(ptr) (*(ptr) = ˜(sigset_t)0, 0) <span class="comment">// return 0</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SIGBAD(signo) ((signo) <span class="string">&lt;= 0 || (signo) &gt;</span>= NSIG)</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigaddset</span><span class="params">(<span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (SIGBAD(signo)) &#123;</span><br><span class="line">    errno = EINVAL;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  *<span class="built_in">set</span> |= <span class="number">1</span> &lt;&lt; (signo - <span class="number">1</span>); <span class="comment">/* turn bit on */</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigdelset</span><span class="params">(<span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (SIGBAD(signo)) &#123;</span><br><span class="line">    errno = EINVAL;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  *<span class="built_in">set</span> &amp;= ˜(<span class="number">1</span> &lt;&lt; (signo - <span class="number">1</span>)); <span class="comment">/* turn bit off */</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigismember</span><span class="params">(<span class="type">const</span> <span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (SIGBAD(signo)) &#123;</span><br><span class="line">    errno = EINVAL;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (*<span class="built_in">set</span> &amp; (<span class="number">1</span> &lt;&lt; (signo - <span class="number">1</span>))) != <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="12-sigprocmask-Function"><a href="#12-sigprocmask-Function" class="headerlink" title="12. sigprocmask Function"></a>12. sigprocmask Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief fetch and/or change the signal mask of the</span></span><br><span class="line"><span class="comment"> *        calling thread</span></span><br><span class="line"><span class="comment"> * @param how the way in which the set is changed,  </span></span><br><span class="line"><span class="comment"> *        shall be one of the following values:</span></span><br><span class="line"><span class="comment"> *        * SIG_BLOCK: The set of blocked signals is </span></span><br><span class="line"><span class="comment"> *          the union of the current set and the `set`</span></span><br><span class="line"><span class="comment"> *          argument</span></span><br><span class="line"><span class="comment"> *        * SIG_UNBLOCK: The signals in `set` are </span></span><br><span class="line"><span class="comment"> *          removed from the current set of blocked</span></span><br><span class="line"><span class="comment"> *          signals</span></span><br><span class="line"><span class="comment"> *        * SIG_SETMASK: The set of blocked signals </span></span><br><span class="line"><span class="comment"> *          is set to the argument set.</span></span><br><span class="line"><span class="comment"> * @param set if it is null, then signal mask is </span></span><br><span class="line"><span class="comment"> *        unchanged, the current value of the signal </span></span><br><span class="line"><span class="comment"> *        mask is returned in `oldset`</span></span><br><span class="line"><span class="comment"> * @param oset if it is not null, the previous mask </span></span><br><span class="line"><span class="comment"> *        is stored in `oldset`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigprocmask</span><span class="params">(<span class="type">int</span> how, <span class="type">const</span> <span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">sigset_t</span> *oldset)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="13-sigpending-Function"><a href="#13-sigpending-Function" class="headerlink" title="13. sigpending Function"></a>13. sigpending Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the signal set that are blocked from </span></span><br><span class="line"><span class="comment"> *        delivery to the calling thread in the location </span></span><br><span class="line"><span class="comment"> *        pointed to by set</span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigpending</span><span class="params">(<span class="type">sigset_t</span> *<span class="built_in">set</span>)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="14-sigaction-Function"><a href="#14-sigaction-Function" class="headerlink" title="14. sigaction Function"></a>14. sigaction Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> &#123;</span></span><br><span class="line">  <span class="comment">/* signal handler, SIG_IGN, or SIG_DFL */</span></span><br><span class="line">  <span class="type">void</span> (*sa_handler)(<span class="type">int</span>);</span><br><span class="line">  <span class="comment">/* a mask of signals which should be blocked */</span></span><br><span class="line">  <span class="type">sigset_t</span> sa_mask;</span><br><span class="line">  <span class="comment">/* a set of flags which modify the behavior of the signal */</span></span><br><span class="line">  <span class="type">int</span> sa_flags;            </span><br><span class="line">  <span class="comment">/* alternative real-time handler */</span></span><br><span class="line">  <span class="type">void</span> (*sa_sigaction)(<span class="type">int</span>, <span class="type">siginfo_t</span> *, <span class="type">void</span> *);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the action taken by a process on </span></span><br><span class="line"><span class="comment"> *        receipt of a specific signal</span></span><br><span class="line"><span class="comment"> * @param signum the signal and can be any valid </span></span><br><span class="line"><span class="comment"> *        signal except SIGKILL and SIGSTOP</span></span><br><span class="line"><span class="comment"> * @param act if not null, it points to a structure </span></span><br><span class="line"><span class="comment"> *        specifying the action to be assiocated </span></span><br><span class="line"><span class="comment"> *        with the specified signal</span></span><br><span class="line"><span class="comment"> * @param oldact is non-NULL, the previous action </span></span><br><span class="line"><span class="comment"> *        is saved in oldact</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigaction</span><span class="params">(<span class="type">int</span> signum, <span class="type">const</span> <span class="keyword">struct</span> sigaction *act,</span></span><br><span class="line"><span class="params">              <span class="keyword">struct</span> sigaction *oldact)</span>;</span><br></pre></td></tr></table></figure>
+<p>若<code>sigaction()</code>的参数<code>act</code>为NULL, 用于查询当前signal handler. 以下是<code>sigaction struct</code>中<code>sa_flags</code>的可选项:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Option</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">SA_INTERRUPT</td>
+<td align="center">不会重试被目标signal打断的system call</td>
+</tr>
+<tr>
+<td align="center">SA_NOCLDSTOP</td>
+<td align="center">若signum为<code>SIGCHLD</code>, child process停止或恢复运行时不产生<code>SIGCHLD</code></td>
+</tr>
+<tr>
+<td align="center">SA_NOCLDWAIT</td>
+<td align="center">若signum为<code>SIGCHLD</code>, child process中止时不将其变为zombie</td>
+</tr>
+<tr>
+<td align="center">SA_NODEFER</td>
+<td align="center">进程执行目标signal的signal handler时, 不将该signal加入signal mask中</td>
+</tr>
+<tr>
+<td align="center">SA_ONSTACK</td>
+<td align="center">若存在可用的alternative signal stack(<code>sigaltstack()</code>生成), 则使用该stack的signal handler.</td>
+</tr>
+<tr>
+<td align="center">SA_RESETHAND</td>
+<td align="center">将目标signal的handler改为<code>SIG_DFL</code>(默认行为), 并清除signal handler的<code>SA_SIGINFO</code> flag</td>
+</tr>
+<tr>
+<td align="center">SA_RESTART</td>
+<td align="center">自动重试被目标signal打断的system call</td>
+</tr>
+<tr>
+<td align="center">SA_SIGINFO</td>
+<td align="center"><code>act</code>使用<code>sa_sigaction</code>, 而不是<code>sa_handler</code></td>
+</tr>
+</tbody></table>
+<p>通常signal handler的类型如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">handler</span><span class="params">(<span class="type">int</span> signo)</span>;</span><br></pre></td></tr></table></figure>
+<p>若sigaction struct中设置<code>SA_SIGINFO</code>, 则signal handler的函数类型变为:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">handler</span><span class="params">(<span class="type">int</span> signo, <span class="type">siginfo_t</span> *info, <span class="type">void</span> *context)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>siginfo</code> struct包含signal如何生成的原因. 所有遵循POSIX.1的UNIX系统都至少包含<code>si_signo</code>和<code>si_code</code>. 以下是<code>siginfo</code> struct的定义:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">siginfo</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> si_signo;  <span class="comment">/* signal number */</span></span><br><span class="line">  <span class="type">int</span> si_errno;  <span class="comment">/* if nonzero, errno value from errno.h */</span></span><br><span class="line">  <span class="type">int</span> si_code;   <span class="comment">/* additional info (depends on signal) */</span></span><br><span class="line">  <span class="type">pid_t</span> si_pid;  <span class="comment">/* sending process ID */</span></span><br><span class="line">  <span class="type">uid_t</span> si_uid;  <span class="comment">/* sending process real user ID */</span></span><br><span class="line">  <span class="type">void</span> *si_addr; <span class="comment">/* address that caused the fault */</span></span><br><span class="line">  <span class="type">int</span> si_status; <span class="comment">/* exit value or signal number */</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span> <span class="title">sigval</span> <span class="title">si_value</span>;</span> <span class="comment">/* application-specific value */</span></span><br><span class="line">  <span class="comment">/* possibly other fields also */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">union</span> <span class="title">sigval</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> sival_int; <span class="comment">// an integer value</span></span><br><span class="line">  <span class="type">void</span> *sival_ptr; <span class="comment">// or a pointer value</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>若handler的<code>signo</code>为<code>SIGCHLD</code>, 将会设置<code>si_pid</code>, <code>si_status</code>, 和<code>si_uid</code></li>
+<li>若handler的<code>signo</code>为<code>SIGBUS</code>, <code>SIGILL</code>, <code>SIGFPE</code>, 或<code>SIGSEGV</code>, 将会在<code>si_addr</code>设置出错的地址</li>
+<li><code>si_errno</code>包含导致该signal的错误码</li>
+</ul>
+<p><code>context</code>参数是一个无类型指针, 可转换为<code>ucontext_t</code> struct, 在signal传递时标识上下文:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* pointer to context resumed when this context returns */</span></span><br><span class="line"><span class="type">ucontext_t</span> *uc_link;</span><br><span class="line"><span class="comment">/* signals blocked when this context is active */</span> </span><br><span class="line"><span class="type">sigset_t</span> uc_sigmask; </span><br><span class="line"><span class="type">stack_t</span> uc_stack; <span class="comment">/* stack used by this context */</span></span><br><span class="line"><span class="comment">/* machine-specific representation of saved context */</span></span><br><span class="line"><span class="type">mcontext_t</span> uc_mcontext;</span><br></pre></td></tr></table></figure>
+
+<h3 id="14-1-Example-signal-Function"><a href="#14-1-Example-signal-Function" class="headerlink" title="14.1 Example: signal Function"></a>14.1 Example: signal Function</h3><p>使用<code>sigaction()</code>可实现<code>signal()</code>功能:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">Sigfunc *<span class="title function_">signal</span><span class="params">(<span class="type">int</span> signo, Sigfunc *func)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">act</span>, <span class="title">oact</span>;</span></span><br><span class="line">  act.sa_handler = func;</span><br><span class="line">  sigemptyset(&amp;act.sa_mask); <span class="comment">/* initialize sa_mask */</span></span><br><span class="line">  act.sa_flags = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> (signo == SIGALRM) &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> SA_INTERRUPT</span></span><br><span class="line">    act.sa_flags |= SA_INTERRUPT;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    act.sa_flags |= SA_RESTART;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (sigaction(signo, &amp;act, &amp;oact) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> SIG_ERR;</span><br><span class="line">  <span class="keyword">return</span> oact.sa_handler;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>必须使用<code>sigemptyset</code>初始化<code>sa_mask</code>, 因为<code>sa_mask = 0</code>不一定表示空白的signal mask</li>
+<li>上述代码为除<code>SIGALRM</code>之外的signal设置<code>SA_RESTART</code> flag, 因此所有被signal终端的system call都会自动重试.</li>
+<li>部分UNIX系统定义了<code>SA_INTERRUPT</code> flag, 系统会自动重试被中断的system call, 只有设置该flag才能放弃重试.</li>
+</ul>
+<h3 id="14-2-Example-signal-intr-Function"><a href="#14-2-Example-signal-intr-Function" class="headerlink" title="14.2 Example: signal_intr Function"></a>14.2 Example: signal_intr Function</h3><p>以下代码可防止被signal中断的system call重试:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">Sigfunc *<span class="title function_">signal_intr</span><span class="params">(<span class="type">int</span> signo, Sigfunc *func)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">act</span>, <span class="title">oact</span>;</span></span><br><span class="line">  act.sa_handler = func;</span><br><span class="line">  sigemptyset(&amp;act.sa_mask);</span><br><span class="line">  act.sa_flags = <span class="number">0</span>;</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span>  SA_INTERRUPT</span></span><br><span class="line">  act.sa_flags |= SA_INTERRUPT;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">  <span class="keyword">if</span> (sigaction(signo, &amp;act, &amp;oact) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span>(SIG_ERR);</span><br><span class="line">  <span class="keyword">return</span>(oact.sa_handler);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="15-sigsetjmp-and-siglongjmp-Functions"><a href="#15-sigsetjmp-and-siglongjmp-Functions" class="headerlink" title="15. sigsetjmp and siglongjmp Functions"></a>15. sigsetjmp and siglongjmp Functions</h2><p><code>longjmp()</code>通常用于从signal handler跳转至<code>main()</code>, 但<code>longjmp()</code>存在一个缺陷: 当进程收到signal时, 会开始执行handler, 并自动该signal加入signal mask, 以避免后续signal打断handler. 调用<code>longjmp()</code>从signal handler跳出时, 由于POSIX.1没有定义<code>setjmp()</code>和<code>longjmp()</code>是否处理signal mask, 不同UNIX系统会有不同行为:</p>
+<ul>
+<li>FreeBSD 8.0, Mac OS X 10.6.8: <code>setjmp()</code>保存当前signal mask, <code>longjmp()</code>恢复signal mask</li>
+<li>Linux 3.2.0, Solaris 10: <code>setjmp()</code>和<code>longjmp()</code>不保存和恢复signal mask</li>
+<li>FreeBSD和Mac OS X提供了<code>_setjmp()</code>和<code>_longjmp()</code>, 这两个函数不会保存和恢复signal mask</li>
+</ul>
+<p>为统一行为, POSIX.1提供了专门用于signal handler内的跳转函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set jump point for a non-local goto</span></span><br><span class="line"><span class="comment"> * @param savemask if it is not 0, save the current</span></span><br><span class="line"><span class="comment"> *        signal mask of the calling thread as part</span></span><br><span class="line"><span class="comment"> *        of the calling environment.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigsetjmp</span><span class="params">(sigjmp_buf env, <span class="type">int</span> savemask)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief non-local goto with signal handling. </span></span><br><span class="line"><span class="comment"> *        restore the saved signal mask if and only</span></span><br><span class="line"><span class="comment"> *        if the `env` argument was initialized by</span></span><br><span class="line"><span class="comment"> *        a call to `sigsetjmp()` with a non-zero</span></span><br><span class="line"><span class="comment"> *        `savemask` argument</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">siglongjmp</span><span class="params">(sigjmp_buf env, <span class="type">int</span> val)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="16-sigsuspend-Function"><a href="#16-sigsuspend-Function" class="headerlink" title="16. sigsuspend Function"></a>16. sigsuspend Function</h2><p>之前我们讨论了如何block或unblock某个signal, 该方法可保证关键代码区不被signal中断, 但如果想要unblock某个signal, 如何收到之前被block的signal? 假设目标signal为<code>SIGINT</code>, 以下为错误代码:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">sigset_t</span> newmask, oldmask;</span><br><span class="line"></span><br><span class="line">sigemptyset(&amp;newmask);</span><br><span class="line">sigaddset(&amp;newmask, SIGINT);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* block SIGINT and save current signal mask */</span></span><br><span class="line"><span class="keyword">if</span> (sigprocmask(SIG_BLOCK, &amp;newmask, &amp;oldmask) &lt; <span class="number">0</span>)</span><br><span class="line">  err_sys(<span class="string">&quot;SIG_BLOCK error&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* critical region of code */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* restore signal mask, which unblocks SIGINT */</span></span><br><span class="line"><span class="keyword">if</span> (sigprocmask(SIG_SETMASK, &amp;oldmask, <span class="literal">NULL</span>) &lt; <span class="number">0</span>)</span><br><span class="line">  err_sys(<span class="string">&quot;SIG_SETMASK error&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* window is open */</span></span><br><span class="line">pause(); <span class="comment">/* wait for signal to occur */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* continue processing */</span></span><br></pre></td></tr></table></figure>
+<p>对于上述代码, 被阻塞的signal可能在调用<code>sigprocmask(SIG_SETMASK, &amp;oldmask, NULL)</code>后立即传递给进程, <code>pause()</code>没有收到signal, 让进程一直陷入挂起状态. 因此, 我们需要一种方法, 将<strong>恢复signal mask</strong>和<strong>挂起进程</strong>变为一个原子操作:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief temporarily replace the current signal mask of </span></span><br><span class="line"><span class="comment"> *        the calling thread with the signal mask given </span></span><br><span class="line"><span class="comment"> *        by `mask` and then suspend the thread until </span></span><br><span class="line"><span class="comment"> *        delivery of a signal whose action is to invoke </span></span><br><span class="line"><span class="comment"> *        a signal handler or to terminate a process</span></span><br><span class="line"><span class="comment"> *        * if the signal terminates the process, then </span></span><br><span class="line"><span class="comment"> *          sigsuspend() does not return.</span></span><br><span class="line"><span class="comment"> *        * if the signal is caught, then sigsuspend() </span></span><br><span class="line"><span class="comment"> *          returns after the signal handler returns, </span></span><br><span class="line"><span class="comment"> *          and the signal mask is restored to the </span></span><br><span class="line"><span class="comment"> *          state before the call to sigsuspend().</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigsuspend</span><span class="params">(<span class="type">const</span> <span class="type">sigset_t</span> *mask)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>由于进程不能阻塞<code>SIGKILL</code>和<code>SIGSTOP</code>, 因此将这两个signal作为<code>sigsuspend()</code>的参数没有意义</li>
+<li><code>sigsuspend()</code>通常与<code>sigprocmask()</code>一起使用, 用于防止某段代码被signal中断</li>
+</ul>
+<h3 id="16-1-Example-of-sigsuspend-to-protect-a-critial-region"><a href="#16-1-Example-of-sigsuspend-to-protect-a-critial-region" class="headerlink" title="16.1 Example of sigsuspend to protect a critial region"></a>16.1 Example of sigsuspend to protect a critial region</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;apue.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_int</span><span class="params">(<span class="type">int</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">sigset_t</span> newmask, oldmask, waitmask;</span><br><span class="line"></span><br><span class="line">  pr_mask(<span class="string">&quot;program start: &quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (signal(SIGINT, sig_int) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal(SIGINT) error&quot;</span>);</span><br><span class="line">  sigemptyset(&amp;waitmask);</span><br><span class="line">  sigaddset(&amp;waitmask, SIGUSR1);</span><br><span class="line">  sigemptyset(&amp;newmask);</span><br><span class="line">  sigaddset(&amp;newmask, SIGINT);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Block SIGINT and save current signal mask. */</span></span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_BLOCK, &amp;newmask, &amp;oldmask) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;SIG_BLOCK error&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Critical region of code. */</span></span><br><span class="line">  pr_mask(<span class="string">&quot;in critical region: &quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Pause, allowing all signals except SIGUSR1. */</span></span><br><span class="line">  <span class="keyword">if</span> (sigsuspend(&amp;waitmask) != <span class="number">-1</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;sigsuspend error&quot;</span>);</span><br><span class="line"></span><br><span class="line">  pr_mask(<span class="string">&quot;after return from sigsuspend: &quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Reset signal mask which unblocks SIGINT. */</span></span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_SETMASK, &amp;oldmask, <span class="literal">NULL</span>) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;SIG_SETMASK error&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* And continue processing ... */</span></span><br><span class="line">  pr_mask(<span class="string">&quot;program exit: &quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_int</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  pr_mask(<span class="string">&quot;\nin sig_int: &quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是代码的运行结果:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">program start:</span><br><span class="line"><span class="keyword">in</span> critical region: SIGINT</span><br><span class="line">ˆC                          <span class="comment"># type the interrupt character</span></span><br><span class="line"><span class="keyword">in</span> sig_int: SIGINT SIGUSR1</span><br><span class="line">after <span class="built_in">return</span> from sigsuspend: SIGINT</span><br><span class="line">program <span class="built_in">exit</span>:</span><br></pre></td></tr></table></figure>
+
+<h3 id="16-2-Example-of-sigsuspend-to-wait-for-a-signal-handler-to-set-a-global-variable"><a href="#16-2-Example-of-sigsuspend-to-wait-for-a-signal-handler-to-set-a-global-variable" class="headerlink" title="16.2 Example of sigsuspend to wait for a signal handler to set a global variable"></a>16.2 Example of sigsuspend to wait for a signal handler to set a global variable</h3><p>以下代码捕获interrupt signal和quit signal, 进程收到quit signal时才唤醒<code>main()</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;apue.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">volatile</span> <span class="type">sig_atomic_t</span> quitflag; <span class="comment">/* set nonzero by signal handler */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* one signal handler for SIGINT and SIGQUIT */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_int</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (signo == SIGINT)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\ninterrupt\n&quot;</span>);</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (signo == SIGQUIT)</span><br><span class="line">    quitflag = <span class="number">1</span>; <span class="comment">/* set flag for main loop */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">sigset_t</span> newmask, oldmask, zeromask;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (signal(SIGINT, sig_int) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal(SIGINT) error&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (signal(SIGQUIT, sig_int) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal(SIGQUIT) error&quot;</span>);</span><br><span class="line"></span><br><span class="line">  sigemptyset(&amp;zeromask);</span><br><span class="line">  sigemptyset(&amp;newmask);</span><br><span class="line">  sigaddset(&amp;newmask, SIGQUIT);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Block SIGQUIT and save current signal mask. */</span></span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_BLOCK, &amp;newmask, &amp;oldmask) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;SIG_BLOCK error&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (quitflag == <span class="number">0</span>)</span><br><span class="line">    sigsuspend(&amp;zeromask);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* SIGQUIT has been caught and is now blocked; do whatever. */</span></span><br><span class="line">  quitflag = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Reset signal mask which unblocks SIGQUIT. */</span></span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_SETMASK, &amp;oldmask, <span class="literal">NULL</span>) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;SIG_SETMASK error&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是输出结果:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">ˆC           <span class="comment"># type the interrupt character</span></span><br><span class="line">interrupt</span><br><span class="line">ˆC           <span class="comment"># type the interrupt character again</span></span><br><span class="line">interrupt</span><br><span class="line">ˆC           <span class="comment"># and again</span></span><br><span class="line">interrupt</span><br><span class="line">ˆ\ $         <span class="comment"># now terminate with the quit character</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="16-3-Example-of-signals-that-synchronize-a-parent-and-child"><a href="#16-3-Example-of-signals-that-synchronize-a-parent-and-child" class="headerlink" title="16.3 Example of signals that synchronize a parent and child"></a>16.3 Example of signals that synchronize a parent and child</h3><p>以下代码通过signal同步parent process和child process:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;apue.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="keyword">volatile</span> <span class="type">sig_atomic_t</span> sigflag; <span class="comment">/* set nonzero by sig handler */</span></span><br><span class="line"><span class="type">static</span> <span class="type">sigset_t</span> newmask, oldmask, zeromask;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* one signal handler for SIGUSR1 and SIGUSR2 */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_usr</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  sigflag = <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">TELL_WAIT</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (signal(SIGUSR1, sig_usr) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal(SIGUSR1) error&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (signal(SIGUSR2, sig_usr) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal(SIGUSR2) error&quot;</span>);</span><br><span class="line">  sigemptyset(&amp;zeromask);</span><br><span class="line">  sigemptyset(&amp;newmask);</span><br><span class="line">  sigaddset(&amp;newmask, SIGUSR1);</span><br><span class="line">  sigaddset(&amp;newmask, SIGUSR2);</span><br><span class="line">  <span class="comment">/* Block SIGUSR1 and SIGUSR2, and save current signal mask */</span></span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_BLOCK, &amp;newmask, &amp;oldmask) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;SIG_BLOCK error&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">TELL_PARENT</span><span class="params">(<span class="type">pid_t</span> pid)</span></span><br><span class="line">&#123;</span><br><span class="line">  kill(pid, SIGUSR2);     <span class="comment">/* tell parent we&#x27;re done */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">WAIT_PARENT</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">while</span> (sigflag == <span class="number">0</span>)</span><br><span class="line">    sigsuspend(&amp;zeromask);  <span class="comment">/* and wait for parent */</span></span><br><span class="line">  sigflag = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Reset signal mask to original value */</span></span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_SETMASK, &amp;oldmask, <span class="literal">NULL</span>) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;SIG_SETMASK error&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">TELL_CHILD</span><span class="params">(<span class="type">pid_t</span> pid)</span></span><br><span class="line">&#123;</span><br><span class="line">  kill(pid, SIGUSR1);         <span class="comment">/* tell child we&#x27;re done */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">WAIT_CHILD</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">while</span> (sigflag == <span class="number">0</span>)</span><br><span class="line">    sigsuspend(&amp;zeromask);  <span class="comment">/* and wait for child */</span></span><br><span class="line">  sigflag = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Reset signal mask to original value */</span></span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_SETMASK, &amp;oldmask, <span class="literal">NULL</span>) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;SIG_SETMASK error&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="17-abort-Function"><a href="#17-abort-Function" class="headerlink" title="17. abort Function"></a>17. abort Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief unblock the SIGABRT signal, and then raise </span></span><br><span class="line"><span class="comment"> *        that signal for the calling process. This </span></span><br><span class="line"><span class="comment"> *        results in the abnormal termination of the</span></span><br><span class="line"><span class="comment"> *        process unless the SIGABRT signal is caught</span></span><br><span class="line"><span class="comment"> *        and the signal handler does not return</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">abort</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>ISO C没有规定<code>abort()</code>是否应flush buffered data, 是否关闭open stream, 或是否删除temporary files</li>
+<li>POSIX.1允许<code>abort()</code>在进程终止前调用<code>fclose()</code>关闭standard I&#x2F;O streams.</li>
+</ul>
+<p>以下是POSIX.1的<code>abort()</code>实现:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">abort</span><span class="params">(<span class="type">void</span>)</span> <span class="comment">/* POSIX-style abort() function */</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">sigset_t</span>         mask;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">action</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* caller can&#x27;t ignore SIGABRT */</span></span><br><span class="line">  sigaction(SIGABRT, <span class="literal">NULL</span>, &amp;action);</span><br><span class="line">  <span class="keyword">if</span> (action.sa_handler == SIG_IGN) &#123;</span><br><span class="line">    action.sa_handler = SIG_DFL;</span><br><span class="line">    sigaction(SIGABRT, &amp;action, <span class="literal">NULL</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (action.sa_handler == SIG_DFL)</span><br><span class="line">    fflush(<span class="literal">NULL</span>); <span class="comment">/* flush all open stdio streams */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* caller can&#x27;t block SIGABRT */</span></span><br><span class="line">  sigfillset(&amp;mask);</span><br><span class="line">  sigdelset(&amp;mask, SIGABRT); <span class="comment">/* turned off SIGABRT */</span></span><br><span class="line">  sigprocmask(SIG_SETMASK, &amp;mask, <span class="literal">NULL</span>);</span><br><span class="line">  kill(getpid(), SIGABRT); <span class="comment">/* send the signal */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* process caught SIGABRT and returned */</span></span><br><span class="line">  fflush(<span class="literal">NULL</span>); <span class="comment">/* flush all open stdio streams */</span></span><br><span class="line">  action.sa_handler = SIG_DFL;</span><br><span class="line">  sigaction(SIGABRT, &amp;action, <span class="literal">NULL</span>); <span class="comment">/* reset to default */</span></span><br><span class="line">  sigprocmask(SIG_SETMASK, &amp;mask, <span class="literal">NULL</span>); <span class="comment">/* just in case ... */</span></span><br><span class="line">  kill(getpid(), SIGABRT); <span class="comment">/* and one more time */</span></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">1</span>); <span class="comment">/* this should never be executed ... */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="18-system-Function"><a href="#18-system-Function" class="headerlink" title="18. system Function"></a>18. system Function</h2><ul>
+<li>POSIX.1要求<code>system()</code>忽略<code>SIGINT</code>和<code>SIGQUIT</code>: 因为<code>system()</code>的调用者并不是该函数的进程, <code>system()</code>会调用<code>fork()</code>, 其child process才是执行者. parent process和child process会一并收到<code>SIGINT</code>或<code>SIGQUIT</code>, 实际上只需要child process接收该signal.</li>
+<li>POSIX.1要求<code>system()</code>阻塞<code>SIGCHLD</code>: 避免parent process过早收到<code>SIGCHLD</code></li>
+</ul>
+<h3 id="18-1-Example-of-system-invoking-ed-editor"><a href="#18-1-Example-of-system-invoking-ed-editor" class="headerlink" title="18.1 Example of system invoking ed editor"></a>18.1 Example of system invoking ed editor</h3><p>以下代码使用<code>system()</code>启动ed editor, 会捕获interrupt signal和quit signal并输出:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;apue.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_int</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;caught SIGINT\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_chld</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;caught SIGCHLD\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (signal(SIGINT, sig_int) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal(SIGINT) error&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (signal(SIGCHLD, sig_chld) == SIG_ERR)</span><br><span class="line">    err_sys(<span class="string">&quot;signal(SIGCHLD) error&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> (system(<span class="string">&quot;/bin/ed&quot;</span>) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;system() error&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下为输出:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">a          <span class="comment"># append text to the editor’s buffer</span></span><br><span class="line">Here is one line of text</span><br><span class="line">.          <span class="comment"># period on a line by itself stops append mode</span></span><br><span class="line">1,<span class="variable">$p</span>       <span class="comment"># print first through last lines of buffer to see what’s there</span></span><br><span class="line">Here is one line of text</span><br><span class="line">w temp.foo <span class="comment"># write the buffer to a file</span></span><br><span class="line">25         <span class="comment"># editor says it wrote 25 bytes</span></span><br><span class="line">q          <span class="comment"># and leave the editor</span></span><br><span class="line">caught SIGCHLD</span><br></pre></td></tr></table></figure>
+<ul>
+<li>中止editor时, kernel向parent process发送<code>SIGCHLD</code>, parent process收到该signal, 并执行signal handler.</li>
+<li>POSIX.1要求<code>system()</code>期间阻塞<code>SIGCHLD</code>.</li>
+</ul>
+<p>再次运行上述代码, 这次向editor发送interrupt signal:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">a              <span class="meta"># append text to the editor’s buffer</span></span><br><span class="line">hello, world</span><br><span class="line">.              <span class="meta"># period on a <span class="keyword">line</span> by itself stops append mode</span></span><br><span class="line"><span class="number">1</span>,$p           <span class="meta"># print first through last lines to see what’s there</span></span><br><span class="line">hello, world</span><br><span class="line">w temp.foo     <span class="meta"># write the buffer to a file</span></span><br><span class="line"><span class="number">13</span>             <span class="meta"># editor says it wrote 13 bytes</span></span><br><span class="line">ˆC             <span class="meta"># type the interrupt character</span></span><br><span class="line">?              <span class="meta"># editor catches signal, prints question mark</span></span><br><span class="line">caught SIGINT  <span class="meta"># and so does the parent process</span></span><br><span class="line">q              <span class="meta"># leave editor</span></span><br><span class="line">caught SIGCHLD</span><br></pre></td></tr></table></figure>
+<p>下图为运行editor时的进程安排如下:<br><img src="/images/UNIX/APUE/10-18-proc-when-editor-running.png" alt="arrangement of the processes when the editor is running"></p>
+<p>当用户按下interrupt key时, terminal driver向foreground process group中的所有进程发送<code>SIGINT</code>, <code>/bin/sh</code>忽略该signal, <code>a.out</code>和<code>/bin/ed</code>应收到该signal; 但由于<code>a.out</code>正在执行<code>system()</code>, 因此只有<code>/bin/ed</code>收到<code>SIGINT</code>和<code>SIGQUIT</code>, <code>a.out</code>只有在<code>system()</code>运行结束后才能收到这两个signal.</p>
+<h3 id="18-2-Implementation-of-system-with-signal-handling"><a href="#18-2-Implementation-of-system-with-signal-handling" class="headerlink" title="18.2 Implementation of system with signal handling"></a>18.2 Implementation of system with signal handling</h3><p>以下代码使用signal handling实现<code>system()</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">system</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *cmdstring)</span> <span class="comment">/* with appropriate signal handling */</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">pid_t</span> pid;</span><br><span class="line">  <span class="type">int</span> status;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">ignore</span>, <span class="title">saveintr</span>, <span class="title">savequit</span>;</span></span><br><span class="line">  <span class="type">sigset_t</span> chldmask, savemask;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (cmdstring == <span class="literal">NULL</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* ignore SIGINT and SIGQUIT */</span></span><br><span class="line">  ignore.sa_handler = SIG_IGN; </span><br><span class="line">  sigemptyset(&amp;ignore.sa_mask);</span><br><span class="line">  ignore.sa_flags = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> (sigaction(SIGINT, &amp;ignore, &amp;saveintr) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">if</span> (sigaction(SIGQUIT, &amp;ignore, &amp;savequit) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  sigemptyset(&amp;chldmask);</span><br><span class="line">  sigaddset(&amp;chldmask, SIGCHLD); <span class="comment">/* block SIGCHLD */</span></span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_BLOCK, &amp;chldmask, &amp;savemask) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((pid = fork()) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    status = <span class="number">-1</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pid == <span class="number">0</span>) &#123; <span class="comment">/* child */</span></span><br><span class="line">    <span class="comment">/* restore previous signal actions &amp; reset signal mask */</span></span><br><span class="line">    sigaction(SIGINT, &amp;saveintr, <span class="literal">NULL</span>);</span><br><span class="line">    sigaction(SIGQUIT, &amp;savequit, <span class="literal">NULL</span>);</span><br><span class="line">    sigprocmask(SIG_SETMASK, &amp;savemask, <span class="literal">NULL</span>);</span><br><span class="line">    execl(<span class="string">&quot;/bin/sh&quot;</span>, <span class="string">&quot;sh&quot;</span>, <span class="string">&quot;-c&quot;</span>, cmdstring, (<span class="type">char</span> *)<span class="number">0</span>);</span><br><span class="line">    _exit(<span class="number">127</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123; <span class="comment">/* parent */</span></span><br><span class="line">    <span class="keyword">while</span> (waitpid(pid, &amp;status, <span class="number">0</span>) &lt; <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">if</span> (errno != EINTR) &#123;</span><br><span class="line">        status = <span class="number">-1</span>; <span class="comment">/* error other than EINTR */</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* restore previous signal actions &amp; reset signal mask */</span></span><br><span class="line">  <span class="keyword">if</span> (sigaction(SIGINT, &amp;saveintr, <span class="literal">NULL</span>) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">if</span> (sigaction(SIGQUIT, &amp;savequit, <span class="literal">NULL</span>) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">if</span> (sigprocmask(SIG_SETMASK, &amp;savemask, <span class="literal">NULL</span>) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> status;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>调用<code>system()</code>的进程在执行<code>system()</code>期间不会收到interrupt或quit signal</li>
+<li>命令执行结束后, <code>system()</code>会调用<code>sigprocmask</code>解除<code>SIGCHLD</code>的阻塞</li>
+</ul>
+<h2 id="19-sleep-nanosleep-and-clock-nanosleep-Functions"><a href="#19-sleep-nanosleep-and-clock-nanosleep-Functions" class="headerlink" title="19. sleep, nanosleep and clock_nanosleep Functions"></a>19. sleep, nanosleep and clock_nanosleep Functions</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief cause the calling thread to sleep</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">sleep</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> seconds)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>sleep()</code>会在以下两种情况停止睡眠:</p>
+<ul>
+<li>已经过<code>seconds</code>参数指定的时间, 返回0</li>
+<li>进程收到signal并执行signal handler, 返回剩余未睡眠的秒数</li>
+</ul>
+<p>以下是POSIX.1中<code>sleep()</code>的实现:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_alrm</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* nothing to do, just returning wakes up sigsuspend() */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">sleep</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> seconds)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">newact</span>, <span class="title">oldact</span>;</span></span><br><span class="line">  <span class="type">sigset_t</span> newmask, oldmask, suspmask;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> unslept;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* set our handler, save previous information */</span></span><br><span class="line">  newact.sa_handler = sig_alrm;</span><br><span class="line">  sigemptyset(&amp;newact.sa_mask);</span><br><span class="line">  newact.sa_flags = <span class="number">0</span>;</span><br><span class="line">  sigaction(SIGALRM, &amp;newact, &amp;oldact);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* block SIGALRM and save current signal mask */</span></span><br><span class="line">  sigemptyset(&amp;newmask);</span><br><span class="line">  sigaddset(&amp;newmask, SIGALRM);</span><br><span class="line">  sigprocmask(SIG_BLOCK, &amp;newmask, &amp;oldmask);</span><br><span class="line"></span><br><span class="line">  alarm(seconds);</span><br><span class="line">  suspmask = oldmask;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* make sure SIGALRM isn’t blocked */</span></span><br><span class="line">  sigdelset(&amp;suspmask, SIGALRM);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* wait for any signal to be caught */</span></span><br><span class="line">  sigsuspend(&amp;suspmask);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* some signal has been caught, SIGALRM is now blocked */</span></span><br><span class="line">  unslept = alarm(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* reset previous action */</span></span><br><span class="line">  sigaction(SIGALRM, &amp;oldact, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* reset signal mask, which unblocks SIGALRM */</span></span><br><span class="line">  sigprocmask(SIG_SETMASK, &amp;oldmask, <span class="literal">NULL</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> unslept;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码中不会影响进程<code>SIGALRM</code>的signal handler, 且没有用到<code>longjmp()</code>或<code>siglongjmp()</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> &#123;</span></span><br><span class="line">  <span class="type">time_t</span> tv_sec;  <span class="comment">/* seconds */</span></span><br><span class="line">  <span class="type">long</span> tv_nsec;   <span class="comment">/* nanoseconds */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief suspend the execution of the calling thread </span></span><br><span class="line"><span class="comment"> *        until</span></span><br><span class="line"><span class="comment"> *        * at least the time specified in `req` has </span></span><br><span class="line"><span class="comment"> *          elapsed</span></span><br><span class="line"><span class="comment"> *        * the delivery of a signal that triggers a </span></span><br><span class="line"><span class="comment"> *          handler or that terminates the process</span></span><br><span class="line"><span class="comment"> * @param req if the call is interrupted by a signal </span></span><br><span class="line"><span class="comment"> *        handler, the remaining time into the strcuture </span></span><br><span class="line"><span class="comment"> *        pointed to by `rem` unless `rem` is NULL</span></span><br><span class="line"><span class="comment"> * @return 0 on successfully sleeping for the requested </span></span><br><span class="line"><span class="comment"> *         interval; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">nanosleep</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> timespec *req, <span class="keyword">struct</span> timespec *rem)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allow the calling thread to sleep for an </span></span><br><span class="line"><span class="comment"> *        interval specified with nanosecond precision.</span></span><br><span class="line"><span class="comment"> *        allow the caller to select the clock against</span></span><br><span class="line"><span class="comment"> *        which the sleep interval is to be measured.</span></span><br><span class="line"><span class="comment"> *        allow the sleep interval to be specified as </span></span><br><span class="line"><span class="comment"> *        either an absolute or a relative value.</span></span><br><span class="line"><span class="comment"> * @param clock_id specifies the clock against which </span></span><br><span class="line"><span class="comment"> *        the sleep interval is to be measured, shall </span></span><br><span class="line"><span class="comment"> *        be one of the following values</span></span><br><span class="line"><span class="comment"> *        * CLOCK_REALTIME: a settable system-wide </span></span><br><span class="line"><span class="comment"> *          real-time clock</span></span><br><span class="line"><span class="comment"> *        * CLOCK_MONOTONIC: a nonsettable, monotonically</span></span><br><span class="line"><span class="comment"> *          increasing clock that measures time since </span></span><br><span class="line"><span class="comment"> *          some unspecified point in the past that </span></span><br><span class="line"><span class="comment"> *          does not change after system startup</span></span><br><span class="line"><span class="comment"> *        * CLOCK_PROCESS_CPUTIME_ID: A per-process </span></span><br><span class="line"><span class="comment"> *          clock that measures CPU time consumed by </span></span><br><span class="line"><span class="comment"> *          all threads in the process</span></span><br><span class="line"><span class="comment"> * @param flags control whether the delay is absolute</span></span><br><span class="line"><span class="comment"> *        or relative</span></span><br><span class="line"><span class="comment"> *        * 0: `req` is interrupted as an interval </span></span><br><span class="line"><span class="comment"> *          relative to the current value of the clock </span></span><br><span class="line"><span class="comment"> *          specified by `clock_id`</span></span><br><span class="line"><span class="comment"> *        * TIMER_ABSTIME: `req` is interrupted as an </span></span><br><span class="line"><span class="comment"> *          absolue time as measured by `clock_id`. </span></span><br><span class="line"><span class="comment"> *          if `req` is less than or equal to the </span></span><br><span class="line"><span class="comment"> *          current value of the clock, then return </span></span><br><span class="line"><span class="comment"> *          immediately without suspending</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">clock_nanosleep</span><span class="params">(<span class="type">clockid_t</span> clock_id, <span class="type">int</span> flags, </span></span><br><span class="line"><span class="params">      <span class="type">const</span> <span class="keyword">struct</span> timespec *req, <span class="keyword">struct</span> timespec *rem)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>POSIX.1规定, <code>nanosleep()</code>应使用<code>CLOCK_REALTIME</code>测量时间</li>
+<li>若<code>nanosleep()</code>被signal中断, 且执行signal handler, 则将剩余未睡眠时间写入<code>rem</code>指向的结构体(若<code>rem</code>不为NULL).</li>
+<li>若UNIX系统不支持nanosecond, 则四舍五入<code>req</code>.</li>
+</ul>
+<h2 id="20-sigqueue-Function"><a href="#20-sigqueue-Function" class="headerlink" title="20. sigqueue Function"></a>20. sigqueue Function</h2><p>大部分UNIX系统不支持对signal排队, 但还是存在部分系统支持该特性. 为实现queue signal, 需满足以下条件:</p>
+<ul>
+<li>调用<code>sigaction()</code>设置signal handler时, 需指定<code>SA_SIGINFO</code>; 若不指定该flag, 可能不会queue signal.</li>
+<li><code>sigaction</code> struct中使用<code>sa_sigaction</code>, 而不是<code>sa_handler</code>.</li>
+</ul>
+<ol>
+<li>使用<code>sigqueue()</code>发送signal</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">union</span> <span class="title">sigval</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> sival_int;</span><br><span class="line">  <span class="type">void</span> *sival_ptr;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief send the signal specified in `sig` to </span></span><br><span class="line"><span class="comment"> *        the process whose PID is given in `pid`</span></span><br><span class="line"><span class="comment"> * @param value specify an accompanying item of</span></span><br><span class="line"><span class="comment">          data to be sent with signal</span></span><br><span class="line"><span class="comment"> * @return 0 on success, -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigqueue</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">int</span> sig, <span class="type">const</span> <span class="keyword">union</span> sigval value)</span></span><br></pre></td></tr></table></figure>
+<p>POSIX.1规定了<code>SIGQUEUE_MAX</code>表示signal队列的长度上限.</p>
+<h2 id="21-Job-Control-Signals"><a href="#21-Job-Control-Signals" class="headerlink" title="21. Job Control Signals"></a>21. Job Control Signals</h2><p>POSIX.1规定以下6种signal作为<strong>job-control signal</strong>:</p>
+<ul>
+<li><code>SIGCHLD</code>: child process停止运行或中止</li>
+<li><code>SIGCONT</code>: 若进程已被停止, 继续运行进程</li>
+<li><code>SIGSTOP</code>: 停止目标进程(无法被handler处理或无视)</li>
+<li><code>SIGTSTP</code>: interactive stop signal</li>
+<li><code>SIGTTIN</code>: background process group中的进程从controlling terminal读取数据</li>
+<li><code>SIGTTOU</code>: background process group中的进程向controlling terminal写入数据</li>
+</ul>
+<p>除了<code>SIGCHLD</code>, 大部分进程都不会接触上述signal, 因为shell负责处理剩下5个signal: </p>
+<ul>
+<li>当用户按下suspend character时, terminal driver向foreground process group中的所有进程发送<code>SIGTSTP</code></li>
+<li>当恢复某个job时, 会向指定process group中的所有进程发送<code>SIGCONT</code></li>
+<li>当backgroup process group中的进程尝试从terminal读取或写入数据时, background process group中的所有进程都收到<code>SIGTTIN</code>或<code>SIGTTOU</code></li>
+<li>job-control signals之间也存在交互: 当stop signals(SIGTSTP, SIGSTOP, SIGTTIN, SIGTTOU)中的某一个发送给进程, 被阻塞的<code>SIGCONT</code>会被直接丢弃; 当<code>SIGCONT</code>发送至进程时, 所有被阻塞的stop signal也会被丢弃.</li>
+<li>当进程处于停止状态时, <code>SIGCONT</code>会让进程恢复运行; 但若进程处于运行状态, <code>SIGCONT</code>会被忽略.</li>
+</ul>
+<h2 id="22-Signal-Names-and-Numbers"><a href="#22-Signal-Names-and-Numbers" class="headerlink" title="22. Signal Names and Numbers"></a>22. Signal Names and Numbers</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief display a message on stderr consisting </span></span><br><span class="line"><span class="comment"> *        of the string `s`, a colon, a space, </span></span><br><span class="line"><span class="comment"> *        a string describing the signal number </span></span><br><span class="line"><span class="comment"> *        `sig`, and a trailing newline</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">psignal</span><span class="params">(<span class="type">int</span> sig, <span class="type">const</span> <span class="type">char</span> *s)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief like psignal(), but use siginfo struct</span></span><br><span class="line"><span class="comment"> *        as parameter</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">psiginfo</span><span class="params">(<span class="type">const</span> <span class="type">siginfo_t</span> *info, <span class="type">const</span> <span class="type">char</span> *s)</span>;</span><br></pre></td></tr></table></figure>
+<p>上述两个函数会将signal的描述输出到<code>stderr</code>, 若不想输出到<code>stderr</code>, 可调用以下函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a string describing the signal</span></span><br><span class="line"><span class="comment"> *        number passed in the argument `sig`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">char</span> *<span class="title function_">strsignal</span><span class="params">(<span class="type">int</span> sig)</span>;</span><br></pre></td></tr></table></figure>
+<p>不同UNIX系统的<code>strsignal()</code>输出不同: 若无法识别<code>sig</code>:</p>
+<ul>
+<li>Solaris 10返回一个null pointer</li>
+<li>FreeBSD 8.0, Linux 3.2.0, Mac OS X 10.6.8返回一个string表示<code>sig</code>无法识别</li>
+</ul>
+<p>除此之外Solaris还提供了一组函数用于signal number和signal name的互相转换:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">sig2str</span><span class="params">(<span class="type">int</span> signo, <span class="type">char</span> *str)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">str2sig</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *str, <span class="type">int</span> *signop)</span>;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/1101.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Threads</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/ba76.html">
+        <span class="next-text nav-default">Process Relationships</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/277e.html';
+  var disqus_title = "Signals";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

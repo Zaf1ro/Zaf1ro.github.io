@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Memory Alignment"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/c196.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/c196.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/c196.html"/>
+
+
+<meta name="description" content="1. 原因 内存读取的速度相对于CPU的处理速度来说太慢 由于指令需要分取立即数和各种action, 所以一字节长的指令无法全部用来表示地址空间. 地址线宽度计算公式: $wordSize-\log_2{(wordSize&#x2F;byteSize)}$. 若一个32位CPU的字长为32bit, 字节大小为8bit, 那么地址线宽度为$32-\log_2{(32&#x2F;8)}&#x3D;30">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Memory Alignment">
+<meta property="og:url" content="https://zaf1ro.github.io/p/c196.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 原因 内存读取的速度相对于CPU的处理速度来说太慢 由于指令需要分取立即数和各种action, 所以一字节长的指令无法全部用来表示地址空间. 地址线宽度计算公式: $wordSize-\log_2{(wordSize&#x2F;byteSize)}$. 若一个32位CPU的字长为32bit, 字节大小为8bit, 那么地址线宽度为$32-\log_2{(32&#x2F;8)}&#x3D;30">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-03-27T14:47:07.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.048Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Memory Alignment - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%8E%9F%E5%9B%A0"><span class="toc-text">1. 原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">2. 解决方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BE%8B%E5%AD%90"><span class="toc-text">3. 例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%BC%96%E8%AF%91%E5%99%A8%E8%AE%BE%E7%BD%AE"><span class="toc-text">4. 编译器设置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%AF%B9%E9%BD%90%E7%B3%BB%E6%95%B0"><span class="toc-text">4.1 对齐系数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%AF%B9%E9%BD%90%E6%9D%A1%E4%BB%B6"><span class="toc-text">4.2 对齐条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E4%BE%8B%E5%AD%90"><span class="toc-text">4.3 例子</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Memory Alignment
+        
+      </h1>
+      <time class="post-time">
+          03/27/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-原因"><a href="#1-原因" class="headerlink" title="1. 原因"></a>1. 原因</h2><ol>
+<li>内存读取的速度相对于CPU的处理速度来说太慢</li>
+<li>由于指令需要分取立即数和各种action, 所以一字节长的指令无法全部用来表示地址空间. 地址线宽度计算公式: $wordSize-\log_2{(wordSize&#x2F;byteSize)}$. 若一个32位CPU的字长为32bit, 字节大小为8bit, 那么地址线宽度为$32-\log_2{(32&#x2F;8)}&#x3D;30$, 所以可选择的地址单元个数为$2^{30}$. 由于每个单位的大小为4字节, 所以可管理$2^{30}*4&#x3D;2^{32}$字节的内存</li>
+<li>以一个内存单元为4字节的32位CPU为例, 如果我们要读取地址为2, 长度为4字节的数据, 那么该数据所占据的内存位置为2-5, 我们需要先读取0-3空间, 取出2-3字节数据, 再读取4-7地址空间, 取出4-5字节数据, 拼在一起就是我们要获取的目标数据. 这样导致只是4字节的数据需要读取两次</li>
+</ol>
+<h2 id="2-解决方案"><a href="#2-解决方案" class="headerlink" title="2. 解决方案"></a>2. 解决方案</h2><ol>
+<li>前面变量大小必须为后面变量大小的整数倍, 否则就补齐</li>
+<li>整个struct的大小必须为最大变量大小的整数倍</li>
+</ol>
+<h2 id="3-例子"><a href="#3-例子" class="headerlink" title="3. 例子"></a>3. 例子</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test1</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> a;  <span class="comment">// 变量大小为4字节</span></span><br><span class="line">  <span class="type">char</span> b; <span class="comment">// 变量大小为1字节, 但前面的变量a大小为4字节</span></span><br><span class="line">          <span class="comment">// 根据第一准则, b后面需要填充3字节</span></span><br><span class="line">  <span class="type">long</span> c; <span class="comment">// 变量大小为4字节</span></span><br><span class="line">&#125; test1;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test2</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> a;  <span class="comment">// 变量大小为4字节</span></span><br><span class="line">  <span class="type">char</span> b; <span class="comment">// 变量大小为1字节</span></span><br><span class="line">  <span class="type">char</span> c; <span class="comment">// 变量大小为1字节, 整个结构体的大小为6字节</span></span><br><span class="line">          <span class="comment">// 但最大变量为4字节, 根据第二准则, 应在最后填充2字节</span></span><br><span class="line">&#125; test2;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="comment">/* The size of Test1 is 12 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;The size of Test1 is %d\n&quot;</span>, <span class="keyword">sizeof</span>(test1));</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* The size of Test2 is 8 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;The size of Test2 is %d\n&quot;</span>, <span class="keyword">sizeof</span>(test2));</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-编译器设置"><a href="#4-编译器设置" class="headerlink" title="4. 编译器设置"></a>4. 编译器设置</h2><h3 id="4-1-对齐系数"><a href="#4-1-对齐系数" class="headerlink" title="4.1 对齐系数"></a>4.1 对齐系数</h3><p>每个平台上的编译器都有自己默认的&quot;对齐系数&quot;, 程序员可以通过</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">pragma</span> pack(n), n = 1, 2, 4, 8, 16</span></span><br></pre></td></tr></table></figure>
+<p>来改变系数, n就是指定的&quot;对齐系数&quot;</p>
+<h3 id="4-2-对齐条件"><a href="#4-2-对齐条件" class="headerlink" title="4.2 对齐条件"></a>4.2 对齐条件</h3><ol>
+<li>使用#pragma pack(n), 编译器将按照n个字节对齐</li>
+<li>使用#pragma pack(), 取消自定义的字节对齐方式</li>
+<li>如果#pragma pack(n)中指定的n大于结构体重最大的成员的size, 则其不起作用, 结构体仍按照size最大成员进行对齐</li>
+</ol>
+<h3 id="4-3-例子"><a href="#4-3-例子" class="headerlink" title="4.3 例子"></a>4.3 例子</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line">  </span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> pack(1) <span class="comment">// 将对齐系数调为1</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test1</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> a;</span><br><span class="line">  <span class="type">char</span> b;</span><br><span class="line">  <span class="type">long</span> c; <span class="comment">// 变量大小为4, 需要对齐</span></span><br><span class="line">          <span class="comment">// 但由于对齐系数为1, 所以不需要填充</span></span><br><span class="line">&#125; test1;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> pack()  <span class="comment">// 关闭自定义的对齐规则</span></span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Test2</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> a;</span><br><span class="line">  <span class="type">char</span> b;</span><br><span class="line">  <span class="type">long</span> c; <span class="comment">// 变量大小为4, 由于前面变量大小为1, </span></span><br><span class="line">          <span class="comment">// 所以需要在前面填充3个字节</span></span><br><span class="line">&#125; test2;</span><br><span class="line">  </span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">  <span class="comment">/* The size of Test1 is 9 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;The size of Test1 is %d\n&quot;</span>, <span class="keyword">sizeof</span>(test1));</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* The size of Test2 is 12 */</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;The size of Test2 is %d\n&quot;</span>, <span class="keyword">sizeof</span>(test2));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/3759.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Evolution of HTTP</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2828.html">
+        <span class="next-text nav-default">Macro Definition</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/c196.html';
+  var disqus_title = "Memory Alignment";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Monotonic Queue"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/7faa.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/7faa.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/7faa.html"/>
+
+
+<meta name="description" content="1. Introduction单调队列是一种特殊的double ended queue(双端队列, 简称deque):  元素只能从队尾进入 队内元素可从队首和队尾出队 队内元素始终保持单调递增或递减  使用单调队列时, 通常会在队内保存元素的坐标, 而不是元素本身, 从而方便之后获得元素的坐标信息. 2. Monotonicity假设一个单调队列的元素从队首到队尾始终保持单调递减, 向单调队列添">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Monotonic Queue">
+<meta property="og:url" content="https://zaf1ro.github.io/p/7faa.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction单调队列是一种特殊的double ended queue(双端队列, 简称deque):  元素只能从队尾进入 队内元素可从队首和队尾出队 队内元素始终保持单调递增或递减  使用单调队列时, 通常会在队内保存元素的坐标, 而不是元素本身, 从而方便之后获得元素的坐标信息. 2. Monotonicity假设一个单调队列的元素从队首到队尾始终保持单调递减, 向单调队列添">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-06-25T21:38:04.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.029Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Monotonic Queue - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Monotonicity"><span class="toc-text">2. Monotonicity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Use-Case"><span class="toc-text">3. Use Case</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Leetcode"><span class="toc-text">4. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1438-Longest-Continuous-Subarray-With-Absolute-Diff-Less-Than-or-Equal-to-Limit"><span class="toc-text">1438. Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1696-Jump-Game-VI"><span class="toc-text">1696. Jump Game VI</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-1"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-1"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#239-Sliding-Window-Maximum"><span class="toc-text">239. Sliding Window Maximum</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-2"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-2"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2398-Maximum-Number-of-Robots-Within-Budget"><span class="toc-text">2398. Maximum Number of Robots Within Budget</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-3"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-3"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#862-Shortest-Subarray-with-Sum-at-Least-K"><span class="toc-text">862. Shortest Subarray with Sum at Least K</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-4"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-4"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1499-Max-Value-of-Equation"><span class="toc-text">1499. Max Value of Equation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-5"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-5"><span class="toc-text">Solution</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Monotonic Queue
+        
+      </h1>
+      <time class="post-time">
+          06/25/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>单调队列是一种特殊的<strong>double ended queue</strong>(双端队列, 简称deque):</p>
+<ul>
+<li>元素只能从队尾进入</li>
+<li>队内元素可从队首和队尾出队</li>
+<li>队内元素始终保持单调递增或递减</li>
+</ul>
+<p>使用单调队列时, 通常会在队内保存元素的坐标, 而不是元素本身, 从而方便之后获得元素的坐标信息.</p>
+<h2 id="2-Monotonicity"><a href="#2-Monotonicity" class="headerlink" title="2. Monotonicity"></a>2. Monotonicity</h2><p>假设一个单调队列的元素从队首到队尾始终保持单调递减, 向单调队列添加新元素时存在以下情况:</p>
+<ul>
+<li>若单调队列为空, 则将新元素加入队尾</li>
+<li>若队尾元素大于当前元素, 则将新元素加入队尾</li>
+<li>若队尾元素小于或等于当前元素, 则弹出队尾元素, 直到满足上述两个情况之一</li>
+</ul>
+<p>可以发现, 上述描述与单调栈的入栈没有任何区别. 单调队列只在此基础上多了一个<strong>移除队首元素</strong>的操作, 类似于向右移动滑动窗口的左指针, 因此从某种程度来说, <code>单调队列 = 单调栈 + 滑动窗口</code>.</p>
+<h2 id="3-Use-Case"><a href="#3-Use-Case" class="headerlink" title="3. Use Case"></a>3. Use Case</h2><p>给定一个数组<code>win</code>, 且已知该数组的最小值为<code>min</code>, 若向该数组添加一个元素<code>x</code>, 只需比较<code>min</code>和<code>x</code>即可知道添加元素后<code>win</code>的最小值. 但若从数组头部移除一个元素, 则无法直接获知最小值: 若移除的元素为<code>min</code>, 则需遍历<code>win</code>所有元素来重新寻找新的最小值. 可以发现, 从数组尾部加入元素, 从数组头部移除元素, 符合滑动窗口的定义, 因此单调队列是一种求滑动窗口最值的方法.<br>对于加入元素操作, 由于需要维护单调队列的单调性, 因此时间复杂度并不是$O(1)$; 但算法的整体时间复杂度仍为$O(n)$, 其中$n$为数组长度, 因为每个元素最多被添加或移除一次. 算法的空间复杂度为$O(k)$, $k$为滑动窗口的长度.</p>
+<h2 id="4-Leetcode"><a href="#4-Leetcode" class="headerlink" title="4. Leetcode"></a>4. Leetcode</h2><h3 id="1438-Longest-Continuous-Subarray-With-Absolute-Diff-Less-Than-or-Equal-to-Limit"><a href="#1438-Longest-Continuous-Subarray-With-Absolute-Diff-Less-Than-or-Equal-to-Limit" class="headerlink" title="1438. Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit"></a>1438. Longest Continuous Subarray With Absolute Diff Less Than or Equal to Limit</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an array of integers <code>nums</code> and an integer <code>limit</code>, return the size of the longest <strong>non-empty</strong> subarray such that the absolute difference between any two elements of this subarray is less than or equal to <code>limit</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [10,1,2,4,7,2], limit = 5</span><br><span class="line">Output: 4 </span><br><span class="line">Explanation: The subarray [2,4,7,2] is the longest since the maximum absolute diff is |2-7| = 5 &lt;= 5.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">longestSubarray</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> limit)</span> &#123;</span><br><span class="line">        Deque&lt;Integer&gt; desc = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;(), asc = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, max = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">r</span> <span class="operator">=</span> <span class="number">0</span>; r &lt; nums.length; r++) &#123;</span><br><span class="line">            <span class="comment">// in</span></span><br><span class="line">            <span class="keyword">while</span> (!desc.isEmpty() &amp;&amp; nums[r] &gt; nums[desc.peekLast()]) desc.pollLast();</span><br><span class="line">            <span class="keyword">while</span> (!asc.isEmpty() &amp;&amp; nums[r] &lt; nums[asc.peekLast()]) asc.pollLast();</span><br><span class="line">            desc.offerLast(r);</span><br><span class="line">            asc.offerLast(r);</span><br><span class="line">            <span class="comment">// out</span></span><br><span class="line">            <span class="keyword">while</span> (nums[desc.peekFirst()] - nums[asc.peekFirst()] &gt; limit) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">left</span> <span class="operator">=</span> nums[l++];</span><br><span class="line">                <span class="keyword">if</span> (left == nums[desc.peekFirst()]) desc.pollFirst();</span><br><span class="line">                <span class="keyword">if</span> (left == nums[asc.peekFirst()]) asc.pollFirst(); </span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// add</span></span><br><span class="line">            max = Math.max(max, r - l + <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> max;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1696-Jump-Game-VI"><a href="#1696-Jump-Game-VI" class="headerlink" title="1696. Jump Game VI"></a>1696. Jump Game VI</h3><h4 id="Problem-Description-1"><a href="#Problem-Description-1" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given a <strong>0-indexed</strong> integer array <code>nums</code> and an integer <code>k</code>.<br>You are initially standing at index <code>0</code>. In one move, you can jump at most <code>k</code> steps forward without going outside the boundaries of the array. That is, you can jump from index <code>i</code> to any index in the range <code>[i + 1, min(n - 1, i + k)]</code> <strong>inclusive</strong>.<br>You want to reach the last index of the array (index <code>n - 1</code>). Your <strong>score</strong> is the <strong>sum</strong> of all <code>nums[j]</code> for each index <code>j</code> you visited in the array.<br>Return the <strong>maximum score</strong> you can get.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,-1,-2,4,-7,3], k = 2</span><br><span class="line">Output: 7</span><br><span class="line">Explanation: You can choose your jumps forming the subsequence [1,-1,4,3] (underlined above). The sum is 7.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maxResult</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">    Deque&lt;Integer&gt; deque = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    <span class="type">int</span> <span class="variable">max</span> <span class="operator">=</span> nums[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">      <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; i - deque.peekFirst() &gt; k) &#123;</span><br><span class="line">        deque.pollFirst();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (!deque.isEmpty()) &#123;</span><br><span class="line">        nums[i] += nums[deque.peekFirst()];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; nums[i] &gt;= nums[deque.peekLast()]) &#123;</span><br><span class="line">        deque.pollLast();</span><br><span class="line">      &#125;</span><br><span class="line">      deque.offerLast(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> nums[nums.length-<span class="number">1</span>];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="239-Sliding-Window-Maximum"><a href="#239-Sliding-Window-Maximum" class="headerlink" title="239. Sliding Window Maximum"></a>239. Sliding Window Maximum</h3><h4 id="Problem-Description-2"><a href="#Problem-Description-2" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given an array of integers <code>nums</code>, there is a sliding window of size <code>k</code> which is moving from the very left of the array to the very right. You can only see the <code>k</code> numbers in the window. Each time the sliding window moves right by one position. Return <strong>the max sliding window</strong>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,3,-1,-3,5,3,6,7], k = 3</span><br><span class="line">Output: [3,3,5,5,6,7]</span><br><span class="line">Explanation: </span><br><span class="line">Window position                Max</span><br><span class="line">---------------               -----</span><br><span class="line">[1  3  -1] -3  5  3  6  7       3</span><br><span class="line"> 1 [3  -1  -3] 5  3  6  7       3</span><br><span class="line"> 1  3 [-1  -3  5] 3  6  7       5</span><br><span class="line"> 1  3  -1 [-3  5  3] 6  7       5</span><br><span class="line"> 1  3  -1  -3 [5  3  6] 7       6</span><br><span class="line"> 1  3  -1  -3  5 [3  6  7]      7</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] maxSlidingWindow(<span class="type">int</span>[] nums, <span class="type">int</span> k) &#123;</span><br><span class="line">        <span class="type">int</span>[] res = <span class="keyword">new</span> <span class="title class_">int</span>[nums.length - k + <span class="number">1</span>];</span><br><span class="line">        <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        Deque&lt;Integer&gt; deque = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">            <span class="comment">// in</span></span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; nums[deque.peekLast()] &lt;= nums[i]) &#123;</span><br><span class="line">                deque.pollLast();</span><br><span class="line">            &#125;</span><br><span class="line">            deque.offerLast(i);</span><br><span class="line">            <span class="comment">// out</span></span><br><span class="line">            <span class="keyword">if</span> (deque.peekFirst() &lt;= i - k) &#123;</span><br><span class="line">                deque.pollFirst();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// add</span></span><br><span class="line">            <span class="keyword">if</span> (i &gt;= k - <span class="number">1</span>) &#123;</span><br><span class="line">                res[j++] = nums[deque.peekFirst()];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2398-Maximum-Number-of-Robots-Within-Budget"><a href="#2398-Maximum-Number-of-Robots-Within-Budget" class="headerlink" title="2398. Maximum Number of Robots Within Budget"></a>2398. Maximum Number of Robots Within Budget</h3><h4 id="Problem-Description-3"><a href="#Problem-Description-3" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You have <code>n</code> robots. You are given two <strong>0-indexed</strong> integer arrays, <code>chargeTimes</code> and <code>runningCosts</code>, both of length <code>n</code>. The <code>$i^&#123;th&#125;$</code> robot costs <code>chargeTimes[i]</code> units to charge and costs<code> runningCosts[i]</code> units to run. You are also given an integer budget.<br>The <strong>total cost</strong> of running <code>k</code> chosen robots is equal to <code>max(chargeTimes) + k * sum(runningCosts)</code>, where <code>max(chargeTimes)</code> is the largest charge cost among the <code>k</code> robots and <code>sum(runningCosts)</code> is the sum of running costs among the <code>k</code> robots.<br>Return the <strong>maximum</strong> number of <strong>consecutive</strong> robots you can run such that the total cost <strong>does not</strong> exceed <code>budget</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: chargeTimes = [3,6,1,3,4], runningCosts = [2,1,3,4,5], budget = 25</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: </span><br><span class="line">It is possible to run all individual and consecutive pairs of robots within budget.</span><br><span class="line">To obtain answer 3, consider the first 3 robots. The total cost will be max(3,6,1) + 3 * sum(2,1,3) = 6 + 3 * 6 = 24 which is less than 25.</span><br><span class="line">It can be shown that it is not possible to run more than 3 consecutive robots within budget, so we return 3.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maximumRobots</span><span class="params">(<span class="type">int</span>[] chargeTimes, <span class="type">int</span>[] runningCosts, <span class="type">long</span> budget)</span> &#123;</span><br><span class="line">        Deque&lt;Integer&gt; desc = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="type">long</span> <span class="variable">sum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, max = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">r</span> <span class="operator">=</span> <span class="number">0</span>; r &lt; chargeTimes.length; r++) &#123;</span><br><span class="line">            <span class="comment">// in</span></span><br><span class="line">            sum += runningCosts[r];</span><br><span class="line">            <span class="keyword">while</span> (!desc.isEmpty() &amp;&amp; chargeTimes[r] &gt;= chargeTimes[desc.peekLast()]) &#123;</span><br><span class="line">                desc.pollLast();</span><br><span class="line">            &#125;</span><br><span class="line">            desc.offerLast(r);</span><br><span class="line">            <span class="comment">// out</span></span><br><span class="line">            <span class="keyword">while</span> (!desc.isEmpty() &amp;&amp; sum * (r - l + <span class="number">1</span>) + chargeTimes[desc.peekFirst()] &gt; budget) &#123;</span><br><span class="line">                sum -= runningCosts[l];</span><br><span class="line">                <span class="keyword">if</span> (l == desc.peekFirst()) desc.pollFirst();</span><br><span class="line">                ++l;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// add</span></span><br><span class="line">            max = Math.max(max, r - l + <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> max;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="862-Shortest-Subarray-with-Sum-at-Least-K"><a href="#862-Shortest-Subarray-with-Sum-at-Least-K" class="headerlink" title="862. Shortest Subarray with Sum at Least K"></a>862. Shortest Subarray with Sum at Least K</h3><h4 id="Problem-Description-4"><a href="#Problem-Description-4" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an integer array <code>nums</code> and an integer <code>k</code>, return the length of the shortest non-empty <strong>subarray</strong> of <code>nums</code> with a sum of at least <code>k</code>. If there is no such <strong>subarray</strong>, return <code>-1</code>.<br>A <strong>subarray</strong> is a <strong>contiguous</strong> part of an array.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [2,-1,2], k = 3</span><br><span class="line">Output: 3</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-4"><a href="#Solution-4" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">shortestSubarray</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        <span class="type">long</span>[] presum = <span class="keyword">new</span> <span class="title class_">long</span>[nums.length+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">            presum[i+<span class="number">1</span>] = presum[i] + nums[i];</span><br><span class="line">        &#125;</span><br><span class="line">        Deque&lt;Integer&gt; deque = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="type">int</span> <span class="variable">min</span> <span class="operator">=</span> Integer.MAX_VALUE;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt;= nums.length; i++) &#123;</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; presum[i] - presum[deque.peekFirst()] &gt;= k) &#123;</span><br><span class="line">                min = Math.min(min, i - deque.pollFirst());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; presum[i] &lt;= presum[deque.peekLast()]) &#123;</span><br><span class="line">                deque.pollLast();</span><br><span class="line">            &#125;</span><br><span class="line">            deque.offerLast(i);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> min == Integer.MAX_VALUE ? -<span class="number">1</span> : min;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="1499-Max-Value-of-Equation"><a href="#1499-Max-Value-of-Equation" class="headerlink" title="1499. Max Value of Equation"></a>1499. Max Value of Equation</h3><h4 id="Problem-Description-5"><a href="#Problem-Description-5" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given an array <code>points</code> containing the coordinates of points on a 2D plane, sorted by the x-values, where <code>$points[i] = [x_i, y_i]$</code> such that <code>$x_i &lt; x_j$</code> for all <code>$1 \le i &lt; j \le points.length$</code>. You are also given an integer <code>k</code>.<br>Return the maximum value of the equation <code>$y_i + y_j + |x_i - x_j|$</code> where <code>$|x_i - x_j| \le k$</code> and <code>$1 \le i &lt; j \le points.length$</code>.<br>It is guaranteed that there exists at least one pair of points that satisfy the constraint <code>$|x_i - x_j| \le k$</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: points = [[1,3],[2,0],[5,10],[6,-10]], k = 1</span><br><span class="line">Output: 4</span><br><span class="line">Explanation: The first two points satisfy the condition |xi - xj| &lt;= 1 and if we calculate the equation we get 3 + 0 + |1 - 2| = 4. Third and fourth points also satisfy the condition and give a value of 10 + -10 + |5 - 6| = 1.</span><br><span class="line">No other pairs satisfy the condition, so we return the max of 4 and 1.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-5"><a href="#Solution-5" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findMaxValueOfEquation</span><span class="params">(<span class="type">int</span>[][] points, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        Deque&lt;<span class="type">int</span>[]&gt; deque = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="type">int</span> <span class="variable">max</span> <span class="operator">=</span> Integer.MIN_VALUE;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">r</span> <span class="operator">=</span> <span class="number">0</span>; r &lt; points.length; r++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> points[r][<span class="number">0</span>], y = points[r][<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; x - deque.peekFirst()[<span class="number">0</span>] &gt; k) &#123;</span><br><span class="line">                deque.pollFirst();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!deque.isEmpty()) &#123;</span><br><span class="line">                max = Math.max(max, y+x+deque.peekFirst()[<span class="number">1</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; y-x &gt;= deque.peekLast()[<span class="number">1</span>]) &#123;</span><br><span class="line">                deque.pollLast();</span><br><span class="line">            &#125;</span><br><span class="line">            deque.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;x, y-x&#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> max;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/9055.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Trie</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/261c.html">
+        <span class="next-text nav-default">Monotonic Stack</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/7faa.html';
+  var disqus_title = "Monotonic Queue";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

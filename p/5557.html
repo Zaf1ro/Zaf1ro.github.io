@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="State Machine and Consensus"/>
+
+
+
+
+  <meta name="keywords" content="Distributed System," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/5557.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/5557.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/5557.html"/>
+
+
+<meta name="description" content="1. Model of Computation在电子计算机诞生前, 人们已经发明了机械计算器(mechanical calculator), 并梦想铸造一台机器来计算任何数学陈述的truth value(真值), 例如: 4的算数平方根为5, 该陈述可判定为false. 于是, David Hilbert和Wilhelm Ackermann于1928年提出一个问题: 是否存在一个算法, 可根据输入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="State Machine and Consensus">
+<meta property="og:url" content="https://zaf1ro.github.io/p/5557.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Model of Computation在电子计算机诞生前, 人们已经发明了机械计算器(mechanical calculator), 并梦想铸造一台机器来计算任何数学陈述的truth value(真值), 例如: 4的算数平方根为5, 该陈述可判定为false. 于是, David Hilbert和Wilhelm Ackermann于1928年提出一个问题: 是否存在一个算法, 可根据输入">
+<meta property="og:locale">
+<meta property="article:published_time" content="2022-04-25T21:39:15.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.035Z">
+<meta property="article:tag" content="Distributed System">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+State Machine and Consensus - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Model-of-Computation"><span class="toc-text">1. Model of Computation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Turing-machine"><span class="toc-text">1.1 Turing machine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-The-Church-Turing-Thesis"><span class="toc-text">1.2 The Church-Turing Thesis</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Halting-problem"><span class="toc-text">1.3 Halting problem</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Finite-State-Machine"><span class="toc-text">2. Finite-State Machine</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-State-Machine-Replication"><span class="toc-text">3. State Machine Replication</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-The-State-Machine-Approach"><span class="toc-text">3.1 The State Machine Approach</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Agreement"><span class="toc-text">3.2 Agreement</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Order"><span class="toc-text">3.3 Order</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Consensus"><span class="toc-text">4. Consensus</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Consensus-Protocols"><span class="toc-text">4.1 Consensus Protocols</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          State Machine and Consensus
+        
+      </h1>
+      <time class="post-time">
+          04/25/22
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Model-of-Computation"><a href="#1-Model-of-Computation" class="headerlink" title="1. Model of Computation"></a>1. Model of Computation</h2><p>在<strong>电子计算机</strong>诞生前, 人们已经发明了机械计算器(mechanical calculator), 并梦想铸造一台机器来计算任何数学陈述的<strong>truth value</strong>(真值), 例如: 4的算数平方根为5, 该陈述可判定为false. 于是, David Hilbert和Wilhelm Ackermann于1928年提出一个问题: 是否存在一个算法, 可根据输入(也就是一个数学陈述), 判断输入是否普遍正确(universally valid)并输出Yes或No, 该问题称为<strong>Entscheidungsproblem</strong>(可判定性问题).<br>证明<code>某个算法能够判断一切陈述</code>是十分困难的, 但证明<code>某个陈述无法被判断</code>是比较容易的. 图灵将该问题转化为: 是否存在一种算法, 其可以判断任意程序是否会永远运行, 或中途停止, 该问题称为<strong>halt problem</strong>(停机问题). 由于停机问题是众多陈述中的一种, 如果该问题无法被判断, 则Entscheidungsproblem不为真.<br>但这引出一个新的问题, 什么是算法, 或者说, 算法的边界在哪里? 如果不回答这个问题, 陈述是否能够被判断也无从解答. 为此, 图灵提出一种假想的机器, 称为<strong>a-machine</strong>(automatic machine, 自动机), 后来被称为<strong>Turing machine</strong>(图灵机).</p>
+<h3 id="1-1-Turing-machine"><a href="#1-1-Turing-machine" class="headerlink" title="1.1 Turing machine"></a>1.1 Turing machine</h3><p>图灵机使用一个无限长的<strong>tape</strong>(纸带)作为内存, tape上有一些<strong>symbol</strong>(符号), 这些符号构成了一个<strong>alphabet</strong>(字母表), 其中包含一个特殊符号<strong>blank</strong>(空字符). 一开始tape会有一些符号, 图灵机可在tape上左右移动, 并读取&#x2F;写入tape上的符号. 以下是图灵机的数学模型:<br>一台图灵机是一个<strong>7-tuple</strong>(七元有序组): $(Q, \Sigma, \Gamma, \delta, q_\text{0}, q_\text{accpet}, q_{reject})$</p>
+<ul>
+<li>$Q$为有限非空的state集合</li>
+<li>$\Gamma$: 有限非空的symbol集合, 表示tape上的字符表</li>
+<li>$\Sigma$: 不包含空字符的字符表, $\Sigma \in \Gamma$</li>
+<li>$\delta$: $Q \times \Gamma \rightarrow Q \times \Gamma \times \{ L,R,- \}$ 是<strong>transition function</strong>(转移函数), 其中$L$表示向左移, $R$表示向右移, $-$表示不移动</li>
+<li>$q_\text{0} \in Q$为起始状态</li>
+<li>$q_\text{accept} \in Q$为接收状态, $q_\text{reject} \in Q$为拒绝状态, $q_\text{accept} \neq q_\text{reject}$</li>
+</ul>
+<p>图灵机一开始从tape的最左端读取symbol, 直到遇到第一个空字符, 假设读取前n个symbol($w &#x3D; w_1 w_2 \cdots w_n \in \Sigma$). 一旦图灵机启动, 会根据转移函数, 当前状态, 和当前读取的字符, 生成新的状态, 字符, 并在tape上移动. 若在某个时刻state进入$q_\text{accept}$, 则立刻停机并接受输入的字符; 若state进入$q_\text{reject}$, 则立即停机并拒绝输入的字符. 对于图灵机, state的修改, tape上内容的修改, 和tape上位置的更改, 这三者组成了图灵机的<strong>configuration</strong>(配置).</p>
+<h3 id="1-2-The-Church-Turing-Thesis"><a href="#1-2-The-Church-Turing-Thesis" class="headerlink" title="1.2 The Church-Turing Thesis"></a>1.2 The Church-Turing Thesis</h3><p>图灵证明了图灵机是一种十分强大的<strong>model of computation</strong>(计算模型), 并由此诞生了<strong>The Church-Turing thesis</strong>(邱奇-图灵论题): 任何计算或算法都可由一台图灵机来执行, 换句话说, <strong>图灵机即算法</strong>, 图灵机能解决的问题, 算法才能解决; 图灵机不能解决的问题, 任何算法都不能解决.<br>该论题的意义十分深刻, 其不仅指出算法的局限性, 还影响了计算机科学之后的发展: 在此之前, 人们认为<code>机械执行任务的过程</code>就是<strong>computation</strong>(计算), 而图灵机准确定义了什么是计算, 以至于现代计算机上运行的所有编程语言都遵循这一理念.<br>但需要注意, 该论题并不是一个数学定理, 也就是说, 其没有被证明; 但目前也没有任何例子来反驳该论题. 除了图灵机, 还有其他计算模型, 其中一些计算模型称为<strong>Hyper computation</strong>(超计算), 旨在研究比图灵机更强计算能力的计算机, 但目前只存在于理论, 由于现实世界的物理规则限制而无法构建.</p>
+<h3 id="1-3-Halting-problem"><a href="#1-3-Halting-problem" class="headerlink" title="1.3 Halting problem"></a>1.3 Halting problem</h3><p>回到Entscheidungsproblem问题, 图灵用一个悖论证明了图灵机不可能判断停机问题:</p>
+<ol>
+<li>假设存在一个图灵机<code>H</code>, 其可以判断任何程序是否会永久运行. 若程序能够中途停止, 返回YES; 否则返回NO</li>
+<li>现在我们在图灵机<code>H</code>的输出端添加一个转换器, 当<code>H</code>返回YES时, 则掉入一个死循环; 否则中止运行, 并将该程序称为<code>H+</code></li>
+<li>现在让图灵机<code>H</code>判断程序<code>H+</code>是否会永远运行:<ul>
+<li>若<code>H</code>返回YES, 程序会陷入永久运行, 与判断结果相悖</li>
+<li>若<code>H</code>返回NO, 程序会中止运行, 与判断结果相悖</li>
+</ul>
+</li>
+</ol>
+<p>上述表明, 停机问题无法在图灵机上得到判断, Entscheidungsproblem也就得到了否定回答.</p>
+<h2 id="2-Finite-State-Machine"><a href="#2-Finite-State-Machine" class="headerlink" title="2. Finite-State Machine"></a>2. Finite-State Machine</h2><p><strong>Finite-state machine</strong>(FSM, 有限状态机), 也称为<strong>finite-state automaton</strong>(FSA), 其和图灵机一样, 也是一种<strong>计算模型</strong>. 任何时刻, FSM只处于一种<strong>state</strong>(状态); 接收到输入时, FSM会改变自身状态, 一种state到另一种state称为<strong>transition</strong>(过渡).<br>FSM可分为两类:</p>
+<ul>
+<li>Deterministic finite-state automaton(确定有限状态机, DFA)</li>
+<li>Nondeterministic finite-state automaton(非确定有限状态机, NFA)</li>
+</ul>
+<p>这里先给出DFA的数学定义: 一个<strong>5-tuple</strong>(五元有序组), $(Q, \Sigma, \delta, q_\text{0}, F)$</p>
+<ul>
+<li>$Q$: state的有限集合</li>
+<li>$\Sigma$: 输入字符(symbol)的有限集合, 称为<strong>alphabet</strong>(字母表)</li>
+<li>$\delta$: 过渡函数, $Q \times \Sigma \rightarrow Q$</li>
+<li>$q_\text{0} \in Q$: 初始状态</li>
+<li>$F \subseteq Q$: 接受状态的集合</li>
+</ul>
+<p>以下是DFA和NFA的区别:</p>
+<ul>
+<li>DFA中, $\delta$(过渡函数)的每个输入($\Sigma$中一个symbol)只有一个输出状态; NFA可有多个输出状态</li>
+<li>DFA中, $\delta$(过渡函数)的输入只包含$\Sigma$中的symbol; NFA可包含空字符$\varepsilon$</li>
+</ul>
+<p>FSM可看作图灵机的子集, 其计算能力小于图灵机, 但更容易实现和理解. 两者的主要区别如下:</p>
+<ul>
+<li>图灵机支持在tape(输入)上读写; FSM可读取输入, 但不能修改输入</li>
+<li>图灵机支持在tape上左右移动; FSM只能一直向右读取(向前读取), 不能回读</li>
+<li>图灵机的tape是无限大的; FSM没有tape这个内存概念, 换句话说, 没有保存信息的功能</li>
+</ul>
+<h2 id="3-State-Machine-Replication"><a href="#3-State-Machine-Replication" class="headerlink" title="3. State Machine Replication"></a>3. State Machine Replication</h2><p>回到分布式系统, 我们一般使用<strong>state machine replication</strong>(SMR, 状态机复制)来<strong>复制服务器</strong>和<strong>协调客户端与服务器副本的交互</strong>, 以提供容错能力. 该方法还为理解和设计<strong>replication management protocol</strong>(复制管理协议)提供了一个框架.<br>假设有两个服务器, 若它们能保持同步, 则互为对方的副本. 当一个服务器进行更新操作, 需告知另一个服务器, 以保持同步; 一旦其中一个服务器发生故障, 另一个服务器可接管服务.<br>因此可将一个服务器视作一个FSM, 每个服务器都以相同初始状态开始, 并以相同顺序接收到相同输入, 服务器的状态也会保持一致. 但该FSM必须是<strong>确定的</strong>, 也就是DFA.<br>集群中最少需要三台服务器才能实现容错: 若某个服务器存在错误, 我们可对比该服务器和另外两个服务器的状态和输出, 以此判断该服务器是否出错. 进一步推论: 假设集群容许<code>F</code>台服务器发生故障, 则集群需要<code>2F+1</code>个副本. 需要注意的是, 这里提及的<strong>故障</strong>为随机独立故障, 如硬件错误.</p>
+<h3 id="3-1-The-State-Machine-Approach"><a href="#3-1-The-State-Machine-Approach" class="headerlink" title="3.1 The State Machine Approach"></a>3.1 The State Machine Approach</h3><p>基于DFA的服务器集群可按照以下步骤实现一个具有容错能力的服务:</p>
+<ol>
+<li>将状态机拷贝到多个独立服务器上</li>
+<li>接收客户端请求, 并编码为状态机的输入</li>
+<li>选择一个输入的<strong>ordering</strong>(顺序)</li>
+<li>在每个未发生故障的服务器上执行输入</li>
+<li>将状态机的输出返还给客户端</li>
+<li>监视副本间的状态差异</li>
+</ol>
+<p>上述步骤蕴含了两个抽象:</p>
+<ul>
+<li>Agreement: 每个未出故障的状态机都接收到每个请求</li>
+<li>Order: 每个未出故障的状态机都以相同顺序处理请求</li>
+</ul>
+<p>可以发现, 若想实现上述两个抽象, 不可避免要面对服务器间的通信.</p>
+<h3 id="3-2-Agreement"><a href="#3-2-Agreement" class="headerlink" title="3.2 Agreement"></a>3.2 Agreement</h3><p>为实现<strong>Agreement</strong>抽象, 通信协议需指定某个服务器(称为transmitter)以以下方式将<strong>输入</strong>传播给其他服务器:</p>
+<ul>
+<li>所有未出故障的服务器都同意相同的值</li>
+<li>若transmitter未出故障, 则所有未出故障的服务器都使用它的输入作为自己的输入</li>
+</ul>
+<p>若每当客户端发出请求时, 其都能遵循上述两个要求, 并发送到所有服务器, 则该集群实现了<strong>Agreement</strong>. 需要注意的是, Agreement并没有指定transimitter, 客户端或集群中的某个服务器都可成为transimitter(一般不会让客户端作为transmitter).</p>
+<h3 id="3-3-Order"><a href="#3-3-Order" class="headerlink" title="3.3 Order"></a>3.3 Order</h3><p>为实现<strong>Order</strong>抽象, 客户端需为请求分配一个唯一标识符, 让服务器根据该标识符的排序关系处理请求. 然而, 只是让服务器按升序处理收到的请求并不意味着每个服务器都以相同顺序处理请求: 服务器收到请求<code>p</code>并处理, 之后可能收到标识符小于<code>p</code>的请求.<br>以下是几种消息传递顺序的保证:</p>
+<ul>
+<li>Single-source FIFO: 若某个服务器发送消息$m_1$和$m_2$, 其他进程不会在收到$m_1$前收到$m_2$</li>
+<li>Totally ordered: 若某个服务器在$m_2$前收到$m_1$, 其他进程也不会在$m_1$前收到$m_2$. 与FIFO不同的是: FIFO追求的是发送端和接收端的消息顺序一致, totally ordered追求的是所有接收端的消息一致, 可以与发送端不一致</li>
+<li>Causally ordered: 若某个服务器先发送$m_1$, 后发送$m_2$, 则所有服务器都以相同顺序接收. 与FIFO不同的是, FIFO中, 接收端在收到$m_2$前不能收到任何其他消息; causally ordered中, 接收端在收到$m_2$前可收到其他服务器的消息</li>
+</ul>
+<h2 id="4-Consensus"><a href="#4-Consensus" class="headerlink" title="4. Consensus"></a>4. Consensus</h2><p>SMR提供的容错能力很美好, 但其实现涉及到分布式系统中的一个基本问题: <strong>Consensus</strong>(共识), 换句话说, 如何让多个实体对某个事件达成一致. 计算机领域中大量使用到共识, 如云计算, 时钟同步, PageRank, 负载均衡, 区块链等. SMR依赖于共识来决定请求以何种顺序提交给每个服务器.<br>共识问题需要多个进程(服务器)对单个数值形成<strong>agreement</strong>(约定). 由于进程会崩溃或运行错误, 共识协议应具备容错能力. 因此, 进程需以某种方式与其他进程通信, 并对某个值达成共识. 所有共识算法都有以下特性:</p>
+<ul>
+<li>Uniform Agreement: 不存在两个决定不同的节点</li>
+<li>Integrity: 不存在决定两次的节点</li>
+<li>Validity: 若节点决定了值v, 则v一定是由某个节点所提议</li>
+<li>Termination: 由所有未崩溃的节点做决定</li>
+</ul>
+<p>共识问题很容易联想到人类社会决定或表达意见的一种方法: <strong>voting</strong>(投票), 当一个群体中的个体对某个事件持有不同意见时, 每个人可选择支持或反对, 以此决定整个群体对该事件的决定. 分布式系统中的共识问题也采用类似的方法: 所有进程都认可<strong>majority value</strong>(多数值), 每个进程提出自己的值, 超过半数的值将作为整个集群的值.</p>
+<h3 id="4-1-Consensus-Protocols"><a href="#4-1-Consensus-Protocols" class="headerlink" title="4.1 Consensus Protocols"></a>4.1 Consensus Protocols</h3><p>分布式系统中, 最常用的公式算法为<strong>Paxos</strong>, 和其变种<strong>Raft</strong>. 这类算法有以下特征:</p>
+<ul>
+<li>synchronous(同步的)</li>
+<li>依赖一个选举出的leader</li>
+<li>可以接受节点崩溃, 但不能接受<strong>Byzantine failure</strong>(拜占庭故障, 集群中的节点会说谎)</li>
+</ul>
+<p>Google实现了一个分布式锁服务, 称为<strong>Chubby</strong>. Chubby在文件中维护锁信息, 并为实现高可用性, 将文件复制到多个地方. 该服务也是基于Paxos共识算法.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Distributed-System/">Distributed System</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/fc33.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Paxos</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/ae87.html">
+        <span class="next-text nav-default">ZooKeeper Overview</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/5557.html';
+  var disqus_title = "State Machine and Consensus";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

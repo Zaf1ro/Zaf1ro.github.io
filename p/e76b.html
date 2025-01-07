@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Advanced I/O Functions"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/e76b.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/e76b.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/e76b.html"/>
+
+
+<meta name="description" content="1. Introduction本章主要包含以下几种I&#x2F;O operations:  三种方法实现带倒计时的I&#x2F;O operations read()和write()的替代: recv()和send(), readv()和writev(), recvmsg()和sendmsg() 如何判断socket receive buffer中的数据量 如何使用C standard I&amp;#x">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Advanced I&#x2F;O Functions">
+<meta property="og:url" content="https://zaf1ro.github.io/p/e76b.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction本章主要包含以下几种I&#x2F;O operations:  三种方法实现带倒计时的I&#x2F;O operations read()和write()的替代: recv()和send(), readv()和writev(), recvmsg()和sendmsg() 如何判断socket receive buffer中的数据量 如何使用C standard I&amp;#x">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/14-5-flag-of-io-func.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/14-5-recvmsg-udp-sock.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/14-5-msghdr-recvmsg-return.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/14-5-group-of-io-func.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/14-6-use-of-ancillary-data.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/14-6-data-object-in-ancillary-data.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/14-9-kevent-flag.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/14-9-kevent-filter.gif">
+<meta property="article:published_time" content="2020-01-03T17:33:40.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.042Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/14-5-flag-of-io-func.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Advanced I/O Functions - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Socket-Timeouts"><span class="toc-text">2. Socket Timeouts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-connect-with-a-Timeout-Using-SIGALRM"><span class="toc-text">2.1 connect with a Timeout Using SIGALRM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-recvfrom-with-a-Timeout-Using-SIGALRM"><span class="toc-text">2.2 recvfrom with a Timeout Using SIGALRM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-recvfrom-with-a-Timeout-Using-select"><span class="toc-text">2.3 recvfrom with a Timeout Using select</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-recvfrom-with-a-Timeout-Using-the-SO-RCVTIMEO-Socket-Option"><span class="toc-text">2.4 recvfrom with a Timeout Using the SO_RCVTIMEO Socket Option</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-recv-and-send-Functions"><span class="toc-text">3. recv and send Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-readv-and-writev-Functions"><span class="toc-text">4. readv and writev Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-recvmsg-and-sendmsg-Functions"><span class="toc-text">5. recvmsg and sendmsg Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Ancillary-Data"><span class="toc-text">6. Ancillary Data</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-How-Much-Data-Is-Queued"><span class="toc-text">7. How Much Data Is Queued?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Sockets-and-Standard-I-O"><span class="toc-text">8. Sockets and Standard I&#x2F;O</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Advanced-Polling"><span class="toc-text">9. Advanced Polling</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-dev-poll-Interface"><span class="toc-text">9.1 &#x2F;dev&#x2F;poll Interface</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-kqueue-Interface"><span class="toc-text">9.2 kqueue Interface</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Advanced I/O Functions
+        
+      </h1>
+      <time class="post-time">
+          01/03/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>本章主要包含以下几种I&#x2F;O operations:</p>
+<ul>
+<li>三种方法实现带倒计时的I&#x2F;O operations</li>
+<li><code>read()</code>和<code>write()</code>的替代: <code>recv()</code>和<code>send()</code>, <code>readv()</code>和<code>writev()</code>, <code>recvmsg()</code>和<code>sendmsg()</code></li>
+<li>如何判断socket receive buffer中的数据量</li>
+<li>如何使用C standard I&#x2F;O library操作socket</li>
+</ul>
+<h2 id="2-Socket-Timeouts"><a href="#2-Socket-Timeouts" class="headerlink" title="2. Socket Timeouts"></a>2. Socket Timeouts</h2><p>以下是三种实现带倒计时功能I&#x2F;O operations的方法:</p>
+<ol>
+<li>调用<code>alarm()</code>, 倒计时结束后向进程发送SIGALRM signal</li>
+<li>使用<code>select()</code>自带的计时器</li>
+<li>使用<code>SO_RCVTIMEO</code>和<code>SO_SNDTIMEO</code> socket option, 但不是所有系统都支持这两个socket options</li>
+</ol>
+<p>上述三种方法可用于input和ouput操作, 但如果想为<code>connect()</code>设置倒计时, 则不能使用socket option; 对于<code>select()</code>中自带的倒计时, 必须将socket切换为nonblocking mode. </p>
+<h3 id="2-1-connect-with-a-Timeout-Using-SIGALRM"><a href="#2-1-connect-with-a-Timeout-Using-SIGALRM" class="headerlink" title="2.1 connect with a Timeout Using SIGALRM"></a>2.1 connect with a Timeout Using SIGALRM</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">connect_alarm</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span>; <span class="comment">/* just interrupt the connect() */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">connect_timeo</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> SA *saptr, <span class="type">socklen_t</span> salen, </span></span><br><span class="line"><span class="params">                  <span class="type">int</span> nsec)</span></span><br><span class="line">&#123;</span><br><span class="line">  Sigfunc *sigfunc;</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// establish a signal handler for SIGALRM</span></span><br><span class="line">  sigfunc = Signal(SIGALRM, connect_alarm);</span><br><span class="line">  <span class="keyword">if</span> (alarm(nsec) != <span class="number">0</span>) <span class="comment">// alarm clock for timeout</span></span><br><span class="line">    err_msg(<span class="string">&quot;connect_timeo: alarm was already set&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ( (n = connect(sockfd, saptr, salen)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    close(sockfd); <span class="comment">// prevent the incoming three-way handshake</span></span><br><span class="line">    <span class="keyword">if</span> (errno == EINTR) <span class="comment">// interrupted by signal handler</span></span><br><span class="line">      errno = ETIMEDOUT;</span><br><span class="line">  &#125;</span><br><span class="line">  alarm(<span class="number">0</span>); <span class="comment">// turn off the alarm</span></span><br><span class="line">  Signal(SIGALRM, sigfunc); <span class="comment">// restore previous signal handler</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span>(n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述方法存在三个问题:</p>
+<ol>
+<li>使用<code>alarm()</code>可以减少<code>connect()</code>的等待时间, 但不能延长等待时间. 以Berkeley-derived kernel为例, 其<code>connect()</code>默认等待时间为75秒, 假设<code>alarm()</code>设置为80秒, 则<code>connect()</code>在等待75秒后自动返回.</li>
+<li><code>alarm()</code>利用system call的可打断性, 实现<code>connect()</code>函数提前返回. 但某些library默认忽略接收到的<code>EINTER</code> signal, 导致<code>alarm()</code>无法打断system call.</li>
+<li>对于多线程项目, <code>alarm()</code>发出的<code>SIGALRM</code> signal会被进程的某个线程接收, 因此该方法只适合单线程项目.</li>
+</ol>
+<h3 id="2-2-recvfrom-with-a-Timeout-Using-SIGALRM"><a href="#2-2-recvfrom-with-a-Timeout-Using-SIGALRM" class="headerlink" title="2.2 recvfrom with a Timeout Using SIGALRM"></a>2.2 recvfrom with a Timeout Using SIGALRM</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_alrm</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span>; <span class="comment">/* just interrupt the recvfrom() */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">dg_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd, <span class="type">const</span> SA *pservaddr, </span></span><br><span class="line"><span class="params">            <span class="type">socklen_t</span> servlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line">  <span class="type">char</span> sendline[MAXLINE], recvline[MAXLINE + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// establish a signal handler for SIGALRM</span></span><br><span class="line">  Signal(SIGALRM, sig_alrm);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    Sendto(sockfd, sendline, <span class="built_in">strlen</span>(sendline), <span class="number">0</span>, pservaddr, servlen);</span><br><span class="line"></span><br><span class="line">    alarm(<span class="number">5</span>); <span class="comment">// alarm clock for five-second timeout</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((n = recvfrom(sockfd, recvline, MAXLINE, <span class="number">0</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (errno == EINTR) <span class="comment">// interrupted by signal handler</span></span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;socket timeout\n&quot;</span>);</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        err_sys(<span class="string">&quot;recvfrom error&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      alarm(<span class="number">0</span>);</span><br><span class="line">      recvline[n] = <span class="number">0</span>;  <span class="comment">/* null terminate */</span></span><br><span class="line">      Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-recvfrom-with-a-Timeout-Using-select"><a href="#2-3-recvfrom-with-a-Timeout-Using-select" class="headerlink" title="2.3 recvfrom with a Timeout Using select"></a>2.3 recvfrom with a Timeout Using select</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">readable_timeo</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> sec)</span></span><br><span class="line">&#123;</span><br><span class="line">  fd_set rset;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">tv</span>;</span></span><br><span class="line"></span><br><span class="line">  FD_ZERO(&amp;rset);</span><br><span class="line">  FD_SET(fd, &amp;rset); <span class="comment">// turn on the read descriptor</span></span><br><span class="line"></span><br><span class="line">  tv.tv_sec = sec;</span><br><span class="line">  tv.tv_usec = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// wait for the descriptor to become readable</span></span><br><span class="line">  <span class="comment">// return -1 if error occurs; 0 if timeout occurs; positive </span></span><br><span class="line">  <span class="comment">// value specifying the number of ready descriptors</span></span><br><span class="line">  <span class="keyword">return</span>(select(fd+<span class="number">1</span>, &amp;rset, <span class="literal">NULL</span>, <span class="literal">NULL</span>, &amp;tv));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">dg_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd, <span class="type">const</span> SA *pservaddr, </span></span><br><span class="line"><span class="params">            <span class="type">socklen_t</span> servlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line">  <span class="type">char</span> sendline[MAXLINE], recvline[MAXLINE + <span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    Sendto(sockfd, sendline, <span class="built_in">strlen</span>(sendline), <span class="number">0</span>, pservaddr, servlen);</span><br><span class="line"></span><br><span class="line">    n = readable_timeo(sockfd, <span class="number">5</span>);</span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      err_sys(<span class="string">&quot;readable_timeo error&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123; <span class="comment">// interrupted by select timeout</span></span><br><span class="line">      <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;socket timeout\n&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      n = recvfrom(sockfd, recvline, MAXLINE, <span class="number">0</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">      recvline[n] = <span class="number">0</span>; <span class="comment">/* null terminate */</span></span><br><span class="line">      Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-recvfrom-with-a-Timeout-Using-the-SO-RCVTIMEO-Socket-Option"><a href="#2-4-recvfrom-with-a-Timeout-Using-the-SO-RCVTIMEO-Socket-Option" class="headerlink" title="2.4 recvfrom with a Timeout Using the SO_RCVTIMEO Socket Option"></a>2.4 recvfrom with a Timeout Using the SO_RCVTIMEO Socket Option</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">dg_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd, <span class="type">const</span> SA *pservaddr, </span></span><br><span class="line"><span class="params">            <span class="type">socklen_t</span> servlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line">  <span class="type">char</span> sendline[MAXLINE], recvline[MAXLINE + <span class="number">1</span>];</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">tv</span>;</span></span><br><span class="line"></span><br><span class="line">  tv.tv_sec = <span class="number">5</span>;</span><br><span class="line">  tv.tv_usec = <span class="number">0</span>;</span><br><span class="line">  Setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &amp;tv, <span class="keyword">sizeof</span>(tv));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (Fgets(sendline, MAXLINE, fp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    Sendto(sockfd, sendline, <span class="built_in">strlen</span>(sendline), <span class="number">0</span>, pservaddr, servlen);</span><br><span class="line"></span><br><span class="line">    n = recvfrom(sockfd, recvline, MAXLINE, <span class="number">0</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// interrupted by SO_RCVTIMEO socket option</span></span><br><span class="line">      <span class="keyword">if</span> (errno == EWOULDBLOCK) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;socket timeout\n&quot;</span>);</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span></span><br><span class="line">        err_sys(<span class="string">&quot;recvfrom error&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    recvline[n] = <span class="number">0</span>; <span class="comment">// null terminate</span></span><br><span class="line">    Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-recv-and-send-Functions"><a href="#3-recv-and-send-Functions" class="headerlink" title="3. recv and send Functions"></a>3. recv and send Functions</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief receive messages from a socket</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">recv</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">void</span> *buff, <span class="type">size_t</span> nbytes, <span class="type">int</span> flags)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief send a message on a socket</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">send</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="type">void</span> *buff, <span class="type">size_t</span> nbytes, <span class="type">int</span> flags)</span>;</span><br></pre></td></tr></table></figure>
+<p>相比于<code>read()</code>和<code>write()</code>, <code>recv()</code>和<code>send()</code>多了一个参数: <code>flags</code>. 通过flags, 可更改input和output operation的行为.</p>
+<table>
+<thead>
+<tr>
+<th align="center">flags</th>
+<th align="center">recv</th>
+<th align="center">send</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MSG_DONTROUTE</td>
+<td align="center"></td>
+<td align="center">✓</td>
+<td align="center">Bypass routing table lookup</td>
+</tr>
+<tr>
+<td align="center">MSG_DONTWAIT</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">Only this operation is nonblocking</td>
+</tr>
+<tr>
+<td align="center">MSG_OOB</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">Send or receive out-of-band data</td>
+</tr>
+<tr>
+<td align="center">MSG_PEEK</td>
+<td align="center">✓</td>
+<td align="center"></td>
+<td align="center">Peek at incoming message</td>
+</tr>
+<tr>
+<td align="center">MSG_WAITALL</td>
+<td align="center">✓</td>
+<td align="center"></td>
+<td align="center">Wait for all the data</td>
+</tr>
+</tbody></table>
+<ul>
+<li>MSG_DONTROUTE: 若destination address为本地网络, 可使用该flag通知kernel无需进行routing table查询. 也可使用<code>SO_DONTROUTE</code> socket option让socket发出的所有datagram都通过routing table查询.</li>
+<li>MSG_DONTWAIT: 让单次I&#x2F;O operation变为nonblocking. 与<code>fcntl()</code>的<code>O_NONBLOCK</code>功能相同, 但MSG_DONTWAIT只会影响单次I&#x2F;O operation; O_NONBLOCK则永久改为nonblocking.</li>
+<li>MSG_OOB: 若<code>send()</code>使用该flag, 可将数据作为out-of-band data发送; 若<code>recv()</code>使用该flag, 会读取out-of-band data.</li>
+<li>MSG_PEEK: 只能被<code>recv()</code>使用, 用于查看socket receive buffer中的数据, 但不将数据从buffer中删除</li>
+<li>MSG_WAITALL: 只能被<code>recv()</code>使用. 只有buffer中数据大于或等于<code>nbytes</code>时才返回. 但以下三种特殊情况会让<code>recv()</code>立即返回: <ul>
+<li><code>recv()</code>被signal打断</li>
+<li>连接中断</li>
+<li>出现错误</li>
+</ul>
+</li>
+</ul>
+<p><code>recv()</code>和<code>send()</code>存在一个缺陷: <code>flags</code>参数只能由进程传递给kernel, 而kernel无法传递给进程任何信息. 对于TCP&#x2F;IP, 这并不算缺陷; 但对于OSI Protocol, 则需要从kernel中获取信息.</p>
+<h2 id="4-readv-and-writev-Functions"><a href="#4-readv-and-writev-Functions" class="headerlink" title="4. readv and writev Functions"></a>4. readv and writev Functions</h2><p><code>readv()</code>和<code>writev()</code>解决了读取或写入多个buffer的问题, 其中<code>readv()</code>称为<strong>scatter read</strong>(数据被读取到多个buffer中), <code>writev()</code>被称为<strong>gather write</strong>(一次output operation发送多个buffer数据).</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/uio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> &#123;</span></span><br><span class="line">  <span class="type">void</span> *iov_base; <span class="comment">/* starting address of buffer */</span></span><br><span class="line">  <span class="type">size_t</span> iov_len; <span class="comment">/* size of buffer */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read iovcnt buffers from the file associated</span></span><br><span class="line"><span class="comment"> *        with the file descriptor `fd` into the buffers</span></span><br><span class="line"><span class="comment"> *        described by `iov`</span></span><br><span class="line"><span class="comment"> * @param iov: an array of iovec structure</span></span><br><span class="line"><span class="comment"> * @return number of bytes read on success; -1 on error</span></span><br><span class="line"><span class="comment"> *         and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">readv</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="keyword">struct</span> iovec *iov, <span class="type">int</span> iovcnt)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief write iovcnt buffers of data described by </span></span><br><span class="line"><span class="comment"> *        `iov` to the file associated with the file</span></span><br><span class="line"><span class="comment"> *        descriptor `fd`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">writev</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="keyword">struct</span> iovec *iov, <span class="type">int</span> iovcnt)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>readv()</code>和<code>writev()</code>都是atomic operations, <code>writev()</code>会将所有iov数据作为一个UDP datagram发送. POSIX规定<code>IOV_MAX</code>常量为<code>iovcnt</code>的上限值, 不同UNIX系统拥有不同的<code>IOV_MAX</code>值.</p>
+<h2 id="5-recvmsg-and-sendmsg-Functions"><a href="#5-recvmsg-and-sendmsg-Functions" class="headerlink" title="5. recvmsg and sendmsg Functions"></a>5. recvmsg and sendmsg Functions</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* specified in POSIX */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> &#123;</span></span><br><span class="line">  <span class="type">void</span>         *msg_name;      <span class="comment">/* protocol address */</span></span><br><span class="line">  <span class="type">socklen_t</span>    msg_namelen;    <span class="comment">/* size of protocol address */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> *<span class="title">msg_iov</span>;</span>       <span class="comment">/* scatter/gather array */</span></span><br><span class="line">  <span class="type">int</span>          msg_iovlen;     <span class="comment">/* # elements in msg_iov */</span></span><br><span class="line">  <span class="type">void</span>         *msg_control;   <span class="comment">/* ancillary data (cmsghdr struct) */</span></span><br><span class="line">  <span class="type">socklen_t</span>    msg_controllen; <span class="comment">/* length of ancillary data */</span></span><br><span class="line">  <span class="type">int</span>          msg_flags;      <span class="comment">/* flags returned by recvmsg() */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief receive message from a socket</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">recvmsg</span><span class="params">(<span class="type">int</span> sockfd, <span class="keyword">struct</span> msghdr *msg, <span class="type">int</span> flags)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief transmit a message to another socket</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">sendmsg</span><span class="params">(<span class="type">int</span> sockfd, <span class="keyword">struct</span> msghdr *msg, <span class="type">int</span> flags)</span>;</span><br></pre></td></tr></table></figure>
+<p>补充:</p>
+<ol>
+<li><code>msg_name</code>和<code>msg_namelen</code>用于无需建立连接的socket, 如UDP socket. <code>recvmsg()</code>中的<code>msg_name</code>表示sender&#39;s source address, <code>sendmsg()</code>中<code>msg_name</code>表示receiver&#39;s destination address. 对于TCP socket或connected UDP socket, <code>sendmsg()</code>可将<code>msg_name</code>置为NULL. </li>
+<li><code>msg_iov</code>和<code>msg_iovlen</code>表示input&#x2F;output buffer及大小. 其中, <code>msg_iov</code>为一个iovec struct组成的链表, <code>msg_iovlen</code>表示链表的长度.</li>
+<li><code>msg_control</code>和<code>msg_controllen</code>表示optional ancillary data的位置和长度</li>
+</ol>
+<p><code>recvmsg()</code>和<code>sendmsg()</code>包含两类flags:</p>
+<ol>
+<li>msg_flags: 只用于<code>recvmsg()</code>, kernel会通过<code>msg_flags</code>将flag值传递给进程; 会被<code>sendmsg()</code>忽略</li>
+<li>flags: 进程传递给kernel的参数, 用于修改input和output的行为</li>
+</ol>
+<p><img src="/images/Network/UNP/14-5-flag-of-io-func.gif" alt="Summary of input and output flags by various I/O functions"></p>
+<p>以下是<code>recvmsg()</code>可收到的6种<code>msg_flags</code>:</p>
+<ul>
+<li>MSG_BCAST: 当datagram为link-layer broadcast或destination IP address为broadcast address时, 返回该flag</li>
+<li>MSG_MCAST: 当datagram为link-layer multicast时, 返回该flag</li>
+<li>MSG_TRUNC: 当进程的buffer(所有iovec空间)不足以接收所有data时, 返回该flag</li>
+<li>MSG_CTRUNC: 当进程的buffer(msg_controllen)不足以接收所有ancillary data, 返回该flag</li>
+<li>MSG_EOR: 当<code>send()</code>未设置MSG_EOR时, <code>recvmsg()</code>不返回该flag; 当<code>send()</code>设置MSG_EOR时, <code>recvmsg()</code>返回该flag</li>
+<li>MSG_OOB: 对于TCP out-iof-band data, 该flag不会返回; 其他protocol suites会返回该flag</li>
+</ul>
+<p>假设UDP socket调用<code>recvmsg()</code>前, msghdr structure如下:<br><img src="/images/Network/UNP/14-5-recvmsg-udp-sock.gif" alt="Data structures when recvmsg is called for a UDP socket"></p>
+<p>其中:</p>
+<ul>
+<li>protcol address: 16 bytes</li>
+<li>ancillary data: 20 bytes</li>
+<li>iovec 1: 100 bytes</li>
+<li>iovec 2: 60 bytes</li>
+<li>iovec 3: 80 bytes</li>
+<li>UDP socket设置IP_RECVDSTADDR socket option用于获取UDP datagram的destination IP address</li>
+</ul>
+<p>假设收到来自<code>192.6.38.100</code>, port为2000的70-bytes UDP datagram, 其destination IP address为<code>206.168.112.96</code>, 则<code>recvmsg()</code>返回的msghdr structure如下:<br><img src="/images/Network/UNP/14-5-msghdr-recvmsg-return.gif" alt="Update of msghdr structure when recvmsg returns"></p>
+<p>以下是<code>recvmsg()</code>调用前后的变化:</p>
+<ul>
+<li>向<code>msg_name</code>所指向的buffer添加一个internet socket address structure, 其中包括source IP address和source UDP port</li>
+<li><code>msg_namelen</code>用于表示<code>msg_name</code>的长度, 为16 bytes</li>
+<li>前100 bytes存放在第一个iovec 1中, 接下来的60 bytes存放在iovec 2中, 最后的10 bytes存放在iovec 3中. <code>recvmsg()</code>返回170, 表示接收到的所有字节数</li>
+<li><code>msg_control</code>指向cmsghdr structure, 其中<code>cmsg_len</code>为16, <code>cmsg_level</code>为IPPROTO_IP, <code>cmsg_type</code>为IP_RECVDSTADDR, 接下来4-bytes用于存放destination IP address</li>
+<li><code>msg_controllen</code>表示ancilly data, 更新为16 bytes</li>
+<li>由于无flag返回, 所有<code>msg_flags</code>无变化</li>
+</ul>
+<p>以下是不同I&#x2F;O functions的对比:<br><img src="/images/Network/UNP/14-5-group-of-io-func.gif" alt="Comparison of the five groups of I/O functions"></p>
+<h2 id="6-Ancillary-Data"><a href="#6-Ancillary-Data" class="headerlink" title="6. Ancillary Data"></a>6. Ancillary Data</h2><p><code>sendmsg()</code>和<code>recvmsg()</code>可通过<code>msg_control</code>和<code>msg_controllen</code>传递和接收ancillary data. Ancillary data也称为<strong>control information</strong>, 以下是总结:<br><img src="/images/Network/UNP/14-6-use-of-ancillary-data.gif" alt="Summary of uses for ancillary data"></p>
+<p>一个Ancillary data可包含多个ancillary data objects, 每个object都以cmsghdr struct开头, 如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> &#123;</span></span><br><span class="line">  <span class="type">socklen_t</span> cmsg_len;   <span class="comment">/* length in bytes, including this structure */</span></span><br><span class="line">  <span class="type">int</span>       cmsg_level; <span class="comment">/* originating protocol */</span></span><br><span class="line">  <span class="type">int</span>       cmsg_type;  <span class="comment">/* protocol-specific type */</span></span><br><span class="line"> <span class="comment">/* followed by unsigned char cmsg_data[] */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>假设control buffer中有两个ancillary data object, <code>msg_control</code>指向第一个ancillary data object, <code>msg_controllen</code>表示ancillary data的总长度. 每个ancillary data object指向一个cmsghdr structure, <code>cmsg_type</code>和<code>data</code>之间会存在padding, 可使用<code>CMSG_xxx</code> macro可获取所有padding:<br><img src="/images/Network/UNP/14-6-data-object-in-ancillary-data.gif" alt="Ancillary data containing two ancillary data objects"></p>
+<p>以下是用于简化ancillary data的marcos:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/param.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* @brief return a pointer to the first cmsghdr in the ancillary</span></span><br><span class="line"><span class="comment"> *        data buffer associated with mhdrptr </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> cmsghdr *<span class="title function_">CMSG_FIRSTHDR</span><span class="params">(<span class="keyword">struct</span> msghdr *mhdrptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the next valid cmsghdr after the passed cmsgptr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> cmsghdr *<span class="title function_">CMSG_NXTHDR</span><span class="params">(<span class="keyword">struct</span> msghdr *mhdrptr, <span class="keyword">struct</span></span></span><br><span class="line"><span class="params">                            cmsghdr *cmsgptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a pointer to the data portion of a cmsghdr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">char</span> *<span class="title function_">CMSG_DATA</span><span class="params">(<span class="keyword">struct</span> cmsghdr *cmsgptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the value to store in cmsg_len given the amount </span></span><br><span class="line"><span class="comment"> *        of data</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">CMSG_LEN</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> length)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the total sizeof an ancillary data object given </span></span><br><span class="line"><span class="comment"> *        the amount of data</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">int</span> <span class="title function_">CMSG_SPACE</span><span class="params">(<span class="type">unsigned</span> <span class="type">int</span> length)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-How-Much-Data-Is-Queued"><a href="#7-How-Much-Data-Is-Queued" class="headerlink" title="7. How Much Data Is Queued?"></a>7. How Much Data Is Queued?</h2><p>有时进程需在不读取数据的情况下, 知道多少数据阻塞在socket buffer:</p>
+<ol>
+<li>若buffer没有可读数据, 且进程不想被kernel阻塞, 可使用nonblocking I&#x2F;O</li>
+<li>若进程想要读取数据, 又不想让数据从buffer中移除, 可使用<code>MSG_PEEK</code> flag; 若不确定是否有数据, 可使用nonblocking I&#x2F;O和<code>MSG_DONTWAIT</code> flag. 对于TCP socket, 两次<code>recv()</code>可能获得长度不同的数据, 因为可能有数据在中途接收; 但对于UDP socket, 两次<code>recv()</code>获取的结果相同, 即使中途接收到新的数据. </li>
+<li>部分UNIX系统支持<code>ioctl()</code>中使用<code>FIONREAD</code>, 该参数会返回socket receive buffer的字节数. Berkeley-derived系统返回的字节数还包括sender IP address和port number (IPv4 16-bytes, IPv6 24-bytes)</li>
+</ol>
+<h2 id="8-Sockets-and-Standard-I-O"><a href="#8-Sockets-and-Standard-I-O" class="headerlink" title="8. Sockets and Standard I&#x2F;O"></a>8. Sockets and Standard I&#x2F;O</h2><p><code>read()</code>和<code>write()</code>等I&#x2F;O functions都属于UNIX I&#x2F;O. 这些函数直接作用于file descritpor, 并作为system call由UNIX kernel实现. 除此之外还可使用standard I&#x2F;O, 该library可用于非UNIX系统, 支持ANSI C. 除了兼容性, standard I&#x2F;O还为input&#x2F;output stream提供<strong>buffering</strong>, 可提高input&#x2F;output operation效率. 但伴随着stream buffering, 使用standard I&#x2F;O需注意以下问题:</p>
+<ul>
+<li><code>fdopen()</code>可将任何file descriptor变为standard I&#x2F;O stream, 也可通过<code>fileno()</code>获取对应的file descriptor. </li>
+<li>TCP&#x2F;UDP socket为full-duplex. 当使用<code>r+</code>模式打开stream时, 该stream也是full-duplex(可读可写). 但对于full-duplex stream, 若调用output function后调用input function, 两个操作之间需调用<code>fflush()</code>, <code>fseek()</code>, <code>fsetpos()</code>, 或<code>rewind()</code>; 若input function后调用output function, 除非input function读取到EOF, 否则需调用<code>fseek()</code>, <code>fsetpos()</code>, 或<code>rewind()</code>. </li>
+<li>full-duplex stream最简单的使用方式: 为一个file descriptor创造两个stream, 一个用于读取, 一个用于写入</li>
+</ul>
+<p>以下是使用standard I&#x2F;O替代UNIX I&#x2F;O后的<code>str_echo()</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_echo</span><span class="params">(<span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> line[MAXLINE];</span><br><span class="line">  FILE *fpin, *fpout;</span><br><span class="line"></span><br><span class="line">  fpin = Fdopen(sockfd, <span class="string">&quot;r&quot;</span>); <span class="comment">// one for input</span></span><br><span class="line">  fpout = Fdopen(sockfd, <span class="string">&quot;w&quot;</span>); <span class="comment">// one for output</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (Fgets(line, MAXLINE, fpin) != <span class="literal">NULL</span>)</span><br><span class="line">    Fputs(line, fpout);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行client和server后, 结果如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">% tcpcli02 206.168.112.96</span><br><span class="line">hello, world          // nothing is echoed</span><br><span class="line">and hi                // still no <span class="built_in">echo</span></span><br><span class="line">hello??               // still no <span class="built_in">echo</span></span><br><span class="line">^D</span><br><span class="line">hello, world          // three echoed lines are output</span><br><span class="line">and hi</span><br><span class="line">hello??</span><br></pre></td></tr></table></figure>
+<p>以下是client&#x2F;server的整个流程:</p>
+<ul>
+<li>用户在client输入第一行并传输至server</li>
+<li>server调用<code>fgets()</code>获取数据, 并由<code>fputs()</code>输出给fpout stream</li>
+<li>由于standard I&#x2F;O stream为fully buffered, 当buffer没有装满时, stream会将数据保存在buffer中, 而不是将数据写入descriptor</li>
+<li>用户在client输入第二行并传输至server</li>
+<li>server调用<code>fgets()</code>, <code>fputs()</code>后, 由于buffer依然没有装满, 因此无输出</li>
+<li>用户在client输入第三行, 情况如上</li>
+<li>用户在client输入EOF, <code>str_cli()</code>调用<code>shutdown()</code>并向server发送FIN</li>
+<li>server的<code>fgets()</code>收到FIN, 并返回null</li>
+<li><code>str_echo()</code>返回, child process调用<code>exit()</code>完成终止</li>
+<li><code>exit()</code>调用cleanup function, 输出buffer的所有数据到fpout</li>
+<li>server的fpout将数据传递给client, client的<code>str_cli(</code>)输出数据</li>
+<li>server的child process结束终止, 向client发送FIN完成TCP four-way termination</li>
+<li>client的<code>str_cli()</code>接收到EOF并返回</li>
+</ul>
+<p>以下是standard I&#x2F;O Library的三种buffering类型:</p>
+<ol>
+<li>Fully buffered: 只有buffer没有剩余空间, 进程调用<code>exit()</code>, 或进程调用<code>fflush()</code>时, 才发生I&#x2F;O operation</li>
+<li>Line buffered: 只有输入newline, 进程调用<code>fflush()</code>, 或进程调用<code>exit()</code>时, 才发生I&#x2F;O operation</li>
+<li>Unbuffered: 每当调用standard I&#x2F;O output function时都发生I&#x2F;O operation</li>
+</ol>
+<p>对于大部分UNIX系统, standard I&#x2F;O library遵循以下规则:</p>
+<ul>
+<li>Standard error采用<strong>unbuffered</strong></li>
+<li>terminal dervice采用<strong>line buffered</strong></li>
+<li>除去terminal dervice, 其他stream都采用<strong>fully buffered</strong></li>
+</ul>
+<p>由于socket不是terminal device, 所以<code>str_echo()</code>中的stream采用fully buffered. 可调用<code>setvbuf()</code>将stream变为line buffered, 也可在每次调用<code>fputs()</code>后调用<code>fflush()</code>. 但无论怎么解决, 都可能导致socket出错, 且与<strong>Nagle algorithm</strong>冲突. 最好的解决方法就是避免在socket programming中使用standard I&#x2F;O library.</p>
+<h2 id="9-Advanced-Polling"><a href="#9-Advanced-Polling" class="headerlink" title="9. Advanced Polling"></a>9. Advanced Polling</h2><p>虽然大多数系统支持<code>select()</code>和<code>poll()</code>, 但这两个函数都未被收录在POSIX中, 且每个系统对于<code>select()</code>和<code>poll()</code>的实现各不相同, 导致兼容性问题. 以下是替代方案:</p>
+<h3 id="9-1-dev-poll-Interface"><a href="#9-1-dev-poll-Interface" class="headerlink" title="9.1 &#x2F;dev&#x2F;poll Interface"></a>9.1 &#x2F;dev&#x2F;poll Interface</h3><p>Solaris提供了一个特殊文件: <code>/dev/poll</code>, 该文件提供了一种可扩展的方式来轮询多个file descriptor. 对于<code>select()</code>和<code>poll()</code>, 每次循环都需要将file descriptor再添加一遍, poll device则不需要.<br>打开<code>/dev/poll</code>后, polling program会初始化一个<strong>pollfd</strong> structure. 该array会被kernel调用<code>write()</code>写入&#x2F;dev&#x2F;poll, 然后调用<code>ioctl()</code>, DO_POLL来等待事件, 以下是<code>ioctl()</code>传入的structure:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dvpoll</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span>* <span class="title">dp_fds</span>;</span> <span class="comment">/* point to a buffer used to hold an array of pollfd */</span></span><br><span class="line">  <span class="type">int</span> dp_nfds;           <span class="comment">/* the size of buffer */</span></span><br><span class="line">  <span class="type">int</span> dp_timeout;        <span class="comment">/* timeout in milliseconds */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以下是<code>/dev/poll</code>的例子:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> stdineof;</span><br><span class="line">  <span class="type">char</span> buf[MAXLINE];</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line">  <span class="type">int</span> wfd;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span>  <span class="title">pollfd</span>[2];</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">dvpoll</span>  <span class="title">dopoll</span>;</span></span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  <span class="type">int</span> result;</span><br><span class="line"></span><br><span class="line">  wfd = Open(<span class="string">&quot;/dev/poll&quot;</span>, O_RDWR, <span class="number">0</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// fill in an array of pollfd structure</span></span><br><span class="line">  pollfd[<span class="number">0</span>].fd = fileno(fp);</span><br><span class="line">  pollfd[<span class="number">0</span>].events = POLLIN;</span><br><span class="line">  pollfd[<span class="number">0</span>].revents = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  pollfd[<span class="number">1</span>].fd = sockfd;</span><br><span class="line">  pollfd[<span class="number">1</span>].events = POLLIN;</span><br><span class="line">  pollfd[<span class="number">1</span>].revents = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  Write(wfd, pollfd, <span class="keyword">sizeof</span>(<span class="keyword">struct</span> pollfd) * <span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">  stdineof = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    <span class="comment">/* block until /dev/poll detects file descriptor is ready */</span></span><br><span class="line">    dopoll.dp_timeout = <span class="number">-1</span>;</span><br><span class="line">    dopoll.dp_nfds = <span class="number">2</span>;</span><br><span class="line">    dopoll.dp_fds = pollfd;</span><br><span class="line">    result = Ioctl(wfd, DP_POLL, &amp;dopoll);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* loop through ready file descriptors */</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; result; i++) &#123;</span><br><span class="line">      <span class="keyword">if</span> (dopoll.dp_fds[i].fd == sockfd) &#123;</span><br><span class="line">        <span class="comment">/* socket is readable */</span></span><br><span class="line">        <span class="keyword">if</span> ( (n = Read(sockfd, buf, MAXLINE)) == <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (stdineof == <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">return</span>; <span class="comment">/* normal termination */</span></span><br><span class="line">          <span class="keyword">else</span></span><br><span class="line">            err_quit(<span class="string">&quot;str_cli: server terminated prematurely&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        Write(fileno(<span class="built_in">stdout</span>), buf, n);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">/* input is readable */</span></span><br><span class="line">        <span class="keyword">if</span> ( (n = Read(fileno(fp), buf, MAXLINE)) == <span class="number">0</span>) &#123;</span><br><span class="line">          stdineof = <span class="number">1</span>;</span><br><span class="line">          Shutdown(sockfd, SHUT_WR); <span class="comment">/* send FIN */</span></span><br><span class="line">          <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        Writen(sockfd, buf, n);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-kqueue-Interface"><a href="#9-2-kqueue-Interface" class="headerlink" title="9.2 kqueue Interface"></a>9.2 kqueue Interface</h3><p>FreeBSD 4.1引入<strong>kqueue</strong> interface, 让进程可以注册一个event filter, 其中event包括file I&#x2F;O, asychronous I&#x2F;O, file modification notification, process tracking, 和signal handling.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/event.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kevent</span> &#123;</span></span><br><span class="line">  <span class="type">uintptr_t</span> ident; <span class="comment">/* identifier (e.g., file descriptor) */</span></span><br><span class="line">  <span class="type">short</span> filter;    <span class="comment">/* filter type (e.g., EVFILT_READ) */</span></span><br><span class="line">  u_short flags;   <span class="comment">/* action flags (e.g., EV_ADD) */</span></span><br><span class="line">  u_int fflags;    <span class="comment">/* filter-specific flags */</span></span><br><span class="line">  <span class="type">intptr_t</span> data;   <span class="comment">/* filter-specific data */</span></span><br><span class="line">  <span class="type">void</span> *udata;     <span class="comment">/* opaque user data */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return a new kqueue descriptor which can</span></span><br><span class="line"><span class="comment"> *        be used with kevent()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">kqueue</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief register events with the queue, and return</span></span><br><span class="line"><span class="comment"> *        any pending events to the user</span></span><br><span class="line"><span class="comment"> * @param changelist a pointer to an array of kevent</span></span><br><span class="line"><span class="comment"> *        structures of all changes</span></span><br><span class="line"><span class="comment"> * @param nchanges the size of changelist</span></span><br><span class="line"><span class="comment"> * @param eventlist a pointer to an array of kevent</span></span><br><span class="line"><span class="comment"> *        structures</span></span><br><span class="line"><span class="comment"> * @param nevents the size of eventlist</span></span><br><span class="line"><span class="comment"> * @param timeout a timespec structure of timeout</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">kevent</span><span class="params">(<span class="type">int</span> kq, <span class="type">const</span> <span class="keyword">struct</span> kevent *changelist, </span></span><br><span class="line"><span class="params">      <span class="type">int</span> nchanges, <span class="keyword">struct</span> kevent *eventlist, <span class="type">int</span> nevents,</span></span><br><span class="line"><span class="params">      <span class="type">const</span> <span class="keyword">struct</span> timespec *timeout)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize a kevent structure</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">EV_SET</span><span class="params">(<span class="keyword">struct</span> kevent *kev, <span class="type">uintptr_t</span> ident, </span></span><br><span class="line"><span class="params">      <span class="type">short</span> filter, u_short flags, u_int fflags,</span></span><br><span class="line"><span class="params">      <span class="type">intptr_t</span> data, <span class="type">void</span> *udata)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下是kevent的所有flags:<br><img src="/images/Network/UNP/14-9-kevent-flag.gif" alt="flags for kevent operations"></p>
+<p>以下是kevent的所有filters:<br><img src="/images/Network/UNP/14-9-kevent-filter.gif" alt="filters for kevent operations"></p>
+<p>以下是kqueue的例子:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> kq, i, n, nev, stdineof = <span class="number">0</span>, isfile;</span><br><span class="line">  <span class="type">char</span> buf[MAXLINE];</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">kevent</span> <span class="title">kev</span>[2];</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">ts</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">st</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* determine if it is a file or other descriptor */</span></span><br><span class="line">  isfile = ((fstat(fileno(fp), &amp;st) == <span class="number">0</span>) &amp;&amp;</span><br><span class="line">        (st.st_mode &amp; S_IFMT) == S_IFREG);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* set up two kevent structures */</span></span><br><span class="line">  EV_SET(&amp;kev[<span class="number">0</span>], fileno(fp), EVFILT_READ, EV_ADD, <span class="number">0</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line">  EV_SET(&amp;kev[<span class="number">1</span>], sockfd, EVFILT_READ, EV_ADD, <span class="number">0</span>, <span class="number">0</span>, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">  kq = Kqueue(); <span class="comment">/* get a kqueue descriptor */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* set the timeout ot zero to allow a nonblocking call to kevent */</span> </span><br><span class="line">  ts.tv_sec = ts.tv_nsec = <span class="number">0</span>; </span><br><span class="line">  Kevent(kq, kev, <span class="number">2</span>, <span class="literal">NULL</span>, <span class="number">0</span>, &amp;ts); </span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    nev = Kevent(kq, <span class="literal">NULL</span>, <span class="number">0</span>, kev, <span class="number">2</span>, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; nev; i++) &#123;</span><br><span class="line">      <span class="keyword">if</span> (kev[i].ident == sockfd) &#123; <span class="comment">/* socket is readable */</span></span><br><span class="line">        <span class="keyword">if</span> ( (n = Read(sockfd, buf, MAXLINE)) == <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (stdineof == <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">return</span>; <span class="comment">/* normal termination */</span></span><br><span class="line">          <span class="keyword">else</span></span><br><span class="line">            err_quit(<span class="string">&quot;str_cli: server terminated prematurely&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Write(fileno(<span class="built_in">stdout</span>), buf, n);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (kev[i].ident == fileno(fp)) &#123; <span class="comment">/* input is readable */</span></span><br><span class="line">        n = Read(fileno(fp), buf, MAXLINE);</span><br><span class="line">        <span class="keyword">if</span> (n &gt; <span class="number">0</span>)</span><br><span class="line">          Writen(sockfd, buf, n);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span> || (isfile &amp;&amp; n == kev[i].data)) &#123;</span><br><span class="line">          stdineof = <span class="number">1</span>;</span><br><span class="line">          Shutdown(sockfd, SHUT_WR); <span class="comment">/* send FIN */</span></span><br><span class="line">          kev[i].flags = EV_DELETE;</span><br><span class="line">          Kevent(kq, &amp;kev[i], <span class="number">1</span>, <span class="literal">NULL</span>, <span class="number">0</span>, &amp;ts); <span class="comment">/* remove kevent */</span></span><br><span class="line">          <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/14f4.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">UNIX Domain Protocols</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2505.html">
+        <span class="next-text nav-default">Daemon Processes and the inetd Superserver</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/e76b.html';
+  var disqus_title = "Advanced I/O Functions";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

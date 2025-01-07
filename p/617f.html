@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Metaclass"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/617f.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/617f.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/617f.html"/>
+
+
+<meta name="description" content="1. 类即为对象类同样也是一种对象. 只要你使用关键字class, Python解释器在执行的时候就会创建一个对象. 下面的代码段: class C(object):  pass C既是一个类, 它可以创建对象；同时C也是一个对象, 可以当做参数进行传递, 也可以被赋值, 被拷贝. 2. 动态地创建类由于类也是对象, 所以可以在运行时动态创建类, 就像任何时刻都可以创建对象一样.  def cho">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Metaclass">
+<meta property="og:url" content="https://zaf1ro.github.io/p/617f.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 类即为对象类同样也是一种对象. 只要你使用关键字class, Python解释器在执行的时候就会创建一个对象. 下面的代码段: class C(object):  pass C既是一个类, 它可以创建对象；同时C也是一个对象, 可以当做参数进行传递, 也可以被赋值, 被拷贝. 2. 动态地创建类由于类也是对象, 所以可以在运行时动态创建类, 就像任何时刻都可以创建对象一样.  def cho">
+<meta property="og:locale">
+<meta property="article:published_time" content="2015-12-16T20:47:03.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.051Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Metaclass - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%B1%BB%E5%8D%B3%E4%B8%BA%E5%AF%B9%E8%B1%A1"><span class="toc-text">1. 类即为对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%8A%A8%E6%80%81%E5%9C%B0%E5%88%9B%E5%BB%BA%E7%B1%BB"><span class="toc-text">2. 动态地创建类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-type-%E5%87%BD%E6%95%B0"><span class="toc-text">3. type()函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%85%83%E7%B1%BB%E6%A6%82%E5%BF%B5"><span class="toc-text">4. 元类概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E5%85%83%E7%B1%BB"><span class="toc-text">5. 如何使用元类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%85%83%E7%B1%BB%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">6. 元类解决的问题</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Metaclass
+        
+      </h1>
+      <time class="post-time">
+          12/16/15
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-类即为对象"><a href="#1-类即为对象" class="headerlink" title="1. 类即为对象"></a>1. 类即为对象</h2><p><strong>类同样也是一种对象</strong>. 只要你使用关键字class, Python解释器在执行的时候就会创建一个对象. 下面的代码段:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+<p>C既是一个类, 它可以创建对象；同时C也是一个对象, 可以当做参数进行传递, 也可以被赋值, 被拷贝.</p>
+<h2 id="2-动态地创建类"><a href="#2-动态地创建类" class="headerlink" title="2. 动态地创建类"></a>2. 动态地创建类</h2><p>由于类也是对象, 所以可以在运行时动态创建类, 就像任何时刻都可以创建对象一样. </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">choose_class</span>(<span class="params">name</span>):</span><br><span class="line">  <span class="keyword">if</span> name == <span class="string">&#x27;1&#x27;</span>:</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">C1</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">      <span class="keyword">pass</span></span><br><span class="line">    <span class="keyword">return</span> C1</span><br><span class="line">  <span class="keyword">else</span>:</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">C2</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">      <span class="keyword">pass</span></span><br><span class="line">    <span class="keyword">return</span> C2</span><br><span class="line"></span><br><span class="line">C = choose_class(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span> C()  <span class="comment"># &lt;__main__.C1 object at 0x0000000001F97630&gt;</span></span><br></pre></td></tr></table></figure>
+<p>上述例子中依然需要提前写好自己需要的类代码, 为了实现动态的生成类代码, 我们需要用到内建函数<code>type()</code></p>
+<h2 id="3-type-函数"><a href="#3-type-函数" class="headerlink" title="3. type()函数"></a>3. type()函数</h2><p><code>type()</code>函数最基本的功能就是让你知道个对象的类型, 例如: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(<span class="number">1</span>)         <span class="comment"># &lt;type &#x27;int&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(<span class="string">&quot;123&quot;</span>)     <span class="comment"># &lt;type &#x27;str&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(<span class="built_in">type</span>(<span class="number">1</span>))   <span class="comment"># &lt;type &#x27;type&#x27;&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(C)       <span class="comment"># &lt;type &#x27;type&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(C())     <span class="comment"># &lt;class &#x27;__main__.C&#x27;&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>但<code>type()</code>还有一种完全不同的应用: 动态地创建类. <code>type()</code>可接受一个类的描述并返回一个类: <code> type(类名, 父类的元组, 包含属性或函数的字典)</code>. 例如: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C1</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">C2 = <span class="built_in">type</span>(<span class="string">&#x27;C2&#x27;</span>, (), &#123;&#125;)  <span class="comment"># 和C1相同的效果</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> C1  <span class="comment"># &lt;class &#x27;__main__.C1&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> C2  <span class="comment"># &lt;class &#x27;__main__.C2&#x27;&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>也可以定义类属性: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C1</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  a = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">C2 = <span class="built_in">type</span>(<span class="string">&#x27;C2&#x27;</span>, (), &#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">2</span>&#125;)  <span class="comment"># 通过字典的方式定义属性</span></span><br><span class="line"></span><br><span class="line">c1 = C1</span><br><span class="line">c2 = C2</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> c1.a  <span class="comment"># 1</span></span><br><span class="line"><span class="built_in">print</span> c2.a  <span class="comment"># 2</span></span><br></pre></td></tr></table></figure>
+
+<p>还可以使用<code>type()</code>定义类函数: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C1</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">print</span> <span class="variable language_">self</span>.name</span><br><span class="line">    </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, name</span>):</span><br><span class="line">    <span class="variable language_">self</span>.name = name</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">func</span>(<span class="params">self</span>):</span><br><span class="line">  <span class="built_in">print</span> <span class="variable language_">self</span>.name</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, name</span>):</span><br><span class="line">  <span class="variable language_">self</span>.name = name</span><br><span class="line"></span><br><span class="line">C2 = <span class="built_in">type</span>(<span class="string">&#x27;C2&#x27;</span>, (), &#123;<span class="string">&#x27;__init__&#x27;</span>: __init__, <span class="string">&#x27;func&#x27;</span>: func&#125;)</span><br><span class="line"></span><br><span class="line">c1 = C1(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">c2 = C2(<span class="string">&#x27;2&#x27;</span>)</span><br><span class="line"></span><br><span class="line">c1.func()  <span class="comment"># 1</span></span><br><span class="line">c2.func()  <span class="comment"># 2</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-元类概念"><a href="#4-元类概念" class="headerlink" title="4. 元类概念"></a>4. 元类概念</h2><p>类是对象, 但类对象由谁实例化的呢? <strong>metaclass</strong>(元类)负责实例化每一个类, 也就是类的类:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Class = MetaClass()</span><br><span class="line">Intance = Class()</span><br></pre></td></tr></table></figure>
+
+<p>上一节我们介绍了使用<code>type()</code>动态地创建类, 其实<strong>type就是一个元类</strong>. 由此推出, <code>str</code>是所有字符串对象的类, int是所有整数的类, 它们的元类都是Python的内建元类type: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(<span class="number">1</span>)           <span class="comment"># &lt;type &#x27;int&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(<span class="string">&quot;123&quot;</span>)       <span class="comment"># &lt;type &#x27;str&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(<span class="built_in">str</span>)         <span class="comment"># &lt;type &#x27;type&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">type</span>(<span class="built_in">int</span>)         <span class="comment"># &lt;type &#x27;type&#x27;&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>也可以使用<code>__class</code>__&#96;查看自己属于哪个类:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">a1 = <span class="number">1</span></span><br><span class="line">a2 = <span class="string">&#x27;1&#x27;</span></span><br><span class="line"><span class="built_in">print</span> a1.__class__   <span class="comment"># &lt;type &#x27;int&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> a2.__class__   <span class="comment"># &lt;type &#x27;str&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">int</span>.__class__  <span class="comment"># &lt;type &#x27;type&#x27;&gt;</span></span><br><span class="line"><span class="built_in">print</span> <span class="built_in">str</span>.__class__  <span class="comment"># &lt;type &#x27;type&#x27;&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-如何使用元类"><a href="#5-如何使用元类" class="headerlink" title="5. 如何使用元类"></a>5. 如何使用元类</h2><p>由于type是元类, 所以可以用来创建子类:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ChildType</span>(<span class="title class_ inherited__">type</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__new__</span>(<span class="params">cls, name, bases, dct</span>):</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&quot;Allocate memory for class&quot;</span>, name</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">type</span>.__new__(cls, name, bases, dct)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">cls, name, bases, dct</span>):</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&quot;Init class &quot;</span>, name</span><br><span class="line">    <span class="built_in">super</span>(ChildType, cls).__init__(name, bases, dct)</span><br><span class="line"></span><br><span class="line">X = ChildType(<span class="string">&#x27;X&#x27;</span>, (), &#123;<span class="string">&#x27;foo&#x27;</span>: <span class="keyword">lambda</span> <span class="variable language_">self</span>: <span class="string">&#x27;foo&#x27;</span>&#125;)  <span class="comment"># foo为匿名函数</span></span><br><span class="line"><span class="comment"># Allocating memory for class X</span></span><br><span class="line"><span class="comment"># Init&#x27;ing (configuring) class X</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> X, X().foo()</span><br><span class="line"><span class="comment"># &lt;class &#x27;__main__.X&#x27;&gt; foo</span></span><br></pre></td></tr></table></figure>
+
+<p>也可以将类方法放在生成的类上: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Printable</span>(<span class="title class_ inherited__">type</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">whoami</span>(<span class="params">cls</span>): <span class="built_in">print</span> <span class="string">&quot;I am a&quot;</span>, cls.__name__</span><br><span class="line"></span><br><span class="line">Foo = Printable(<span class="string">&#x27;Foo&#x27;</span>, (), &#123;&#125;)</span><br><span class="line">Foo.whoami()  <span class="comment"># 自定义类本身的方法</span></span><br><span class="line"><span class="comment"># I am a Foo</span></span><br><span class="line"></span><br><span class="line">Printable.whoami()  </span><br><span class="line"><span class="comment"># unbound method whoami() must be called with Printable instance as first argument</span></span><br></pre></td></tr></table></figure>
+
+<p>还可以通过设置<code>__metaclass__</code>类属性来定制元类创建类, 但必须在类定义时设置<code>__metaclass__</code>属性, 如果在创建类对象之后再设置该属性, 就不会使用元类: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ChildType</span>(<span class="title class_ inherited__">type</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">typemethod</span>(<span class="params">cls</span>):</span><br><span class="line">    <span class="keyword">return</span> cls.__name__</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C</span>:</span><br><span class="line">  __metaclass__ = ChildType</span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">classmethod</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&#x27;class&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> C.typemethod()</span><br><span class="line"><span class="built_in">print</span> C().<span class="built_in">classmethod</span>()</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-元类解决的问题"><a href="#6-元类解决的问题" class="headerlink" title="6. 元类解决的问题"></a>6. 元类解决的问题</h2><p>通常会使用元类去做一些晦涩的事情. 就元类本身而言, 其实是很简单的: </p>
+<ol>
+<li>拦截类的创建</li>
+<li>修改类</li>
+<li>返回修改之后的类</li>
+</ol>
+<p>需要注意以下几点: </p>
+<ul>
+<li>元类中, <code>type</code>的调用才会真正创建类, 所以可以自由地改变属性字典(以及名称和元组形式的基类序列). </li>
+<li>一些Python ORM(Object Relational Mappers, 对象关系影射)实现了面向对象编程语言里不同类型系统的数据之间的转换. </li>
+<li>由于元类是继承的, 所以你能够提供一个使用了你的元类的基类, 而继承自它的子类就无需显式声明它了.</li>
+</ul>
+<p>下面是一个例子: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">UpperAttrMetaclass</span>(<span class="title class_ inherited__">type</span>):</span><br><span class="line">  <span class="comment"># __new__ 是在__init__之前被调用的特殊方法</span></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__new__</span>(<span class="params">cls, name, bases, dct</span>):</span><br><span class="line">    <span class="comment"># 排除以&#x27;__&#x27;开头的属性</span></span><br><span class="line">    attrs = ((name, value) <span class="keyword">for</span> name, value <span class="keyword">in</span> dct.items() <span class="keyword">if</span> <span class="keyword">not</span> name.startswith(<span class="string">&#x27;__&#x27;</span>))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 将属性名都变为大写</span></span><br><span class="line">    uppercase_attr = <span class="built_in">dict</span>((name.upper(), value) <span class="keyword">for</span> name, value <span class="keyword">in</span> attrs)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">super</span>(UpperAttrMetaclass, cls).__new__(cls, name, bases, uppercase_attr)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="comment"># 我们也可以只在这里定义__metaclass__, 这样就只会作用于这个类中</span></span><br><span class="line">  __metaclass__ = UpperAttrMetaclass</span><br><span class="line">  bar = <span class="string">&#x27;bip&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">f = Foo()</span><br><span class="line"><span class="built_in">print</span> f.BAR</span><br><span class="line"><span class="comment"># bip</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> f.bar</span><br><span class="line"><span class="comment"># AttributeError: &#x27;Foo&#x27; object has no attribute &#x27;bar&#x27;</span></span><br></pre></td></tr></table></figure>
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/3307.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">P2P Network</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/bbe1.html">
+        <span class="next-text nav-default">Class Method</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/617f.html';
+  var disqus_title = "Metaclass";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

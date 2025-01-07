@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Basic"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/6040.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/6040.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/6040.html"/>
+
+
+<meta name="description" content="1. Vertical scaling vs horizontal scalingVertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,RAM, etc.) to your servers. Horizontal scaling, referred to">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Basic">
+<meta property="og:url" content="https://zaf1ro.github.io/p/6040.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Vertical scaling vs horizontal scalingVertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,RAM, etc.) to your servers. Horizontal scaling, referred to">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-database-replication.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-scaling.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-cache.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-CDN.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-stateless-servers.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-message-queue.jpg">
+<meta property="article:published_time" content="2024-04-08T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.052Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/1-database-replication.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Basic - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Vertical-scaling-vs-horizontal-scaling"><span class="toc-text">1. Vertical scaling vs horizontal scaling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Load-Balancing"><span class="toc-text">2. Load Balancing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Database-replication"><span class="toc-text">3. Database replication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Database-Selection"><span class="toc-text">4. Database Selection</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-SQL-vs-NoSQL"><span class="toc-text">4.1 SQL vs NoSQL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Key-Value-Database-vs-Document-Database"><span class="toc-text">4.2 Key-Value Database vs Document Database</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Database-Scaling"><span class="toc-text">4. Database Scaling</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Database-Vertical-Scaling"><span class="toc-text">4.1 Database Vertical Scaling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Horizontal-Scaling"><span class="toc-text">4.2 Horizontal Scaling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Database-Replication-Techniques"><span class="toc-text">4.3 Database Replication Techniques</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Challenges-of-Sharding"><span class="toc-text">4.4 Challenges of Sharding</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Cache"><span class="toc-text">5. Cache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Advantages"><span class="toc-text">5.1 Advantages</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Considerations-for-using-cache"><span class="toc-text">5.2 Considerations for using cache:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Content-delivery-network-CDN"><span class="toc-text">6. Content delivery network (CDN)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Stateless-web-tier"><span class="toc-text">7. Stateless web tier</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Data-center"><span class="toc-text">8. Data center</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Message-Queue"><span class="toc-text">9. Message Queue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Logging-metrics-automation"><span class="toc-text">10. Logging, metrics, automation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Summary-of-How-to-Scale-System-to-Support-Millions-of-Users"><span class="toc-text">11. Summary of How to Scale System to Support Millions of Users</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Basic
+        
+      </h1>
+      <time class="post-time">
+          04/08/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Vertical-scaling-vs-horizontal-scaling"><a href="#1-Vertical-scaling-vs-horizontal-scaling" class="headerlink" title="1. Vertical scaling vs horizontal scaling"></a>1. Vertical scaling vs horizontal scaling</h2><p>Vertical scaling, referred to as &quot;scale up&quot;, means the process of adding more power (CPU,<br>RAM, etc.) to your servers. Horizontal scaling, referred to as &quot;scale-out&quot;, allows you to scale<br>by adding more servers into your pool of resources.</p>
+<p>Pros:</p>
+<ul>
+<li>vertical scaling is a great option, and the simplicity of vertical scaling is its main advantage.</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>Vertical scaling has a hard limit. It is impossible to add unlimited CPU and memory to a single server.</li>
+<li>Vertical scaling does not have failover and redundancy. If one server goes down, the website&#x2F;app goes down with it completely.</li>
+</ul>
+<h2 id="2-Load-Balancing"><a href="#2-Load-Balancing" class="headerlink" title="2. Load Balancing"></a>2. Load Balancing</h2><p>Load balancing refers to efficiently distributing incoming network traffic across a group of backend servers, also known as a server farm or server pool.</p>
+<p>load balancing configurations:</p>
+<ul>
+<li>Round-robin</li>
+<li>Weighted algorithm: different servers are assigned relative weights based on their capacity to handle traffic. if server A has twice the capacity of server B, then the load balancer would give twice the amount of traffic to server A compared to server B.</li>
+<li>Dynamic algorithm: consider server health and server response times when assigning requests.</li>
+<li>Geo-location is another widely used dynamic algorithm: load balancer assigns requests from a region to a defined server or server set.</li>
+<li>Sticky session: All requests from the client during the session are sent to the same target. This feature is useful for servers that maintain state information.</li>
+<li>Application-based stickiness: routing based on fields in the request, such as standard and custom HTTP headers and methods, query parameters, and source IP address</li>
+</ul>
+<h2 id="3-Database-replication"><a href="#3-Database-replication" class="headerlink" title="3. Database replication"></a>3. Database replication</h2><p>A master database generally only supports write operations. A slave database gets copies of the data from the master database and only supports read operations. All the data-modifying commands like insert, delete, or update must be sent to the master database.<br>Most applications require a much higher ratio of reads to writes: The number of slave database is usually larger than the number of master databases</p>
+<p><img src="/images/System-Design/Interview/1-database-replication.png" alt="database replication"></p>
+<p>Advantages: </p>
+<ul>
+<li>Better performance: all writes and updates happen in master nodes; whereas, read operations are distributed across slave nodes.</li>
+<li>Reliability: If one of your database servers is destroyed by a natural disaster, you do not need to worry about data loss because data is replicated across multiple locations.</li>
+<li>High availability: By replicating data across different locations, your website remains in operation even if a database is offline as you can access data stored in another database server.</li>
+</ul>
+<p>what if one of the databases goes offline: </p>
+<ul>
+<li>If one slave goes offline:  read operations will be directed to the master database temporarily. As soon as the issue is found, a new slave database will replace the old one</li>
+<li>If the master database goes offline, a slave database will be promoted to be the new master. a new master might not be up to date:<ul>
+<li>run data recovery scripts</li>
+<li>multi-masters</li>
+<li>circular replication</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-Database-Selection"><a href="#4-Database-Selection" class="headerlink" title="4. Database Selection"></a>4. Database Selection</h2><h3 id="4-1-SQL-vs-NoSQL"><a href="#4-1-SQL-vs-NoSQL" class="headerlink" title="4.1 SQL vs NoSQL"></a>4.1 SQL vs NoSQL</h3><ul>
+<li><p>SQL databases are suitable for structured data, where data is consistent, and relationships between tables are well-defined.</p>
+</li>
+<li><p>NoSQL databases are suitable for semi-structured or unstructured data, where the data does not conform to a predefined schema, and relationships between data elements are not well-defined.</p>
+</li>
+<li><p>SQL follows ACID properties (Atomicity, Consistency, Isolation and Durability) for the transaction management; NoSQL doesn&#39;t necessarily follow ACID properties.</p>
+</li>
+<li><p>SQL supports JOIN and complex queries; NoSQL doesn&#39;t support.</p>
+</li>
+<li><p>SQL use normalized data structure; NoSQL uses denormalized data structure</p>
+</li>
+</ul>
+<h3 id="4-2-Key-Value-Database-vs-Document-Database"><a href="#4-2-Key-Value-Database-vs-Document-Database" class="headerlink" title="4.2 Key-Value Database vs Document Database"></a>4.2 Key-Value Database vs Document Database</h3><p>Document database and key-value database both are types of NoSQL design. Document database is an extension of the key-value database model. Rather than just storing data based on a key that maps to a value, document databases store structured data. These documents can contain multiple defined values that can be indexed to speed up queries and grab related data. Document databases can be seen as a middle ground between key-value databases and relational databases, where you have the option of creating a semi-structured schema if you choose.</p>
+<h2 id="4-Database-Scaling"><a href="#4-Database-Scaling" class="headerlink" title="4. Database Scaling"></a>4. Database Scaling</h2><p>Two approaches for database scaling:</p>
+<ul>
+<li>vertical scaling</li>
+<li>horizontal scaling</li>
+</ul>
+<p><img src="/images/System-Design/Interview/1-scaling.jpg" alt="Database scaling"> </p>
+<h3 id="4-1-Database-Vertical-Scaling"><a href="#4-1-Database-Vertical-Scaling" class="headerlink" title="4.1 Database Vertical Scaling"></a>4.1 Database Vertical Scaling</h3><p>Adding more power (CPU, RAM, DISK, etc.) to an existing machine.<br>Drawbacks:</p>
+<ul>
+<li>hardware limit for a single server</li>
+<li>Greater risk of single point of failures</li>
+<li>cost is high since powerful servers are much more expensive</li>
+</ul>
+<h3 id="4-2-Horizontal-Scaling"><a href="#4-2-Horizontal-Scaling" class="headerlink" title="4.2 Horizontal Scaling"></a>4.2 Horizontal Scaling</h3><p>Separating large databases into smaller parts, called shards. Each shard shares the same schema, though the actual data on each shard is unique to the shard.<br>The most important factor to consider when implementing a sharding strategy is the choice of the sharding key. Sharding key (known as a partition key) consists of one or more columns that determine how data is distributed.</p>
+<h3 id="4-3-Database-Replication-Techniques"><a href="#4-3-Database-Replication-Techniques" class="headerlink" title="4.3 Database Replication Techniques"></a>4.3 Database Replication Techniques</h3><p>There are several types of database replication based on the type of server architecture:</p>
+<ul>
+<li>Single-leader architecture: leader receives the write operations, slaves receive the read operations</li>
+<li>No-leader architecture: Every server can receive write and read operation. For example, Amazon&#39;s DynamoDB</li>
+</ul>
+<h3 id="4-4-Challenges-of-Sharding"><a href="#4-4-Challenges-of-Sharding" class="headerlink" title="4.4 Challenges of Sharding"></a>4.4 Challenges of Sharding</h3><ul>
+<li>Resharding data:<ul>
+<li>a single shard could no longer hold more data due to rapid growth.</li>
+<li>Certain shards might experience shard exhaustion faster than others due to uneven data distribution.</li>
+</ul>
+</li>
+<li>Celebrity problem: Excessive access to a specific shard could cause server overload. For social applications, that shard with celebrity will be overwhelmed with read operations -&gt; allocate a shard for each celebrity</li>
+<li>Join and de-normalization: hard to perform join operations across database shards -&gt; denormalize the database so that queries can be performed in a single table.</li>
+</ul>
+<h2 id="5-Cache"><a href="#5-Cache" class="headerlink" title="5. Cache"></a>5. Cache</h2><p>A cache is a temporary storage area that stores the result of expensive responses or frequently accessed data in memory so that subsequent requests are served more quickly.<br><img src="/images/System-Design/Interview/1-cache.jpg" alt="cache"></p>
+<h3 id="5-1-Advantages"><a href="#5-1-Advantages" class="headerlink" title="5.1 Advantages"></a>5.1 Advantages</h3><ul>
+<li>better system performance</li>
+<li>reduce database workload</li>
+<li>scale the cache tier independently</li>
+</ul>
+<h3 id="5-2-Considerations-for-using-cache"><a href="#5-2-Considerations-for-using-cache" class="headerlink" title="5.2 Considerations for using cache:"></a>5.2 Considerations for using cache:</h3><ul>
+<li>when to use cache: using cache when data is read frequently but modified infrequently</li>
+<li>expiration policy: Once cached data is expired, it is removed from the cache.<ul>
+<li>make the expiration date too short: reload data from the database too frequently</li>
+<li>make the expiration date too long: data can become stale</li>
+</ul>
+</li>
+<li>consistency: Inconsistency can happen because data-modifying operations on the data store and cache are not in a single transaction.</li>
+<li>mitigating failures: A single cache server represents a potential single point of failure<ul>
+<li>multiple cache servers across different data centers</li>
+<li>overprovision the required memory by certain percentages</li>
+</ul>
+</li>
+<li>eviction policy: Once the cache is full, any requests to add items to the cache might cause existing items to be removed (Least-recently-used, LRU)</li>
+</ul>
+<h2 id="6-Content-delivery-network-CDN"><a href="#6-Content-delivery-network-CDN" class="headerlink" title="6. Content delivery network (CDN)"></a>6. Content delivery network (CDN)</h2><p>A CDN is a network of geographically dispersed servers used to deliver static content.<br><img src="/images/System-Design/Interview/1-CDN.jpg" alt="CDN"></p>
+<ol>
+<li>User A tries to get image.png by using an image URL</li>
+<li>If the CDN server does not have image.png in the cache, the CDN server requests the file from the origin</li>
+<li>The origin returns image.png to the CDN server, which includes optional HTTP header Time-to-Live (TTL)</li>
+<li>The CDN caches the image and returns it to User A</li>
+</ol>
+<p>Considerations of using a CDN:</p>
+<ul>
+<li>Cost: Caching infrequently used assets provides no significant benefits so you should consider moving them out of the CDN</li>
+<li>Setting an appropriate cache expiry<ul>
+<li>too long: the content might no longer be fresh</li>
+<li>too short: cause repeat reloading of content from origin servers to the CDN</li>
+</ul>
+</li>
+<li>CDN fallback: If there is a temporary CDN outage, clients should be able to detect the problem and request resources from the origin.</li>
+<li>Invalidating files: remove a file from the CDN before it expires by performing one of the following operations:<ul>
+<li>use APIs provided by CDN vendors</li>
+<li>serve a different version of the object</li>
+</ul>
+</li>
+</ul>
+<h2 id="7-Stateless-web-tier"><a href="#7-Stateless-web-tier" class="headerlink" title="7. Stateless web tier"></a>7. Stateless web tier</h2><p>scale the web tier horizontally -&gt; move state out of the web tier: A good practice is to store session data in the persistent storage such as NoSQL. Each web server in the cluster can access state data from databases. In this stateless architecture, HTTP requests from users can be sent to any web servers, which fetch state data from a shared data store. State data is stored in a shared data store and kept out of web servers.<br><img src="/images/System-Design/Interview/1-stateless-servers.jpg" alt="Stateless Servers"> </p>
+<h2 id="8-Data-center"><a href="#8-Data-center" class="headerlink" title="8. Data center"></a>8. Data center</h2><p>In normal operation, users are geoDNS-routed, also known as geo-routed, to the closest data center. geoDNS is a DNS service that allows domain names to be resolved to IP addresses based on the location of a user.</p>
+<p>Challenges:</p>
+<ul>
+<li>Traffic redirection: need tools to direct traffic to the correct data center(GeoDNS)</li>
+<li>Data synchronization: Users from different regions could use different local databases or caches. In failover cases, traffic might be routed to a data center where data is unavailable. Solution: replicate data across multiple data centers.</li>
+<li>Test and deployment: Automated deployment tools are vital to keep services consistent through all the data centers</li>
+</ul>
+<h2 id="9-Message-Queue"><a href="#9-Message-Queue" class="headerlink" title="9. Message Queue"></a>9. Message Queue</h2><p><img src="/images/System-Design/Interview/1-message-queue.jpg" alt="Message Queue"> </p>
+<p>A message queue is a durable component, stored in memory, that supports asynchronous communication. </p>
+<ul>
+<li>producer: create messages, and publish them to a message queue</li>
+<li>consumers: connect to the queue, and perform actions defined by the messages</li>
+</ul>
+<p>Advantage of MQ: <strong>Decoupling</strong>. producer can post a message to the queue when the consumer is unavailable to process it; consumer can read messages from the queue even when the producer is unavailable.</p>
+<h2 id="10-Logging-metrics-automation"><a href="#10-Logging-metrics-automation" class="headerlink" title="10. Logging, metrics, automation"></a>10. Logging, metrics, automation</h2><ul>
+<li>Logging: Monitoring error logs is important because it helps to identify errors and problems</li>
+<li>Metrics: Collecting different types of metrics help us to gain business insights and understand the health status<ul>
+<li>Host level metrics: CPU, Memory, disk I&#x2F;O</li>
+<li>Aggregated level metrics: for example, the performance of the entire database tier, cache tier</li>
+<li>key business metrics: daily active users, retention, revenue</li>
+</ul>
+</li>
+<li>Automation: automation tool to improve producitivity.</li>
+</ul>
+<h2 id="11-Summary-of-How-to-Scale-System-to-Support-Millions-of-Users"><a href="#11-Summary-of-How-to-Scale-System-to-Support-Millions-of-Users" class="headerlink" title="11. Summary of How to Scale System to Support Millions of Users"></a>11. Summary of How to Scale System to Support Millions of Users</h2><ul>
+<li>Keep web tier stateless</li>
+<li>Build redundancy at every tier</li>
+<li>Cache data as much as you can</li>
+<li>Support multiple data centers</li>
+<li>Host static assets in CDN</li>
+<li>Scale your data tier by sharding</li>
+<li>Split tiers into individual services</li>
+<li>Monitor your system and use automation tools</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/830d.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - Interview</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/539a.html">
+        <span class="next-text nav-default">DP - 0/1 Knapsack Problem</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/6040.html';
+  var disqus_title = "System Design - Basic";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

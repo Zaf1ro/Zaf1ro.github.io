@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Value Object"/>
+
+
+
+
+  <meta name="keywords" content="Microservices," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/bc4.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/bc4.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/bc4.html"/>
+
+
+<meta name="description" content="1. Definition当开发者学习完Entity后, 很容易将所有物品都当做Entity, 这会极大地增加开发难度和系统复杂度; 实际上, 开发者更需要多利用Value Object.Value Object与Entity正相反, 其没有一个Identity进行标示, 只包含一个或多个属性. 属性的类型可以是不同的, 例如: 数字, 日期, 字符, 或其他value object. 以商品价格">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Value Object">
+<meta property="og:url" content="https://zaf1ro.github.io/p/bc4.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Definition当开发者学习完Entity后, 很容易将所有物品都当做Entity, 这会极大地增加开发难度和系统复杂度; 实际上, 开发者更需要多利用Value Object.Value Object与Entity正相反, 其没有一个Identity进行标示, 只包含一个或多个属性. 属性的类型可以是不同的, 例如: 数字, 日期, 字符, 或其他value object. 以商品价格">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/value-object-1.jpeg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/value-object-2.jpeg">
+<meta property="article:published_time" content="2021-04-26T18:56:24.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.037Z">
+<meta property="article:tag" content="Microservices">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/microservice/value-object-1.jpeg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Value Object - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Definition"><span class="toc-text">1. Definition</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Descriptive-%E6%8F%8F%E8%BF%B0%E6%80%A7"><span class="toc-text">1.1 Descriptive(描述性)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Immutability-%E4%B8%8D%E5%8F%98%E6%80%A7"><span class="toc-text">1.2 Immutability(不变性)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Conceptual-Whole-%E6%A6%82%E5%BF%B5%E6%95%B4%E4%BD%93"><span class="toc-text">1.3 Conceptual Whole(概念整体)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-Replaceable-%E5%8F%AF%E6%9B%BF%E6%8D%A2%E6%80%A7"><span class="toc-text">1.4 Replaceable(可替换性)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-Equality-%E7%9B%B8%E7%AD%89%E6%80%A7"><span class="toc-text">1.5 Equality(相等性)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Implement-a-Value-Object"><span class="toc-text">2. Implement a Value Object</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Implement-Entity-ID-by-Value-Object"><span class="toc-text">3. Implement Entity ID by Value Object</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Persistence-of-Value-Object"><span class="toc-text">4. Persistence of Value Object</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-How-to-distinguish-between-Value-Object-and-Entity"><span class="toc-text">5. How to distinguish between Value Object and Entity</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Value Object
+        
+      </h1>
+      <time class="post-time">
+          04/26/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Definition"><a href="#1-Definition" class="headerlink" title="1. Definition"></a>1. Definition</h2><p>当开发者学习完Entity后, 很容易将所有物品都当做Entity, 这会极大地增加开发难度和系统复杂度; 实际上, 开发者更需要多利用Value Object.<br>Value Object与Entity正相反, 其没有一个Identity进行标示, 只包含一个或多个属性. 属性的类型可以是不同的, 例如: 数字, 日期, 字符, 或其他value object. 以商品价格为例, 一个商品的价格可用value object来表示, 其中包含两个属性: 币值和币种. Value Object的属性用于描述某个事物的特征, 这也引出了Value Object的几大特征.</p>
+<h3 id="1-1-Descriptive-描述性"><a href="#1-1-Descriptive-描述性" class="headerlink" title="1.1 Descriptive(描述性)"></a>1.1 Descriptive(描述性)</h3><p>一栋房子在系统中应作为一个Entity, 因为房子是真实存在的, 且拥有Identity(如房屋地址, 房产信息); 但房屋的房龄, 高度, 颜色, 这些都是描述一栋房屋的属性, 为这些属性设置唯一ID没有意义.</p>
+<h3 id="1-2-Immutability-不变性"><a href="#1-2-Immutability-不变性" class="headerlink" title="1.2 Immutability(不变性)"></a>1.2 Immutability(不变性)</h3><p>当一个Value Object被创建后, 则不能再被修改. 虽然不能直接修改Value Object中的属性, 但可以替换整个Value Object. 以房屋为例, 一栋房子可作为Entity, 其房屋颜色是一个Value Object. 假设当前房子的颜色是蓝色, 若我们将其变成红色, 则替换之前的Value Object.</p>
+<h3 id="1-3-Conceptual-Whole-概念整体"><a href="#1-3-Conceptual-Whole-概念整体" class="headerlink" title="1.3 Conceptual Whole(概念整体)"></a>1.3 Conceptual Whole(概念整体)</h3><p>当我们描述事物的某个属性时, 需要完整地描述. 举个例子, 当我们描述商品的价格时, <strong>价格</strong>这个属性至少包含两个属性: 币值和币种. 若开发者将<strong>价格</strong>直接放入<strong>商品</strong>的entity中, 则代码如下:</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Product</span> &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">amount</span>: <span class="built_in">number</span>;</span><br><span class="line">  <span class="attr">currency</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当业务需要修改商品价格时, 开发者需明确知道哪些属性应被修改, 这就很难保证业务的正确性. 因此需要将<strong>商品</strong>与<strong>价格</strong>分离, 如下:</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Product</span> &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">price</span>: <span class="title class_">Price</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Price</span> &#123;</span><br><span class="line">  <span class="attr">amount</span>: <span class="built_in">number</span>;</span><br><span class="line">  <span class="attr">currency</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4-Replaceable-可替换性"><a href="#1-4-Replaceable-可替换性" class="headerlink" title="1.4 Replaceable(可替换性)"></a>1.4 Replaceable(可替换性)</h3><p>为了兼顾<strong>不变性</strong>和<strong>概念整体</strong>, 当Value Object需要被更改时, 需要重新赋值. 例如, 当我们需要将商品价格从100美金换为200美金时, 代码如下:</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Product</span> &#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">money</span>: <span class="title class_">Money</span>;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">name, money</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">name</span> = name;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">money</span> = money;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">changePrice</span>(<span class="attr">money</span>: <span class="title class_">Money</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">money</span> = money;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> p = <span class="keyword">new</span> <span class="title class_">Product</span>(<span class="string">&#x27;A&#x27;</span>, <span class="keyword">new</span> <span class="title class_">Money</span>(<span class="number">100</span>, <span class="string">&#x27;USD&#x27;</span>));</span><br><span class="line">p.<span class="title function_">changePrice</span>(<span class="keyword">new</span> <span class="title class_">Money</span>(<span class="number">200</span>, <span class="string">&#x27;USD&#x27;</span>));</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-5-Equality-相等性"><a href="#1-5-Equality-相等性" class="headerlink" title="1.5 Equality(相等性)"></a>1.5 Equality(相等性)</h3><p>由于Value Object没有Identity, 因此只要两个Value Object中的属性全相等, 则Value Object相等. 例如: 蓝色的房屋和蓝色的气球所表示的物体并不相同, 但两者的<strong>蓝色</strong>描述的是同一特征. 由于该特性和不变性, 开发者可将Entity ID设计为Value Object.</p>
+<h2 id="2-Implement-a-Value-Object"><a href="#2-Implement-a-Value-Object" class="headerlink" title="2. Implement a Value Object"></a>2. Implement a Value Object</h2><p>以下是Value Object的base class:</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">LiteralObject</span> &#123;</span><br><span class="line">  [<span class="attr">index</span>: <span class="built_in">string</span>]: <span class="built_in">unknown</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">ValueObject</span>&lt;<span class="title class_">Props</span> <span class="keyword">extends</span> &#123;&#125;&gt; &#123;</span><br><span class="line">  <span class="comment">// Readonly</span></span><br><span class="line">  <span class="attr">props</span>: <span class="title class_">Readonly</span>&lt;<span class="title class_">Props</span>&gt;;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"><span class="attr">props</span>: <span class="title class_">Props</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">props</span> = <span class="title class_">Object</span>.<span class="title function_">freeze</span>(props);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Check equality by shallow equals of properties.</span></span><br><span class="line"><span class="comment">   * It can be override.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="title function_">equals</span>(obj?: <span class="title class_">ValueObject</span>&lt;<span class="title class_">Props</span>&gt;): <span class="built_in">boolean</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (obj === <span class="literal">null</span> || obj === <span class="literal">undefined</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (obj.<span class="property">props</span> === <span class="literal">undefined</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> <span class="title function_">shallowObjectEqual</span> = (<span class="params"></span></span><br><span class="line"><span class="params">      <span class="attr">props1</span>: <span class="title class_">LiteralObject</span>,</span></span><br><span class="line"><span class="params">      <span class="attr">props2</span>: <span class="title class_">LiteralObject</span></span></span><br><span class="line"><span class="params">    </span>) =&gt; &#123;</span><br><span class="line">      <span class="keyword">const</span> keys1 = <span class="title class_">Object</span>.<span class="title function_">keys</span>(props2);</span><br><span class="line">      <span class="keyword">const</span> keys2 = <span class="title class_">Object</span>.<span class="title function_">keys</span>(props1);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (keys1.<span class="property">length</span> !== keys2.<span class="property">length</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> keys1.<span class="title function_">every</span>(</span><br><span class="line">        <span class="function"><span class="params">key</span> =&gt;</span> props2.<span class="title function_">hasOwnProperty</span>(key) &amp;&amp; props2[key] === props1[key]</span><br><span class="line">      );</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">return</span> <span class="title function_">shallowObjectEqual</span>(<span class="variable language_">this</span>.<span class="property">props</span>, obj.<span class="property">props</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-Implement-Entity-ID-by-Value-Object"><a href="#3-Implement-Entity-ID-by-Value-Object" class="headerlink" title="3. Implement Entity ID by Value Object"></a>3. Implement Entity ID by Value Object</h2><figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// EntityId</span></span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">ValueObject</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./ValueObject&#x27;</span>;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">EntityIdProps</span>&lt;<span class="title class_">Value</span>&gt; &#123;</span><br><span class="line">  <span class="attr">value</span>: <span class="title class_">Value</span>;</span><br><span class="line">  <span class="attr">occuredDate</span>: <span class="title class_">Date</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">EntityId</span>&lt;<span class="title class_">Value</span>&gt; <span class="keyword">extends</span> <span class="title class_">ValueObject</span>&lt;<span class="title class_">EntityIdProps</span>&lt;<span class="title class_">Value</span>&gt;&gt; &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"><span class="attr">value</span>: <span class="title class_">Value</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">super</span>(&#123; value, <span class="attr">occuredDate</span>: <span class="keyword">new</span> <span class="title class_">Date</span>() &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">get</span> <span class="title function_">occuredDate</span>(): <span class="title class_">Date</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">occuredDate</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">get</span> <span class="title function_">value</span>(): <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">value</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">toString</span>(): <span class="built_in">string</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> constructorName = <span class="variable language_">this</span>.<span class="property">constructor</span>.<span class="property">name</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">`<span class="subst">$&#123;constructorName&#125;</span>(<span class="subst">$&#123;<span class="built_in">String</span>(<span class="variable language_">this</span>.props.value)&#125;</span>)-<span class="subst">$&#123;<span class="variable language_">this</span>.occuredDate.toISOString()&#125;</span>`</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">toValue</span>(): <span class="title class_">Value</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">props</span>.<span class="property">value</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">equals</span>(<span class="attr">entityId</span>: <span class="title class_">EntityId</span>&lt;<span class="title class_">Value</span>&gt;): <span class="built_in">boolean</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (entityId === <span class="literal">null</span> || entityId === <span class="literal">undefined</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!(entityId <span class="keyword">instanceof</span> <span class="variable language_">this</span>.<span class="property">constructor</span>)) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> entityId.<span class="property">value</span> === <span class="variable language_">this</span>.<span class="property">value</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Back to Entity</span></span><br><span class="line"><span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Entity</span>&lt;<span class="title class_">Id</span> <span class="keyword">extends</span> <span class="title class_">EntityId</span>&lt;<span class="built_in">unknown</span>&gt;, <span class="title class_">Props</span>&gt; &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-Persistence-of-Value-Object"><a href="#4-Persistence-of-Value-Object" class="headerlink" title="4. Persistence of Value Object"></a>4. Persistence of Value Object</h2><p>首先需要澄清一个概念: domain layer的物品和repository layer的物品是不同的. 开发者偏向于直接将repository layer中的数据拿出来直接当做domain layer的物品. 当设计Entity或Value Object时, 应根据业务逻辑来设计, 而不是根据repository layer.<br>Entity在repository中有一个位置放置ID, 但Value Object的repository不一定没有ID, 这需要考虑repository的设计.</p>
+<h2 id="5-How-to-distinguish-between-Value-Object-and-Entity"><a href="#5-How-to-distinguish-between-Value-Object-and-Entity" class="headerlink" title="5. How to distinguish between Value Object and Entity"></a>5. How to distinguish between Value Object and Entity</h2><p>在进行DDD设计时, 开发者应更多地使用Value Object, 而不是Entity, 并不是因为Entity有一个Identity, 而是因为Value Object的生存周期与domain无关. 有时, 同一个物品在不同的Bounded Context中会被分别作为Entity和Value Object.<br>举个例子, 现在有两个Bounded Context, 一个是权限管理系统(Identity Access Management, IAM), 另一个是购物系统(Purchasing). 当用户下单时, 会先从IAM获得用户资料与权限, 然后交给Purchasing去生成订单. 对于IAM来说, 用户资料会以Entity的方式存储, 以便随时更新; 而对于Purchasing来说, 用户资料应作为Value Object, 因为Purchasing系统并需要更新任何用户资料或权限.<br>Entity:<br><img src="/images/microservice/value-object-1.jpeg" alt="Entity"></p>
+<p>Value Object:<br><img src="/images/microservice/value-object-2.jpeg" alt="Value Object"></p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/c11b.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Aggregate</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/1f4.html">
+        <span class="next-text nav-default">Entity</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/bc4.html';
+  var disqus_title = "Value Object";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

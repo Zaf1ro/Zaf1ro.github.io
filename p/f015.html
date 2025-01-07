@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Binary Search"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/f015.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/f015.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/f015.html"/>
+
+
+<meta name="description" content="1. IntroductionBinary Search(二分搜索)也称为half-interval search(折半搜索), 或logarithmic search(对数搜索), 用于在一个数组中找到目标值的位置. 以一个升序数组为例, 每次考察数组的中间元素:  若中间元素为目标值, 则结束搜索 若中间元素小于目标值, 则该元素左侧的值一定也小于目标值, 因此只需在右侧查找 若中间元素大于目">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Binary Search">
+<meta property="og:url" content="https://zaf1ro.github.io/p/f015.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionBinary Search(二分搜索)也称为half-interval search(折半搜索), 或logarithmic search(对数搜索), 用于在一个数组中找到目标值的位置. 以一个升序数组为例, 每次考察数组的中间元素:  若中间元素为目标值, 则结束搜索 若中间元素小于目标值, 则该元素左侧的值一定也小于目标值, 因此只需在右侧查找 若中间元素大于目">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-04-12T01:01:57.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.029Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Binary Search - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Implementation"><span class="toc-text">2. Implementation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Open-Closed"><span class="toc-text">2.1 Open &#x2F; Closed</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Value-of-mid"><span class="toc-text">2.2 Value of mid</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Out-of-bound"><span class="toc-text">2.3 Out of bound</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Update-of-mid"><span class="toc-text">2.4 Update of mid</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Conclusion"><span class="toc-text">2.5 Conclusion</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Variants-of-Binary-Search"><span class="toc-text">3. Variants of Binary Search</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Leetcode"><span class="toc-text">4. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#34-Find-First-and-Last-Position-of-Element-in-Sorted-Array"><span class="toc-text">34. Find First and Last Position of Element in Sorted Array</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#153-Find-Minimum-in-Rotated-Sorted-Array"><span class="toc-text">153. Find Minimum in Rotated Sorted Array</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-1"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-1"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#154-Find-Minimum-in-Rotated-Sorted-Array-II"><span class="toc-text">154. Find Minimum in Rotated Sorted Array II</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-2"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-2"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#852-Peak-Index-in-a-Mountain-Array"><span class="toc-text">852. Peak Index in a Mountain Array</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-3"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-3"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#378-Kth-Smallest-Element-in-a-Sorted-Matrix"><span class="toc-text">378. Kth Smallest Element in a Sorted Matrix</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-4"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-4"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#658-Find-K-Closest-Elements"><span class="toc-text">658. Find K Closest Elements</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-5"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-5"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1060-Missing-Element-in-Sorted-Array"><span class="toc-text">1060. Missing Element in Sorted Array</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-6"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-6"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#300-Longest-Increasing-Subsequence"><span class="toc-text">300. Longest Increasing Subsequence</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-7"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-7"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#436-Find-Right-Interval"><span class="toc-text">436. Find Right Interval</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-8"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-8"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1552-Magnetic-Force-Between-Two-Balls"><span class="toc-text">1552. Magnetic Force Between Two Balls</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-9"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-9"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#410-Split-Array-Largest-Sum"><span class="toc-text">410. Split Array Largest Sum</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-10"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-10"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1231-Divide-Chocolate"><span class="toc-text">1231. Divide Chocolate</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-11"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-11"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#354-Russian-Doll-Envelopes"><span class="toc-text">354. Russian Doll Envelopes</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-12"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-12"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1847-Closest-Room"><span class="toc-text">1847. Closest Room</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-13"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-Balanced-Binary-Tree"><span class="toc-text">Solution + Balanced Binary Tree</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Median-of-Two-Sorted-Arrays"><span class="toc-text">4. Median of Two Sorted Arrays</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-14"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-13"><span class="toc-text">Solution</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Binary Search
+        
+      </h1>
+      <time class="post-time">
+          04/11/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Binary Search(二分搜索)也称为half-interval search(折半搜索), 或logarithmic search(对数搜索), 用于在一个数组中找到目标值的位置. 以一个升序数组为例, 每次考察数组的中间元素:</p>
+<ul>
+<li>若中间元素为目标值, 则结束搜索</li>
+<li>若中间元素小于目标值, 则该元素左侧的值一定也小于目标值, 因此只需在右侧查找</li>
+<li>若中间元素大于目标值, 则同理, 只需在左侧查找</li>
+</ul>
+<p>Binary search的思想在于<strong>减而治之</strong>, 每次查找都排除掉一定不存在目标元素的区间, 并继续在可能存在目标元素的区间查找.<br>Binary search的时间复杂度为$O(\log(N))$(N为数组元素数), 非递归实现的空间复杂度为$O(1)$. 需要注意的是, 使用binary search的前提是<strong>数组是广义有序的</strong>: 对于任意中间元素, 该数组的一侧满足某种条件, 而另一侧不满足条件. 因此, binary search常用于查找满足某种条件的最大(小)值.</p>
+<h2 id="2-Implementation"><a href="#2-Implementation" class="headerlink" title="2. Implementation"></a>2. Implementation</h2><p>Binary search的思想很简单, 但实现时存在很多需要考虑的细节.</p>
+<h3 id="2-1-Open-Closed"><a href="#2-1-Open-Closed" class="headerlink" title="2.1 Open &#x2F; Closed"></a>2.1 Open &#x2F; Closed</h3><p>Binary search初始化查找区间时可指定不同范围, 假设数组长度为<code>n</code>, 以下是几种常见查找区间:</p>
+<ul>
+<li>left closed, right closed: $[0, n-1]$</li>
+<li>left closed, right open &#x2F; left open, right closed: $[0, n)$ 或 $(-1, n-1]$</li>
+<li>left open, right open: $(-1, n)$</li>
+</ul>
+<h3 id="2-2-Value-of-mid"><a href="#2-2-Value-of-mid" class="headerlink" title="2.2 Value of mid"></a>2.2 Value of mid</h3><p>Binary search取中间值有两种方式:</p>
+<ul>
+<li>$\lfloor\frac{\text{left}+\text{right}}{2}\rfloor$</li>
+<li>$\lfloor\frac{\text{left}+\text{right}+1}{2}\rfloor$</li>
+</ul>
+<p>若元素个数为<strong>奇数</strong>, 则上述两种方式的结果相同; 若元素个数为<strong>偶数</strong>, 则第一种会取得靠左元素的下标, 而第二种会取得靠右元素的下标.</p>
+<h3 id="2-3-Out-of-bound"><a href="#2-3-Out-of-bound" class="headerlink" title="2.3 Out of bound"></a>2.3 Out of bound</h3><p>Binary search需要一个终止条件, 也就是<code>while</code>语句中的出界判断条件, 以下是三种常见的判断条件:</p>
+<ul>
+<li>$left \le right$</li>
+<li>$left &lt; right$</li>
+<li>$left + 1 &lt; right$</li>
+</ul>
+<h3 id="2-4-Update-of-mid"><a href="#2-4-Update-of-mid" class="headerlink" title="2.4 Update of mid"></a>2.4 Update of mid</h3><p>Binary search的每次循环都需要更新<code>mid</code>, 以下是三种更新<code>mid</code>的写法:</p>
+<ul>
+<li>$left &#x3D; mid + 1, right &#x3D; mid - 1$</li>
+<li>$left &#x3D; mid + 1, right &#x3D; mid$ 或 $left &#x3D; mid, right &#x3D; mid - 1$</li>
+<li>$left &#x3D; mid, right &#x3D; mid - 1$</li>
+</ul>
+<h3 id="2-5-Conclusion"><a href="#2-5-Conclusion" class="headerlink" title="2.5 Conclusion"></a>2.5 Conclusion</h3><p>以上实现看似存在很多组合方式, 但其实只有三种写法:</p>
+<ul>
+<li>左闭右闭:<ul>
+<li>初始区间: $[0, n-1]$</li>
+<li>出界判定条件: $left \le right$</li>
+<li>更新<code>mid</code>方式: $left &#x3D; mid + 1, right &#x3D; mid - 1$</li>
+</ul>
+</li>
+<li>左闭右开 或 左开右闭:<ul>
+<li>初始区间: $[0, n)$ 或 $(-1, n-1]$</li>
+<li>出界判定条件: $left &lt; right$</li>
+<li>更新<code>mid</code>方式: $left &#x3D; mid + 1, right &#x3D; mid$ 或 $left &#x3D; mid, right &#x3D; mid - 1$</li>
+</ul>
+</li>
+<li>左开右开: <ul>
+<li>初始区间: $(-1, n)$</li>
+<li>出界判定条件: $left + 1 &lt; right$</li>
+<li>更新<code>mid</code>方式: $left &#x3D; mid, right &#x3D; mid$</li>
+</ul>
+</li>
+</ul>
+<p>上述三种写法可互相转化, 且各有优劣:</p>
+<ul>
+<li>左闭右闭: 返回值一定处于$[0, n-1]$区间内, 但循环结束时<code>left</code>和<code>right</code>的值不同, 需判断返回哪一个值</li>
+<li>左闭右开(或左开右闭): 循环结束时<code>left</code>和<code>right</code>相同, 但返回值存在出界风险(左闭右开可能返回<code>n</code>, 左开右闭可能返回<code>-1</code>), 且由于<code>left</code>(或<code>right</code>)为坐标的元素并未检查, 需在循环结束后额外判断</li>
+<li>左开右开: 写法最简单, 但返回值存在出界风险(<code>-1</code>或<code>n</code>)</li>
+</ul>
+<h2 id="3-Variants-of-Binary-Search"><a href="#3-Variants-of-Binary-Search" class="headerlink" title="3. Variants of Binary Search"></a>3. Variants of Binary Search</h2><p>Binary search不光用于判断目标值是否包含在数组中, 还有很多其他使用情景(假设数组已排序):</p>
+<ol>
+<li>若数组中存在重复值, 查找目标值的第一个出现位置  <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">first</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l + <span class="number">1</span>) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// If arr[m] &lt; target, means all elements in [l, m - 1] &lt; target</span></span><br><span class="line">        <span class="keyword">if</span> (a[m] &lt; target) &#123;</span><br><span class="line">            l = m + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (a[m] &gt; target) &#123; <span class="comment">// If arr[m] &gt; target, means all elements in [m + 1, r] &gt; target</span></span><br><span class="line">            r = m - <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// If a[m] == target, keep searching in [l, m - 1]</span></span><br><span class="line">            res = m;</span><br><span class="line">            r = m - <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>若数组中存在重复值, 查找目标值的最后一个出现位置  <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">last</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// If a[m] &lt; target, means all elements in [l, m - 1] &lt; target</span></span><br><span class="line">        <span class="keyword">if</span> (a[m] &lt; target) &#123;</span><br><span class="line">            l = m + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (a[m] &gt; target) &#123; <span class="comment">// If a[m] &gt; target, means all elements in [m + 1, r] &gt; target</span></span><br><span class="line">            r = m - <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// If a[m] == target, keep searching in [m + 1, r]</span></span><br><span class="line">            res = m;</span><br><span class="line">            l = m + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>大于或等于目标值的最小元素的位置, 若存在多个元素等同目标值, 则取最左侧位置  <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">ceiling</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// If a[m] &lt; target, means all elements in [l, m - 1] &lt; target</span></span><br><span class="line">        <span class="keyword">if</span> (a[m] &lt; target) &#123;</span><br><span class="line">            l = m + <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// If a[m] &gt;= target, keep searching in [l, m - 1]</span></span><br><span class="line">            res = m;</span><br><span class="line">            r = m - <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>小于或等于目标值的最大元素的位置, 若存在多个元素等同目标值, 则取最右侧位置  <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">floor</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// If a[m] &gt; target, means all elements in [m + 1, r] &gt; target</span></span><br><span class="line">        <span class="keyword">if</span> (a[m] &gt; target) &#123;</span><br><span class="line">            r = m - <span class="number">1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// If a[m] &lt;= target, keep searching in [m + 1, r]</span></span><br><span class="line">            res = m;</span><br><span class="line">            l = m + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>总结一下, 存在四种查找元素的情况:</p>
+<ul>
+<li>查找$\ge x$的元素</li>
+<li>查找$&gt; x$的元素: 可转换为$\ge x+1$的元素 </li>
+<li>查找$&lt; x$的元素: 可转换为$\ge x$的元素坐标减1</li>
+<li>查找$\le x$的元素: 可转换为$&gt; x$的元素坐标减1, 也就是$\ge x + 1$的元素坐标减1</li>
+</ul>
+<p>因此, 上述四种情况都可转换为$\ge x$情况, 也可转换为其他情况.</p>
+<h2 id="4-Leetcode"><a href="#4-Leetcode" class="headerlink" title="4. Leetcode"></a>4. Leetcode</h2><h3 id="34-Find-First-and-Last-Position-of-Element-in-Sorted-Array"><a href="#34-Find-First-and-Last-Position-of-Element-in-Sorted-Array" class="headerlink" title="34. Find First and Last Position of Element in Sorted Array"></a>34. Find First and Last Position of Element in Sorted Array</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an array of integers <code>nums</code> sorted in non-decreasing order, find the starting and ending position of a given <code>target</code> value.</p>
+<p>If <code>target</code> is not found in the array, return <code>[-1, -1]</code>.</p>
+<p>You must write an algorithm with <code>$O(\log(n))$</code> runtime complexity.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [5,7,7,8,8,10], target = 8</span><br><span class="line">Output: [3,4]</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [5,7,7,8,8,10], target = 6</span><br><span class="line">Output: [-1,-1]</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h4><p>由于数组已经排序, 因此可使用binary search查找第一个目标值元素和最后一个目标值元素的位置.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] searchRange(<span class="type">int</span>[] nums, <span class="type">int</span> target) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">int</span>[] &#123;</span><br><span class="line">            lower_bound(nums, <span class="number">0</span>, nums.length-<span class="number">1</span>, target),</span><br><span class="line">            upper_bound(nums, <span class="number">0</span>, nums.length-<span class="number">1</span>, target)</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">lower_bound</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l + <span class="number">1</span>) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (a[m] &lt; target) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (a[m] &gt; target) &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                res = m;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">upper_bound</span><span class="params">(<span class="type">int</span>[] a, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (a[m] &lt; target) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (a[m] &gt; target) &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                res = m;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="153-Find-Minimum-in-Rotated-Sorted-Array"><a href="#153-Find-Minimum-in-Rotated-Sorted-Array" class="headerlink" title="153. Find Minimum in Rotated Sorted Array"></a>153. Find Minimum in Rotated Sorted Array</h3><h4 id="Problem-Description-1"><a href="#Problem-Description-1" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Suppose an array of length <code>n</code> sorted in ascending order is <strong>rotated</strong> between <code>1</code> and <code>n</code> times. For example, the array <code>nums = [0,1,2,4,5,6,7]</code> might become:</p>
+<ul>
+<li><code>[4,5,6,7,0,1,2]</code> if it was rotated <code>4</code> times.</li>
+<li><code>[0,1,2,4,5,6,7]</code> if it was rotated <code>7</code> times.<br>Notice that <strong>rotating</strong> an array <code>[a[0], a[1], a[2], ..., a[n-1]]</code> 1 time results in the array <code>[a[n-1], a[0], a[1], a[2], ..., a[n-2]]</code>.</li>
+</ul>
+<p>Given the sorted rotated array <code>nums</code> of <strong>unique</strong> elements, return the minimum element of this array.</p>
+<p>You must write an algorithm that runs in <code>$O(\log(n))$</code> time.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [3,4,5,1,2]</span><br><span class="line">Output: 1</span><br><span class="line">Explanation: The original array was [1,2,3,4,5] rotated 3 times.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h4><p>该数组分为两种情况:</p>
+<ul>
+<li>未旋转: 最小元素为最左侧元素</li>
+<li>旋转过: 最小元素在中间</li>
+</ul>
+<p>因此我们只需考虑数组旋转过的情况: 若<code>nums[left] &gt; nums[right]</code>, 则说明当前区间旋转过, 此时取中值存在两种情况:</p>
+<ul>
+<li>mid落在<code>[left, max]</code>: 中值落在左侧区间(<code>[left, max]</code>), 需向右移动(<code>nums[mid] &gt;= nums[l]</code>)</li>
+<li>mid落在<code>[min, right]</code>: 中值落在右侧区间(<code>[min, right]</code>), 需向左移动(<code>nums[mid] &lt; nums[l]</code>或<code>nums[mid] &lt;= nums[right]</code>)</li>
+</ul>
+<p>需要注意的是, 若<code>left + 1 == right</code>, 则<code>(l + r) / 2</code>返回left, 而不是right, 因此中值落在右侧区间时无需让<code>right = mid - 1</code>.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findMin</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = nums.length - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (nums[m] &gt;= nums[l] &amp;&amp; nums[l] &gt; nums[r]) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> nums[l];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="154-Find-Minimum-in-Rotated-Sorted-Array-II"><a href="#154-Find-Minimum-in-Rotated-Sorted-Array-II" class="headerlink" title="154. Find Minimum in Rotated Sorted Array II"></a>154. Find Minimum in Rotated Sorted Array II</h3><h4 id="Problem-Description-2"><a href="#Problem-Description-2" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Suppose an array of length <code>n</code> sorted in ascending order is <strong>rotated</strong> between <code>1</code> and <code>n</code> times. For example, the array <code>nums = [0,1,4,4,5,6,7]</code> might become:</p>
+<ul>
+<li><code>[4,5,6,7,0,1,4]</code> if it was rotated <code>4</code> times.</li>
+<li><code>[0,1,4,4,5,6,7]</code> if it was rotated <code>7</code> times.<br>Notice that rotating an array <code>[a[0], a[1], a[2], ..., a[n-1]]</code> 1 time results in the array <code>[a[n-1], a[0], a[1], a[2], ..., a[n-2]]</code>.</li>
+</ul>
+<p>Given the sorted rotated array <code>nums</code> that may contain <strong>duplicates</strong>, return the minimum element of this array.</p>
+<p>You must decrease the overall operation steps as much as possible.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [2,2,2,0,1]</span><br><span class="line">Output: 0</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h4><p>该题与上一题相同, 唯一区别在于数组中存在重复元素, 可能破坏数组的<strong>有序性</strong>, 例如: 若<code>nums</code>为<code>[2,2,2,1,2]</code>, 则<code>nums[left]</code>, <code>nums[mid]</code>和<code>nums[right]</code>均为2, 此时无法判断最小值在mid的左侧或右侧, 只能缩小区间并再次查找.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findMin</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = nums.length - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (nums[l] == nums[m] &amp;&amp; nums[m] == nums[r]) &#123;</span><br><span class="line">                l++;</span><br><span class="line">                r--;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nums[l] &gt;= nums[r] &amp;&amp; nums[m] &gt;= nums[l]) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> nums[l];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="852-Peak-Index-in-a-Mountain-Array"><a href="#852-Peak-Index-in-a-Mountain-Array" class="headerlink" title="852. Peak Index in a Mountain Array"></a>852. Peak Index in a Mountain Array</h3><h4 id="Problem-Description-3"><a href="#Problem-Description-3" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>An array <code>arr</code> a <strong>mountain</strong> if the following properties hold:</p>
+<ul>
+<li><code>arr.length &gt;= 3</code></li>
+<li>There exists some <code>i</code> with <code>0 &lt; i &lt; arr.length - 1</code> such that:<ul>
+<li><code>arr[0] &lt; arr[1] &lt; ... &lt; arr[i - 1] &lt; arr[i]</code></li>
+<li><code>arr[i] &gt; arr[i + 1] &gt; ... &gt; arr[arr.length - 1]</code></li>
+</ul>
+</li>
+</ul>
+<p>Given a mountain array <code>arr</code>, return the index <code>i</code> such that <code>arr[0] &lt; arr[1] &lt; ... &lt; arr[i - 1] &lt; arr[i] &gt; arr[i + 1] &gt; ... &gt; arr[arr.length - 1]</code>.</p>
+<p>You must solve it in <code>$O(\log(n))$</code> time complexity.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: arr = [0,2,1,0]</span><br><span class="line">Output: 1</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h4><p>题目中数组元素虽不按照升序或降序排列, 但仍具有有序性: 由于数组一定存在一个peak, 因此对于中值, 存在三种情况:</p>
+<ul>
+<li><code>arr[mid] &gt; arr[mid-1]</code>且<code>arr[mid] &gt; arr[mid+1]</code>: 说明中值即为peak</li>
+<li><code>arr[mid] &lt; arr[mid-1]</code>: peak在左侧</li>
+<li><code>arr[mid] &lt; arr[mid+1]</code>: peak在右侧</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">peakIndexInMountainArray</span><span class="params">(<span class="type">int</span>[] arr)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = arr.length - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (arr[m] &gt; arr[m+<span class="number">1</span>] &amp;&amp; arr[m] &gt; arr[m-<span class="number">1</span>]) &#123;</span><br><span class="line">                <span class="keyword">return</span> m;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (arr[m] &lt; arr[m+<span class="number">1</span>]) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="378-Kth-Smallest-Element-in-a-Sorted-Matrix"><a href="#378-Kth-Smallest-Element-in-a-Sorted-Matrix" class="headerlink" title="378. Kth Smallest Element in a Sorted Matrix"></a>378. Kth Smallest Element in a Sorted Matrix</h3><h4 id="Problem-Description-4"><a href="#Problem-Description-4" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an <code>n x n</code> <code>matrix</code> where each of the rows and columns is sorted in ascending order, return the <code>$k^&#123;th&#125;$</code> smallest element in the matrix.</p>
+<p>Note that it is the <code>$k^&#123;th&#125;$</code> smallest element in the sorted order, not the <code>$k^&#123;th&#125;$</code> distinct element.</p>
+<p>You must find a solution with a memory complexity better than <code>$O(n^2)$</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: matrix = [[1,5,9],[10,11,13],[12,13,15]], k = 8</span><br><span class="line">Output: 13</span><br><span class="line">Explanation: The elements in the matrix are [1,5,9,10,11,12,13,13,15], and the 8th smallest number is 13</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-4"><a href="#Solution-4" class="headerlink" title="Solution"></a>Solution</h4><p>由于matrix中的元素并不具有严格的有序性, 因此很难直接查找第k小的元素, 可换一种思路: matrix中最小值为<code>matrix[0][0]</code>, 最大值为<code>matrix[n-1][n-1]</code>, 第k小的元素一定存在于<code>[matrix[0][0], matrix[n-1][n-1]]</code>之间, 因此可采用binary search不断缩小区间: 假设第k小的数值为中值(mid), 并统计小于或等于mid的元素在matrix中有多少个:</p>
+<ul>
+<li>若元素个数为k: x可能为答案, 也可能比答案大</li>
+<li>若元素个数小于k: x比答案小</li>
+<li>若元素个数大于k: x比答案大</li>
+</ul>
+<p>对于行列均递增的矩阵, 可从<code>[n-1, 0]</code>出发, 该元素拥有以下特性:</p>
+<ul>
+<li>该元素右侧的所有元素都大于该元素</li>
+<li>该元素上面的所有元素都小于该元素</li>
+</ul>
+<p>因此, 若该元素小于target, 则该元素以及其上的元素都小于target; 若该元素大于target, 则该元素右侧的所有元素都大于该元素.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">kthSmallest</span><span class="params">(<span class="type">int</span>[][] matrix, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> matrix.length, l = matrix[<span class="number">0</span>][<span class="number">0</span>], r = matrix[n-<span class="number">1</span>][n-<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (floor(matrix, m) &lt; k) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> l;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">floor</span><span class="params">(<span class="type">int</span>[][] matrix, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> matrix.length - <span class="number">1</span>, j = <span class="number">0</span>, res = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (i &gt;= <span class="number">0</span> &amp;&amp; j &lt; matrix.length) &#123;</span><br><span class="line">            <span class="keyword">if</span> (matrix[i][j] &lt;= target) &#123;</span><br><span class="line">                res += i + <span class="number">1</span>;</span><br><span class="line">                j++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                i--;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="658-Find-K-Closest-Elements"><a href="#658-Find-K-Closest-Elements" class="headerlink" title="658. Find K Closest Elements"></a>658. Find K Closest Elements</h3><h4 id="Problem-Description-5"><a href="#Problem-Description-5" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given a <strong>sorted</strong> integer array <code>arr</code>, two integers <code>k</code> and <code>x</code>, return the <code>k</code> closest integers to <code>x</code> in the array. The result should also be sorted in ascending order.<br>An integer <code>a</code> is closer to <code>x</code> than an integer <code>b</code> if:</p>
+<ul>
+<li><code>|a - x| &lt; |b - x|</code>, or</li>
+<li><code>|a - x| == |b - x|</code> and <code>a &lt; b</code></li>
+</ul>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: arr = [1,2,3,4,5], k = 4, x = 3</span><br><span class="line">Output: [1,2,3,4]</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: arr = [1,2,3,4,5], k = 4, x = -1</span><br><span class="line">Output: [1,2,3,4]</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-5"><a href="#Solution-5" class="headerlink" title="Solution"></a>Solution</h4><p>该题目可使用双指针解决: 每次判断前后指针与x的差值, 并缩小差值更大的一端, 直到两个指针之间的距离为k, 但这么做不能利用数组的有序性. 该题可看作求一个长度为k的区间, 并使区间内元素与x的距离的最大值最小, 可以发现, 距离x的最大值只与区间的两端有关. 假设区间的左边界坐标为<code>i</code>, 则右边界坐标为<code>i+k-1</code>, 因此可对比<code>arr[i]</code>和<code>arr[i+k-1]</code>与x的距离:</p>
+<ul>
+<li><code>arr[i]</code>与x的距离更远: 向右移动</li>
+<li><code>arr[i+k-1]</code>与x的距离更远: 向左移动</li>
+</ul>
+<p>若使用<code>Math.abs(arr[i] - x)</code>和<code>Math.abs(arr[i+k-1] - x)</code>计算距离会出现一个问题: 若<code>arr[i] == arr[i+k-1]</code>, 则无法判断应向哪里移动, 因此改为<code>x - arr[i]</code>和<code>arr[i+k-1] - x</code>:</p>
+<ul>
+<li><code>x &lt; arr[i]</code>: <code>x - arr[i] &lt; arr[i+k-1] - x</code>, 向左移动</li>
+<li><code>arr[i] &lt; x &lt; arr[i+k-1]</code>: <code>x - arr[i] &gt; 0</code> <code>arr[i+k-1] - x &gt; 0</code>, 根据距离判断向哪里移动</li>
+<li><code>x &gt; arr[i]</code>: <code>x - arr[i] &gt; arr[i+k-1] - x</code>, 向右移动</li>
+</ul>
+<p>由于题目要求距离相同时, 坐标靠右的区间优先, 因此需判断<code>[i, i+k-1]</code>与<code>[i-1, i+k-2]</code>.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> List&lt;Integer&gt; <span class="title function_">findClosestElements</span><span class="params">(<span class="type">int</span>[] arr, <span class="type">int</span> k, <span class="type">int</span> x)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = arr.length - k;</span><br><span class="line">        <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (x - arr[m] &gt; arr[m+k-<span class="number">1</span>] - x) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (l &gt; <span class="number">0</span> &amp;&amp; Math.abs(arr[l-<span class="number">1</span>] - x) &lt;= Math.abs(arr[l+k-<span class="number">1</span>] - x)) &#123;</span><br><span class="line">            --l;</span><br><span class="line">        &#125;</span><br><span class="line">        List&lt;Integer&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">while</span> (k-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            res.add(arr[l++]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="1060-Missing-Element-in-Sorted-Array"><a href="#1060-Missing-Element-in-Sorted-Array" class="headerlink" title="1060. Missing Element in Sorted Array"></a>1060. Missing Element in Sorted Array</h3><h4 id="Problem-Description-6"><a href="#Problem-Description-6" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an integer array <code>nums</code> which is sorted in <strong>ascending order</strong> and all of its elements are <strong>unique</strong> and given also an integer <code>k</code>, return the <code>$k^&#123;th&#125;$</code> missing number starting from the leftmost number of the array.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [4,7,9,10], k = 1</span><br><span class="line">Output: 5</span><br><span class="line">Explanation: The first missing number is 5.</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [4,7,9,10], k = 3</span><br><span class="line">Output: 8</span><br><span class="line">Explanation: The missing numbers are [5,6,8,...], hence the third missing number is 8.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-6"><a href="#Solution-6" class="headerlink" title="Solution"></a>Solution</h4><p>对于数组中的每个元素, 可计算该元素之前缺失的元素个数: <code>nums[i] - nums[0] - i</code>, 若将缺失的元素个数组成一个数组, 可发现数组内的元素呈升序排列, 因此可借助binary search查找.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">missingElement</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = nums.length - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l + <span class="number">1</span>) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (nums[m] - nums[<span class="number">0</span>] - m &gt;= k) &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                l = m;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> nums[<span class="number">0</span>] + k + r;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="300-Longest-Increasing-Subsequence"><a href="#300-Longest-Increasing-Subsequence" class="headerlink" title="300. Longest Increasing Subsequence"></a>300. Longest Increasing Subsequence</h3><h4 id="Problem-Description-7"><a href="#Problem-Description-7" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an integer array <code>nums</code>, return the length of the longest <strong>strictly increasing subsequence</strong>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [10,9,2,5,3,7,101,18]</span><br><span class="line">Output: 4</span><br><span class="line">Explanation: The longest increasing subsequence is [2,3,7,101], therefore the length is 4.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-7"><a href="#Solution-7" class="headerlink" title="Solution"></a>Solution</h4><p>题目要求最长升序子序列, 因此可维护一个数组<code>arr</code>, 并从左向右遍历数组, 对于每个元素:</p>
+<ul>
+<li>若该元素大于之前的所有元素, 则放入<code>arr</code>尾部</li>
+<li>若该元素小于之前的某个元素, 则替换其位置</li>
+</ul>
+<p>其中, 查找元素的插入位置可使用binary search.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">lengthOfLIS</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length, size = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span>[] arr = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> num: nums) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = size - <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">                <span class="keyword">if</span> (arr[m] &lt; num) &#123;</span><br><span class="line">                    l = m + <span class="number">1</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    r = m - <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (l == size) ++size;</span><br><span class="line">            arr[l] = num;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> size;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="436-Find-Right-Interval"><a href="#436-Find-Right-Interval" class="headerlink" title="436. Find Right Interval"></a>436. Find Right Interval</h3><h4 id="Problem-Description-8"><a href="#Problem-Description-8" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given an array of <code>intervals</code>, where <code>intervals[i] = [$\text&#123;start&#125;_i$, $\text&#123;end&#125;_i$]</code> and each $\text{start}_i$ is unique.</p>
+<p>The right interval for an interval <code>i</code> is an interval <code>j</code> such that <code>$\text&#123;start&#125;_j \ge \text&#123;end&#125;_i$</code>and <code>$\text&#123;start&#125;_j$</code> is <strong>minimized</strong>. Note that <code>i</code> may equal <code>j</code>.</p>
+<p>Return an array of <strong>right interval</strong> indices for each interval <code>i</code>. If no <strong>right interval</strong> exists for interval <code>i</code>, then put <code>-1</code> at index <code>i</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: intervals = [[3,4],[2,3],[1,2]]</span><br><span class="line">Output: [-1,0,1]</span><br><span class="line">Explanation: There is no right interval for [3,4].</span><br><span class="line">The right interval for [2,3] is [3,4] since $\text&#123;start&#125;_0 = 3$ is the smallest start that is &gt;= $\text&#123;end&#125;_1 = 3$.</span><br><span class="line">The right interval for [1,2] is [2,3] since $\text&#123;start&#125;_1 = 2$ is the smallest start that is &gt;= $\text&#123;end&#125;_2 = 2$.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-8"><a href="#Solution-8" class="headerlink" title="Solution"></a>Solution</h4><p>题目要求right interval的start大于或等于当前interval的end, 且保证start值最小, 属于最经典的最大值最小化问题, 每次遍历每个interval的start即可获得答案, 而binary search适用于寻找最大(小)值, 因此可加速这一过程. 需要注意的是, 由于结果需与原数组中的interval一一对应, 因此原数组按照start排序时会破坏对应关系, 需用一个辅助数组记录对应interval的坐标.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] findRightInterval(<span class="type">int</span>[][] intervals) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> intervals.length;</span><br><span class="line">        Integer[] index = <span class="keyword">new</span> <span class="title class_">Integer</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            index[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span>[] res = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        Arrays.sort(index, (a,b) -&gt; intervals[a][<span class="number">0</span>] - intervals[b][<span class="number">0</span>]);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = n-<span class="number">1</span>, target = intervals[i][<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">                <span class="keyword">if</span> (intervals[index[m]][<span class="number">0</span>] &lt; target) &#123;</span><br><span class="line">                    l = m + <span class="number">1</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    r = m - <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            res[i] = l &lt; n ? index[l] : -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="1552-Magnetic-Force-Between-Two-Balls"><a href="#1552-Magnetic-Force-Between-Two-Balls" class="headerlink" title="1552. Magnetic Force Between Two Balls"></a>1552. Magnetic Force Between Two Balls</h3><h4 id="Problem-Description-9"><a href="#Problem-Description-9" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>In the universe Earth C-137, Rick discovered a special form of magnetic force between two balls if they are put in his new invented basket. Rick has n empty baskets, the <code>$i^&#123;th&#125;$</code> basket is at <code>position[i]</code>, Morty has <code>m</code> balls and needs to distribute the balls into the baskets such that the <strong>minimum magnetic force</strong> between any two balls is <strong>maximum</strong>.<br>Rick stated that magnetic force between two different balls at positions <code>x</code> and <code>y</code> is <code>|x - y|</code>.<br>Given the integer array <code>position</code> and the integer <code>m</code>. Return the required force.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: position = [1,2,3,4,7], m = 3</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: Distributing the 3 balls into baskets 1, 4 and 7 will make the magnetic force between ball pairs [3, 3, 6]. The minimum magnetic force is 3. We cannot achieve a larger minimum magnetic force than 3.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-9"><a href="#Solution-9" class="headerlink" title="Solution"></a>Solution</h4><p>若ball与ball之间距离十分大, 即便使用binary search加速查询, 也会非常耗时, 因此可换一种思路: 最大距离存在于一个固定范围, 假设<code>position</code>的长度为<code>n</code>, 需要放置<code>m</code>个ball, 那么答案的范围为<code>[1, position[n-1] - position[0]]</code>. 假设我们从该范围挑选一个数值, 依照该距离放置ball时可放置<code>k</code>个ball, 存在三种情况:</p>
+<ul>
+<li><code>k &gt; m</code>: 挑选的距离过小, 可以放置更多ball</li>
+<li><code>k &lt; m</code>: 挑选的距离过大, 没有足够空间放置ball</li>
+<li><code>k == m</code>: 最后的ball之后可能还有空间, 但不足以放置下一个ball</li>
+</ul>
+<p>因此可不断逼近, 直到距离可防止m个ball, 且没有剩余空间.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maxDistance</span><span class="params">(<span class="type">int</span>[] position, <span class="type">int</span> m)</span> &#123;</span><br><span class="line">        Arrays.sort(position);</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">1</span>, r = position[position.length-<span class="number">1</span>] - position[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (count(position, mid) &lt; m) &#123;</span><br><span class="line">                r = mid - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                l = mid + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">count</span><span class="params">(<span class="type">int</span>[] arr, <span class="type">int</span> dist)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>, j = <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (arr[i] - arr[j] &gt;= dist) &#123;</span><br><span class="line">                ++cnt;</span><br><span class="line">                j = i;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cnt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="410-Split-Array-Largest-Sum"><a href="#410-Split-Array-Largest-Sum" class="headerlink" title="410. Split Array Largest Sum"></a>410. Split Array Largest Sum</h3><h4 id="Problem-Description-10"><a href="#Problem-Description-10" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an integer array <code>nums</code> and an integer <code>k</code>, split <code>nums</code> into <code>k</code> non-empty subarrays such that the largest sum of any subarray is <strong>minimized</strong>.<br>Return the minimized largest sum of the split.<br>A <strong>subarray</strong> is a contiguous part of the array.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [7,2,5,10,8], k = 2</span><br><span class="line">Output: 18</span><br><span class="line">Explanation: There are four ways to split nums into two subarrays.</span><br><span class="line">The best way is to split it into [7,2,5] and [10,8], where the largest sum among the two subarrays is only 18.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-10"><a href="#Solution-10" class="headerlink" title="Solution"></a>Solution</h4><p>与上一题思路相同, 选定一个值, 并查找子序列之和小于或等于该值的子序列数量, 使用binary search不断逼近答案.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">splitArray</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = nums[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> num: nums) &#123;</span><br><span class="line">            l = Math.max(l, num);</span><br><span class="line">            r += num;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (count(nums, m) &lt;= k) &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> l;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">count</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> sum)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">1</span>, t = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> num: nums) &#123;</span><br><span class="line">            t += num;</span><br><span class="line">            <span class="keyword">if</span> (t &gt; sum) &#123;</span><br><span class="line">                t = num;</span><br><span class="line">                ++cnt;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cnt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="1231-Divide-Chocolate"><a href="#1231-Divide-Chocolate" class="headerlink" title="1231. Divide Chocolate"></a>1231. Divide Chocolate</h3><h4 id="Problem-Description-11"><a href="#Problem-Description-11" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You have one chocolate bar that consists of some chunks. Each chunk has its own sweetness given by the array <code>sweetness</code>.<br>You want to share the chocolate with your <code>k</code> friends so you start cutting the chocolate bar into <code>k + 1</code> pieces using <code>k</code> cuts, each piece consists of some <strong>consecutive</strong> chunks.<br>Being generous, you will eat the piece with the <strong>minimum total sweetness</strong> and give the other pieces to your friends.<br>Find the <strong>maximum total sweetness</strong> of the piece you can get by cutting the chocolate bar optimally.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: sweetness = [1,2,3,4,5,6,7,8,9], k = 5</span><br><span class="line">Output: 6</span><br><span class="line">Explanation: You can divide the chocolate to [1,2,3], [4,5], [6], [7], [8], [9]</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-11"><a href="#Solution-11" class="headerlink" title="Solution"></a>Solution</h4><p>假设总甜度为<code>sum(sweetness)</code>, 总人数为<code>k + 1</code>, 自己能得到的甜度位于<code>[0, sum(sweetness) / (k+1)]</code>范围内, 因此可binary search不断寻找将巧克力分为<code>k + 1</code>份的甜度最大值.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maximizeSweetness</span><span class="params">(<span class="type">int</span>[] sweetness, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">sum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> s: sweetness) &#123;</span><br><span class="line">            sum += s;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = sum / (k + <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (count(sweetness, m) &lt; k + <span class="number">1</span>) &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">count</span><span class="params">(<span class="type">int</span>[] arr, <span class="type">int</span> min)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>, sum = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> s: arr) &#123;</span><br><span class="line">            sum += s;</span><br><span class="line">            <span class="keyword">if</span> (sum &gt;= min) &#123;</span><br><span class="line">                ++cnt;</span><br><span class="line">                sum = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cnt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="354-Russian-Doll-Envelopes"><a href="#354-Russian-Doll-Envelopes" class="headerlink" title="354. Russian Doll Envelopes"></a>354. Russian Doll Envelopes</h3><h4 id="Problem-Description-12"><a href="#Problem-Description-12" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given a 2D array of integers <code>envelopes</code> where <code>envelopes[i] = [$w_i$, $h_i$]</code> represents the width and the height of an envelope.<br>One envelope can fit into another if and only if both the width and height of one envelope are greater than the other envelope&#39;s width and height.<br>Return the maximum number of envelopes you can Russian doll (i.e., put one inside the other).<br>Note: You cannot rotate an envelope.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: envelopes = [[5,4],[6,4],[6,7],[2,3]]</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: The maximum number of envelopes you can Russian doll is 3 ([2,3] =&gt; [5,4] =&gt; [6,7]).</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-12"><a href="#Solution-12" class="headerlink" title="Solution"></a>Solution</h4><p>题目要求外部envelope的长度和宽度都大于内部嵌套的envelope, 因此满足有序性, 可使用binary search查找. 但问题在于: 如何让长度和宽度同时满足有序. 若按照宽度排序, 则宽度较小的envelope可能长度大于其他envelope, 因此需分别讨论两个维度:</p>
+<ol>
+<li>先按照宽度排序</li>
+<li>再按照长度排序</li>
+</ol>
+<p>宽度排序比较简单, 直接排序<code>envelopes</code>即可; 长度排序则比较复杂, 因为需在满足原有宽度顺序的情况下进行排序: 维护一个辅助数组, 遍历<code>envelopes</code>, 并按照长度将envelope放入数组:</p>
+<ul>
+<li>若当前envelope的长度大于先前所有envelope, 则放在数组最后</li>
+<li>若当前envelope的长度小于或等于某个envelope, 则放在该envelope的位置</li>
+</ul>
+<p>若<code>envelopes</code>中的宽度不存在重复, 则辅助数组中的每个envelope都比前一个envelope大; 但<code>envelopes</code>中可能存在多个同等宽度的envelope, 从而导致辅助数组中的envelope无法满足条件, 因此需将相同宽度的envelope按照长度逆序排列, 让长度较大的envelope先放入数组, 并让长度较小的envelope替代该位置.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maxEnvelopes</span><span class="params">(<span class="type">int</span>[][] envelopes)</span> &#123;</span><br><span class="line">        Arrays.sort(envelopes, (a,b) -&gt; a[<span class="number">0</span>] == b[<span class="number">0</span>] ? b[<span class="number">1</span>] - a[<span class="number">1</span>] : a[<span class="number">0</span>] - b[<span class="number">0</span>]);</span><br><span class="line">        <span class="type">int</span>[] dp = <span class="keyword">new</span> <span class="title class_">int</span>[envelopes.length];</span><br><span class="line">        <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] e: envelopes) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = size;</span><br><span class="line">            <span class="keyword">while</span> (l &lt; r) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">                <span class="keyword">if</span> (e[<span class="number">1</span>] &gt; dp[m]) &#123;</span><br><span class="line">                    l = m + <span class="number">1</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    r = m;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            dp[r] = e[<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span> (l == size) ++size;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> size;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="1847-Closest-Room"><a href="#1847-Closest-Room" class="headerlink" title="1847. Closest Room"></a>1847. Closest Room</h3><h4 id="Problem-Description-13"><a href="#Problem-Description-13" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>There is a hotel with <code>n</code> rooms. The rooms are represented by a 2D integer array <code>rooms</code> where <code>rooms[i] = [$\text&#123;roomId&#125;_i$, $\text&#123;size&#125;_i$]</code> denotes that there is a room with room number <code>$\text&#123;roomId&#125;_i$</code> and size equal to <code>$\text&#123;size&#125;_i$</code>. Each <code>$\text&#123;roomId&#125;_i$</code> is guaranteed to be <strong>unique</strong>.<br>You are also given <code>k</code> queries in a 2D array <code>queries</code> where <code>queries[j] = [$\text&#123;preferred&#125;_j$, $\text&#123;minSize&#125;_j$]</code>. The answer to the <code>$j^&#123;th&#125;$</code> query is the room number <code>id</code> of a room such that:</p>
+<ul>
+<li>The room has a size of <strong>at least</strong> <code>$\text&#123;minSize&#125;_j$</code></li>
+<li><code>abs(id - $\text&#123;preferred&#125;_j$)</code> is <strong>minimized</strong>, where <code>abs(x)</code> is the absolute value of <code>x</code>.</li>
+</ul>
+<p>If there is a <strong>tie</strong> in the absolute difference, then use the room with the <strong>smallest</strong> such <code>id</code>. If there is <strong>no such room</strong>, the answer is <code>-1</code>.<br>Return an array <code>answer</code> of length <code>k</code> where <code>answer[j]</code> contains the answer to the <code>$j^&#123;th&#125;$</code> query.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: rooms = [[2,2],[1,2],[3,2]], queries = [[3,1],[3,3],[5,2]]</span><br><span class="line">Output: [3,-1,3]</span><br><span class="line">Explanation: The answers to the queries are as follows:</span><br><span class="line">Query = [3,1]: Room number 3 is the closest as abs(3 - 3) = 0, and its size of 2 is at least 1. The answer is 3.</span><br><span class="line">Query = [3,3]: There are no rooms with a size of at least 3, so the answer is -1.</span><br><span class="line">Query = [5,2]: Room number 3 is the closest as abs(3 - 5) = 2, and its size of 2 is at least 2. The answer is 3.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-Balanced-Binary-Tree"><a href="#Solution-Balanced-Binary-Tree" class="headerlink" title="Solution + Balanced Binary Tree"></a>Solution + Balanced Binary Tree</h4><p>题目要求room满足两个条件:</p>
+<ul>
+<li><code>size &gt;= minSize</code></li>
+<li><code>Math.abs(preferred - roomId)</code>最小</li>
+</ul>
+<p>若将<code>rooms</code>按照size排序, 则可通过binary search找到大于或等于<code>minSize</code>的所有room范围; 但对于room id, 需在room范围内找到大于或等于<code>preferred</code>的最小值, 和小于或等于<code>preferred</code>的最大值, 因此也需让room按照id有序排列.<br>因此将<code>rooms</code>和<code>queries</code>按照room size逆序排列, 对于每一个<code>query</code>, 将room size大于或等于<code>minSize</code>的room放入一个red-black tree(红黑树), 这样后续query的<code>minSize</code>一定小于或等于红黑树内的room size. 对于room id, 可在红黑树内查询并得到最接近的id.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] closestRoom(<span class="type">int</span>[][] rooms, <span class="type">int</span>[][] queries) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> rooms.length, n = queries.length, i = <span class="number">0</span>;</span><br><span class="line">        TreeSet&lt;Integer&gt; set = <span class="keyword">new</span> <span class="title class_">TreeSet</span>&lt;&gt;();</span><br><span class="line">        Arrays.sort(rooms, (a,b) -&gt; b[<span class="number">1</span>] - a[<span class="number">1</span>]);</span><br><span class="line">        Integer[] arr = <span class="keyword">new</span> <span class="title class_">Integer</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j= <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            arr[j] = j;</span><br><span class="line">        &#125;</span><br><span class="line">        Arrays.sort(arr, (a,b) -&gt; queries[b][<span class="number">1</span>] - queries[a][<span class="number">1</span>]);</span><br><span class="line">        <span class="type">int</span>[] res = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j: arr) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">id</span> <span class="operator">=</span> queries[j][<span class="number">0</span>], min = queries[j][<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">while</span> (i &lt; m &amp;&amp; rooms[i][<span class="number">1</span>] &gt;= min) &#123;</span><br><span class="line">                set.add(rooms[i++][<span class="number">0</span>]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">Integer</span> <span class="variable">id1</span> <span class="operator">=</span> set.ceiling(id), id2 = set.floor(id);</span><br><span class="line">            <span class="keyword">if</span> (id1 == <span class="literal">null</span> &amp;&amp; id2 == <span class="literal">null</span>) &#123;</span><br><span class="line">                res[j] = -<span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (id1 == <span class="literal">null</span>) &#123;</span><br><span class="line">                res[j] = id2;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (id2 == <span class="literal">null</span>) &#123;</span><br><span class="line">                res[j] = id1;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                res[j] = Math.abs(id - id1) &lt; Math.abs(id - id2) ? id1 : id2;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="4-Median-of-Two-Sorted-Arrays"><a href="#4-Median-of-Two-Sorted-Arrays" class="headerlink" title="4. Median of Two Sorted Arrays"></a>4. Median of Two Sorted Arrays</h3><h4 id="Problem-Description-14"><a href="#Problem-Description-14" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given two sorted arrays <code>nums1</code> and <code>nums2</code> of size <code>m</code> and <code>n</code> respectively, return <strong>the median</strong> of the two sorted arrays.<br>The overall run time complexity should be <code>O(log (m+n))</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums1 = [1,3], nums2 = [2]</span><br><span class="line">Output: 2.00000</span><br><span class="line">Explanation: merged array = [1,2,3] and median is 2.</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums1 = [1,2], nums2 = [3,4]</span><br><span class="line">Output: 2.50000</span><br><span class="line">Explanation: merged array = [1,2,3,4] and median is (2 + 3) / 2 = 2.5.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-13"><a href="#Solution-13" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">double</span> <span class="title function_">findMedianSortedArrays</span><span class="params">(<span class="type">int</span>[] nums1, <span class="type">int</span>[] nums2)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums1.length + nums2.length;</span><br><span class="line">        <span class="keyword">return</span> (helper(nums1, nums2, <span class="number">0</span>, <span class="number">0</span>, (n-<span class="number">1</span>)/<span class="number">2</span>) + helper(nums1, nums2, <span class="number">0</span>, <span class="number">0</span>, n/<span class="number">2</span>)) / <span class="number">2.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">helper</span><span class="params">(<span class="type">int</span>[] nums1, <span class="type">int</span>[] nums2, <span class="type">int</span> i, <span class="type">int</span> j, <span class="type">int</span> t)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (i == nums1.length) <span class="keyword">return</span> nums2[j+t];</span><br><span class="line">        <span class="keyword">if</span> (j == nums2.length) <span class="keyword">return</span> nums1[i+t];</span><br><span class="line">        <span class="keyword">if</span> (t == <span class="number">0</span>) <span class="keyword">return</span> Math.min(nums1[i], nums2[j]);</span><br><span class="line">        <span class="type">int</span> <span class="variable">n1</span> <span class="operator">=</span> i + t/<span class="number">2</span> &lt; nums1.length ? nums1[i+t/<span class="number">2</span>] : Integer.MAX_VALUE;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n2</span> <span class="operator">=</span> j + t/<span class="number">2</span> &lt; nums2.length ? nums2[j+t/<span class="number">2</span>] : Integer.MAX_VALUE;</span><br><span class="line">        <span class="keyword">if</span> (n1 &lt; n2) &#123;</span><br><span class="line">            <span class="keyword">return</span> helper(nums1, nums2, i+(t+<span class="number">1</span>)/<span class="number">2</span>, j, t-(t+<span class="number">1</span>)/<span class="number">2</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> helper(nums1, nums2, i, j+(t+<span class="number">1</span>)/<span class="number">2</span>, t-(t+<span class="number">1</span>)/<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/7029.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Hash Function</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/c23.html">
+        <span class="next-text nav-default">Priority Queue</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/f015.html';
+  var disqus_title = "Binary Search";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

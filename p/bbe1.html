@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Class Method"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/bbe1.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/bbe1.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/bbe1.html"/>
+
+
+<meta name="description" content="1. 构造和初始化每个人都知道__init__函数, 我们可以通过这个函数来初始化(initialize)一个对象, 但当我们调用x &#x3D; SomeClass()时, __init__并不是第一个被调用的函数. 实际上, Python先调用__new__创建一个实例(instance), 并将参数传给__init__. 在对象生命结束时调用__del__清理.  1.1 __new__(cls, [">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Class Method">
+<meta property="og:url" content="https://zaf1ro.github.io/p/bbe1.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 构造和初始化每个人都知道__init__函数, 我们可以通过这个函数来初始化(initialize)一个对象, 但当我们调用x &#x3D; SomeClass()时, __init__并不是第一个被调用的函数. 实际上, Python先调用__new__创建一个实例(instance), 并将参数传给__init__. 在对象生命结束时调用__del__清理.  1.1 __new__(cls, [">
+<meta property="og:locale">
+<meta property="article:published_time" content="2015-12-10T18:38:49.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.050Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Class Method - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%9E%84%E9%80%A0%E5%92%8C%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">1. 构造和初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-new-cls"><span class="toc-text">1.1 __new__(cls, [...)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-init-self"><span class="toc-text">1.2 __init__(self, [...)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-del-self"><span class="toc-text">1.3 __del__(self)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E8%AE%A9%E8%BF%90%E7%AE%97%E7%AC%A6%E5%8F%AF%E4%BB%A5%E6%93%8D%E4%BD%9C%E5%9C%A8%E7%B1%BB%E4%B8%8A"><span class="toc-text">2. 让运算符可以操作在类上</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%AF%94%E8%BE%83%E6%96%B9%E6%B3%95"><span class="toc-text">2.1 比较方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%95%B0%E5%80%BC%E6%96%B9%E6%B3%95"><span class="toc-text">2.2 数值方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E4%B8%80%E5%85%83%E8%BF%90%E7%AE%97%E7%AC%A6%E5%87%BD%E6%95%B0"><span class="toc-text">2.2.1 一元运算符函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E4%BA%8C%E5%85%83%E8%BF%90%E7%AE%97%E7%AC%A6%E5%87%BD%E6%95%B0"><span class="toc-text">2.2.2 二元运算符函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E9%95%9C%E5%83%8F%E7%AE%97%E6%9C%AF%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-text">2.2.3 镜像算术运算符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-4-%E5%A2%9E%E5%BC%BA%E5%9E%8B%E5%8A%9F%E8%83%BD"><span class="toc-text">2.2.4 增强型功能</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E6%96%B9%E6%B3%95"><span class="toc-text">3. 类型转换方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%A1%A8%E7%A4%BA%E4%BD%A0%E7%9A%84%E7%B1%BB"><span class="toc-text">4. 表示你的类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%B1%9E%E6%80%A7%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-text">5. 属性访问控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%88%9B%E9%80%A0%E8%87%AA%E5%AE%9A%E4%B9%89%E5%BA%8F%E5%88%97"><span class="toc-text">6. 创造自定义序列</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E9%9C%80%E6%B1%82"><span class="toc-text">6.1 需求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%AE%B9%E5%99%A8%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-text">6.2 容器的方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E4%B8%BE%E4%B8%AA%E4%BE%8B%E5%AD%90"><span class="toc-text">6.3 举个例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E5%8F%8D%E5%B0%84"><span class="toc-text">7. 反射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E5%8F%AF%E8%B0%83%E7%94%A8%E5%AF%B9%E8%B1%A1"><span class="toc-text">8. 可调用对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86%E5%99%A8"><span class="toc-text">9. 上下文管理器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%8A%BD%E8%B1%A1%E5%9F%BA%E7%A1%80%E7%B1%BB"><span class="toc-text">10. 抽象基础类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%9E%84%E5%BB%BA%E6%8F%8F%E8%BF%B0%E7%AC%A6%E5%AF%B9%E8%B1%A1"><span class="toc-text">11. 构建描述符对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E5%A4%8D%E5%88%B6"><span class="toc-text">12. 复制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-Pickling%E4%BD%A0%E7%9A%84%E5%AF%B9%E8%B1%A1"><span class="toc-text">13. Pickling你的对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-Pickling"><span class="toc-text">13.1 Pickling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-Pickle%E4%BD%A0%E7%9A%84%E5%AF%B9%E8%B1%A1"><span class="toc-text">13.2 Pickle你的对象</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Class Method
+        
+      </h1>
+      <time class="post-time">
+          12/10/15
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-构造和初始化"><a href="#1-构造和初始化" class="headerlink" title="1. 构造和初始化"></a>1. 构造和初始化</h2><p>每个人都知道<code>__init__</code>函数, 我们可以通过这个函数来初始化(initialize)一个对象, 但当我们调用<code>x = SomeClass()</code>时, <code>__init__</code>并不是第一个被调用的函数. 实际上, Python先调用<code>__new__</code>创建一个实例(instance), 并将参数传给<code>__init__</code>. 在对象生命结束时调用<code>__del__</code>清理. </p>
+<h3 id="1-1-new-cls"><a href="#1-1-new-cls" class="headerlink" title="1.1 __new__(cls, [...)"></a>1.1 <code>__new__(cls, [...)</code></h3><p><code>__new__</code>第一个调用, 用于实例化对象, 参数<code>cls</code>为class, 并将参数传给<code>__init__</code>. <code>__new__</code>用的地方很少, 但当你将一个不可变类型变为子类时, 就需要使用该函数: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">inch</span>(<span class="title class_ inherited__">float</span>):</span><br><span class="line"> <span class="string">&#x27;&#x27;&#x27;Convert from inch to meter&#x27;&#x27;&#x27;</span></span><br><span class="line"> <span class="keyword">def</span> <span class="title function_">__new__</span>(<span class="params">cls, arg=<span class="number">0.0</span></span>):</span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">float</span>.__new__(cls, arg*<span class="number">0.0254</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span> inch(<span class="number">12</span>)</span><br></pre></td></tr></table></figure>
+<p>float是一个不可变类, 可在<code>__new__</code>内修改数值</p>
+<h3 id="1-2-init-self"><a href="#1-2-init-self" class="headerlink" title="1.2 __init__(self, [...)"></a>1.2 <code>__init__(self, [...)</code></h3><p>类的初始化器, 其参数为类参数, 如<code>x = SomeClass(10, &#39;foo&#39;)</code>, <code>__init__</code>会将10和&#39;foo&#39;作为参数. 是Python中最常用的定义. </p>
+<h3 id="1-3-del-self"><a href="#1-3-del-self" class="headerlink" title="1.3 __del__(self)"></a>1.3 <code>__del__(self)</code></h3><p>类的析构器. 当使用<code>del x</code>时不会调用<code>x.__del__()</code>, 等垃圾收集时才调用该函数. 清理实例时该函数很有用, 可用于关闭I&#x2F;O文件, 如socket和file. 但是要注意, 解释器退出时不能保证对象是否存在, 所以不能保证是够执行<code>__del__</code>, 因此最好不要重载这个方法（在某些复杂的环境下, <code>__del__</code>可能不会被用到, 谨慎使用. <code>__init__</code>和<code>__del__</code>可结合使用: </p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FileObject</span>:</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, filepath=<span class="string">&#x27;~&#x27;</span>, filename=<span class="string">&#x27;sample.txt&#x27;</span></span>):</span><br><span class="line">    <span class="comment"># 以可读可写的形式打开一个文件</span></span><br><span class="line">    <span class="variable language_">self</span>.file = <span class="built_in">open</span>(os.path.join(filepath, filename), <span class="string">&#x27;r+&#x27;</span>)</span><br><span class="line">  </span><br><span class="line">  <span class="string">&#x27;&#x27;&#x27;重写__del__以确保对象被删除时文件能够关闭&#x27;&#x27;&#x27;</span></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__del__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="variable language_">self</span>.file.close()</span><br><span class="line">    <span class="keyword">del</span> <span class="variable language_">self</span>.file</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-让运算符可以操作在类上"><a href="#2-让运算符可以操作在类上" class="headerlink" title="2. 让运算符可以操作在类上"></a>2. 让运算符可以操作在类上</h2><p>Python类方法的其中的一个优点就是使得对象行为更像一个内置类型. 这意味着你可以避免丑陋的, 反直觉的, 且不标准的写法. 某些语言中可以这么写:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> instance.equals(other_instance):</span><br><span class="line">  <span class="comment"># do something</span></span><br></pre></td></tr></table></figure>
+<p>你也可以在Python中这么写, 但会让人迷惑, 且让代码变得冗长. 为实现相同功能, 不同的库使用不同的名字, 让使用者每次都要翻文档. 因此可以定义一个方法(<code>__eq__</code>)来实现上述功能: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> instance == other_instance:</span><br><span class="line">  <span class="comment">#do something</span></span><br></pre></td></tr></table></figure>
+<p>这只是类方法的部分威力, 它们允许我们自己定义操作符的实现, 从而让我们像使用内置类型一样使用类. </p>
+<h3 id="2-1-比较方法"><a href="#2-1-比较方法" class="headerlink" title="2.1 比较方法"></a>2.1 比较方法</h3><p>Python有大量方法来让对象之间的对比使用更加直观的运算符, 而不是丑陋的方法调用. 它们还提供重写Python行为的方法, 来实现对象间的对比. 下面是一个方法清单: </p>
+<ul>
+<li><code>__cmp__(self, other)</code>: <code>__cmp__</code>是最基本的对比方法. 他实现了对比操作符的所有行为(&lt;,&#x3D;&#x3D;,!&#x3D;等), 但其实现方法和你想的并不一定一致: 若<code>self &lt; other</code>, 则<code>__cmp__</code>返回负数; <code>0</code>代表<code>self == other</code>, 正数代表<code>self &gt; other</code>.</li>
+<li><code>__eq__(self, other)</code>: 定义<code>==</code>运算符</li>
+<li><code>__ne__(self, other)</code>: 定义<code>!=</code>运算符</li>
+<li><code>__lt__(self, other)</code>: 定义<code>&lt;</code>运算符 </li>
+<li><code>__gt__(self, other)</code>: 定义<code>&gt;</code>运算符</li>
+<li><code>__le__(self, other)</code>: 定义<code>&lt;=</code>运算符</li>
+<li><code>__ge__(self, other)</code>: 定义<code>&gt;=</code>运算符</li>
+</ul>
+<p>举个例子, 我们想要按字典序来对比字符, 就像string默认的对比方法一样, 但我们还需要基于其他标准进行比较, 例如长度和音节的个数. 在本例中, 我们使用长度来比较: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;word类, 定义了基于字符长度比较的运算符&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Word</span>(<span class="title class_ inherited__">str</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__new__</span>(<span class="params">cls, word</span>):</span><br><span class="line">        <span class="comment"># 注意到我们使用了__new__, 因为str是不可变类型, 所以我们可以自定义初始化它</span></span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27; &#x27;</span> <span class="keyword">in</span> word:</span><br><span class="line">            <span class="built_in">print</span> <span class="string">&quot;字符中包含空格, 只取第一段空格前的字符串&quot;</span></span><br><span class="line">            word = word[:word.index(<span class="string">&#x27; &#x27;</span>)] <span class="comment"># 现在字符串中已没有空格</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">str</span>.__new__(cls, word)</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__gt__</span>(<span class="params">self, other</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">len</span>(<span class="variable language_">self</span>) &gt; <span class="built_in">len</span>(other)</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__lt__</span>(<span class="params">self, other</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">len</span>(<span class="variable language_">self</span>) &lt; <span class="built_in">len</span>(other)</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__ge__</span>(<span class="params">self, other</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">len</span>(<span class="variable language_">self</span>) &gt;= <span class="built_in">len</span>(other)</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__le__</span>(<span class="params">self, other</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">len</span>(<span class="variable language_">self</span>) &lt;= <span class="built_in">len</span>(other)</span><br></pre></td></tr></table></figure>
+<p>幸运的是你不需要为了得到一个丰富的比较方法而定义一堆比较符方法, 标准库中提供了functools模块来让我们使用类装饰器(class decorator), 这让我们只定义<code>__eq__</code>和其他某一个方法(<code>__lt__()</code>, <code>__le__()</code>, <code>__gt__()</code>, 或<code>__ge__()</code>)就可使用所有比较方法. 前提是在类的头部加上<code>@total_ordering</code>装饰器: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="meta">@total_ordering</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span>:</span><br><span class="line">  <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">  只定义了__eq__和__lt__方法, 但实现了全部的对比方法</span></span><br><span class="line"><span class="string">  &#x27;&#x27;&#x27;</span></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__eq__</span>(<span class="params">self, other</span>):</span><br><span class="line">    <span class="keyword">return</span> ((<span class="variable language_">self</span>.lastname.lower(), <span class="variable language_">self</span>.firstname.lower()) ==</span><br><span class="line">      (other.lastname.lower(), other.firstname.lower()))</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__lt__</span>(<span class="params">self, other</span>):</span><br><span class="line">    <span class="keyword">return</span> ((<span class="variable language_">self</span>.lastname.lower(), <span class="variable language_">self</span>.firstname.lower()) &lt;</span><br><span class="line">      (other.lastname.lower(), other.firstname.lower()))</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-数值方法"><a href="#2-2-数值方法" class="headerlink" title="2.2 数值方法"></a>2.2 数值方法</h3><p>就像使用<strong>比较运算符</strong>来对比类实例一样, Python中也可以定义<strong>算术运算符</strong>. 算术方法分为五类: </p>
+<ul>
+<li>一元运算符</li>
+<li>正常的算术运算符</li>
+<li>镜像算术运算符(reflected arithmetic operators)</li>
+<li>增强型功能</li>
+<li>类型转换</li>
+</ul>
+<h4 id="2-2-1-一元运算符函数"><a href="#2-2-1-一元运算符函数" class="headerlink" title="2.2.1 一元运算符函数"></a>2.2.1 一元运算符函数</h4><p>一元运算符和函数只有一个操作数, 例如取负和求绝对值:</p>
+<ul>
+<li><code>__pos__(self)</code>: 一元取正(<code>+</code>)</li>
+<li><code>__neg__(self)</code>: 一元取负(<code>-</code>)</li>
+<li><code>__abs__(self)</code>: <code>abs()</code>方法</li>
+<li><code>__invert__(self)</code>: 取反(<code>~</code>). 具体解释可以参看&quot;按位取反&quot;</li>
+<li><code>__round__(self, n)</code>: <code>round(n)</code>方法, n为小数点后四舍五入的位数</li>
+<li><code>__floor__(self)</code>: <code>math.floor()</code>方法, 四舍五入成最接近的整数</li>
+<li><code>__ceil__(self)</code>: <code>math.ceil()</code>方法, 四舍五入成最接近的整数</li>
+<li><code>__trunc__(self)</code>: <code>math.trunc()</code>方法, 直接截断成整数</li>
+</ul>
+<h4 id="2-2-2-二元运算符函数"><a href="#2-2-2-二元运算符函数" class="headerlink" title="2.2.2 二元运算符函数"></a>2.2.2 二元运算符函数</h4><ul>
+<li><code>__add__(self, other)</code>: 加法</li>
+<li><code>__sub__(self, other)</code>: 减法</li>
+<li><code>__mul__(self, other)</code>: 乘法</li>
+<li><code>__floordiv__(self, other)</code>: 实现了整数除法, 使用<code>//</code>运算符</li>
+<li><code>__div__(self, other)</code>: 实现了除法, 使用<code>/</code>运算符</li>
+<li><code>__truediv__(self, other)</code>: 实现了真正的除法, 只有调用<code>from __future__ import division</code>时可用</li>
+<li><code>__mod__(self, other)</code>: 求模运算, 使用<code>%</code>运算符</li>
+<li><code>__divmod__(self, other)</code>: 重载了divmod()方法. divmod()方法返回一个tuple, 第一个参数为商, 第二个是余数<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">&gt;&gt;&gt; divmod(9,2)</span><br><span class="line">(4, 1)</span><br></pre></td></tr></table></figure></li>
+<li><code>__pow__(self, other)</code>: 实现了指数功能, 使用<code>**</code>运算符</li>
+<li><code>__lshift__(self, other)</code>: 实现了按位左移, 使用<code>&lt;&lt;</code>运算符</li>
+<li><code>__rshift__(self, other)</code>: 实现了按位右移, 使用<code>&gt;&gt;</code>运算符</li>
+<li><code>__and__(self, other)</code>: 实现了按位与, 使用<code>&amp;</code>运算符</li>
+<li><code>__or__(self, other)</code>: 实现了按位或, 使用<code>|</code>运算符</li>
+<li><code>__xor__(self, other)</code>: 实现了按位异或, 使用<code>^</code>运算符</li>
+</ul>
+<h4 id="2-2-3-镜像算术运算符"><a href="#2-2-3-镜像算术运算符" class="headerlink" title="2.2.3 镜像算术运算符"></a>2.2.3 镜像算术运算符</h4><p>普通的算术运算是这样的: </p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="variable language_">self</span> + other</span><br></pre></td></tr></table></figure>
+<p>而镜像算术运算为<code>other + self</code>. 大部分情况下, 镜像算术和正常的表达式一样, 例如<code>__add__</code>和<code>__radd__</code>. <code>__radd__</code>只会在other没有定义<code>__add__</code>才会被调用. </p>
+<ul>
+<li><code>__radd__(self, other)</code>: 镜像加法</li>
+<li><code>__rsub__(self, other)</code>: 镜像减法</li>
+<li><code>__rmul__(self, other)</code>: 镜像乘法</li>
+<li><code>__rfloordiv__(self, other)</code>: 镜像整数除法(<code>//</code>)</li>
+<li><code>__rdiv__(self, other)</code>: 镜像除法(<code>/</code>)</li>
+<li><code>__rtruediv__(self, other)</code>: 镜像除法, 只有调用<code>from __future__ import division</code>时才有效</li>
+<li><code>__rmod__(self, other)</code>: 镜像取模(<code>%</code>)</li>
+<li><code>__rdivmod__(self, other)</code>: 内建的<code>dimod()</code>函数, 只有调用<code>divmod(other, self)</code>时可用</li>
+<li><code>__rpow__(self, other)</code>: 镜像指数(<code>**</code>)</li>
+<li><code>__rlshift__(self, other)</code>: 镜像按位左移(<code>&lt;&lt;</code>)</li>
+<li><code>__rrshift__(self, other)</code>: 镜像按位右移(<code>&gt;&gt;</code>)</li>
+<li><code>__rand__(self, other)</code>: 镜像按位与(<code>&amp;</code>)</li>
+<li><code>__ror__(self, other)</code>: 镜像按位或(<code>|</code>)</li>
+<li><code>__rxor__(self, other)</code>: 镜像按位异或(<code>^</code>)</li>
+</ul>
+<h4 id="2-2-4-增强型功能"><a href="#2-2-4-增强型功能" class="headerlink" title="2.2.4 增强型功能"></a>2.2.4 增强型功能</h4><p>Python还提供了一系列方法让我们自定义来实现增强功能. 下面是一个例子: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">x = <span class="number">5</span></span><br><span class="line">x += <span class="number">1</span>  <span class="comment"># 也就是x = x + 1</span></span><br></pre></td></tr></table></figure>
+<p>这些方法没有返回值, 只会改变运算符左边对象的状态.</p>
+<ul>
+<li><code>__iadd__(self, other)</code>: 自加</li>
+<li><code>__isub__(self, other)</code>: 自减</li>
+<li><code>__imul__(self, other)</code>: 自乘</li>
+<li><code>__ifloordiv__(self, other)</code>: 整数除法(<code>//=</code>)</li>
+<li><code>__idiv__(self, other)</code>: 自除(<code>/=</code>)</li>
+<li><code>__itruediv__(self, other)</code>: 真正的除法, 只有调用<code>from __future__ import division</code>时可用</li>
+<li><code>__imod__(self, other)</code>: 取模(<code>%=</code>)</li>
+<li><code>__ipow__(self, other)</code>: 指数运算(<code>**=</code>)</li>
+<li><code>__ilshift__(self, other)</code>: 镜像按位左移(<code>&lt;&lt;=</code>)</li>
+<li><code>__irshift__(self, other)</code>: 镜像按位右移(<code>&gt;&gt;=</code>)</li>
+<li><code>__iand__(self, other)</code>: 镜像按位与(<code>&amp;=</code>)</li>
+<li><code>__ior__(self, other)</code>: 镜像按位或(<code>|=</code>)</li>
+<li><code>__ixor__(self, other)</code>: 镜像按位异或(<code>^=</code>)</li>
+</ul>
+<h2 id="3-类型转换方法"><a href="#3-类型转换方法" class="headerlink" title="3. 类型转换方法"></a>3. 类型转换方法</h2><p>Python提供了一系列方法让你重载<strong>类型转换</strong>.</p>
+<ul>
+<li><code>__int__(self)</code>: <code>int()</code></li>
+<li><code>__long__(self)</code>: <code>long()</code></li>
+<li><code>__float__(self)</code>: <code>float()</code></li>
+<li><code>__complex__(self)</code>: <code>complex()</code></li>
+<li><code>__oct__(self)</code>: <code>oct()</code></li>
+<li><code>__hex__(self)</code>: <code>hex()</code></li>
+<li><code>__index__(self)</code>: 当对象用于一个切片表达式时会将对象变为一个int, 例: <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Thing</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__index__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;__index__ called!&#x27;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line">thing = Thing()</span><br><span class="line">_list_ = [<span class="string">&#x27;abc&#x27;</span>, <span class="string">&#x27;def&#x27;</span>, <span class="string">&#x27;ghi&#x27;</span>]</span><br><span class="line"><span class="built_in">print</span> _list_[thing]  <span class="comment"># __index__被调用, 因为_list是一个切片表示的类型</span></span><br><span class="line"><span class="comment"># __index__ called!</span></span><br><span class="line"><span class="comment"># &#x27;def&#x27;</span></span><br><span class="line"></span><br><span class="line">dict_ = &#123;<span class="number">1</span>: <span class="string">&#x27;potato&#x27;</span>&#125;</span><br><span class="line"><span class="comment"># print dict_[thing]  # error, dict不是一个切片表示的类型, 所以并没有调用__index__</span></span><br><span class="line"><span class="comment"># Traceback (most recent call last):</span></span><br><span class="line"><span class="comment">#   File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;</span></span><br><span class="line"><span class="comment"># KeyError: &lt;__main__.Thing object at 0x01ACFC70&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li><code>__trunc__(self)</code>: <code>math.trunc()</code>, 返回被截断的整数</li>
+<li><code>__coerce__(self, other)</code>: 用来实现混合模式的算术运算. 若无法进行类型转换, 则__coerce__返回None. 否则, 返回一个包含self和other的tuple, 统一使用一种类型. coerce()的转换规则: <ul>
+<li>如果有一个操作数是复数,  另一个操作数被转换为复数.  </li>
+<li>否则, 如果有一个操作数是浮点数,  另一个操作数被转换为浮点数.  </li>
+<li>否则, 如果有一个操作数是长整数, 则另一个操作数被转换为长整数； </li>
+<li>否则, 两者必然都是普通整数, 无须类型转换</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-表示你的类"><a href="#4-表示你的类" class="headerlink" title="4. 表示你的类"></a>4. 表示你的类</h2><p>类实例的string表现形式很有用, 在Python中, 你可在类定义中定义一些方法来定制化你的类的表现形式: </p>
+<ul>
+<li><code>__str__(self)</code>: 调用<code>str()</code>时调用该函数:<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__str__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="comment"># 如果希望输出一个类实例能用print语句输出可以使用__str__()</span></span><br><span class="line">    <span class="comment"># 默认被print调用</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;use str&quot;</span></span><br><span class="line"></span><br><span class="line">c = C()</span><br><span class="line"><span class="built_in">print</span> c  <span class="comment"># use str</span></span><br><span class="line"><span class="built_in">print</span> C()  <span class="comment"># use str</span></span><br></pre></td></tr></table></figure></li>
+<li><code>__repr__(self)</code>: 调用<code>repr()</code>时调用该函数. <code>str()</code>和<code>repr()</code>的区别在于: <code>repr()</code>返回机器可读的结果, <code>str()</code>返回人可读的结果.</li>
+<li><code>__unicode__(self)</code>: 调用<code>unicode()</code>时调用该函数. <code>unicode()</code>返回一个unicode字符串. 若调用<code>str()</code>时, 类只定义了<code>__unicode__</code>, 不会调用该函数, 而尝试调用<code>__repr__</code>. 所以应该先在类中定义<code>__str__</code>. </li>
+<li><code>__format__(self, formatstr)</code>: <code>format()</code>, formatstr是格式限定符, <code>&quot;&#123;:abc&#125;&quot;.format(a)</code>等同于<code>a.__format__(&quot;abc&quot;)</code>, 这样可自己定义数值和字符串的特殊格式. </li>
+<li><code>__hash__(self)</code>: 调用<code>hash()</code>调用该函数, 返回一个整数. 当两个对象拥有同样的哈希值时, 两个对象就是相同的, 通常会结合对象中的多个属性来计算其哈希值. 当一个类没有定义<code>__cmp__</code>或<code>__eq__</code>时, 也就无需定义<code>__hash__</code>.</li>
+<li><code>__nonzero__(self)</code>: 调用<code>bool()</code>时调用该函数, 返回<code>True</code>或<code>False</code>, 这里需要定义含义, 指明何种情况下类实例是True或False</li>
+<li><code>__dir__(self)</code>: 调用<code>dir()</code>时调用该函数. 该函数应为用户返回一系列实例的属性. 通常情况下无需定义<code>__dir__</code>, 但如果重定义了<code>__getattr__</code>或<code>__getattribute__</code>, 那么定义该函数对交互式使用你的类至关重要. </li>
+<li><code>__sizeof__(self)</code>: 调用<code>sys.getsizeof()</code>时调用该函数. 该函数应返回对象所占内存的字节数. 当Python类使用到C拓展时, 该函数显得更为重要.</li>
+</ul>
+<h2 id="5-属性访问控制"><a href="#5-属性访问控制" class="headerlink" title="5. 属性访问控制"></a>5. 属性访问控制</h2><p>许多学过别的语言的人来学Python时会抱怨Python缺乏类的封装, 但这是不对的: Python只不过通过一系列方法进行封装, 而不是通过固有的方法或修饰符.</p>
+<ul>
+<li><code>__getattr__(self, name)</code>: 当用户访问一个不存在的属性时, 可调用该函数. 该函数可重定向或捕获拼写错误. 给出用户正在使用已弃用的属性的警告, 或给出AttributeError的错误信息. 该函数只有在一个不存在的属性被访问时才被调用, 所以这不能算是一个封装的方案. </li>
+<li><code>__setattr__(self, name, value)</code>: 该函数是一个封装的解决方案. 不管这个属性存在否, 该函数都允许你给属性赋值, 这意味着你可以为属性值的变化自定义规则. 然而你还是要小心地使用该函数.</li>
+<li><code>__delattr__(self, name)</code>: 像<code>__setattr__</code>一样, 但用于删除属性而不是设置属性. 但像__setattr__一样要小心无限回溯. </li>
+<li><code>__getattribute__(self, name)</code>: <code>__getattribute__</code>就像<code>__setattr__</code>, <code>__delattr__</code>一样. 但并不推荐使用该函数, <code>__getattribute__</code>只能在New-Style Class中使用, 它会因为<code>__setattr__</code>和<code>__delattr__</code>的无限回溯而导致自身也陷入无限回溯中(可调用基类的<code>__getattribute__</code>防止无限回溯).</li>
+</ul>
+<p>在属性访问控制中, 你定义的方法很容易造成问题, 如下:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">__setattr__</span>(<span class="params">self, name, value</span>):</span><br><span class="line">  <span class="variable language_">self</span>.name = value</span><br><span class="line">  <span class="comment"># 每一次一个属性被设置, __setattr__()都会被调用, 这就一个递归</span></span><br><span class="line">  <span class="comment"># 上述表达式的真实含义是self.__setattr__(&#x27;name&#x27;,value), 这又调用了__setattr__</span></span><br><span class="line">  <span class="comment"># 不停地调用该函数形成死循环, 最终崩溃</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">__setattr__</span>(<span class="params">self, name, value</span>):</span><br><span class="line">  <span class="variable language_">self</span>.__dict__[name] = value </span><br><span class="line">  <span class="comment"># 这里给__dict__赋值, 调用的是__dict__的__setattr__(), 所以不会造成死循环</span></span><br></pre></td></tr></table></figure>
+<p>Python的方法拥有巨大能力, 但也伴随着更大的责任, 懂得如何正确使用这些方法而不至于让程序崩溃十分重要.<br>所以我们从Python的属性访问控制中学到了什么? 使用它们是很难的, 因为它是异常强大且反直觉的. 那为什么这些方法要存在: 因为Python不想做坏事, 但这会使得它们变难. 下面是一些属性访问方法的特殊例子: </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;类中有一个值, 并有一个访问计数器. 每一次数值的改变都会使计数器自增&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AccessCounter</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, val</span>):</span><br><span class="line">    <span class="built_in">super</span>(AccessCounter, <span class="variable language_">self</span>).__setattr__(<span class="string">&#x27;counter&#x27;</span>, <span class="number">0</span>)</span><br><span class="line">    <span class="built_in">super</span>(AccessCounter, <span class="variable language_">self</span>).__setattr__(<span class="string">&#x27;value&#x27;</span>, val)</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__setattr__</span>(<span class="params">self, name, value</span>):</span><br><span class="line">    <span class="keyword">if</span> name == <span class="string">&#x27;value&#x27;</span>:</span><br><span class="line">      <span class="built_in">super</span>(AccessCounter, <span class="variable language_">self</span>).__setattr__(<span class="string">&#x27;counter&#x27;</span>, <span class="variable language_">self</span>.counter + <span class="number">1</span>)</span><br><span class="line">    <span class="comment"># 如果你不想让其他属性被设置, 可以raise AttributeError</span></span><br><span class="line">    <span class="built_in">super</span>(AccessCounter, <span class="variable language_">self</span>).__setattr__(name, value)</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__delattr__</span>(<span class="params">self, name</span>):</span><br><span class="line">    <span class="keyword">if</span> name == <span class="string">&#x27;value&#x27;</span>:</span><br><span class="line">      <span class="built_in">super</span>(AccessCounter, <span class="variable language_">self</span>).__setattr__(<span class="string">&#x27;counter&#x27;</span>, <span class="variable language_">self</span>.counter + <span class="number">1</span>)</span><br><span class="line">    <span class="built_in">super</span>(AccessCounter, <span class="variable language_">self</span>).__delattr__(name)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-创造自定义序列"><a href="#6-创造自定义序列" class="headerlink" title="6. 创造自定义序列"></a>6. 创造自定义序列</h2><p>有一系列方法能让你的Python类操作起来像序列(sequence)一样(dict, tuple, list, string等). Python赐予了它们惊人的控制程度, 并且使你的类实例可以漂亮地工作. 在详细描述之前, 需要先理清一下需求.</p>
+<h3 id="6-1-需求"><a href="#6-1-需求" class="headerlink" title="6.1 需求"></a>6.1 需求</h3><p>在讨论一下在Python中创建自己的序列之前, 需先讨论一下&quot;协议&quot;(Protocols). 其它语言会给你一系列方法并让你定义, 因此协议在某种程度上与接口相似; 但Python的协议是通俗的, 不需要显式声明. 他们更像是指南.<br>为什么我们要讨论协议, 因为在Python中使用定制的容器(container)类型需使用到协议. 首先, 有一些协议可以用来定义不可变容器(immutable container): 为了做一个不可变容器, 你只需要定义<code>__len__</code>和<code>__getitem__</code>; 可变容器协议需要添加<code>__setitem__</code>和<code>__delitem__</code>; 若想让对象可迭代, 则需遵循迭代器协议, 因此需定义<code>__iter__</code>和<code>next</code>方法. </p>
+<h3 id="6-2-容器的方法"><a href="#6-2-容器的方法" class="headerlink" title="6.2 容器的方法"></a>6.2 容器的方法</h3><ul>
+<li><code>__len__(self)</code>: 返回容器长度, 可变和不可变容器都需定义该方法. </li>
+<li><code>__getitem__(self, key)</code>: 访问item需要的方法, 如<code>self[key]</code>. 这也是可变和不可变容器协议的一部分. 若key的类型错误, 则引起TypeError异常; 若key没有对应的value, 则引起KeyError异常. </li>
+<li><code>__setitem__(self, key, value)</code>: 分配item时需要的方法, 如<code>self[key]=value</code>. 不可变容器协议的一部分. 也应在适当时刻引起KeyError和TypeError异常. </li>
+<li><code>__delitem__(self, key)</code>: 删除item时需要的方法. 该函数是可变容器协议的一部分, key不存在时抛出异常.</li>
+<li><code>__iter__(self)</code>: 返回一个迭代器. 可使用<code>iter()</code>, 也可使用<code>for x in container</code>. 如果对象已经是一个迭代器, 则<code>__iter__</code>应返回self.</li>
+<li><code>__reversed__(self)</code>: 调用<code>reversed()</code>时调用该方法, 返回该序列的逆序. 只有序列类才能使用这个方法, 例如list和tuple. </li>
+<li><code>__contains__(self, item)</code>: 用于成员测试, 如<code>in</code>和<code>not in</code>. 但该函数不是必需的, 若未定义<code>__contains__</code>, Python会遍历序列, 如果寻找到指定item就返回True</li>
+<li><code>__missing__(self, key)</code>: 该方法应用于dict的子类, 表示访问的key找不到的情况时应作何行为. 例如, 存在一个字典d, 访问<code>d[&#39;george&#39;]</code>时, &quot;george&quot;并不在d中存在, 从而调用<code>d.__missing__(&quot;george&quot;))</code></li>
+</ul>
+<h3 id="6-3-举个例子"><a href="#6-3-举个例子" class="headerlink" title="6.3 举个例子"></a>6.3 举个例子</h3><p>让我们来看一下一个list使用了哪些功能结构, 你可能在其他语言中使用过.</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;类覆盖了一些list的额外功能, 比如head, tail, init, last, drop和take&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FunctionalList</span>:</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, values=<span class="literal">None</span></span>):</span><br><span class="line">    <span class="keyword">if</span> values <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">      <span class="variable language_">self</span>.values = []</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">      <span class="variable language_">self</span>.values = values</span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__len__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">len</span>(<span class="variable language_">self</span>.values)</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__getitem__</span>(<span class="params">self, key</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.values[key] <span class="comment"># 如果key是不合法的类型或数值, 那么list会引起异常</span></span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__setitem__</span>(<span class="params">self, key, value</span>):</span><br><span class="line">    <span class="variable language_">self</span>.values[key] = value</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__delitem__</span>(<span class="params">self, key</span>):</span><br><span class="line">    <span class="keyword">del</span> <span class="variable language_">self</span>.values[key]</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__iter__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">iter</span>(<span class="variable language_">self</span>.values)</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__reversed__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> FunctionalList(<span class="built_in">reversed</span>(<span class="variable language_">self</span>.values))</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">append</span>(<span class="params">self, value</span>):</span><br><span class="line">    <span class="variable language_">self</span>.values.append(value)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">head</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.values[<span class="number">0</span>] <span class="comment"># 获得第一个元素</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">tail</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.values[<span class="number">1</span>:] <span class="comment"># 获得除第一个之外的所有元素</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">init</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.values[:-<span class="number">1</span>] <span class="comment"># 获得除最后一个之外的所有元素</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">last</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.values[-<span class="number">1</span>] <span class="comment"># 获得最后一个元素</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">drop</span>(<span class="params">self, n</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.values[n:] <span class="comment"># 获得除前n个元素之外的所有元素</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">take</span>(<span class="params">self, n</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.values[:n] <span class="comment"># 获得前n个元素</span></span><br></pre></td></tr></table></figure>
+<p>现在你知道了怎么样实现你的序列, 定制序列有很多用处, 很多已存在于Python的标准库中, 如Counter, OrderedDict, 或NameTuple.</p>
+<h2 id="7-反射"><a href="#7-反射" class="headerlink" title="7. 反射"></a>7. 反射</h2><p>可通过定义内建函数<code>isinstance()</code>和<code>isubclass()</code>来控制反射, 如下：</p>
+<ul>
+<li><code>__instancecheck__(self, instance)</code>: 判断instance是否为类的一个实例</li>
+<li><code>__subclasscheck__(self, subclass)</code>: 检查subclass是否为类的一个子类</li>
+</ul>
+<p>上述两种方法的使用范围较小, 但他们反应了Python的<strong>编程思想</strong>: 这些方法可能看上去不是很有用, 但一旦你需要他们, 就会觉得他们太重要了. </p>
+<h2 id="8-可调用对象"><a href="#8-可调用对象" class="headerlink" title="8. 可调用对象"></a>8. 可调用对象</h2><p>Python中, 函数(function)是第一类对象, 这意味着你可将一些参数传给函数, 而函数与类在某种程度上是等价. 这是一个十分强大的特性, Python中一个特殊方法可使你的类实例变得像函数一样操作.<br><code>__call__(self, [args...])</code>: 允许类实例可以像函数一样被调用, 这意味着<code>x()</code>等同于<code>x.__call__()</code>, 注意<code>__call__</code>可以传入很多参数, 意味着你可以像函数一样操作<code>__call__</code>, 传递多少参数都无所谓. <code>__call__</code>可在类实例转换状态时使用, <strong>调用实例</strong>是一种符合直觉且优雅的方式改变对象状态. 下面是一个表示实体在平面上位置的类：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Entity</span>:</span><br><span class="line">  <span class="string">&#x27;&#x27;&#x27;类来描述实体, 调用用来更新实体的位置&#x27;&#x27;&#x27;</span></span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, size, x, y</span>):</span><br><span class="line">    <span class="variable language_">self</span>.x, <span class="variable language_">self</span>.y = x, y</span><br><span class="line">    <span class="variable language_">self</span>.size = size</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__call__</span>(<span class="params">self, x, y</span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;修改实体的位置&#x27;&#x27;&#x27;</span></span><br><span class="line">    <span class="variable language_">self</span>.x, <span class="variable language_">self</span>.y = x, y</span><br><span class="line"> </span><br><span class="line">  <span class="comment"># skip...</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="9-上下文管理器"><a href="#9-上下文管理器" class="headerlink" title="9. 上下文管理器"></a>9. 上下文管理器</h2><p>Python2.5引入了一个新名词实现<strong>代码重用</strong>: with表达式. 上下文管理器的概念在Python中已经不新鲜, 但直到PEP343, 它才作为第一类语言架构被接受. 你可能早就见过with表达式:</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;foo.txt&#x27;</span>) <span class="keyword">as</span> bar:</span><br><span class="line">  <span class="comment"># 用bar来做一些操作</span></span><br></pre></td></tr></table></figure>
+<p>当代码被with表达式包裹起来时, 上下文管理器的行为被两个方法决定：</p>
+<ul>
+<li><code>__enter__(self)</code>: 进入with表达式时上下文管理器的行为. 注意, <code>__enter__</code>的返回值与with表达式声明的目标绑定在一起, 或是as后面的名称. </li>
+<li><code>__exit__(self, exception_type, exception_value, traceback)</code>: 退出with表达式时上下文管理器的行为. 可用于处理异常, 清理工作等. 若工作顺利执行, 则<code>exception_type</code>, <code>exception_value</code>和<code>traceback</code>为空. 换句话说, 我们可以选择异常处理方式, 或让用户处理: 若选择自己处理异常, 那么要确保<code>__exit__</code>返回True; 若不想让上下文管理器处理异常, 则让其报错.</li>
+</ul>
+<p>如果能很好地定义<code>__enter__</code>和<code>__exit__</code>, 则对特殊类很有用. 你可以用这些方法来创建一个泛型上下文管理器来包裹其他对象, 下面是一个例子：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;一个上下文管理器可以在with表达式中通过close方法自动地关闭一个对象&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Closer</span>:</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, obj</span>):</span><br><span class="line">    <span class="variable language_">self</span>.obj = obj</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__enter__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.obj <span class="comment"># bound to target</span></span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__exit__</span>(<span class="params">self, exception_type, exception_val, trace</span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">      <span class="variable language_">self</span>.obj.close()</span><br><span class="line">    <span class="keyword">except</span> AttributeError: <span class="comment"># 对象是不可关闭的</span></span><br><span class="line">      <span class="built_in">print</span> <span class="string">&#x27;Not closable.&#x27;</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">True</span> <span class="comment"># 异常被成功地捕获并处理</span></span><br></pre></td></tr></table></figure>
+<p>下面是一个Closer的例子, 使用FTP连接来证明:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">&gt;&gt;&gt; from magicmethods import Closer</span><br><span class="line">&gt;&gt;&gt; from ftplib import FTP</span><br><span class="line">&gt;&gt;&gt; with Closer(FTP(<span class="string">&#x27;ftp.somesite.com&#x27;</span>)) as conn:</span><br><span class="line">...   conn.dir()</span><br><span class="line">...</span><br><span class="line"><span class="comment"># 简介的展示输出</span></span><br><span class="line">output omitted <span class="keyword">for</span> brevity</span><br><span class="line">&gt;&gt;&gt; conn.dir()</span><br><span class="line"><span class="comment"># 引发AttributeError错误信息, 使用的连接不能关闭</span></span><br><span class="line">&gt;&gt;&gt; with Closer(int(5)) as i:</span><br><span class="line">...   i += 1</span><br><span class="line">...</span><br><span class="line">Not closable.</span><br><span class="line">&gt;&gt;&gt; i</span><br><span class="line">6</span><br></pre></td></tr></table></figure>
+<p>可以看出, with表达式优雅地处理所有正确和不正确的使用, 这就是上下文管理器的威力. 需要注意的是, Python标准库包含contextlib模块, 其也包含一个上下文管理器, <code>contextlib.closing()</code>可实现相同功能. (对于对象没有close方法的不会进行任何处理)</p>
+<h2 id="10-抽象基础类"><a href="#10-抽象基础类" class="headerlink" title="10. 抽象基础类"></a>10. 抽象基础类</h2><p>见 <a target="_blank" rel="noopener external nofollow noreferrer" href="http://docs.python.org/2/library/abc.html">http://docs.python.org/2/library/abc.html</a></p>
+<h2 id="11-构建描述符对象"><a href="#11-构建描述符对象" class="headerlink" title="11. 构建描述符对象"></a>11. 构建描述符对象</h2><p>描述符是一些能通过访问getting, setting和deleting来改变其他对象的类. 描述符不是独立存在的, 它需要一个所有者(owner)对象的支撑. 当建造的面向对象数据库或类的属性值依赖于其他数据库或类时, 描述符就很有用了；当表示不同计量单元下的属性或表示计算的属性时, 描述符也很有用.<br>为了创建一个描述符, 类中必须由__get__, __set__和__delete__的定义. </p>
+<ul>
+<li><code>__get__(self, instance, owner)</code>: 定义获取描述符的值时的行为, instance是所有者对象的实例, owner是所有者类本身</li>
+<li><code>__set__(self, instance, value)</code>: 定义描述符的值被修改时的行为, instance是所有者类的实例, value是修改值</li>
+<li><code>__delete__(self, instance)</code>: 定义描述符的值被删除时的卫星, instance是所有者类的实例</li>
+</ul>
+<p>下面是一个实例：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Meter</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, value=<span class="number">0.0</span></span>):</span><br><span class="line">    <span class="variable language_">self</span>.value = <span class="built_in">float</span>(value)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__get__</span>(<span class="params">self, instance, owner</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.value</span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__set__</span>(<span class="params">self, instance, value</span>):</span><br><span class="line">    <span class="variable language_">self</span>.value = <span class="built_in">float</span>(value)</span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Foot</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__get__</span>(<span class="params">self, instance, owner</span>):</span><br><span class="line">    <span class="keyword">return</span> instance.meter * <span class="number">3.2808</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__set__</span>(<span class="params">self, instance, value</span>):</span><br><span class="line">    instance.meter = <span class="built_in">float</span>(value) / <span class="number">3.2808</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Distance</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  meter = Meter()</span><br><span class="line">  foot = Foot()</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="12-复制"><a href="#12-复制" class="headerlink" title="12. 复制"></a>12. 复制</h2><p>有时处理可变对象时, 需要复制一个对象且不对源对象产生任何副作用, 这时就需要使用Python的copy, 因此我们需要告诉Python如何复制一些东西. </p>
+<ul>
+<li><code>__copy__(self)</code>: 调用<code>copy.copy()</code>时调用该方法, 它返回对象的浅拷贝, 意味着所有的数据都是引用的, 对新复制的对象的修改会作用到源对象</li>
+<li><code>__deepcopy__(self, memodict=&#123;&#125;)</code>: 调用<code>copy.deepcopy()</code>时调用该方法, 返回对象的深拷贝, 意味着所有数据都需拷贝. memodict是一个被拷贝对象的缓存池, 它能优化拷贝行为, 并防止拷贝递归数据结构时引起的无限递归. 当深拷贝一个独立属性时, 可调用<code>copy.deepcopy()</code>, 并将memodict作为第一个参数.</li>
+</ul>
+<p>那么上述方法有什么应用? 通常情况下, 颗粒化管理总比默认的好. 举个例子, 如果你想复制一个在缓存中以字典形式存储的对象, 但直接拷贝缓存是不可能的; 而如果缓存可以在两个实例之间以内存形式存储, 那么就是可行的. </p>
+<h2 id="13-Pickling你的对象"><a href="#13-Pickling你的对象" class="headerlink" title="13. Pickling你的对象"></a>13. Pickling你的对象</h2><p>如果你跟其他Python使用者接触一段时间, 你至少听说过pickling. Pickling是一个将Python数据结构序列化的过程, 当你需要存储一个对象并在稍后取出时, Pickling十分有用, 但也有很多让人疑惑和忧虑的地方.<br>Pickling十分重要, 以至于其不仅有自己的模块(pickle), 还有自己的协议和方法.</p>
+<h3 id="13-1-Pickling"><a href="#13-1-Pickling" class="headerlink" title="13.1 Pickling"></a>13.1 Pickling</h3><p>假设你有一个字典想要先存起来等会儿提取出来. 你可以将它的内容写到文件里, 注意要确保你的语法正确, 使用exec()来剥离或将处理文件输入. 如果你将重要信息存在纯文本中, 任何形式的改变或崩溃都会使得程序崩溃或运行恶意代码. </p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">data = &#123;<span class="string">&#x27;foo&#x27;</span>: [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],</span><br><span class="line">        <span class="string">&#x27;bar&#x27;</span>: (<span class="string">&#x27;Hello&#x27;</span>, <span class="string">&#x27;world!&#x27;</span>),</span><br><span class="line">        <span class="string">&#x27;baz&#x27;</span>: <span class="literal">True</span>&#125;</span><br><span class="line">jar = <span class="built_in">open</span>(<span class="string">&#x27;data.pkl&#x27;</span>, <span class="string">&#x27;wb&#x27;</span>)</span><br><span class="line">pickle.dump(data, jar) <span class="comment"># 将pickle处理过的数据放入文件jar中</span></span><br><span class="line">jar.close()</span><br></pre></td></tr></table></figure>
+
+<p>几个小时后我们想拿回数据, 这时就需要unpickle</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"> </span><br><span class="line">pkl_file = <span class="built_in">open</span>(<span class="string">&#x27;data.pkl&#x27;</span>, <span class="string">&#x27;rb&#x27;</span>) <span class="comment"># 连接到pickle数据</span></span><br><span class="line">data = pickle.load(pkl_file) <span class="comment"># 将数据加载到data变量中</span></span><br><span class="line">pkl_file.close()</span><br></pre></td></tr></table></figure>
+<p>注意, pickling并不是完美的, Pickle文件很容易由于意外而崩溃. Pickle可能比纯文本文件更加安全, 但它也可能用于运行恶意代码. 并且不同版本的Python也不一定兼容, 所以不想期望将pickle对象发送给别人后别人能打开它们. 但它可以作为一种缓存的工具或其他序列化任务. </p>
+<h3 id="13-2-Pickle你的对象"><a href="#13-2-Pickle你的对象" class="headerlink" title="13.2 Pickle你的对象"></a>13.2 Pickle你的对象</h3><p>Pickle不仅作用于内建类型, 任何类都遵循pickle协议. pickle协议有四个可选项方法来定制化它们的操作. </p>
+<ul>
+<li><code>__getinitargs__(self)</code>: 如果你不希望你在unpickle时调用<code>__init__</code>, 你可以定义该函数, 它会返回你希望返回的参数, 放在一个tuple中. 注意, 该方法只作用在old-style class中. </li>
+<li><code>__getnewargs__(self)</code>: 对于new-style class, 你可以决定哪些参数传给<code>__new__</code>. 该方法也会返回一个tuple给__new__, 里面全是参数. </li>
+<li><code>__getstate__(self)</code>: 当对象被pickle时, 你可以返回一个定制的状态, 而不是使用<code>__dict__</code>的方法. 当对象被unpickle时, 你会在<code>__setstate__</code>中用到这个状态值. </li>
+<li><code>__setstate__(self, state)</code>: 当对象被unpickle时, 如果已经定义了<code>__setstatue__</code>, 对象的状态值将会被传入该函数, 而不是直接应用于对象的<code>__dict__</code>. 该函数必须和<code>__getstatue__</code>一同使用：当两个方法都定义时, 你可表示对象被pickle的任何过程. </li>
+<li><code>__reduce__(self</code>): 当定义额外类型时, 如果你要pickle它们时, 你必须告诉Python如果pickle它们. 当对象定义他本身如何被pickle时, 就需要调用<code>__reduce__()</code>, 它可以返回一个字符串的全局名称或tuple, 这样Python可以查看并pickletuple包括2到5个元素：一个可调用对象来重建对象；一个包含参数的tuple, 服务于可调用对象；状态值传递给<code>__setstatue__</code>；用于生成list项的迭代器, 他将被pickle；一个用来生成字典项的迭代, 他也将被pickle. </li>
+<li><code>__reduce_ex__(self)</code>: 该函数为兼容性存在, 如果该函数被定义, 它将会在pickle时覆盖<code>__reduce__</code>. 将会在pickle API为旧版本时调用<code>__reduce__</code>, 而不会调用<code>__reduce_ex__</code>.</li>
+</ul>
+<p>举个例子：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"> </span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">用于存储字符串和更改日志, 并且在pickle时丢弃它们</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Slate</span>:</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, value</span>):</span><br><span class="line">    <span class="variable language_">self</span>.value = value</span><br><span class="line">    <span class="variable language_">self</span>.last_change = time.asctime()</span><br><span class="line">    <span class="variable language_">self</span>.history = &#123;&#125;</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">change</span>(<span class="params">self, new_value</span>):</span><br><span class="line">    <span class="comment"># 更改数值, 将上一次值添加到history中</span></span><br><span class="line">    <span class="variable language_">self</span>.history[<span class="variable language_">self</span>.last_change] = <span class="variable language_">self</span>.value</span><br><span class="line">    <span class="variable language_">self</span>.value = new_value</span><br><span class="line">    <span class="variable language_">self</span>.last_change = time.asctime()</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">print_changes</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;Changelog for Slate object:&#x27;</span></span><br><span class="line">    <span class="keyword">for</span> k, v <span class="keyword">in</span> <span class="variable language_">self</span>.history.items():</span><br><span class="line">        <span class="built_in">print</span> <span class="string">&#x27;%s\t %s&#x27;</span> % (k, v)</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__getstate__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="comment"># 不要反悔self.value或self.last_change</span></span><br><span class="line">    <span class="comment"># 我们想在unpickle时得到一个&quot;black slate&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">self</span>.history</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__setstate__</span>(<span class="params">self, state</span>):</span><br><span class="line">    <span class="comment"># 将self.history = state, 并将last_change和value设为空</span></span><br><span class="line">    <span class="variable language_">self</span>.history = state</span><br><span class="line">    <span class="variable language_">self</span>.value, <span class="variable language_">self</span>.last_change = <span class="literal">None</span>, <span class="literal">None</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/617f.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Metaclass</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/f9ff.html">
+        <span class="next-text nav-default">SQLite Atomic Commit</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/bbe1.html';
+  var disqus_title = "Class Method";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

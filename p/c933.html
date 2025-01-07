@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="StatefulSet"/>
+
+
+
+
+  <meta name="keywords" content="K8s," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/c933.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/c933.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/c933.html"/>
+
+
+<meta name="description" content="1. Replicate Stateful PodsReplicaSet可创建并管理多个Pod, 但所有Pod都共享同一PersistentVolumeClaim, 并与同一PersistentVolume绑定, 这种设计模式无法实现分布式数据存储: 1.1 Run Multiple Replicas with Separate Storage为了让每个Pod使用各自的volume, 可采取以下方">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StatefulSet">
+<meta property="og:url" content="https://zaf1ro.github.io/p/c933.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Replicate Stateful PodsReplicaSet可创建并管理多个Pod, 但所有Pod都共享同一PersistentVolumeClaim, 并与同一PersistentVolume绑定, 这种设计模式无法实现分布式数据存储: 1.1 Run Multiple Replicas with Separate Storage为了让每个Pod使用各自的volume, 可采取以下方">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-6.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-7.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-8.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-9.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-10.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-11.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-12.png">
+<meta property="article:published_time" content="2019-11-07T18:43:55.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.031Z">
+<meta property="article:tag" content="K8s">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/statefulset-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+StatefulSet - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Replicate-Stateful-Pods"><span class="toc-text">1. Replicate Stateful Pods</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Run-Multiple-Replicas-with-Separate-Storage"><span class="toc-text">1.1 Run Multiple Replicas with Separate Storage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Provide-a-Stable-Identity-for-Each-Pod"><span class="toc-text">1.2 Provide a Stable Identity for Each Pod</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-StatefulSet"><span class="toc-text">2. StatefulSet</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Provide-a-Stable-Network-Identity"><span class="toc-text">2.1 Provide a Stable Network Identity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Provide-Stable-Dedicated-Storage"><span class="toc-text">2.2 Provide Stable Dedicated Storage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-StatefulSet-s-At-Most-One-Semantics"><span class="toc-text">2.3 StatefulSet&#39;s At-Most-One Semantics</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Use-a-StatefulSet"><span class="toc-text">3. Use a StatefulSet</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Create-the-App-and-Container-image"><span class="toc-text">3.1 Create the App and Container image</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Deploy-the-App-through-a-StatefulSet"><span class="toc-text">3.2 Deploy the App through a StatefulSet</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-Create-the-Persistent-Volume"><span class="toc-text">3.2.1 Create the Persistent Volume</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-Create-the-Governing-Service"><span class="toc-text">3.2.2 Create the Governing Service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-Create-the-StatefulSet-Manifest"><span class="toc-text">3.2.3 Create the StatefulSet Manifest</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-4-Create-the-StatefulSet"><span class="toc-text">3.2.4 Create the StatefulSet</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-5-Examine-the-Generated-Stateful-Pod"><span class="toc-text">3.2.5 Examine the Generated Stateful Pod</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Communicate-with-Your-Pods"><span class="toc-text">3.3 Communicate with Your Pods</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Discover-peers-in-a-StatefulSet"><span class="toc-text">4. Discover peers in a StatefulSet</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Implement-peer-discovery-through-DNS"><span class="toc-text">4.1 Implement peer discovery through DNS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Update-a-StatefulSet"><span class="toc-text">4.2 Update a StatefulSet</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Understand-How-StatefulSets-Deal-with-Node-Failures"><span class="toc-text">5. Understand How StatefulSets Deal with Node Failures</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Simulate-a-Node-s-Disconnection-From-the-Network"><span class="toc-text">5.1 Simulate a Node&#39;s Disconnection From the Network</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Delete-the-Pod-Forcibly"><span class="toc-text">5.2 Delete the Pod Forcibly</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          StatefulSet
+        
+      </h1>
+      <time class="post-time">
+          11/07/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Replicate-Stateful-Pods"><a href="#1-Replicate-Stateful-Pods" class="headerlink" title="1. Replicate Stateful Pods"></a>1. Replicate Stateful Pods</h2><p>ReplicaSet可创建并管理多个Pod, 但所有Pod都共享同一PersistentVolumeClaim, 并与同一PersistentVolume绑定, 这种设计模式无法实现分布式数据存储:<br><img src="/images/Kubernetes/statefulset-1.png" alt="All pods from the same ReplicaSet always use the same PersistentVolumeClaim and PersistentVolume"></p>
+<h3 id="1-1-Run-Multiple-Replicas-with-Separate-Storage"><a href="#1-1-Run-Multiple-Replicas-with-Separate-Storage" class="headerlink" title="1.1 Run Multiple Replicas with Separate Storage"></a>1.1 Run Multiple Replicas with Separate Storage</h3><p>为了让每个Pod使用各自的volume, 可采取以下方式:</p>
+<ol>
+<li>Create Pods Manually<br>手动创建多个Pod并使用不同的PersistentVolumeClaim. 由于没有使用ReplicaSet, 所以需要手动管理Pod: Pod或Pod所在的worker node不可用时需手动删除或重建Pod.</li>
+<li>Use One ReplicaSet per Pod Instance<br>创造多个ReplicaSet, 每个ReplicaSet管理一个Pod并使用不同的PersistentVolumeClaim. 虽然不用监控Pod状态, 但无法随意修改Pod数量: 当修改Pod数量时, 需手动创建新的ReplicaSet或删除已有ReplicaSet:<br><img src="/images/Kubernetes/statefulset-2.png" alt="Using one ReplicaSet for each pod instance"></li>
+<li>Use Multiple Directories in the Same Volume<br>使用单个ReplicaSet管理多个Pod, 但每个Pod绑定Volume中不同的文件目录, 从而实现分布式数据. 此方法存在一个缺陷: 由于Pod无法指定Volume的某个文件目录, Pod会自动绑定某个未被使用的目录, 这需要Pod之间的合作:<br><img src="/images/Kubernetes/statefulset-3.png" alt="Working around the shared storage problem by having the app in each pod use a different file directory"></li>
+</ol>
+<h3 id="1-2-Provide-a-Stable-Identity-for-Each-Pod"><a href="#1-2-Provide-a-Stable-Identity-for-Each-Pod" class="headerlink" title="1.2 Provide a Stable Identity for Each Pod"></a>1.2 Provide a Stable Identity for Each Pod</h3><p>ReplicaSet适合管理non-stateful application(所有Pod采用相同配置, 使用同一个Volume数据); 对于stateful application, 由于每个Pod拥有不同数据, 因此其他服务需要与cluster中的某个Pod通信, 这就需要Pod拥有不同且稳定的接口: 对于ReplicaSet所管理的Pod集群, 虽然每个Pod有hostname, 但当Pod被reschedule时, hostname会重新分配; 对于指向ReplicaSet的Service, 其他服务访问Service时会被随机分配到某个Pod, 也无法提供一个稳定的Pod接口.<br>过时的解决方案: 因为Service拥有稳定的地址, 所以为每个ReplicaSet的Pod分配一个Service; 但操作复杂, 增加Pod时需要为新建的Pod手动绑定Service:<br><img src="/images/Kubernetes/statefulset-4.png" alt="Using one Service and ReplicaSet per pod to provide a stable network address"></p>
+<h2 id="2-StatefulSet"><a href="#2-StatefulSet" class="headerlink" title="2. StatefulSet"></a>2. StatefulSet</h2><p>StatefulSet作为Kubernetes的一种Resource, 提供了一种全方面的解决方案来管理stateful application. StatefulSet和ReplicaSet或ReplicationController主要有以下几点不同:</p>
+<ol>
+<li>Goals: ReplicaSet目的在于管理non-stateful application; StatefulSet负责管理stateful application. </li>
+<li>Identity: ReplicaSet在reschedule时会更改Pod名字和hostname; StatefulSet在reschedule时保留Pod名字和hostname</li>
+<li>Volume: 一个ReplicaSet只能绑定一个Volume; StatefulSet可绑定多个Volume</li>
+</ol>
+<h3 id="2-1-Provide-a-Stable-Network-Identity"><a href="#2-1-Provide-a-Stable-Network-Identity" class="headerlink" title="2.1 Provide a Stable Network Identity"></a>2.1 Provide a Stable Network Identity</h3><p>StatefulSet中所有Pod的名字都会以递增整数作为结尾(以0为起点), 因此Pod域名变得容易访问; ReplicaSet则随机生成Pod名字:<br><img src="/images/Kubernetes/statefulset-5.png" alt="Pods created by a StatefulSet have predictable hostnames"></p>
+<p>为StatefulSet创建Headless Service后, 其他服务可通过该Service获取每个Pod的DNS entry. 以<strong>A-0</strong> Pod为例, 访问<strong>a-0.foo.default.svc.cluster.local</strong>即可与该Pod通信. 也可通过SRV record获取pod的名字.<br>当Pod所在的worker node不可用时, Stateful会在其他worker node上创建该Pod, 且保持该Pod的名字和hostname不变; ReplicaSet则会重新分配Pod的名字和hostname:<br><img src="/images/Kubernetes/statefulset-6.png" alt="StatefulSet replaces a lost pod with a new one with the same identity"></p>
+<p>当减小StatefulSet的replica count时, 会按照Pod的名字倒序移除Pod, 一次只能移除一个Pod, 序号最大的先被移除; ReplicaSet则会随机移除一个Pod:<br><img src="/images/Kubernetes/statefulset-7.png" alt="Scaling down a StatefulSet always removes the pod with the highest ordinal index first"></p>
+<h3 id="2-2-Provide-Stable-Dedicated-Storage"><a href="#2-2-Provide-Stable-Dedicated-Storage" class="headerlink" title="2.2 Provide Stable Dedicated Storage"></a>2.2 Provide Stable Dedicated Storage</h3><p>由于reschedule时必须保证新建的Pod依然绑定原版的Volume, StatefulSet需要维持Pod与PersistentVolumeClaim之间的对应关系, PVC不再需要用户管理:<br><img src="/images/Kubernetes/statefulset-8.png" alt="A StatefulSet creates both pods and PersistentVolumeClaims"></p>
+<p>由Replica count缩小导致的Pod被移除不会删除对应的PersistentVolumeClaim, 因为一旦PVC被删除, 绑定的PV也会被回收. 为了防止数据丢失, 必须保留PVC的存在. 如果需要回收PV, 可手动删除PVC. 而当replica count恢复到之前数量后, 新建的Pod会自动绑定到之前的PVC:<br><img src="/images/Kubernetes/statefulset-9.png" alt="StatefulSets preserve the PersistentVolumeClaims when scaling down"></p>
+<h3 id="2-3-StatefulSet-s-At-Most-One-Semantics"><a href="#2-3-StatefulSet-s-At-Most-One-Semantics" class="headerlink" title="2.3 StatefulSet&#39;s At-Most-One Semantics"></a>2.3 StatefulSet&#39;s At-Most-One Semantics</h3><p>由于StatefulSet支持新建Pod重用之前Pod的identity(名字, hostname和绑定的PV), 因此必须保证创建Pod时不存在同名Pod. 这就导致StatefulSet对worker node不可用时采用的策略与ReplicaSet不同.</p>
+<h2 id="3-Use-a-StatefulSet"><a href="#3-Use-a-StatefulSet" class="headerlink" title="3. Use a StatefulSet"></a>3. Use a StatefulSet</h2><h3 id="3-1-Create-the-App-and-Container-image"><a href="#3-1-Create-the-App-and-Container-image" class="headerlink" title="3.1 Create the App and Container image"></a>3.1 Create the App and Container image</h3><p>为展示StatefulSet的特性, 需要创建一个app可写入和读取Volume数据, 并与其他服务通信:</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="keyword">const</span> dataFile = <span class="string">&quot;/var/data/kubia.txt&quot;</span>;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">var</span> handler = <span class="keyword">function</span>(<span class="params">request, response</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (request.<span class="property">method</span> == <span class="string">&#x27;POST&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> file = fs.<span class="title function_">createWriteStream</span>(dataFile);</span><br><span class="line">    file.<span class="title function_">on</span>(<span class="string">&#x27;open&#x27;</span>, <span class="keyword">function</span> (<span class="params">fd</span>) &#123;</span><br><span class="line">      request.<span class="title function_">pipe</span>(file);</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;New data has been received and stored.&quot;</span>);</span><br><span class="line">      response.<span class="title function_">writeHead</span>(<span class="number">200</span>);</span><br><span class="line">      response.<span class="title function_">end</span>(<span class="string">&quot;Data stored on pod &quot;</span> + os.<span class="title function_">hostname</span>() + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> data = <span class="title function_">fileExists</span>(dataFile)</span><br><span class="line">      ? fs.<span class="title function_">readFileSync</span>(dataFile, <span class="string">&#x27;utf8&#x27;</span>)</span><br><span class="line">      : <span class="string">&quot;No data posted yet&quot;</span>;</span><br><span class="line">    response.<span class="title function_">writeHead</span>(<span class="number">200</span>);</span><br><span class="line">    response.<span class="title function_">write</span>(<span class="string">&quot;You&#x27;ve hit &quot;</span> + os.<span class="title function_">hostname</span>() + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    response.<span class="title function_">end</span>(<span class="string">&quot;Data stored on this pod: &quot;</span> + data + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">var</span> www = http.<span class="title function_">createServer</span>(handler);</span><br><span class="line">www.<span class="title function_">listen</span>(<span class="number">8080</span>);</span><br></pre></td></tr></table></figure>
+<p>上述NodeJS App会监听8080端口, 当收到POST请求时, 将请求数据写入<strong>kubia.txt</strong>; 当收到GET请求时, 从<strong>kubia.txt</strong>中读取数据并回复.</p>
+<h3 id="3-2-Deploy-the-App-through-a-StatefulSet"><a href="#3-2-Deploy-the-App-through-a-StatefulSet" class="headerlink" title="3.2 Deploy the App through a StatefulSet"></a>3.2 Deploy the App through a StatefulSet</h3><p>为使用StatefulSet部署Application, 需要以下三种resource: PersistentVolume, Service和StatefulSet. StatefulSet会自动创建PersistentVolumeClaim, 所以并不需手动创建PVC. 以下步骤在GCP中运行:</p>
+<h4 id="3-2-1-Create-the-Persistent-Volume"><a href="#3-2-1-Create-the-Persistent-Volume" class="headerlink" title="3.2.1 Create the Persistent Volume"></a>3.2.1 Create the Persistent Volume</h4><p>创建三个GCE Persistent Disk:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ gcloud compute disks create --size=1GiB --zone=us-east1-b pv-a</span><br><span class="line">$ gcloud compute disks create --size=1GiB --zone=us-east1-b pv-b</span><br><span class="line">$ gcloud compute disks create --size=1GiB --zone=us-east1-b pv-c</span><br></pre></td></tr></table></figure>
+<p>创建三个PV使用GCE Persistent Disk:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">List</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">items:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line">  <span class="attr">kind:</span> <span class="string">PersistentVolume</span></span><br><span class="line">  <span class="attr">metadata:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">pv-a</span></span><br><span class="line">  <span class="attr">spec:</span></span><br><span class="line">    <span class="attr">capacity:</span></span><br><span class="line">      <span class="attr">storage:</span> <span class="string">1Mi</span></span><br><span class="line">    <span class="attr">accessModes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ReadWriteOnce</span></span><br><span class="line">    <span class="attr">persistentVolumeReclaimPolicy:</span> <span class="string">Recycle</span></span><br><span class="line">    <span class="attr">gcePersistentDisk:</span></span><br><span class="line">      <span class="attr">pdName:</span> <span class="string">pv-a</span></span><br><span class="line">      <span class="attr">fsType:</span> <span class="string">nfs4</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line">  <span class="attr">kind:</span> <span class="string">PersistentVolume</span></span><br><span class="line">  <span class="attr">metadata:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">pv-b</span></span><br><span class="line">  <span class="string">...</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-2-2-Create-the-Governing-Service"><a href="#3-2-2-Create-the-Governing-Service" class="headerlink" title="3.2.2 Create the Governing Service"></a>3.2.2 Create the Governing Service</h4><p>创建Headless Service为stateful Pods提供network identity:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">clusterIP:</span> <span class="string">None</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-2-3-Create-the-StatefulSet-Manifest"><a href="#3-2-3-Create-the-StatefulSet-Manifest" class="headerlink" title="3.2.3 Create the StatefulSet Manifest"></a>3.2.3 Create the StatefulSet Manifest</h4><p>除了<strong>volumeClaimTemplates</strong>外, 其他配置与ReplicaSet相同. <strong>volumeClaimTemplates</strong>指定StatefulSet创建何种规格的PVC. </p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StatefulSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">serviceName:</span> <span class="string">kubia</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">2</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">luksa/kubia-pet</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">          <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/var/data</span></span><br><span class="line">  <span class="attr">volumeClaimTemplates:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">resources:</span></span><br><span class="line">        <span class="attr">requests:</span></span><br><span class="line">          <span class="attr">storage:</span> <span class="string">1Mi</span></span><br><span class="line">      <span class="attr">accessModes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">ReadWriteOnce</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-2-4-Create-the-StatefulSet"><a href="#3-2-4-Create-the-StatefulSet" class="headerlink" title="3.2.4 Create the StatefulSet"></a>3.2.4 Create the StatefulSet</h4><p>调用<strong>kubectl apply</strong>可使用YAML文件创建StatefulSet:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create -f kubia-statefulset.yaml</span><br><span class="line">statefulset <span class="string">&quot;kubia&quot;</span> created</span><br><span class="line"></span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME    READY STATUS            RESTARTS AGE</span><br><span class="line">kubia-0 0/1   ContainerCreating 0        1s</span><br></pre></td></tr></table></figure>
+<p>由于StatefulSet会在完成第一个Pod启动后再启动第二个, 所以一开始会显示第一个Pod的状态:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME    READY STATUS            RESTARTS AGE</span><br><span class="line">kubia-0 1/1   Running           0        8s</span><br><span class="line">kubia-1 0/1   ContainerCreating 0        2s</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-2-5-Examine-the-Generated-Stateful-Pod"><a href="#3-2-5-Examine-the-Generated-Stateful-Pod" class="headerlink" title="3.2.5 Examine the Generated Stateful Pod"></a>3.2.5 Examine the Generated Stateful Pod</h4><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">$</span> <span class="string">kubectl</span> <span class="string">get</span> <span class="string">po</span> <span class="string">kubia-0</span> <span class="string">-o</span> <span class="string">yaml</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="string">...</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">luksa/kubia-pet</span></span><br><span class="line">  <span class="string">...</span></span><br><span class="line">    <span class="attr">volumeMounts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">mountPath:</span> <span class="string">/var/data</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">mountPath:</span> <span class="string">/var/run/secrets/kubernetes.io/serviceaccount</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">default-token-r2m41</span></span><br><span class="line">      <span class="attr">readOnly:</span> <span class="literal">true</span></span><br><span class="line">  <span class="string">...</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">    <span class="attr">persistentVolumeClaim:</span></span><br><span class="line">      <span class="attr">claimName:</span> <span class="string">data-kubia-0</span></span><br><span class="line">  <span class="string">...</span></span><br></pre></td></tr></table></figure>
+<p>可以看到, StatefulSet会为kubia-0自动创造一个名为<strong>data-kubia-0</strong>的PVC, 并与container绑定:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get pvc</span><br><span class="line">NAME         STATUS VOLUME CAPACITY ACCESSMODES AGE</span><br><span class="line">data-kubia-0 Bound  pv-c   0                    37s</span><br><span class="line">data-kubia-1 Bound  pv-a   0                    37s</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-Communicate-with-Your-Pods"><a href="#3-3-Communicate-with-Your-Pods" class="headerlink" title="3.3 Communicate with Your Pods"></a>3.3 Communicate with Your Pods</h3><p>由于StatefulSet使用的是Headless Service, 因此只能直接与Pod通信, 而不能通过Service通信. 为实现与特定Pod通信, 可向API server发送HTTP请求, 将其作为proxy, 访问路径如下:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">&lt;apiServerHost&gt;:&lt;port&gt;/api/v1/namespaces/default/pods/kubia-0/proxy/&lt;path&gt;</span><br></pre></td></tr></table></figure>
+<p>为保证避免配置SSL certificate, 可使用<strong>kubectl proxy</strong>来生成proxy与API server通信:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl proxy</span><br><span class="line">Starting to serve on 127.0.0.1:8001</span><br><span class="line"></span><br><span class="line">$ curl localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/</span><br><span class="line">You<span class="string">&#x27;ve hit kubia-0</span></span><br><span class="line"><span class="string">Data stored on this pod: No data posted yet</span></span><br></pre></td></tr></table></figure>
+<p>GTE请求的通信流程如下:<br><img src="/images/Kubernetes/statefulset-10.png" alt="Connect to a pod through both the kubectl proxy and API server proxy"></p>
+<p>也可以向Pod发送POST请求:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ curl -X POST -d <span class="string">&quot;Hey there!&quot;</span> localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/</span><br><span class="line">Data stored on pod kubia-0</span><br><span class="line"></span><br><span class="line">$ curl localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/</span><br><span class="line">You<span class="string">&#x27;ve hit kubia-0</span></span><br><span class="line"><span class="string">Data stored on this pod: Hey there!</span></span><br></pre></td></tr></table></figure>
+
+<p>删除Pod后, StatefulSet会像ReplicaSet一样重建新的Pod, 并使用之前的名字, hostname和Volume:<br><img src="/images/Kubernetes/statefulset-11.png" alt="A stateful pod may be rescheduled to a different node, but it retains the name, hostname, and storage"></p>
+<p>当减小replica count时, StatefulSet会从序号最大Pod开始关闭运行, 同一时间只会有一个Pod处于terminating状态.</p>
+<h2 id="4-Discover-peers-in-a-StatefulSet"><a href="#4-Discover-peers-in-a-StatefulSet" class="headerlink" title="4. Discover peers in a StatefulSet"></a>4. Discover peers in a StatefulSet</h2><p>StatefulSet必须保证cluster中的每个成员都可以访问到其管理的Pod, 虽然通过API server可以实现与Pod直连, 但client端需要设置好配置才能连接至API server. 为此可使用SRV records解决该问题.<br>SRC records可指明某个特定service下的hostname和port. 首先运行<strong>tutum&#x2F;dnsutils</strong>来允许用户在container中执行<strong>dig</strong>和<strong>nslookup</strong>命令:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl run -it srvlookup --image=tutum/dnsutils --<span class="built_in">rm</span> \</span><br><span class="line">  --restart=Never -- dig SRV kubia.default.svc.cluster.local</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$ dig SRV kubia.default.svc.cluster.local</span><br><span class="line">...</span><br><span class="line">;; ANSWER SECTION:</span><br><span class="line">kubia.default.svc.cluster.local. 30 IN SRV 10 33 0 kubia-0.kubia.default.svc.cluster.local.</span><br><span class="line">kubia.default.svc.cluster.local. 30 IN SRV 10 33 0 kubia-1.kubia.default.svc.cluster.local.</span><br><span class="line">;; ADDITIONAL SECTION:</span><br><span class="line">kubia-0.kubia.default.svc.cluster.local. 30 IN A 172.17.0.4</span><br><span class="line">kubia-1.kubia.default.svc.cluster.local. 30 IN A 172.17.0.6</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>可以看到, SRV record中kubia-0和kubia-1都指向headless service. 在程序中执行<strong>SRV DNS lookup</strong>可获取该service下所有Pod的hostname:</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">dns.<span class="title function_">resolveSrv</span>(<span class="string">&quot;kubia.default.svc.cluster.local&quot;</span>, callBackFunction);</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-Implement-peer-discovery-through-DNS"><a href="#4-1-Implement-peer-discovery-through-DNS" class="headerlink" title="4.1 Implement peer discovery through DNS"></a>4.1 Implement peer discovery through DNS</h3><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="keyword">const</span> dns = <span class="built_in">require</span>(<span class="string">&#x27;dns&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> dataFile = <span class="string">&quot;/var/data/kubia.txt&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> serviceName = <span class="string">&quot;kubia.default.svc.cluster.local&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> port = <span class="number">8080</span>;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">var</span> handler = <span class="keyword">function</span>(<span class="params">request, response</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (request.<span class="property">method</span> == <span class="string">&#x27;POST&#x27;</span>) &#123;</span><br><span class="line">  ...</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    response.<span class="title function_">writeHead</span>(<span class="number">200</span>);</span><br><span class="line">    <span class="keyword">if</span> (request.<span class="property">url</span> == <span class="string">&#x27;/data&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> data = <span class="title function_">fileExists</span>(dataFile)</span><br><span class="line">        ? fs.<span class="title function_">readFileSync</span>(dataFile, <span class="string">&#x27;utf8&#x27;</span>)</span><br><span class="line">        : <span class="string">&quot;No data posted yet&quot;</span>;</span><br><span class="line">      response.<span class="title function_">end</span>(data);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      response.<span class="title function_">write</span>(<span class="string">&quot;You&#x27;ve hit &quot;</span> + os.<span class="title function_">hostname</span>() + <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">      response.<span class="title function_">write</span>(<span class="string">&quot;Data stored in the cluster:\n&quot;</span>);</span><br><span class="line">      dns.<span class="title function_">resolveSrv</span>(serviceName, <span class="keyword">function</span> (<span class="params">err, addresses</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (err) &#123;</span><br><span class="line">          response.<span class="title function_">end</span>(<span class="string">&quot;Could not look up DNS SRV records: &quot;</span> + err);</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">var</span> numResponses = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (addresses.<span class="property">length</span> == <span class="number">0</span>) &#123;</span><br><span class="line">          response.<span class="title function_">end</span>(<span class="string">&quot;No peers discovered.&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          addresses.<span class="title function_">forEach</span>(<span class="keyword">function</span> (<span class="params">item</span>) &#123;</span><br><span class="line">            <span class="keyword">var</span> requestOptions = &#123;</span><br><span class="line">              <span class="attr">host</span>: item.<span class="property">name</span>,</span><br><span class="line">              <span class="attr">port</span>: port,</span><br><span class="line">              <span class="attr">path</span>: <span class="string">&#x27;/data&#x27;</span></span><br><span class="line">            &#125;;</span><br><span class="line">            <span class="title function_">httpGet</span>(requestOptions, <span class="keyword">function</span> (<span class="params">returnedData</span>) &#123;</span><br><span class="line">              numResponses++;</span><br><span class="line">              response.<span class="title function_">write</span>(<span class="string">&quot;- &quot;</span> + item.<span class="property">name</span> + <span class="string">&quot;: &quot;</span> + returnedData);</span><br><span class="line">              response.<span class="title function_">write</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">              <span class="keyword">if</span> (numResponses == addresses.<span class="property">length</span>) &#123;</span><br><span class="line">                response.<span class="title function_">end</span>();</span><br><span class="line">              &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>经过上述修改后, StatefulSet中的任何一个Po收到GET请求都会想通过SRV lookup获取所有Pod hostname, 再向所有Pod hostname的**&#x2F;data**发送GET请求来获取数据, 流程如下:<br><img src="/images/Kubernetes/statefulset-12.png" alt="The operation of your simplistic distributed data store"></p>
+<h3 id="4-2-Update-a-StatefulSet"><a href="#4-2-Update-a-StatefulSet" class="headerlink" title="4.2 Update a StatefulSet"></a>4.2 Update a StatefulSet</h3><p>当StatefulSet的YAML文件被修改后, 原先创建的Pod不会有任何更新, 只有新建的Pod会采用新的manifest. 如果想更新之前的Pod, 只能删除并重建:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl edit statefulset kubia</span><br></pre></td></tr></table></figure>
+<p>用editor打开StatefulSet definition, 将spec-relicas从2改为3, 并将spec.template.spec.containers.image从<strong>luksa&#x2F;kubiapet</strong>改为<strong>luksa&#x2F;kubia-pet-peers</strong>, 保存并退出文件:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME    READY STATUS            RESTARTS AGE</span><br><span class="line">kubia-0 1/1   Running           0        25m</span><br><span class="line">kubia-1 1/1   Running           0        26m</span><br><span class="line">kubia-2 0/1   ContainerCreating 0        4s</span><br></pre></td></tr></table></figure>
+<p><strong>kubia-0</strong>和<strong>kubia-1</strong>没有任何更新, <strong>kubia-2</strong>则采用新的image.</p>
+<h2 id="5-Understand-How-StatefulSets-Deal-with-Node-Failures"><a href="#5-Understand-How-StatefulSets-Deal-with-Node-Failures" class="headerlink" title="5. Understand How StatefulSets Deal with Node Failures"></a>5. Understand How StatefulSets Deal with Node Failures</h2><p>当某个worker node不可用时, Kubernetes无法获知其中Pod的运行状况. 由于StatefulSet需要保证同一时间不能存在两个相同的Pod运行, 只有确定Pod不可运行时才会创建新的Pod. </p>
+<h3 id="5-1-Simulate-a-Node-s-Disconnection-From-the-Network"><a href="#5-1-Simulate-a-Node-s-Disconnection-From-the-Network" class="headerlink" title="5.1 Simulate a Node&#39;s Disconnection From the Network"></a>5.1 Simulate a Node&#39;s Disconnection From the Network</h3><p>假设StatefulSet运行在GCP上, 管理3个Pod: <strong>kubia-0</strong>, <strong>kubia-1</strong>和<strong>kubia-2</strong>, 分别运行在不同的worker node上. 为测试StatefulSet针对worker node不可用时的应对策略, 需要先断开一个worker node的网络接口:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ gcloud compute ssh gke-kubia-m0g1</span><br><span class="line">$ <span class="built_in">sudo</span> ifconfig eth0 down</span><br></pre></td></tr></table></figure>
+<p>查看worker nodes状态. 由于<strong>gke-kubia-m0g1</strong>的Kubelet无法连接至Kubernetes API server, 一段时间后该worker node将被标记为<strong>NotReady</strong>:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get node</span><br><span class="line">NAME           STATUS   AGE VERSION</span><br><span class="line">gke-kubia-596v Ready    16m v1.6.2</span><br><span class="line">gke-kubia-m0g1 NotReady 16m v1.6.2</span><br><span class="line">gke-kubia-sgl7 Ready    16m v1.6.2</span><br></pre></td></tr></table></figure>
+<p>查看pods状态. 由于control plane无法获取worker node上Pod的状态更新, 所以Pod状态被修改为<strong>Unknown</strong>:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME    READY STATUS  RESTARTS AGE</span><br><span class="line">kubia-0 1/1   Unknown 0        15m</span><br><span class="line">kubia-1 1/1   Running 0        14m</span><br><span class="line">kubia-2 1/1   Running 0        13m</span><br></pre></td></tr></table></figure>
+<p>如果worker node重新上线, 则Pod回归<strong>Running</strong>状态. Kubernetes 1.5或更高版本后, 如果Pod一直维持<strong>Unknown</strong>状态超过一定时间, Kubernetes control plane会试图将Pod移除, 将Pod状态改为<strong>Terminating</strong>; 但由于worker node断开连接, kubelet无法回应master的删除请求, 所以Pod会一直处于<strong>Terminating</strong>. 只有以下三种情况下, Kubernetes会从API server上删除Pod的信息:</p>
+<ol>
+<li>删除worker node</li>
+<li>worker node重新连接, kubelet响应了删除Pod的请求</li>
+<li>强制删除Pod</li>
+</ol>
+<h3 id="5-2-Delete-the-Pod-Forcibly"><a href="#5-2-Delete-the-Pod-Forcibly" class="headerlink" title="5.2 Delete the Pod Forcibly"></a>5.2 Delete the Pod Forcibly</h3><p>强制删除不会等待kubelet的确认. 无论Pod是否被终止, API server上的Pod信息都会被删除, StatefulSet也会创建新的Pod来替代被删除的Pod:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl delete pod kubia-0 --grace-period=0 --force</span><br><span class="line">pod <span class="string">&quot;kubia-0&quot;</span> deleted</span><br><span class="line"></span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME READY STATUS RESTARTS AGE</span><br><span class="line">kubia-0 0/1 ContainerCreating 0 8s</span><br><span class="line">kubia-1 1/1 Running 0 20m</span><br><span class="line">kubia-2 1/1 Running 0 19m</span><br></pre></td></tr></table></figure>
+<p>强制删除可能违背StatefulSet的At-Most-One原则, 必须保证worker node不再上线时才能强制删除Pod; 若worker node重新上线, 两个同名Pod可能会导致数据丢失.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/K8s/">K8s</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/b4dd.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">The Transport Layer</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/10cb.html">
+        <span class="next-text nav-default">Deployment</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/c933.html';
+  var disqus_title = "StatefulSet";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

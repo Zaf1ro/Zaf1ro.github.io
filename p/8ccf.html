@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Process Environment"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/8ccf.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/8ccf.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/8ccf.html"/>
+
+
+<meta name="description" content="1. main Function一个C语言程序通过调用main()启动: &#x2F;** * @brief start execution function in C program * @param argc number of command-line arguments * @param argv an array of pointers to the arguments *&#x2F;int main(in">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Process Environment">
+<meta property="og:url" content="https://zaf1ro.github.io/p/8ccf.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. main Function一个C语言程序通过调用main()启动: &#x2F;** * @brief start execution function in C program * @param argc number of command-line arguments * @param argv an array of pointers to the arguments *&#x2F;int main(in">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/7-2-flow-of-c-program.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/7-4-memory-layout-of-c-program.png">
+<meta property="article:published_time" content="2019-08-29T12:29:12.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.057Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/7-2-flow-of-c-program.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Process Environment - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-main-Function"><span class="toc-text">1. main Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Process-Termination"><span class="toc-text">2. Process Termination</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Exit-Function"><span class="toc-text">2.1 Exit Function</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-atexit-Function"><span class="toc-text">2.2 atexit Function</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Environment-List"><span class="toc-text">3. Environment List</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Memory-Layout-of-a-C-program"><span class="toc-text">4. Memory Layout of a C program</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Shared-Libraries"><span class="toc-text">5. Shared Libraries</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Memory-Allocation"><span class="toc-text">6. Memory Allocation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Environment-Variables"><span class="toc-text">7. Environment Variables</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-setjmp-and-longjmp-Functions"><span class="toc-text">8. setjmp and longjmp Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-getrlimit-and-setrlimit-Functions"><span class="toc-text">9. getrlimit and setrlimit Functions</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Process Environment
+        
+      </h1>
+      <time class="post-time">
+          08/29/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-main-Function"><a href="#1-main-Function" class="headerlink" title="1. main Function"></a>1. main Function</h2><p>一个C语言程序通过调用<code>main()</code>启动:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief start execution function in C program</span></span><br><span class="line"><span class="comment"> * @param argc number of command-line arguments</span></span><br><span class="line"><span class="comment"> * @param argv an array of pointers to the arguments</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> *argv[])</span>;</span><br></pre></td></tr></table></figure>
+<p>Kernel执行程序时, 会在执行<code>main()</code>前运行一个start-up routine. 可执行程序会指定start-up routine作为程序的起始地址. Start-up routine由C compiler设置, 从kernel中获得命令行参数和环境变量, 进行初始化工作(如初始化Standard I&#x2F;O stream等), 并调用<code>main()</code>.</p>
+<h2 id="2-Process-Termination"><a href="#2-Process-Termination" class="headerlink" title="2. Process Termination"></a>2. Process Termination</h2><p>以下是几种中止进程的方式:</p>
+<ul>
+<li>正常退出程序:<ul>
+<li>从<code>main()</code>返回</li>
+<li>调用<code>exit()</code>, <code>_exit()</code>, 或<code>Exit()</code></li>
+<li>start routine返回最后一个线程</li>
+<li>最后一个线程调用<code>pthread_exit()</code></li>
+</ul>
+</li>
+<li>非正常中止程序:<ul>
+<li>调用<code>abort()</code></li>
+<li>收到signal</li>
+<li>最后一个线程对cancellation request作响应</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-1-Exit-Function"><a href="#2-1-Exit-Function" class="headerlink" title="2.1 Exit Function"></a>2.1 Exit Function</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief cause normal process termination and the least </span></span><br><span class="line"><span class="comment"> *        significant byte of status (status &amp; 0xFF) is </span></span><br><span class="line"><span class="comment"> *        returned to the parent. </span></span><br><span class="line"><span class="comment"> *        All open streams are flushed and closed. Files </span></span><br><span class="line"><span class="comment"> *        created by tmpfile() are removed.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">exit</span><span class="params">(<span class="type">int</span> status)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief terminates the calling process immediately. </span></span><br><span class="line"><span class="comment"> *        * open file descriptor are closed.</span></span><br><span class="line"><span class="comment"> *        * open streams are not flushed</span></span><br><span class="line"><span class="comment"> *        * children process are inherited by init.</span></span><br><span class="line"><span class="comment"> *        * parent process receives a SIGCHLD signal.</span></span><br><span class="line"><span class="comment"> *        * return the least significant byte of status </span></span><br><span class="line"><span class="comment"> *          to parent process as exit status   </span></span><br><span class="line"><span class="comment"> *        * does not call any function registered with </span></span><br><span class="line"><span class="comment"> *          atexit() or on_exit()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> _Exit(<span class="type">int</span> status);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as _Exit()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> _exit(<span class="type">int</span> status);</span><br></pre></td></tr></table></figure>
+<p>ISO C定义了<code>exit()</code>和<code>_Exit()</code>, POSIX.1定义了<code>_exit()</code>, 因此函数定义在不同的header.</p>
+<h3 id="2-2-atexit-Function"><a href="#2-2-atexit-Function" class="headerlink" title="2.2 atexit Function"></a>2.2 atexit Function</h3><p>正常结束进程时(如调用<code>exit()</code>)会自动调用已注册的函数.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief register the given function to be called at normal </span></span><br><span class="line"><span class="comment"> *        process termination (call exit() or return from main())</span></span><br><span class="line"><span class="comment"> * @param func the address of a function with no argument </span></span><br><span class="line"><span class="comment"> *        and return value. Each function is called as many </span></span><br><span class="line"><span class="comment"> *        times as it was registered.</span></span><br><span class="line"><span class="comment"> * @return 0 on success; nonzero on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">atexit</span><span class="params">(<span class="type">void</span> (*func)(<span class="type">void</span>))</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>函数的执行顺序与注册顺序相反, 也就是说, 越晚注册的函数越先执行</li>
+<li>同一函数可被注册多次, 且会被运行多次</li>
+<li>执行<code>fork</code>后, child process与parent process拥有相同的函数</li>
+<li>执行<code>exec</code>后, 所有注册的函数都会被移除</li>
+<li>非正常中止进程不会触发注册的函数</li>
+<li>若某个函数调用<code>_exit()</code>, 则不执行后续的函数</li>
+</ul>
+<p>需要注意的是, 多次调用<code>exit()</code>会导致不可知的结果, 应避免这么做. 以下是C语言程序启动和中止的流程图:<br><img src="/images/UNIX/APUE/7-2-flow-of-c-program.png" alt="How a C program is started and how it terminates"></p>
+<h2 id="3-Environment-List"><a href="#3-Environment-List" class="headerlink" title="3. Environment List"></a>3. Environment List</h2><p>每个程序接收一个argument list(参数列表), 还会接收一个environment list(环境列表).</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * pointer to an array of pointers to string called </span></span><br><span class="line"><span class="comment"> * &quot;environment&quot;. </span></span><br><span class="line"><span class="comment"> * The last pointer in this array has the value NULL</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">extern</span> <span class="type">char</span> **environ;</span><br></pre></td></tr></table></figure>
+<p>environ的每个string按照<strong>name&#x3D;value</strong>格式, 包含但不限以下字段:</p>
+<ol>
+<li>USER: 登录用户的名称(一些BSD-derived program使用), 由<code>login()</code>设置</li>
+<li>LOGNAME: 登录用户的名称(一些System-V derived program使用)</li>
+<li>HOME: user&#39;s login directory</li>
+<li>LANG: locale的名称, 用于locale分类</li>
+<li>PWD: 当前working directory</li>
+<li>SHELL: user&#39;s login shell的绝对路径</li>
+</ol>
+<p>大多数UNIX系统可将environ作为<code>main()</code>的第三个参数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> *argv[], <span class="type">char</span> *envp[])</span>;</span><br></pre></td></tr></table></figure>
+<p>但ISO C规定<code>main()</code>只能接受两个参数, 且environ作为参数并不比global variable更有优势, 所以通常情况不会将environ作为参数.</p>
+<h2 id="4-Memory-Layout-of-a-C-program"><a href="#4-Memory-Layout-of-a-C-program" class="headerlink" title="4. Memory Layout of a C program"></a>4. Memory Layout of a C program</h2><p>一个C语言程序包含多块内存:<br><img src="/images/UNIX/APUE/7-4-memory-layout-of-c-program.png" alt="Typical memory arrangement"></p>
+<ul>
+<li>Text Segment: CPU执行的机器指令. 该内存区域为固定大小, 只读, 可被多个进程共享.</li>
+<li>Initialized Data Segment: 初始化的global variable(全局变量)和static local variable(静态变量):<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// global variable, outside the main function</span></span><br><span class="line"><span class="type">int</span> maxcount = <span class="number">99</span>;</span><br></pre></td></tr></table></figure></li>
+<li>Uninitialized Data Segment: 未初始化的全局变量和静态变量, 由kernel自动初始化, 例如:<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// uninitialized global variables, outside the main function</span></span><br><span class="line"><span class="type">long</span> sum[<span class="number">1000</span>];</span><br></pre></td></tr></table></figure></li>
+<li>Stack: 临时变量. 所有临时变量都在该内存区域生成, 包括地址, 寄存器, 变量. 该内存区域的地址从高位向低位增长.</li>
+<li>Heap: 动态内存分配的变量(malloc或new). 该内存区域的地址从低位向高位增长.</li>
+</ul>
+<h2 id="5-Shared-Libraries"><a href="#5-Shared-Libraries" class="headerlink" title="5. Shared Libraries"></a>5. Shared Libraries</h2><p>绝大多数UNIX系统支持<strong>shared libraries</strong>, 从而让executable file(执行文件)不必含有某些公共功能的代码实现, 该方式的优缺点如下:</p>
+<ul>
+<li>优点:<ul>
+<li>大大减少了文件体积</li>
+<li>对shared libraries的修改不需要重新编译整个程序</li>
+</ul>
+</li>
+<li>缺点: 增加runtime开销(第一次运行程序或调用shared library时需链接shared libraries).</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">gcc -<span class="type">static</span> hello.c <span class="comment">// use static libraries</span></span><br><span class="line">gcc hello.c <span class="comment">// gcc defaults to use shared libraries</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-Memory-Allocation"><a href="#6-Memory-Allocation" class="headerlink" title="6. Memory Allocation"></a>6. Memory Allocation</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate `size` bytes and returns a pointer to</span></span><br><span class="line"><span class="comment"> *        the allocated memory. The memory is not initialized.</span></span><br><span class="line"><span class="comment"> * @param size if it is 0, then malloc() returns either NULL,</span></span><br><span class="line"><span class="comment"> *        or a unique pointer value that can later be passed</span></span><br><span class="line"><span class="comment"> *        to free().</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">malloc</span><span class="params">(<span class="type">size_t</span> size)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate memory for an array of `nmemb` elements of</span></span><br><span class="line"><span class="comment"> *        `size` bytes each and return a pointer to the </span></span><br><span class="line"><span class="comment"> *        allocated memory. The memory is set to 0.</span></span><br><span class="line"><span class="comment"> *        If the multiplication of `nmemb` and `size` would</span></span><br><span class="line"><span class="comment"> *        result in integer overflow, then return an error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">calloc</span><span class="params">(<span class="type">size_t</span> nmemb, <span class="type">size_t</span> size)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change the size of the memory block pointed to </span></span><br><span class="line"><span class="comment"> *        by `ptr` to `size` bytes. </span></span><br><span class="line"><span class="comment"> *        The content will be unchanged in the range from</span></span><br><span class="line"><span class="comment"> *        the start of the region up to the minimum of the</span></span><br><span class="line"><span class="comment"> *        old and new sizes.</span></span><br><span class="line"><span class="comment"> * @param ptr if it is null, then the call is equivalent </span></span><br><span class="line"><span class="comment"> *        to `malloc(size)`</span></span><br><span class="line"><span class="comment"> * @param size if it is larger than old size, the added </span></span><br><span class="line"><span class="comment"> *        memory will not be initialized.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">realloc</span><span class="params">(<span class="type">void</span> *ptr, <span class="type">size_t</span> size)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief free the memory space pointed to by `ptr`, which </span></span><br><span class="line"><span class="comment"> *        must have been returned by a previous call to malloc(),</span></span><br><span class="line"><span class="comment"> *        calloc(), or realloc(). If free() has already been </span></span><br><span class="line"><span class="comment"> *        called before, undefined behavior occurs.</span></span><br><span class="line"><span class="comment"> * @param ptr if is NULL, no operation is performed</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">free</span><span class="params">(<span class="type">void</span> *ptr)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>malloc()</code>, <code>calloc</code>()或<code>realloc()</code>申请内存时, 申请的内存空间会比参数<code>size</code>大一些, 因为还需放置该区域的空间大小. 当调用free()时一般也不会直接缩小heap空间, 而是暂时保留该区域内存, 用于下次申请时使用.<br>进程应只对自己申请的内存区域进行操作, 对其他内存空间进行操作会造成不可知的影响. 释放一个已经被释放的内存区域也十分危险, 因为该内存区域可能正被其他进程使用. 只申请不释放内存也存在隐患, 未被释放的内会会造成内存泄漏.</p>
+<h2 id="7-Environment-Variables"><a href="#7-Environment-Variables" class="headerlink" title="7. Environment Variables"></a>7. Environment Variables</h2><p>UNIX kernel不对environment variable做任何处理, 只有application需要操作environment variable. 例如, shell会用到很多environment variables, 如<code>HOME</code>和<code>USER</code>.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief search the environment list to find the environment </span></span><br><span class="line"><span class="comment"> *        variable `name`, and return a pointer to the </span></span><br><span class="line"><span class="comment"> *        corresponding `value` string</span></span><br><span class="line"><span class="comment"> * @return a pointer to the corresponding value string</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">char</span> *<span class="title function_">getenv</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief change or add the value of environment variables</span></span><br><span class="line"><span class="comment"> * @param str must be the form of &quot;name=value&quot;. If name does </span></span><br><span class="line"><span class="comment"> *        not already exist in the environment, then string is</span></span><br><span class="line"><span class="comment"> *        added to the environment. </span></span><br><span class="line"><span class="comment"> *        If name does exist, then the value of name in the </span></span><br><span class="line"><span class="comment"> *        environment is changed to value.</span></span><br><span class="line"><span class="comment"> *        Some implementation may not make copies of the string </span></span><br><span class="line"><span class="comment"> *        pointed to by `str`</span></span><br><span class="line"><span class="comment"> * @return 0 on success; nonzero on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">putenv</span><span class="params">(<span class="type">char</span> *str)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief add the variable `name` to the environment with the </span></span><br><span class="line"><span class="comment"> *        value `value`, if `name` does not exist. If `name` </span></span><br><span class="line"><span class="comment"> *        does exist, then its value is changed to value if </span></span><br><span class="line"><span class="comment"> *        `rewrite` is nonzero.</span></span><br><span class="line"><span class="comment"> *        This function makes copies of the strings pointed to </span></span><br><span class="line"><span class="comment"> *        by name and value</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setenv</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name, <span class="type">const</span> <span class="type">char</span> *value, <span class="type">int</span> rewrite)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief delete the environment variable `name` from the </span></span><br><span class="line"><span class="comment"> *        environment.</span></span><br><span class="line"><span class="comment"> *        If `name` does not exist, the current environment </span></span><br><span class="line"><span class="comment"> *        shall be unchanged</span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">unsetenv</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *name)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-setjmp-and-longjmp-Functions"><a href="#8-setjmp-and-longjmp-Functions" class="headerlink" title="8. setjmp and longjmp Functions"></a>8. setjmp and longjmp Functions</h2><p>C语言中<code>goto</code>只能在同一函数内进行逻辑跳转, 若需要跨函数跳转, 则调用<code>setjmp()</code>和<code>longjmp()</code>, 称为<strong>nonlocal goto</strong>. 每次调用函数时, 会在stack区创建于一个stack frame来放置函数所需的所有数据, 函数间的跳转等同于stack frame的转移. 为回到之前的stack frame, 需先使用<code>setjmp()</code>记录当前stack frame, 并保存到<code>jmp_buf</code>类型的变量中; <code>longjmp()</code>会跳转到最近一次调用<code>setjmp()</code>的stack frame, 并修改<code>setjmp()</code>的返回值来帮助判断是否为<code>longjmp()</code>导致的跳转.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief save various information about the calling environment</span></span><br><span class="line"><span class="comment"> *        (stack pointer, instruction pointer, values of other </span></span><br><span class="line"><span class="comment"> *        registers and the signal mask) in the buffer `env` for </span></span><br><span class="line"><span class="comment"> *        later use by longjmp()</span></span><br><span class="line"><span class="comment"> * @return 0 when called directly; nonzero when called by longjmp()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setjmp</span><span class="params">(jmp_buf env)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief use the information saved in `env` to transfer control </span></span><br><span class="line"><span class="comment"> *        back to the point where setjmp() was called to retore </span></span><br><span class="line"><span class="comment"> *        the stack to its state at the time of the setjmp() call</span></span><br><span class="line"><span class="comment"> * @param val should not be 0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">longjmp</span><span class="params">(jmp_buf env, <span class="type">int</span> val)</span>;</span><br></pre></td></tr></table></figure>
+<p>由于<code>env</code>需在不同的函数中使用, 所以应为global variable. 需要注意的是, 调用<code>longjmp()</code>后, <code>setjmp()</code>所在函数内的local variable和register variable不一定保留修改后的值, 绝大多数情况下, 编译器不会回滚local variable和register variable.<br>GCC编译时, 若使用<code>Optimization</code>选项, 会导致<code>setjmp()</code>所在函数内的所有local variable和register variable回滚, 但不会影响global variable, static variable, 和volatile variable. </p>
+<h2 id="9-getrlimit-and-setrlimit-Functions"><a href="#9-getrlimit-and-setrlimit-Functions" class="headerlink" title="9. getrlimit and setrlimit Functions"></a>9. getrlimit and setrlimit Functions</h2><p>每个进程的资源都有上限值, 可通过以下函数对上限值进行操作:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">rlimit</span> &#123;</span></span><br><span class="line">  <span class="type">rlim_t</span> rlim_cur; <span class="comment">/* soft limit: current limit */</span></span><br><span class="line">  <span class="type">rlim_t</span> rlim_max; <span class="comment">/* hard limit: maximum value for rlim_cur */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief get resource limits</span></span><br><span class="line"><span class="comment"> * @param resource the type of resource</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">getrlimit</span><span class="params">(<span class="type">int</span> resource, <span class="keyword">struct</span> rlimit *rlptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the limits on the consumption of a variety of </span></span><br><span class="line"><span class="comment"> *        resources</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setrlimit</span><span class="params">(<span class="type">int</span> resource, <span class="type">const</span> <span class="keyword">struct</span> rlimit *rlptr)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下是进程资源的一些规则:</p>
+<ul>
+<li>子进程会继承父进程的上限值</li>
+<li>每个线程都会共享进程的上限值</li>
+<li>将soft limit调至当前进程已拥有的资源量以下也不会失败</li>
+</ul>
+<p><code>setrlimit()</code>的<code>rlptr</code>参数遵循以下规则:</p>
+<ul>
+<li>$\text{soft limit} \le \text{hard limit}$</li>
+<li>进程可降低hard limit, 但必须遵守上一条规则</li>
+<li>只有superuser才能提高hard limit</li>
+</ul>
+<p><code>getrlimit()</code>和<code>setrlimit()</code>的<code>resource</code>参数必须为以下之一:</p>
+<ul>
+<li>RLIMIT_AS: 进程的virtual memory(地址空间)的最大值, 以byte为单位, 向下取整至page大小(虚拟内存的最小单元)</li>
+<li>RLIMIT_CORE: core文件(包含非正常程序退出时产生的core dump)的最大体积, 单位为byte. 若设为0, 则不会生成core file; 若core dump超出体积上限则截断.</li>
+<li>RLIMIT_CPU: 进程占用CPU的单次最长运行时间, 单位为秒. 但进程达到soft limit, 会向进程发送<code>SIGXCPU</code> signal, 该信号会中止进程, 但可捕获, 因此程序可决定是否继续执行; 若进程继续执行, 接下来每秒都会收到<code>SIGXCPU</code>, 直到达到hard limit, 进程收到<code>SIGKILL</code>.</li>
+<li>RLIMIT_DATA: data segment的最大体积, 单位为byte, 向下取整至page大小, 该值会影响<code>brk()</code>, <code>sbrk()</code>, 和<code>mmap()</code></li>
+<li>RLIMIT_FSIZE: 进程创建文件的最大体积, 单位为byte, 超出限制时进程收到<code>SIGXFSZ</code> signal</li>
+<li>RLIMIT_MEMLOCK: 进程将虚拟内存常驻在RAM的最大空间, 单位为byte, 该值会影响<code>mlock()</code>, <code>mlockall()</code>, 和<code>mmap()</code></li>
+<li>RLIMIT_MSGQUEUE: POSIX message queue所能使用的最大内存空间, 单位为byte</li>
+<li>RLIMIT_NICE: <code>nice()</code>所能设置的最大nice值, 实际nice值上限为<code>20 - rlim_cur</code></li>
+<li>RLIMIT_NOFILE: 进程所能打开的最大file descriptor数量</li>
+<li>RLIMIT_NPROC: 当前进程所能创建的最大线程数</li>
+<li>RLIMIT_NPTS: 当前进程能打开的最大pseudo terminal数量</li>
+<li>RLIMIT_RSS: 最大RSS(resident set size, 进程占用RAM的空间, 剩余空间放置在swap space)</li>
+<li>RLIMIT_SBSIZE: 当前进程所拥有的最大socket buffer空间</li>
+<li>RLIMIT_SIGPENDING: 等待当前进程接收的最大signal队列长度</li>
+<li>RLIMIT_STACK: 最大stack空间, 单位为byte</li>
+<li>RLIMIT_SWAP: 当前进程所能拥有的最大swap空间</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/c259.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Process Control</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/4ad7.html">
+        <span class="next-text nav-default">System Data Files and Infomation</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/8ccf.html';
+  var disqus_title = "Process Environment";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

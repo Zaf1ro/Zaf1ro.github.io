@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="SQLite Atomic Commit"/>
+
+
+
+
+  <meta name="keywords" content="Database," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/f9ff.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/f9ff.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/f9ff.html"/>
+
+
+<meta name="description" content="1. 简介像SQLite这种事务处理型的数据一大特性就是原子提交, 原子提交意味着每一次数据库更改要么都执行, 要么都不执行. 因为原子提交的缘故, 这就使得对数据库不同部分的写入像是立刻并且同时执行一样. 实际上硬件会有序的写入到海量存储器中, 并且每次写入消耗有限的时间. 所以对不同扇区同时或立即写入是不可能的, 但SQLite的原子提交使得事务中的数据库变更都像是立即且同时发生一样.即使事务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLite Atomic Commit">
+<meta property="og:url" content="https://zaf1ro.github.io/p/f9ff.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 简介像SQLite这种事务处理型的数据一大特性就是原子提交, 原子提交意味着每一次数据库更改要么都执行, 要么都不执行. 因为原子提交的缘故, 这就使得对数据库不同部分的写入像是立刻并且同时执行一样. 实际上硬件会有序的写入到海量存储器中, 并且每次写入消耗有限的时间. 所以对不同扇区同时或立即写入是不可能的, 但SQLite的原子提交使得事务中的数据库变更都像是立即且同时发生一样.即使事务">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-1.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-2.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-3.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-4.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-5.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-6.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-7.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-8.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-9.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-10.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-11.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-12.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-1.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-2.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-3.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-4.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-5.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-6.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-7.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-8.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-9.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-10.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-11.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-2-12.gif">
+<meta property="article:published_time" content="2015-11-03T19:20:13.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.034Z">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/SQLite/atomic-commit-1-1.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+SQLite Atomic Commit - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="toc-text">1. 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%A1%AC%E4%BB%B6%E5%81%87%E8%AE%BE"><span class="toc-text">2. 硬件假设</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%8D%95%E4%B8%AA%E6%96%87%E4%BB%B6%E7%9A%84%E6%8F%90%E4%BA%A4"><span class="toc-text">3. 单个文件的提交</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%88%9D%E5%A7%8B%E5%8C%96%E7%8A%B6%E6%80%81"><span class="toc-text">3.1 初始化状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%AF%B7%E6%B1%82%E4%B8%80%E4%B8%AA%E8%AF%BB%E9%94%81-Read-Lock"><span class="toc-text">3.2 请求一个读锁(Read Lock)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E8%AF%BB%E5%8F%96%E4%BF%A1%E6%81%AF"><span class="toc-text">3.3 从数据库中读取信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E8%8E%B7%E5%8F%96%E4%B8%80%E4%B8%AA%E4%BF%9D%E7%95%99%E9%94%81-Reserved-Lock"><span class="toc-text">3.4 获取一个保留锁(Reserved Lock)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6-rollback-journal-file"><span class="toc-text">3.5 创建一个回滚日志文件(rollback journal file)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E5%9C%A8%E5%86%85%E5%AD%98%E4%B8%AD%E4%BF%AE%E6%94%B9%E6%95%B0%E6%8D%AE%E5%BA%93%E9%A1%B5%E9%9D%A2"><span class="toc-text">3.6 在内存中修改数据库页面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-%E5%B0%86%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E5%88%B7%E5%85%A5%E7%A1%AC%E7%9B%98%E4%B8%AD"><span class="toc-text">3.7 将回滚日志文件刷入硬盘中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-%E8%8E%B7%E5%BE%97%E4%B8%80%E4%B8%AA%E6%8E%92%E5%AE%83%E9%94%81-Exclusive-Lock"><span class="toc-text">3.8 获得一个排它锁(Exclusive Lock)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-9-%E5%B0%86%E4%BF%AE%E6%94%B9%E4%BF%A1%E6%81%AF%E5%86%99%E5%85%A5%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%87%E4%BB%B6"><span class="toc-text">3.9 将修改信息写入数据库文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-10-%E5%B0%86%E4%BF%AE%E6%94%B9%E4%BF%A1%E6%81%AF%E5%86%99%E5%85%A5%E7%A1%AC%E7%9B%98"><span class="toc-text">3.10 将修改信息写入硬盘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-11-%E5%88%A0%E9%99%A4%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97"><span class="toc-text">3.11 删除回滚日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-12-%E9%87%8A%E6%94%BE%E9%94%81"><span class="toc-text">3.12 释放锁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%9B%9E%E6%BB%9A"><span class="toc-text">4. 回滚</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%BD%93%E5%87%BA%E7%8E%B0%E9%94%99%E8%AF%AF%E6%97%B6"><span class="toc-text">4.1 当出现错误时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%83%AD%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97-Hot-Rollback-Journals"><span class="toc-text">4.2 热回滚日志(Hot Rollback Journals)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E8%8E%B7%E5%BE%97%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E6%8E%92%E5%AE%83%E9%94%81"><span class="toc-text">4.3 获得数据库的排它锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E5%9B%9E%E6%BB%9A%E5%9B%9E%E4%B8%8D%E5%AE%8C%E6%95%B4%E7%9A%84%E4%BF%AE%E6%94%B9"><span class="toc-text">4.4 回滚回不完整的修改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%88%A0%E9%99%A4%E7%83%AD%E6%97%A5%E5%BF%97"><span class="toc-text">4.5 删除热日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E5%A5%BD%E4%BC%BC%E6%9C%AA%E5%AE%8C%E6%88%90%E7%9A%84%E5%86%99%E5%85%A5%E6%93%8D%E4%BD%9C%E6%B2%A1%E5%8F%91%E7%94%9F%E8%BF%87%E4%B8%80%E6%A0%B7%E7%BB%A7%E7%BB%AD%E5%B7%A5%E4%BD%9C"><span class="toc-text">4.6 好似未完成的写入操作没发生过一样继续工作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%A4%9A%E6%96%87%E4%BB%B6%E6%8F%90%E4%BA%A4"><span class="toc-text">5. 多文件提交</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%AF%8F%E4%B8%AA%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%87%E4%BB%B6%E5%8D%95%E7%8B%AC%E7%9A%84%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97"><span class="toc-text">5.1 每个数据库文件单独的回滚日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E4%B8%BB%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6-The-Master-Jounal-File"><span class="toc-text">5.2 主日志文件(The Master Jounal File)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%9B%B4%E6%96%B0%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E5%A4%B4%E9%83%A8"><span class="toc-text">5.3 更新回滚日志文件头部</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%87%E4%BB%B6"><span class="toc-text">5.4 更新数据库文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%88%A0%E9%99%A4%E4%B8%BB%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">5.5 删除主日志文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-%E6%B8%85%E9%99%A4%E6%89%80%E6%9C%89%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">5.6 清除所有回滚日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%8F%90%E4%BA%A4%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84%E5%85%B6%E4%BB%96%E7%BB%86%E8%8A%82"><span class="toc-text">6. 提交过程中的其他细节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%A7%8B%E7%BB%88%E6%97%A5%E5%BF%97%E5%AE%8C%E6%88%90%E6%89%87%E5%8C%BA-Sectors"><span class="toc-text">6.1 始终日志完成扇区(Sectors)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%A4%84%E7%90%86%E5%86%99%E5%85%A5%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E7%9A%84%E5%9E%83%E5%9C%BE"><span class="toc-text">6.2 处理写入日志文件的垃圾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%8F%90%E4%BA%A4%E5%89%8D%E6%B5%81%E5%87%BA%E7%BC%93%E5%AD%98"><span class="toc-text">6.3 提交前流出缓存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E4%BC%98%E5%8C%96"><span class="toc-text">7. 优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E4%BA%8B%E5%8A%A1%E9%97%B4%E4%BF%9D%E7%95%99%E7%BC%93%E5%AD%98"><span class="toc-text">7.1 事务间保留缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E7%8B%AC%E5%8D%A0%E8%AE%BF%E9%97%AE%E6%A8%A1%E5%BC%8F-Exclusive-Access-Mode"><span class="toc-text">7.2 独占访问模式(Exclusive Access Mode)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E4%B8%8D%E8%A6%81%E5%B0%86%E7%A9%BA%E7%99%BD%E5%88%97%E8%A1%A8%E9%A1%B5%E9%9D%A2%E5%86%99%E5%85%A5%E6%97%A5%E5%BF%97%E4%B8%AD"><span class="toc-text">7.3 不要将空白列表页面写入日志中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E5%8D%95%E4%B8%AA%E9%A1%B5%E9%9D%A2%E6%9B%B4%E6%96%B0%E5%92%8C%E5%8E%9F%E5%AD%90%E6%89%87%E5%8C%BA%E5%86%99%E5%85%A5"><span class="toc-text">7.4 单个页面更新和原子扇区写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-%E5%B8%A6%E6%9C%89%E5%AE%89%E5%85%A8%E9%99%84%E5%8A%A0%E8%AF%AD%E4%B9%89-Safe-Append-Semantics-%E7%9A%84%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-text">7.5 带有安全附加语义(Safe Append Semantics)的文件系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-6-%E6%8C%81%E4%B9%85%E6%80%A7%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">7.6 持久性回滚日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E6%B5%8B%E8%AF%95%E5%8E%9F%E5%AD%90%E6%8F%90%E4%BA%A4%E8%A1%8C%E4%B8%BA"><span class="toc-text">8. 测试原子提交行为</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E4%B8%80%E4%BA%9B%E8%83%BD%E5%AF%BC%E8%87%B4%E5%B4%A9%E6%BA%83%E7%9A%84%E4%BA%8B%E6%83%85"><span class="toc-text">9. 一些能导致崩溃的事情</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E7%BC%BA%E4%B9%8F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">9.1 缺乏锁的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E4%B8%8D%E5%AE%8C%E6%95%B4%E7%9A%84%E7%A1%AC%E7%9B%98%E5%88%B7%E6%96%B0"><span class="toc-text">9.2 不完整的硬盘刷新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E5%B1%80%E9%83%A8%E6%96%87%E4%BB%B6%E5%88%A0%E9%99%A4"><span class="toc-text">9.3 局部文件删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-4-%E5%9E%83%E5%9C%BE%E5%86%99%E5%85%A5%E6%96%87%E4%BB%B6%E4%B8%AD"><span class="toc-text">9.4 垃圾写入文件中</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-5-%E5%88%A0%E9%99%A4%E6%88%96%E9%87%8D%E5%91%BD%E5%90%8D%E7%83%AD%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">9.5 删除或重命名热日志文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%9C%AA%E6%9D%A5%E7%9A%84%E6%96%B9%E5%90%91%E4%B8%8E%E6%80%BB%E7%BB%93"><span class="toc-text">10. 未来的方向与总结</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          SQLite Atomic Commit
+        
+      </h1>
+      <time class="post-time">
+          11/03/15
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p>像SQLite这种事务处理型的数据一大特性就是<strong>原子提交</strong>, 原子提交意味着每一次数据库更改要么都执行, 要么都不执行. 因为原子提交的缘故, 这就使得对数据库不同部分的写入像是立刻并且同时执行一样. 实际上硬件会有序的写入到海量存储器中, 并且每次写入消耗有限的时间. 所以对不同扇区同时或立即写入是不可能的, 但SQLite的原子提交使得事务中的数据库变更都像是立即且同时发生一样.<br>即使事务会因操作系统的崩溃或断电等情况打断, SQLite仍能保持着原子提交这一重要特性. 这篇文章讲述了SQLite怎样实现了原子提交.<br>只有在开启**回滚模式(rollback mode)<strong>或没有使用</strong>预写式日志(write-ahead log)**是才会使用&quot;原子提交&quot;, 也可以在预写式日志开启后使用原子提交, 但这会使得原子提交以另一种机制实现. </p>
+<h2 id="2-硬件假设"><a href="#2-硬件假设" class="headerlink" title="2. 硬件假设"></a>2. 硬件假设</h2><p>我们将硬盘称为<strong>海量存储器(mass storage device)</strong>, 即使内存也很大容量. 硬盘中被写入的块称为&quot;扇区&quot;(sector), 所以不可能对比扇区更小的区域进行修改. 对小于扇区的部分进行修改, 就必须先加载整个扇区, 修改完后再写入整个扇区.<br>对于传统的磁头转盘, 扇区是读写, 交换的最小单位. 在内存当中, 读取的最小尺度小于写入的最小尺度, 但SQLite只关心最小写入单元大小. 在本文中, 扇区意味着我们写入硬盘的最小单元.<br>在SQLite3.3.14之前的版本, 扇区的大小在任何情况下都被假设为512bytes. 编译期间有一个选项可以去修改这个大小值, 但从没测到过比512bytes更大的值；最近扇区的大小提升到了4096byte, 并且内存中的扇区大小通常都大于512byte, 所以从3.3.14开始, 会有一个系统接口层的方法来从底层的文件系统寻找真正的扇区大小. 由于没有标准的方法来获得UNIX和Windows的扇区大小, 所以3.5后还是用硬编码的512byte. 但这个方法还是对嵌入式设备的制作有很大作用的, 并且有可能对未来UNIX和Windows有更有意义的作用.<br>SQLite假设一次扇区的写入不是原子性的, 而是线性的(linear). &quot;线性&quot;意味着写入操作有一个起点, 并且在写入过程中是一个个字节的写入, 直到终点. 写入可能从起点到终点或终点到起点, 如果断电发生在写入扇区的时段, 那么可能部分扇区被修改, 而另一部分未被修改. SQLite的关键性假设就是：如果发生了修改, 那么第一个字节或最后一个字节一定被修改, 所以硬盘不会在中间开始写入扇区直到结束. 这个假设不一定对, 但听着很有道理.<br>之前的段落提到SQLite假设扇区写入不是原子性的, 这是正确的. 但在3.5.0中, 有一个新的接口叫做虚拟文件系统(Virtual File System)接口, 这个VFS是SQLite与底层文件系统交流的唯一途径. 对于UNIX和Windows已经有一个缺省的VFS接口, 并且在运行状态会创建一个自定义VFS. 新创建的VFS中有一个xDeviceCharacteristics的方法, 他可以寻找到底层文件系统中是否存在某些属性和行为. xDeviceCharacteristics可能发现扇区的写入是原子性的, 那么SQLite就会直接利用. 但缺省的xDeviceCharacteristics方法不会指明扇区写入是原子性, 所以通常会被忽略.<br>SQLite假设操作系统会对写入数据进行缓存, 并且在数据还没完全写入存储器之前写入请求可能就返回, SQLite进一步假设写操作将会再次被操作系统请求, 因此SQLite会在关键点做&quot;flush&quot;或&quot;fsync&quot;函数的调用. SQLite假设flush或fsync会在所有写入操作结束后返回, 但不幸的是, 部分Windows和unix版本中缺少flush和fsync的实现, 这使得SQLite有可能在提交中时因断电而导致数据库崩溃. 并且SQLite无法对此进行测试和修复, 只能希望操作系统能像广告中表现的一样好.<br>SQLite假设文件增加体积指的是一块原本装有垃圾的文件空间被写入数据, 换句话说, 文件尺寸的增加会在文件内容更新之前. 因为SQLite需要做一些额外的工作来保证在文件尺寸增加和真正内容还没写入之间不会因断电而导致数据库文件被破坏.<br>xDeviceCharacteristics方法会指明文件系统是否会在增加文件体积之前写入数据(指的就是SQLITE_IOCAP_SAFE_APPEND属性). 当xDeviceCharacteristics方法表示文件内容的写入会在文件体积增加之前执行, 那么SQLite会弃掉一些数据库的保护步骤, 因此可以减少一些磁盘的IO操作, 但当前版本的VFS并没有这样的假设.<br>SQLite假设从用户进程的角度, 文件的删除是原子性的. 这意味着如果一个文件被删除的过程中遭遇了断电, 那么电力恢复后只会出现下面两种情况：被删除的文件依然完整存在；被删除的文件已全部被清理. 若数据只是部分被删除, 那么很有可能导致数据库的崩溃.<br>SQLite假设因宇宙射线, 热噪音, 量子波动, 硬盘驱动Bug所导致的错误统统由底层硬件和操作系统来负责保护和修正. SQLite不会为此类问题而给数据库文件增加冗余. SQLite假设文件读出和之前写入是一样的.<br>SQlite假设操作系统即使在断电或系统崩溃的情况下, 写入一段字节不会危及或改变写入范围外的字节. 我们将这称为&quot;powersafe overwrite&quot;属性. 之前的3.7.9版本没有假设这个属性, 但由于标准块大小从512比特增加为4096比特, 为维持性能水平, 必须假设这一属性. 这个属性的假设可以在运行期间或编译期间取消掉. </p>
+<h2 id="3-单个文件的提交"><a href="#3-单个文件的提交" class="headerlink" title="3. 单个文件的提交"></a>3. 单个文件的提交</h2><p>现在我们来概述一下SQLite对于单个数据库文件的原子性提交的事务步骤, 防止断电导致崩溃的文件格式的细节和多个数据库文件的原子性提交都会在后文提到. </p>
+<h3 id="3-1-初始化状态"><a href="#3-1-初始化状态" class="headerlink" title="3.1 初始化状态"></a>3.1 初始化状态</h3><p>当数据库连接第一次创建时, 电脑的状态如下图：<br><img src="/images/SQLite/atomic-commit-1-1.gif" alt="3.1"></p>
+<p>最右边表示大容量硬盘设备, 每一个矩形都是一个&quot;块&quot;(sector), 蓝色表示拥有原始数据；中间区域表示操作系统的硬盘缓存, 并且已经被清除为空；左边的区域表示SQLite进程所使用的内存空间. 数据库连接刚刚开启并且没有信息被读取, 所以内存为空. </p>
+<h3 id="3-2-请求一个读锁-Read-Lock"><a href="#3-2-请求一个读锁-Read-Lock" class="headerlink" title="3.2 请求一个读锁(Read Lock)"></a>3.2 请求一个读锁(Read Lock)</h3><p><img src="/images/SQLite/atomic-commit-1-2.gif" alt="3.2"><br>在SQLite写入数据库之前, 需要先读取数据库来看看有哪些内容已经存在. 即使只是为了添加一些新数据, 也需要先从sqlite_master表中读取数据库概要, 这样才知道如何解析INSERT表达式, 并发现新数据存放在数据库存放的位置.<br>读取数据库文件的第一步就是获得数据库文件的<strong>共享锁(shared lock)</strong>, 一个共享锁允许两个或多个数据库连接来同时读取数据库文件, 但共享锁会防止在读取期间进行写入操作. 这是必要的, 因为如果一个数据库在写入数据库文件, 而同时我们在读取数据库文件, 那么我们可能会读取到部分修改、部分没修改的文件, 这使得另一过程不可能实现原子性.<br>需注意：共享锁位于硬盘缓存, 并不在硬盘上. 文件锁只是操作系统内核的一些标识(依赖于操作系统层的接口). 因此, 如果操作系统崩溃或电源崩溃, 那么锁会立刻消失；且创建锁的进程消失时, 所拥有的锁也会消失. </p>
+<h3 id="3-3-从数据库中读取信息"><a href="#3-3-从数据库中读取信息" class="headerlink" title="3.3 从数据库中读取信息"></a>3.3 从数据库中读取信息</h3><p><img src="/images/SQLite/atomic-commit-1-3.gif" alt="3.3"><br>当拥有共享锁后, 我们就可以从数据库文件中开始读取信息. 我们假设缓存是空的, 那么需要先从大容量硬盘中先读入到缓存中, 再从缓存传输到内存中. 通常只会有部分数据被读取到缓存区, 在本例中, 我们只读取了八个页面中的三个. 在实际操作中, 数据库会拥有上千页面, 且一次查询只会使用到很少比例的页面. </p>
+<h3 id="3-4-获取一个保留锁-Reserved-Lock"><a href="#3-4-获取一个保留锁-Reserved-Lock" class="headerlink" title="3.4 获取一个保留锁(Reserved Lock)"></a>3.4 获取一个保留锁(Reserved Lock)</h3><p><img src="/images/SQLite/atomic-commit-1-4.gif" alt="3.4"><br>在修改数据库之前, SQLite需要拥有一个数据库文件的<strong>保留锁</strong>. 保留锁和共享锁很像, 它们都允许其他进程来读取数据库文件. 保留锁可以与其他进程的共享锁共存, 但一个数据库文件只能有一个保留锁. 因此同一时间只能有一个进程进行写入数据库操作.<br>保留锁的意义在于：这表明了有一个进程会在未来的一段时间进行数据库文件修改, 但目前还没进行修改. 由于还没进行修改, 所以其他进程可以进行读取数据库, 当然, 不会再有进程去写入数据库. </p>
+<h3 id="3-5-创建一个回滚日志文件-rollback-journal-file"><a href="#3-5-创建一个回滚日志文件-rollback-journal-file" class="headerlink" title="3.5 创建一个回滚日志文件(rollback journal file)"></a>3.5 创建一个回滚日志文件(rollback journal file)</h3><p><img src="/images/SQLite/atomic-commit-1-5.gif" alt="3.5"><br>在对数据库文件修改之前, SQLite需要创建一个独立的<strong>回滚日志文件</strong>, 并将数据页面中将被修改的原始信息写入到日志文件中. 回滚日志文件的意义在于存储数据库原始状态的信息.<br>回滚日志文件包含一个小的头部(header), 它记录着数据库文件的原始大小. 所以如果一次修改使得数据库体积增加, 我们仍能知道原始的数据库大小. 页面数量与原始状态的数据库信息一同写入日志文件中.<br>当一个新文件被创建时, 大多数桌面操作系统(Windows, Linux, MAC OS X)都不会立即写入硬盘. 新文件只会创建在操作系统的磁盘缓存中. 当操作系统有空闲时间时才会写入大容量硬盘中. 这会给用户一种错觉：系统的I&#x2F;O操作比实际操作要快的多. 图中就展示了这个情况：回滚日志文件被放在了缓存区, 而没有进入磁盘. </p>
+<h3 id="3-6-在内存中修改数据库页面"><a href="#3-6-在内存中修改数据库页面" class="headerlink" title="3.6 在内存中修改数据库页面"></a>3.6 在内存中修改数据库页面</h3><p><img src="/images/SQLite/atomic-commit-1-6.gif" alt="3.6"><br>在原始数据被存入到回滚日志后, 内存中的页面将会被修改. 每一次数据库连接都有自己的私有用户内存(user space)拷贝, 所以对内存的信息修改只对拥有该内存的数据库连接透明. 其他数据库连接还只能看到未修改前操作系统磁盘缓存的信息. 并且即使一个进程在修改数据库, 其他进程还可以读取原始的数据库内容. </p>
+<h3 id="3-7-将回滚日志文件刷入硬盘中"><a href="#3-7-将回滚日志文件刷入硬盘中" class="headerlink" title="3.7 将回滚日志文件刷入硬盘中"></a>3.7 将回滚日志文件刷入硬盘中</h3><p><img src="/images/SQLite/atomic-commit-1-7.gif" alt="3.7"><br>下一步就是讲回滚日志文件刷入不容易丢失数据的硬盘中, 我们可以看出, 这对数据库在失去电源时起到了重要的保护作用；当然这一步也需要花费很多时间, 因为写入硬盘通常是一件很慢的操作.<br>这一步实际上比简单的将回滚日志文件刷入硬盘复杂的多, 在大多数平台中, 这被分为两个独立的写入操作. 第一步就是写入基本的回滚日志内容, 然后修改回滚日志的头部(header), 这样就可以显示页面数量. 第二步就是将头部写入硬盘, 至于为什么我们要修改头部并额外的写入头部, 我们会在后文提到. </p>
+<h3 id="3-8-获得一个排它锁-Exclusive-Lock"><a href="#3-8-获得一个排它锁-Exclusive-Lock" class="headerlink" title="3.8 获得一个排它锁(Exclusive Lock)"></a>3.8 获得一个排它锁(Exclusive Lock)</h3><p><img src="/images/SQLite/atomic-commit-1-8.gif" alt="3.8"><br>在修改数据库文件之前, 我们必须先获得一个数据库文件的排它锁. 排它锁的获得过程分为两步：首先获得一个等待锁(pending lock), 然后将等待锁升级为排它锁.<br>等待锁允许其他已经拥有共享锁(shared lock)的进程继续读取数据库文件, 但不允许没有共享锁的进程申请共享锁, 此举的意义在于防止有不断读取的进程而导致写入操作不断被拖延. 可能会有几十、上百或上千的进程尝试去读取数据库文件, 每一个进程获得一个共享锁并读取, 然后释放共享锁. 所以会出现一种现象：原来的进程还没释放共享锁, 新的进程就获得了新的共享锁, 数据库文件也一直挂有共享锁, 因此需要写入的进程也就没法获得排他锁. 等待锁的设计就是为了防止一直存在的共享锁, 通过允许已存在的共享锁, 而限制新建的共享锁. 最后所有的共享锁都会被释放, 这时等待锁就会升级为排它锁. </p>
+<h3 id="3-9-将修改信息写入数据库文件"><a href="#3-9-将修改信息写入数据库文件" class="headerlink" title="3.9 将修改信息写入数据库文件"></a>3.9 将修改信息写入数据库文件</h3><p><img src="/images/SQLite/atomic-commit-1-9.gif" alt="3.9"><br>一旦获得了排它锁, 就不会有其他进程来读取数据库文件, 对于写入操作就是安全的. 通常来说这些修改信息只会写入磁盘缓存中, 不会立即写入硬盘中. </p>
+<h3 id="3-10-将修改信息写入硬盘"><a href="#3-10-将修改信息写入硬盘" class="headerlink" title="3.10 将修改信息写入硬盘"></a>3.10 将修改信息写入硬盘</h3><p><img src="/images/SQLite/atomic-commit-1-10.gif" alt="3.10"><br>现在需要将数据库修改的信息写入硬盘中, 这一步至关重要的一点就是保证数据库在断电时还能保持完整性. 由于写入硬盘这一操作固有的慢速特性, 这一步操作和3.7中回滚日志写入操作将占用整个事务提交的大部分时间. </p>
+<h3 id="3-11-删除回滚日志"><a href="#3-11-删除回滚日志" class="headerlink" title="3.11 删除回滚日志"></a>3.11 删除回滚日志</h3><p><img src="/images/SQLite/atomic-commit-1-11.gif" alt="3.11"><br>数据库修改文件都安全的写入硬盘后, 回滚日志文件将被删除. 在事务提交完毕后必须立即执行这一操作, 因为如果这之前断电或系统崩溃, 那么恢复程序(后续会提到)会将数据库文件恢复成原来的模样；如果在删除回滚日志文件之后断电系统崩溃, 那么默认修改信息已正确的写入硬盘. 总的来数就是：SQLite以回滚日志文件是够存在作为判断条件, 来判断修改信息是够已经写入硬盘.<br>删除一个文件实际上并不是一个原子操作, 但从用户进程(user precess)的角度来说, 它是的. 进程可以询问操作系统&quot;那个文件是够存在&quot;, 而进程得到的答案只能是&quot;Yes&quot;或&quot;No&quot;. 事务提交中发生了断电, 事后SQLite会询问操作系统回滚日志文件是够存在, 如果回答是&quot;Yes&quot;, 那么就认为事务没进行完整并进行回滚操作；否则则认为事务已经提交完毕.<br>事务是否完成取决于回滚日志文件是否存在, 并且文件的删除与否对于用户进程来说是原子性的, 因此事务仍是原子性的.<br>在许多系统中, 删除一个文件开销很大. 作为一项优化, SQLite可以将日志文件的长度设为0, 或将日志文件的头部用0填满, 这样日志文件就不能实现回滚功能, 事务依然可以提交. 将文件的长度变为0相当于删除一个文件, 从用户进程的角度也是原子性的. 将日志文件的头部填充为0不是一个原子操作, 但如果头部被修改过, 那么就不能用于回滚操作. 因此, 我们可以认为只要头部被修改过就变得无效了, 因而提交就算成功. </p>
+<h3 id="3-12-释放锁"><a href="#3-12-释放锁" class="headerlink" title="3.12 释放锁"></a>3.12 释放锁</h3><p><img src="/images/SQLite/atomic-commit-1-12.gif" alt="3.12"><br>提交过程的最后一步就是释放排它锁, 这样其他进程才能再次获得数据库文件. 从图中我们可以发现, 内存中的信息已被清理, 但最近的SQLite版本可能会保留内存中的信息, 因为下一次事务操作可能会再次用到, 毕竟从内存中获得数据比从缓存或从硬盘中获取信息快得多, 开销更小. 数据库第一个页面有一个计数器, 每一次数据库文件的修改它都会自增一次, 这样我们就能看出来是否有其他进程修改过数据库文件. 如果数据库发生了更改, 那么内存中的缓存应该被清除并重读. 但大多数情况下不会发生修改, 所以内存中的缓存可以被重用, 这样极大地提高了性能.       </p>
+<h2 id="4-回滚"><a href="#4-回滚" class="headerlink" title="4. 回滚"></a>4. 回滚</h2><p>原子提交被设想为是瞬发的, 但第三节已经显示, 这一系列操作实际上会占用有限时间. 假设断电发生在上述操作中, 为了保持信息改变的瞬发性, 我们需要&quot;回滚&quot;(rollback)任何一部分修改信息, 并将数据库的状态恢复到事务进行之前. </p>
+<h3 id="4-1-当出现错误时"><a href="#4-1-当出现错误时" class="headerlink" title="4.1 当出现错误时"></a>4.1 当出现错误时</h3><p><img src="/images/SQLite/atomic-commit-2-1.gif" alt="4.1"><br>假设断电发生在3.10, 就是数据库的修改信息正在写入硬盘时. 在电源恢复后, 情况就像上图所示: 我们想修改三个页面, 但只有一个页面修改完成, 有一个修改了部分, 还有一个页面还未修改.<br>有一点很重要, 那就是回滚日志文件还是完整的, 并且电源恢复后它仍在硬盘中. 3.7节已经确保了回滚日志文件能在修改数据库文件之前保存在硬盘中. </p>
+<h3 id="4-2-热回滚日志-Hot-Rollback-Journals"><a href="#4-2-热回滚日志-Hot-Rollback-Journals" class="headerlink" title="4.2 热回滚日志(Hot Rollback Journals)"></a>4.2 热回滚日志(Hot Rollback Journals)</h3><p><img src="/images/SQLite/atomic-commit-2-2.gif" alt="4.2">				<br>SQLite在第一次获取数据库文件时, 必须先获取共享锁(3.2节提到). 之后会发现有一个热回滚日志, SQlite会检查这个回滚日志是否是&quot;热回滚日志&quot;, 热日志指的是一个需要用来回滚使得数据库恢复正常的回滚日志. 当事务提交期间发生断电情况时, 热日志才会存在.<br>以下情况回滚日志是热日志:</p>
+<ul>
+<li>回滚日志文件存在</li>
+<li>回滚日志文件不为空</li>
+<li>主数据库文件上没有保留锁</li>
+<li>回滚日志文件的头部是语法规范的, 并且不为空(证明还没进行删除操作)</li>
+<li>回滚值文件不包含主日志文件的名字, 或包含主日志文件名字且主日志文件存在</li>
+</ul>
+<p>热日志文件的存在向我们展示了之前事务的提交由于某些原因未能完成, 热日志文件意味着数据库文件当前是不完整的且需要回滚来恢复到之前状态</p>
+<h3 id="4-3-获得数据库的排它锁"><a href="#4-3-获得数据库的排它锁" class="headerlink" title="4.3 获得数据库的排它锁"></a>4.3 获得数据库的排它锁</h3><p><img src="/images/SQLite/atomic-commit-2-3.gif" alt="4.3"><br>处理热日志的第一步就是获得该数据库的排它锁, 用来防止其他进程也试图回滚数据库. </p>
+<h3 id="4-4-回滚回不完整的修改"><a href="#4-4-回滚回不完整的修改" class="headerlink" title="4.4 回滚回不完整的修改"></a>4.4 回滚回不完整的修改</h3><p><img src="/images/SQLite/atomic-commit-2-4.gif" alt="4.4"><br>一旦进程拥有了排它锁, 就被允许向数据库写入信息. 接下来就是读入回滚日志文件中原始的页面数据并将这些信息写入相应的数据库文件中. 由于我们在事务进行之前, 就将数据库文件的原始大小写入了回滚日志文件的头部, SQLite就可以通过这个信息来将数据库增长的部分截取, 使之回到原始大小. 最后, 数据库应该与事务处理之前的大小和信息一模一样. </p>
+<h3 id="4-5-删除热日志"><a href="#4-5-删除热日志" class="headerlink" title="4.5 删除热日志"></a>4.5 删除热日志</h3><p><img src="/images/SQLite/atomic-commit-2-5.gif" alt="4.5"><br>　　热日志全部信息写入数据库文件之后, 热回滚日志文件将被删除.<br>　　在3.11节中, 日志文件可能会被截断为0长度或头部被重写为0, 这可以作为一个系统删除文件的优化手段. 上述两个的任何一种都可以用来删除热日志文件. </p>
+<h3 id="4-6-好似未完成的写入操作没发生过一样继续工作"><a href="#4-6-好似未完成的写入操作没发生过一样继续工作" class="headerlink" title="4.6 好似未完成的写入操作没发生过一样继续工作"></a>4.6 好似未完成的写入操作没发生过一样继续工作</h3><p><img src="/images/SQLite/atomic-commit-2-6.gif" alt="4.6"><br>恢复操作的最后一步就是将排它锁降级为共享锁. 一旦这一步发生, 说明数据库已经回到夭折的事务发生之前的状态. 由于恢复工作是自动完成的, 所以程序看起来就像错误的事务未发生一样. </p>
+<h2 id="5-多文件提交"><a href="#5-多文件提交" class="headerlink" title="5. 多文件提交"></a>5. 多文件提交</h2><p>SQlite允许一个单独的数据库连接使用ATTCH DATABASE命令与二个或多个数据库同时交流. 当多个数据库文件在一条事务中被一起修改时, 所有的文件都会自动更新. 换句话说, 要么所有数据库文件都更新, 要么都不更新. 实现多文件提交的复杂度要比单文件提交要高, 这一节描述了SQLite如何实现该功能. </p>
+<h3 id="5-1-每个数据库文件单独的回滚日志"><a href="#5-1-每个数据库文件单独的回滚日志" class="headerlink" title="5.1 每个数据库文件单独的回滚日志"></a>5.1 每个数据库文件单独的回滚日志</h3><p><img src="/images/SQLite/atomic-commit-2-7.gif" alt="5.1"><br>当一次事务涉及多个数据库文件操作时, 每一个数据库都有其自己的回滚日志文件且被独立地锁住. 上图展示了三个不同的数据库在一次事务中被修改的场景, 这时的情况与单个文件修改是相同的, 每一个数据库文件都有一个保留锁. 对于每一个数据库来说, 都会将被修改的数据写入各自的回滚日志文件中, 但日志文件还没写入硬盘中. 尽管已经对内存中的信息进行了修改, 但硬盘中的数据库文件并未修改. </p>
+<h3 id="5-2-主日志文件-The-Master-Jounal-File"><a href="#5-2-主日志文件-The-Master-Jounal-File" class="headerlink" title="5.2 主日志文件(The Master Jounal File)"></a>5.2 主日志文件(The Master Jounal File)</h3><p><img src="/images/SQLite/atomic-commit-2-8.gif" alt="5.2">				<br>多文件提交的下一步就是创建一个&quot;主日志文件&quot;, 主日志文件的名字和原始数据库文件名加上字符串&quot;-mjHHHHHHHH&#39;一样. HHHHHHHH是一个随机的32位十六进制数字, 每个随机数对应每个新的主日志不一样. (上段提到的主日志文件名的起名方法只针对SQlite3.5.0之前的版本, 这个方法并不是SQLite的规则, 所以可能在后续版本进行变更)<br>不同于回滚日志, 主日志文件不包含任何原始数据库的页面. 但主日志文件包含参与本次事务的所有回滚日志文件的所有完整路径.<br>当主日志文件创建完成后, 首先将它写入硬盘中. 在UNIX中, 为了保证断电后主日志文件依然在文件夹中, 会将包含主日志文件的文件夹一起同步. </p>
+<h3 id="5-3-更新回滚日志文件头部"><a href="#5-3-更新回滚日志文件头部" class="headerlink" title="5.3 更新回滚日志文件头部"></a>5.3 更新回滚日志文件头部</h3><p><img src="/images/SQLite/atomic-commit-2-9.gif" alt="5.3">					<br>下一步就是在每个回滚日志文件的头部中记录上主日志文件完整路径. 在回滚日志创建之时就已经腾出了放置主日志文件路径的空间. 在写入主日志文件路径之前和之后, 都要将回滚日志的内容写入硬盘中. 写入两遍是非常重要的. 幸运的是, 第二次写入是很快速的, 应为通常情况下改写一个页面就够了. </p>
+<h3 id="5-4-更新数据库文件"><a href="#5-4-更新数据库文件" class="headerlink" title="5.4 更新数据库文件"></a>5.4 更新数据库文件</h3><p><img src="/images/SQLite/atomic-commit-2-10.gif" alt="5.4">			<br>一旦所有的回滚日志文件都写入硬盘中, 那么更新数据库文件就很安全啦. 我们还是需要在修改之前获得硬盘中数据库文件的排它锁. 在写完所有的变化之后, 一定要冲刷这些更新到磁盘上, 以保证在突然断电或者系统崩溃的情况下, 它们仍然存在. </p>
+<h3 id="5-5-删除主日志文件"><a href="#5-5-删除主日志文件" class="headerlink" title="5.5 删除主日志文件"></a>5.5 删除主日志文件</h3><p><img src="/images/SQLite/atomic-commit-2-11.gif" alt="5.5"><br>删除主日志文件是多文件事务提交的关键点, 这对应着3.11节中回滚日志文件删除的场景.<br>如果断电或系统崩溃发生在这时, 那么重启后即使还有回滚日志文件也不会进行回滚操作. SQlite判断日志是否为hot基于以下两点. 满足一点即可: </p>
+<ul>
+<li>头部没有主日志文件名</li>
+<li>主日志文件依然存在于硬盘中</li>
+</ul>
+<h3 id="5-6-清除所有回滚日志文件"><a href="#5-6-清除所有回滚日志文件" class="headerlink" title="5.6 清除所有回滚日志文件"></a>5.6 清除所有回滚日志文件</h3><p><img src="/images/SQLite/atomic-commit-2-12.gif" alt="5.6"><br>最后一步就是删除所有独立的回滚日志文件, 并解除数据库文件上的排它锁, 这样其他进程才能读取. 这对应着单文件提交流程中3.12节. </p>
+<h2 id="6-提交过程中的其他细节"><a href="#6-提交过程中的其他细节" class="headerlink" title="6. 提交过程中的其他细节"></a>6. 提交过程中的其他细节</h2><p>3.0节已经给出了SQLite实现原子提交的概述, 但忽略了一些重要的细节. 接下的几节用来填坑. </p>
+<h3 id="6-1-始终日志完成扇区-Sectors"><a href="#6-1-始终日志完成扇区-Sectors" class="headerlink" title="6.1 始终日志完成扇区(Sectors)"></a>6.1 始终日志完成扇区(Sectors)</h3><p>在3.5节中, 当数据库页面的原始内容写入回滚日志文件中时, SQLite会写入完整的扇区(sector), 即使数据库的页面大小小于扇区尺寸. 从历史角度来说, SQLite的扇区大小被硬编码为512比特, 并且由于页面最小为512比特, 所以这从来不是一个问题. 从3.3.14开始, SQlite便有可能用大于512比特的大容量储存器. 所以从3.3.14开始, 只要扇区中的任何一个页面需要写入日志文件, 那么这个扇区的所有页面都会写入.<br>将扇区中的所有页面存起来是十分有必要的, 因为这可以写入扇区时的断电情况. 假设扇区1(sector 1)中页面2需要被修改, 但这个扇区上有4个页面(page1,2,3,4). 为了将页面2的信息写入数据库文件, 底层硬件还需要将页面1,3,4一起重写. 如果写入操作由于断电中断, 导致页面1,3,4中的一个或多个含有错误信息. 因此为了防止这种数据库崩溃, 需要将所有页面的原始信息都写入回滚日志文件. </p>
+<h3 id="6-2-处理写入日志文件的垃圾"><a href="#6-2-处理写入日志文件的垃圾" class="headerlink" title="6.2 处理写入日志文件的垃圾"></a>6.2 处理写入日志文件的垃圾</h3><p>当向回滚日志文件追加数据库时, SQLite会悲观地假设文件先被没用的&quot;垃圾&quot;充满, 然后再用正确的数据替代. 换句话说, SQLite假设文件是先增加体积, 再写入数据. 如果断电发生在文件增长体积之后, 而在写入数据之前, 回滚日志文件会被垃圾充满. 当恢复电力后, SQLite进程发现回滚日志文件装满垃圾数据, 紧接着回滚写入原始数据库文件中, 这样会使数据库文件中存有垃圾数据, 崩溃.<br>SQLite对此问题有两层防线. 第一层, SQLite将回滚日志文件的页面数量记录到日志文件的头部, 这个数量被初始化为0. 当尝试回滚一个不完整的日志文件时, 进程发现日志文件中没有页面, 就不会对数据库文件做修改. 在提交之前, 回滚日志文件将被写入硬盘中, 来确保信息已经同步到硬盘中, 并且文件中没有垃圾信息, 这时才会将头部的页面数量从0变为回滚日志文件的页面数量. 头部与数据库信息位于不同的扇区, 这样写入头部时断电不会影响到数据部分. 回滚日志文件被写入了两次: 一次是页面内容, 一次是头部写入页面数量.<br>上述的情况描述了synchronous pragma设为full的情况</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA synchronous=FULL;</span><br></pre></td></tr></table></figure>
+<p>默认synchronous是为full, 并且情况像上述一样. 如果synchronous降级为normal, 那么SQLite会在页面数量写入后只会写入回滚日志文件一次. 这会带来一个风险, 那就是修改页面数量的操作发生在写入数据之前, 写入数据库虽然是提前发生的, 但SQLite假设实际的文件系统会重新调整写入顺序, 所以即便页面数量的写入发生在后面, 也有可能会提前写入. 第二道防线就是SQLite会为日志文件记录每一个页面的32校验值. 当进行回滚操作时, 这些校验值会告诉SQLite页面是否有效, 如果发现不正确的值, SQLite会放弃修改. 由于校验值比较小, 所以存在误判率, 但也不用过多担心, 因为误判率实在很低, 校验值还是起到了很强的保护作用的.<br>注意: 当synchronous设为FULL时, 校验值对于回滚日志文件就没有意义了. 只有设为NORMAL时我们才依赖于校验值. 尽管如此, 校验值还是无害的, 所以无论synchronous设为任何值, 都讲校验值保存在日志文件中. </p>
+<h3 id="6-3-提交前流出缓存"><a href="#6-3-提交前流出缓存" class="headerlink" title="6.3 提交前流出缓存"></a>6.3 提交前流出缓存</h3><p>3.0节的提交过程假设所有的数据库修改信息都会保存在内存中, 直到提交. 有时一个较大的改动可能会在提交前移出用户缓存, 那样的话在必须在事务完成前将缓存移到数据库文件中.<br>在移出缓存之前, 数据库连接状态和3.6节相同. 初始的页面内容需要保存在回滚日志文件中, 并且页面的修改保留在用户内存中. 为了将缓存移出, SQlite执行3.7节和3.8节的操作, 换句话说, 回滚日志文件被写入硬盘, 这时就需要一个排它锁, 并将修改的信息写入数据库文件中. 但剩下的步骤将推迟到事务彻底提交为止才进行. 一个新的日志头部将追加到回滚日志文件的尾部, 并且有需要的获得一个排它锁, 进程又回到3.6步骤. 当事务真正提交或需要移出缓存时, 又要重复3.7和3.8步骤. (3.8在第二次和接下来的执行中都被忽略了, 因为数据库的排它锁会一直持有. )<br>一次移出缓存导致数据库文件上的保留锁升级为排它锁. 这会降低并发性. 一次移出缓存也会导致额外的硬盘写入和同步操作. 因此移出缓存会严重降低性能. 综上所述, 应该在任何情况下都避免移出缓存. </p>
+<h2 id="7-优化"><a href="#7-优化" class="headerlink" title="7. 优化"></a>7. 优化</h2><p>分析可知, 对于绝大部分的操作系统和环境, SQLite的大部分时间都花在IO操作. 所以减少IO操作势必会极大地提高SQLite性能, 这一节就描述了SQLite在保证原子性的同时, 对于如何减少IO操作数量提出的一些技术方法. </p>
+<h3 id="7-1-事务间保留缓存"><a href="#7-1-事务间保留缓存" class="headerlink" title="7.1 事务间保留缓存"></a>7.1 事务间保留缓存</h3><p>3.12节说明了原子提交的过程, 一旦释放共享锁(shared lock), 所有数据库的缓存镜像都要被清除. 因为如果进程没有了共享锁, 其他进程可能会修改内存中的镜像, 这样内容就必须被废弃. 所以每一次新事务都会尝试重读之前读过的数据, 这听起来并不那么糟糕, 因为第一次读取过的数据可能还存在在缓存中. 所以读操作只是将数据从内核空间(kernel space)移动到用户空间(user space), 但尽管如此, 还是需要花费时间.<br>3.3.14版本后的SQLite开始添加了一种机制, 能够减少数据重读次数. 在更新的版本中, 即使数据库文件上的锁被释放, 用户空间的页面缓存依然不清除. 在下次事务请求共享锁时, SQlite会检查数据库文件是够被其他进程修改过：如果在上次锁释放后被修改过, 那么用户空间的缓存将被清楚. 但通常情况下是未被修改的, 并且用户空间的缓存依然存在, 这样就能避免不必要的读取操作.<br>为了判断数据库文件是够被修改, SQLite在数据库文件头部使用一个计数器, 每做一次修改都会加一. SQLite会在释放数据库锁之前拷贝计数器的数值, 在下一次请求数据库锁时会对比现有计数器的数值和上一次存储的值, 如果不同则刷新缓存, 如果相同则重用. </p>
+<h3 id="7-2-独占访问模式-Exclusive-Access-Mode"><a href="#7-2-独占访问模式-Exclusive-Access-Mode" class="headerlink" title="7.2 独占访问模式(Exclusive Access Mode)"></a>7.2 独占访问模式(Exclusive Access Mode)</h3><p>SQLite3.3.14添加了&quot;独占访问模式&quot;的概念, 在该模式中, SQLite会在事务结束后仍保留排它锁. 这阻止了其他进程访问数据库, 在许多部署中只有一个进程使用数据库, 所以这不是什么大问题. 独占访问模式的优势在于IO操作可以在以下三个方面减少：</p>
+<ol>
+<li>没必要在事务结束后改变改变数据库头部的计数器. 这将会在回滚日志文件和主数据库文件上省下两次页面的写入操作</li>
+<li>由于没有其他进程来修改数据库, 所以不必检查计数器来查看是否有人修改了数据库, 也不需要清空用户空间中的缓存. </li>
+<li>每一次事务提交可以直接将回滚日志文件的头部填充为0, 不用删除日志文件. 这样避免了修改日志文件的目录项, 也不用释放日志文件所占用的磁盘扇区. 更重要的是, 下一次事务将在原来日志文件的内容上直接重写, 而不是追加一块新的内容. 因为对于大部分操作系统来说, 重写比追加快的多.</li>
+</ol>
+<p>理论上我们可以在任何时刻进行第三步的优化, 而不局限于在独占访问模式下. 可使用journal mode pragma直接进行优化. </p>
+<h3 id="7-3-不要将空白列表页面写入日志中"><a href="#7-3-不要将空白列表页面写入日志中" class="headerlink" title="7.3 不要将空白列表页面写入日志中"></a>7.3 不要将空白列表页面写入日志中</h3><p>当从SQLite数据库中删除信息时, 会将被删除内容的所有页面添加到&quot;空白列表&quot;(freelist)中, 随后的插入操作会先使用空白列表中的页面.<br>有一些空白列表的页面含有重要数据, 尤其是其他空白列表页面的位置. 但大多数空白列表的页面内容没什么用, 这些页面被称为&quot;叶子&quot;(leaf)页面. 我们可以在不改变数据库本身的条件下随意修改叶子页面的内容.<br>由于叶子页面的内容不重要, SQLite会避免将它们在3.5节的提交过程中写入回滚日志文件中. 如果在事务恢复中, 一个原来被修改的叶子页面被修改过但没被回滚, 数据库不会受影响. 同样的, 新的空白列表页面的内容不会写入数据库, 也不会从数据库中读出来. 在对拥有空白空间的数据库文件进行修改时, 这些优化都会很大程度上减低IO操作. </p>
+<h3 id="7-4-单个页面更新和原子扇区写入"><a href="#7-4-单个页面更新和原子扇区写入" class="headerlink" title="7.4 单个页面更新和原子扇区写入"></a>7.4 单个页面更新和原子扇区写入</h3><p>从SQLite3.5.0开始, 新的虚拟文件系统(Virtual File System)接口包含了一个叫做xDeviceCharacteristic的方法, 它呈现了一下底层大容量存储设备所拥有的特殊属性. 这些特殊属性显示了是否有能力去做原子扇区写入操作.<br>SQLite默认扇区的写入是线性的而不是原子性的, 一次线性写入操作从一个扇区开始一个字节一个字节的修改信息. 如果断电发生在写入操的中途, 那么就会出现一半修改而一半没修改. 在原子扇区写入中, 整个扇区要么全被重写, 要么一点都未改变.<br>我们相信大多数的磁盘驱动使用原子扇区写入, 当断电时, 驱动使用电容器中的能源, 并利用盘片旋转的角动量来完成正在进行的操作. 然而写入系统的调用和单板硬盘驱动的电子设备之间有太多层, 所以在UNIX和w32的VFS应用中我们选择更稳妥的方式：假设扇区的写入不是原子性的. 另一方面, 随着文件系统有更多的控制选项, 设备供应商可以考虑在硬件能够实现原子写入的前提下开启xDeviceCharacterisitics中的原子写入属性.<br>当扇区的写入操作为原子性, 并且数据库的页面大小与扇区大小相同时, 数据库只修改一个页面不会引起SQLite的日志文件和同步操作, 只会直接写入修改的信息. 数据库文件头部的计数器会被单独修改, 因为即使更新前发生停电也不会对数据库产生影响. </p>
+<h3 id="7-5-带有安全附加语义-Safe-Append-Semantics-的文件系统"><a href="#7-5-带有安全附加语义-Safe-Append-Semantics-的文件系统" class="headerlink" title="7.5 带有安全附加语义(Safe Append Semantics)的文件系统"></a>7.5 带有安全附加语义(Safe Append Semantics)的文件系统</h3><p>另一个在3.5.0版本加入的优化就是在底层硬盘中使用&quot;安全附加&quot;行为. 之前提到SQLite会假设当数据追加到文件中时, 文件先增大体积, 再填写内容. 所以若在两者中间发生断电, 文件会含有非法的&quot;垃圾&quot;数据. VFS的xDeviceCharacteristics方法可能会表明文件系统支持&quot;安全附加&quot;语义, 这意味着文件大小的增加会在内容写入之后发生, 这保证了即使断电数据库文件中不会有垃圾数据.<br>当安全附加语义在文件系统中被声明时, SQLite会将回滚日志文件头部的页面计数器永久置为-1, 这个值告诉其他想要回滚这个日志的进程, 页面的数量应该从日志文件的体积中计算得出. -1这个值不会被改变, 所以在一次提交过程中, 我们节约一个flush操作和日志文件首个页面的扇区写入. 并且当一个扇区溢出时, 我们不必将一个新的日志文件头部追加到另一个日志文件的尾部；我们可以直接将新的页面追加到已存在的日志文件的尾部. </p>
+<h3 id="7-6-持久性回滚日志文件"><a href="#7-6-持久性回滚日志文件" class="headerlink" title="7.6 持久性回滚日志文件"></a>7.6 持久性回滚日志文件</h3><p>在许多操作系统中, 删除文件是很消耗时间的一件事. 作为优化, SQlite可以配置来避免3.11中的删除操作, 可以在提交事务时不删除日志文件, 而是将长度截断为0字节, 或将头部填充为0. 将长度截断为0节省了对文件所在目录的修改, 因为文件依然在该目录中. 填充文件头部的额外好处就是不必更新文件长度, 而且不必处理新释放的磁盘扇区. 此外, 在下一次事务中, 日志文件可以直接覆盖原来的内容, 而不是追加到文件末尾. 重写的速度往往比追加快得多.<br>SQLite可以通过使用journal_mode PRAGMA来设置&quot;PERSIST&quot;日志模式, 从而使得提交事务可通过重写日志头部为0, 而不是删除日志文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA jounal_mode = PERSIST;</span><br></pre></td></tr></table></figure>
+<p>持久性日志模式为我们提供了一种显而易见的性能提升方式. 缺点就是日志文件会在事务提交后的很久一直停留在硬盘中, 占用硬盘的空间并弄乱文件目录. 唯一一种删除持久性日志文件的方法就是将日志模式设置为DELETE：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA journal_mode=DELETE;</span><br><span class="line">BEGIN EXCLUSIVE;</span><br><span class="line">COMMIT;</span><br></pre></td></tr></table></figure>
+<p>由于删除的日志文件可能为hot, 所以突然的删除可能会导致对应的数据库文件崩溃. 从3.6.4开始, TRUNCATE日志模式也启动了：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA journal_mode=TRUNCATE;</span><br></pre></td></tr></table></figure>
+<p>在截断日志模式中, 事务的提交通过将日志文件的长度截断为0, 而不是删除日志文件(DELETE模式)或填充0(PERSIST模式). 截断模式具有PERSIST模式中拥有日志文件的文件夹和数据库都不需要更新的优点. 因此对一个文件的截断比删除要快得多. 截断还有一个额外的好处, 它不用后面跟着一个系统调用来将修改的信息同步到硬盘种. 在现代的文件系统中, 截断是一个原子性的同步操作, 并且我们认为截断在面临断电时更安全. 如果你不确定你的文件系统中截断操作是否是原子性和同步性的, 并且断电和系统崩溃时你很在意数据库的安全性, 那么要考虑使用其他模式. </p>
+<h2 id="8-测试原子提交行为"><a href="#8-测试原子提交行为" class="headerlink" title="8. 测试原子提交行为"></a>8. 测试原子提交行为</h2><p>SQLite的开发者对于数据库面对断电和系统崩溃是很有自信的, 因为自动化测试流程对于SQLite从模拟的断电中恢复做了大量检查, 我们将之称为&quot;崩溃测试&quot;(crash tests).<br>SQLite中的崩溃测试使用了一种修正的VFS, 它可以模拟发生断电或操作系统崩溃导致的文件系统损伤. 用于崩溃测试的VFS可模拟不完整的磁盘写入, 由于写入中断导致的页面被充满垃圾数据, 或没有按顺序写入, 发生在测试环境中的不同情况. 崩溃测试不断地执行事务, 更改断电的时间和数据库损伤的位置. 每一次模拟崩溃后斗湖重新打开数据库并确保事务要么发生完毕, 要不一点没变, 总结起来就是保证数据库的完整统一的状态.<br>SQLite的崩溃测试发现了恢复机制中的许多微小bug. 其中一些bug是不易觉察的, 即使使用代码审查和分析技术也不容易找到这些bug. 因此SQLite的开发者对于那些没有崩溃测试系统的数据库系统含有不为人知的bug很有自信, 这些bug很可能在某次断电或系统崩溃后导致数据库的崩溃. </p>
+<h2 id="9-一些能导致崩溃的事情"><a href="#9-一些能导致崩溃的事情" class="headerlink" title="9. 一些能导致崩溃的事情"></a>9. 一些能导致崩溃的事情</h2><p>SQLite的原子提交机制被证明是很健壮的, 但还是有可能被一些极具创新性的对手或不完整的操作系统实现坑. 这一节讲述了SQLite会在哪些情况下因为断电或系统崩溃导致数据库崩溃. </p>
+<h3 id="9-1-缺乏锁的实现"><a href="#9-1-缺乏锁的实现" class="headerlink" title="9.1 缺乏锁的实现"></a>9.1 缺乏锁的实现</h3><p>SQLite通过同一时间只有一个进程和数据库连接来修改数据库信息. 文件系统的锁机制应用在VFS层中, 并且在每个操作系统中锁机制不同. SQLite需要保证锁机制的应用是正确的. 如果有两个或多个进程可以同时写一个数据库文件, 那么必然会造成严重损害.<br>我们接受到了一些报告, Windows网络文件系统和NFS会有锁机制的缺失. 我们不能验证这些报告, 但是锁在网络文件系统中的确很难实现, 所以我们没有理由怀疑它们. 首先你应该避免使用网络文件系统, 因为性能很差. 如果你不得不使用一个锁机制不健全的网络文件系统来存储SQLite数据库文件, 那么最好采用其他的锁机制来避免同时对一个数据库的写入.<br>苹果Mac OS X预装的SQLite版本已经扩展了一种可以在网络文件系统工作的可选锁策略. 只要所有的进程用相同的方式来访问数据库文件, 那么苹果上的扩展是很有效的. 不幸的是, 这些锁机制并不互相排斥, 如果一个进行通过AFP锁, 而另一个进程通过dot-file锁访问文件, 那么两个进程可能同时修改一个数据库, 因为AFP锁和dot-file锁并不互相排斥. </p>
+<h3 id="9-2-不完整的硬盘刷新"><a href="#9-2-不完整的硬盘刷新" class="headerlink" title="9.2 不完整的硬盘刷新"></a>9.2 不完整的硬盘刷新</h3><p>SQLite在UNIX中使用fsync()系统调用, 在Win32中使用FlushFileBuffers()系统调用来保持系统缓存和硬盘上的同步, 就像3.7和3.10一样. 不幸的是, 在大多数系统中, 这些接口不能像广告中一样工作. 我们听说可以在Windows版本中修改注册表来完全关闭FlushFileBuffers()的功能. 在Linux的早期版本中, 文件系统中的fsync()是空操作. 即使FlushFileBuffers()和fsync()都工作, IDE磁盘控制会撒谎说数据已经写入磁盘, 其实依旧在已更改的磁盘控制缓存中.<br>在Mac中, 你可以设置pragma：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA fullfsync=ON;</span><br></pre></td></tr></table></figure>
+<p>在Mac中设置fullsync可以保证数据在刷新时进入磁盘中, 但fullsync的应用会涉及到重新设置硬盘控制器. 并不只是让自身变慢, 还会让不相关的硬盘IO操作变慢, 所以这一应用并不推荐. </p>
+<h3 id="9-3-局部文件删除"><a href="#9-3-局部文件删除" class="headerlink" title="9.3 局部文件删除"></a>9.3 局部文件删除</h3><p>SQLite假设从用户进程的角度来看, 文件删除是原子操作. 如果在删除文件的中途断电, 那么在恢复电力后, SQLite希望看到以下两种情况之一：要么完整的数据还在, 要么文件全部被删除. 如果不是上述情况, 那么事务就不是原子性的. </p>
+<h3 id="9-4-垃圾写入文件中"><a href="#9-4-垃圾写入文件中" class="headerlink" title="9.4 垃圾写入文件中"></a>9.4 垃圾写入文件中</h3><p>SQLite数据库文件都是普通的磁盘文件, 它们都可以被用户进程访问和写入. 流氓进程也可以打开SQLite数据库并填充垃圾数据. 垃圾数据也可能是由于操作系统或硬盘控制器的bug导致其进入SQLite数据库, 尤其是断电引起的bug. SQLite对此无能为力. </p>
+<h3 id="9-5-删除或重命名热日志文件"><a href="#9-5-删除或重命名热日志文件" class="headerlink" title="9.5 删除或重命名热日志文件"></a>9.5 删除或重命名热日志文件</h3><p>如果发生了系统崩溃或断电, 且热日志文件保留在硬盘中, 那么数据库文件和热日志文件在另一个SQLite进程进行回滚之前保持原名十分重要. 在4.2的恢复操作中, SQLite会通过在被打开的数据库同一目录下, 查找由数据库文件名派生出的文件名来定位热日志文件. 如果原始数据库文件或热日志文件被移走或重命名, 那么就定位不到热日志文件, 也就不会发生回滚操作.<br>我们怀疑SQLite恢复失败的样例如下：发生断电, 恢复电力后一个好心的用户或系统管理员开始查看硬盘是否受损, 他们发现名称为&quot;important.data&quot;的数据库文件, 或许其他相似的文件. 但在崩溃后, 多了一个名为&quot;important.data-journal&quot;的热日志文件. 用户可能为了清理系统就删除了该热日志文件. 除了用户培训, 我们没有其他方法来防范这种情况发生.<br>如果有多个链接指向一个数据库文件, 日志文件将用名字链接来指向被打开的文件. 如果发生崩溃并且数据库被再次打开时使用其他链接, 那么热日志文件就不会被定位, 且不会发生回滚.<br>有时断电会造成文件系统崩溃, 例如刚被修改的文件名丢失, 文件被移到&quot;&#x2F;lost+found&quot;文件夹中. 当这些情况发生时, 热日志不会被发现并回滚. SQLite同步含有回滚日志文件的文件夹时也会同步日志文件本身, 这样就避免了上述情况发生. 然而有可能是不相关的进程使得文件移入&quot;&#x2F;lost+found&quot;文件夹中, 并在相同文件夹中产生作为主数据库文件的不相关文件. 由于这些已经超出了SQLite的管辖范围, 所以不能避免此类情况发生. 如果你运行的操作系统很容易发生文件系统命名空间崩溃, 那你应该考虑将每个SQLite数据库文件放在各自私有的子文件夹中. </p>
+<h2 id="10-未来的方向与总结"><a href="#10-未来的方向与总结" class="headerlink" title="10. 未来的方向与总结"></a>10. 未来的方向与总结</h2><p>一旦有人发现了SQLite中原子提交机制的失败案例, 那么开发者就需要打补丁. 虽然这种情况越来越少, 并且失败案例越来越不容易觉察出来, 但还是不能认为SQLite中的原子提交是无bug的. 开发者将尽快地将发现的bug修补好.<br>开发者也盼望着有新的优化方式来改进提交机制. UNIX和Windows上现有的VFS应用都对系统行为作出了悲观假设. 在与专家咨询了这些系统的行为后, 我们可能会放松某些假设并使数据库跑的更快. 我们猜测现代文件系统可能已经展示出安全追加属性, 并支持了原子扇区写入. 但现在尚不确定, 所以SQLite仍会采取保守的方式并作出最坏的打算. </p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Database/">Database</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/bbe1.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Class Method</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/7310.html">
+        <span class="next-text nav-default">SQLite Architecture</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/f9ff.html';
+  var disqus_title = "SQLite Atomic Commit";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

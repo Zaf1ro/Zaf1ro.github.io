@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Consistency and Consensus"/>
+
+
+
+
+  <meta name="keywords" content="Distributed System," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/da42.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/da42.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/da42.html"/>
+
+
+<meta name="description" content="分布式系统中会出现很多问题, 最简单的解决方式就是让整个服务失效, 并向用户显示错误信息. 若不能接受这种方法, 则需要容错机制: 即使内部组件出现故障, 服务依然正常运行. 本章将介绍一些用于构建容错分布式系统的算法和协议, 并假设系统会出现任何错误: 网络数据包丢失, 乱序, 重复, 任意延迟, 时钟只能尽可能准确, 节点会暂停运行或随时崩溃.构建容错分布式系统的最好方式是找到一些保证的通用抽">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Consistency and Consensus">
+<meta property="og:url" content="https://zaf1ro.github.io/p/da42.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="分布式系统中会出现很多问题, 最简单的解决方式就是让整个服务失效, 并向用户显示错误信息. 若不能接受这种方法, 则需要容错机制: 即使内部组件出现故障, 服务依然正常运行. 本章将介绍一些用于构建容错分布式系统的算法和协议, 并假设系统会出现任何错误: 网络数据包丢失, 乱序, 重复, 任意延迟, 时钟只能尽可能准确, 节点会暂停运行或随时崩溃.构建容错分布式系统的最好方式是找到一些保证的通用抽">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-6.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-7.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-8.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-9.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-10.png">
+<meta property="article:published_time" content="2022-03-19T15:28:31.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.039Z">
+<meta property="article:tag" content="Distributed System">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-9-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Consistency and Consensus - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Consistency-Guarantees"><span class="toc-text">1. Consistency Guarantees</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Linearizability"><span class="toc-text">2. Linearizability</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-What-Makes-a-System-Linearizable"><span class="toc-text">2.1 What Makes a System Linearizable?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Relying-on-Linearizability"><span class="toc-text">2.2 Relying on Linearizability</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-Locking-and-leader-election"><span class="toc-text">2.2.1 Locking and leader election</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-Constraints-and-uniqueness-guarantees"><span class="toc-text">2.2.2 Constraints and uniqueness guarantees</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-Cross-channel-timing-dependencies"><span class="toc-text">2.2.3 Cross-channel timing dependencies</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Implementing-Linearizable-Systems"><span class="toc-text">2.3 Implementing Linearizable Systems</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-Linearizability-and-quorums"><span class="toc-text">2.3.1 Linearizability and quorums</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-The-Cost-of-Linearizability"><span class="toc-text">2.4 The Cost of Linearizability</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-The-CAP-theorem"><span class="toc-text">2.4.1 The CAP theorem</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-2-Linearizability-and-network-delays"><span class="toc-text">2.4.2 Linearizability and network delays</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Ordering-Guarantees"><span class="toc-text">3. Ordering Guarantees</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Ordering-and-Causality"><span class="toc-text">3.1 Ordering and Causality</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-The-causal-order-is-not-a-total-order"><span class="toc-text">3.1.1 The causal order is not a total order</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-Linearizability-is-stronger-than-causal-consistency"><span class="toc-text">3.1.2 Linearizability is stronger than causal consistency</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-Capturing-causal-dependencies"><span class="toc-text">3.1.3 Capturing causal dependencies</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Sequence-Number-Ordering"><span class="toc-text">3.2 Sequence Number Ordering</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-Noncausal-sequence-number-generators"><span class="toc-text">3.2.1 Noncausal sequence number generators</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-Lamport-Timestamp"><span class="toc-text">3.2.2 Lamport Timestamp</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-Timestamp-ordering-is-not-sufficient"><span class="toc-text">3.2.3 Timestamp ordering is not sufficient</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Total-Order-Broadcast"><span class="toc-text">3.3 Total Order Broadcast</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-Using-total-order-broadcast"><span class="toc-text">3.3.1 Using total order broadcast</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-implementing-linearizable-storage-using-total-order-broadcast"><span class="toc-text">3.3.2 implementing linearizable storage using total order broadcast</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-Implementing-total-order-broadcast-using-linearizable-storage"><span class="toc-text">3.3.3 Implementing total order broadcast using linearizable storage</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Distributed-Transactions-and-Consensus"><span class="toc-text">4. Distributed Transactions and Consensus</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Atomic-Commit-and-Two-Phase-Commit-2PC"><span class="toc-text">4.1 Atomic Commit and Two-Phase Commit(2PC)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-From-single-node-to-distributed-atomic-commit"><span class="toc-text">4.1.1 From single-node to distributed atomic commit</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-Introduction-to-two-phase-commit"><span class="toc-text">4.1.2 Introduction to two-phase commit</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-3-A-system-of-promises"><span class="toc-text">4.1.3 A system of promises</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-4-Coordinator-failure"><span class="toc-text">4.1.4 Coordinator failure</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-5-Three-phase-commit"><span class="toc-text">4.1.5 Three-phase commit</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Distributed-Transactions-in-Practice"><span class="toc-text">4.2 Distributed Transactions in Practice</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1-Exactly-once-message-processing"><span class="toc-text">4.2.1 Exactly-once message processing</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-2-XA-transactions"><span class="toc-text">4.2.2 XA transactions</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-3-Holding-locks-while-in-doubt"><span class="toc-text">4.2.3 Holding locks while in doubt</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-4-Recovering-from-coordinator-failure"><span class="toc-text">4.2.4 Recovering from coordinator failure</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-5-Limitations-of-distributed-transactions"><span class="toc-text">4.2.5 Limitations of distributed transactions</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Fault-Tolerant-Consensus"><span class="toc-text">4.3 Fault-Tolerant Consensus</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-1-Consensus-algorithms-and-total-order-broadcast"><span class="toc-text">4.3.1 Consensus algorithms and total order broadcast</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-2-Single-leader-replication-and-consensus"><span class="toc-text">4.3.2 Single-leader replication and consensus</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-3-Epoch-numbering-and-quorums"><span class="toc-text">4.3.3 Epoch numbering and quorums</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-4-Limitations-of-consensus"><span class="toc-text">4.3.4 Limitations of consensus</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Membership-and-Coordination-Services"><span class="toc-text">4.4 Membership and Coordination Services</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-1-Allocating-work-to-nodes"><span class="toc-text">4.4.1 Allocating work to nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-2-Service-discovery"><span class="toc-text">4.4.2 Service discovery</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-3-Membership-services"><span class="toc-text">4.4.3 Membership services</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Consistency and Consensus
+        
+      </h1>
+      <time class="post-time">
+          03/19/22
+      </time>
+    </header>
+
+    <div class="post-content">
+      <p>分布式系统中会出现很多问题, 最简单的解决方式就是让整个服务失效, 并向用户显示错误信息. 若不能接受这种方法, 则需要容错机制: 即使内部组件出现故障, 服务依然正常运行. 本章将介绍一些用于构建容错分布式系统的算法和协议, 并假设系统会出现任何错误: 网络数据包丢失, 乱序, 重复, 任意延迟, 时钟只能尽可能准确, 节点会暂停运行或随时崩溃.<br>构建容错分布式系统的最好方式是找到一些保证的通用抽象, 实现它们, 并让应用依赖这些保证. 这一点与事务处理类似: 使用事务的应用可假装没有发生过崩溃(atomicity), 没有其他人同时访问数据库(isolation), 存储设备是完全可靠的(durability). 即使发生崩溃, 竞争条件, 和磁盘错误, 事务抽象也会将错误隐藏起来, 应用也因此无需担心这些问题.<br>遵循相同的思路, 我们也可将分布式系统中的某些问题隐藏起来. 分布式系统中最重要的抽象为<strong>consensus</strong>(共识): 让所有节点都对某件事达成一致. 一旦达成共识, 应用就可以利用它实现很多功能. 例如, 单leader复制的数据库中, 当leader崩溃时, 需故障切换到其他节点, 这时剩余节点可通过<em>共识</em>来选举新的leader, 且节点都必须承认该leader; 若两个节点都认为自己是leader, 则会造成<strong>脑裂</strong>, 从而导致数据丢失.</p>
+<h2 id="1-Consistency-Guarantees"><a href="#1-Consistency-Guarantees" class="headerlink" title="1. Consistency Guarantees"></a>1. Consistency Guarantees</h2><p>之前我们讨论过数据库复制中出现的时序问题, 同一时间观察数据库中的两个节点时, 会发现节点间的数据并不一致, 因为写请求无法同时抵达多个节点. 无论数据库复制如何实现(single-leader, multi-leader, leaderless), 都会导致不一致.<br>绝大多数数据库提供<strong>eventual consistency</strong>(最终一致性), 这意味着, 如果停止写入并等待一段时间, 所有读请求都会返回相同数据. 换句话说, 不一致是暂时的, 其最终会自我修复(假设网络中的任何故障都会被修复). 最终一致性也可称为<strong>convergence</strong>(收敛), 因为所有副本最终都会收敛到相同值.<br>然而这是一种弱保证, 其并没有明确收敛何时完成. 收敛前的读请求可以返回任何数据, 例如, 写入后立刻读取, 返回的值不能保证是刚才写入的值, 因为可能是从其他副本读取.<br>对于应用开发人员, 最终一致性与单线程程序中变量的行为完全不同. 对于单线程程序, 若对某个变量赋值并立即读取, 不可能读取到旧值, 也不可能读取失败. 表面上我们可以像读取变量一样读取数据库, 但后者拥有更复杂的语义.<br>使用弱保证的数据库时, 需要时刻意识到其局限性, 不能作出太多假设. 由于应用大部分时间正常运行, 错误往往很微妙且难以测试. 只有系统出现故障(网络中断)或高并发时, 最终一致性的边缘情况才会显现.<br>本文将选择一些更强一致性的模型, 这些模型代价更高: 可能性能更差, 或容错性更差. 但使用更简单, 所以也很受欢迎. 通过了解不同的一致性模型, 我们可以根据需求来决定使用哪一种模型.<br>分布式一致性模型与事务隔离级别的层次结构有一些相似之处, 但两者的关注点不同: 事务隔离用于避免并发执行事务中的竞争条件; 分布式一致性用于协调副本间的状态.</p>
+<h2 id="2-Linearizability"><a href="#2-Linearizability" class="headerlink" title="2. Linearizability"></a>2. Linearizability</h2><p>在最终一致性的数据库中, 同时向两个副本发送相同请求时, 可能得到两个不同值. 那么为何不让数据库给客户端一种只有一个副本的假象? 这样每个客户端都有相同的数据视图, 不必担心复制滞后.<br>这就是<strong>linearizability</strong>(线性一致性, 也可称为atomic consistency, strong consistency, immediate consistency)背后的想法. 线性一致性的定义比较模糊, 但其基本思路是让系统中的数据看起来只有一个备份, 所有操作都是原子性的.<br>在线性一致性的系统中, 只要一个客户端成功写入, 所有客户端都能读取到最新值. 要维持单一副本的假象, 就必须保证读取的值是最新的, 而不是来自陈旧的缓存或副本. 换句话说, 线性一致性是一个新鲜度保证, 以下是一个非线性一致性的系统:<br><img src="/images/System-Design/DDIA/ch-9-1.png" alt="This system is not linearizable, causing football fans to be confused"></p>
+<p>上图中Alice和Bob在同一房间查询世界杯结果. Alice刷新网页并看到结果, 随即告诉Bob; Bob也开始刷新网页, 但请求发送给了落后的数据库副本, 因此显示比赛仍在继续.<br>若Alice和Bob同时刷新网页, 他们可能看到不同的结果, 因为两个请求是并发的. 但本例中Alice先看到结果, Bob的查询结果至少应与Alice保持相同的新鲜度, 然而Bob得到旧值, 这违背了线性一致性.</p>
+<h3 id="2-1-What-Makes-a-System-Linearizable"><a href="#2-1-What-Makes-a-System-Linearizable" class="headerlink" title="2.1 What Makes a System Linearizable?"></a>2.1 What Makes a System Linearizable?</h3><p>线性一致性的思想很简单, 但实现中需要考虑很多细节, 为了更好地理解线性一致性需要观察几个例子.<br>下图展示了线性一致性的数据库中三个客户端同时读写相同的键<code>x</code>. 分布式系统文献中, <code>x</code>称为<strong>register</strong>(寄存器); 例如, <code>x</code>可以是key-value存储中的一个键, 或关系数据库中的一行, 或文档数据库中的一个文档.<br><img src="/images/System-Design/DDIA/ch-9-2.png" alt="If a read request is concurrent with a write request, it may return either the old or the new value"></p>
+<p>上图只展示了各个客户端请求的视角, 而不是数据库内部的视角. 每个线段都是客户端的一次请求, 线段起点表示客户端发送请求, 终点表示收到响应. 由于存在网络延迟, 客户端并不确定请求何时被处理, 只能确定请求在线段的某个时刻被处理. 该例中, 寄存器有两种类型的操作:</p>
+<ul>
+<li>$read(x) \Rightarrow v$: 客户端请求读取寄存器<code>x</code>的值, 数据库返回<code>v</code></li>
+<li>$write(x, v) \Rightarrow r$: 客户端请求向寄存器<code>x</code>写入数值<code>v</code>, 数据库返回<code>r</code></li>
+</ul>
+<p>开始时<code>x = 0</code>, 客户端C发送写入请求(<code>x = 1</code>). 这期间A和B不断从数据库读取数据, 以下是A和B收到的响应:</p>
+<ul>
+<li>A的第一个读请求在写请求完成前开始, 返回旧值0</li>
+<li>A的最后一个读请求在写请求完成后开始, 若数据库为线性一致性, 则返回新值1: 由于写入必然在线段起点和终点之间的某个时刻完成, 若在写入完成后读取, 必然读取到新值</li>
+<li>若读取与写入在时间上重叠, 则可能返回0或1, 因为无法确定读取时写入是否完成. 这些操作是<strong>concurrent</strong>(并发的)</li>
+</ul>
+<p>然而这些并不足以描述线性一致性: 由于读写并发时, 读取可以看到旧值或新值, 因此写入期间, 读取可能看到旧值和新值来回翻转, 这不符合&quot;单一数据副本&quot;的期望. 为此, 需添加一个新的约束, 如下图:<br><img src="/images/System-Design/DDIA/ch-9-3.png" alt="After any one read has returned the new value, all following reads (on the same or other clients) must also return the new value"></p>
+<p>在线性一致性的系统中, 必定存在一个时间点让<code>x</code>从0变为1. 因此, 当一个客户端读取到1时, 后续所有读取都应返回1. 上图的箭头展示了这种时序依赖关系. 客户端A作为第一个读取到1的节点, 后续B的读取也必须得到1, 即使C还未得到回复.<br>下图为一个更复杂的例子, 展示了每个操作是如何在特定时刻原子性生效的.<br><img src="/images/System-Design/DDIA/ch-9-4.png" alt="Visualizing the points in time at which the reads and writes appear to have taken effect. The final read by B is not linearizable"></p>
+<p>上图新增了一种操作: $cas(x, v_{old}, v_{new}) \Rightarrow r$, 表示客户端请求一个原子性的<strong>compare-and-set</strong>(比较与设置)操作. 若寄存器<code>x</code>的当前值等于$v_{old}$, 则将其设置$v_{new}$; 若不同, 则返回错误.<br>上图用竖线表示执行每个操作的时刻(竖线必须在线段内). 这些竖线按顺序连接起来, 其必须是一个有效的寄存器读写顺序(每次读取必须返回最新的写入值).<br>竖线的连线总是从左向右移动, 而不是从右向左, 这就是线性一致性的要求. 该特性确保了新鲜度保证: 一旦写入或读取新值, 后续所有读取都必须返回新值. 以下是上图中的一些细节:</p>
+<ul>
+<li>B发送读取<code>x</code>的请求, 之后D发送写请求<code>x = 0</code>, 之后A发送写请求<code>x = 1</code>, 最终B读取到1, 这是合理的: 数据库优先处理D的写入, 然后处理A的写入, 最后处理B的读取. 虽然没有按照发送顺序执行, 但也是可接受的, 因为这三个请求是并发的, B的请求可能遇到网络延迟, 因此数据库最后处理该请求</li>
+<li>B在A收到回复前收到1, 说明写入1的操作已经完成, 这也是合理的: 这并不意味写之前读到值, 只是因为A的响应存在延迟</li>
+<li>该模型没有任何事务隔离: 客户端随时修改数值. 例如, C读取到1, 之后读取到2, 这是因为B中途进行了修改. 原子性CAS可用于检查数值是否被另一个客户端修改: B和C的cas请求成功, 但D的cas失败(此时<code>x</code>的数值不为0)</li>
+<li>B最后的读取不是线性一致的, 由于A在B之前收到最新值4, 因此B不应收到旧值2</li>
+</ul>
+<h3 id="2-2-Relying-on-Linearizability"><a href="#2-2-Relying-on-Linearizability" class="headerlink" title="2.2 Relying on Linearizability"></a>2.2 Relying on Linearizability</h3><p>线性一致性在什么环境下有用? 对于公布比赛分数, 滞后几秒的比赛结果并不会导致太大问题. 但对于其他领域, 线性一致性是系统的一个重要条件.</p>
+<h4 id="2-2-1-Locking-and-leader-election"><a href="#2-2-1-Locking-and-leader-election" class="headerlink" title="2.2.1 Locking and leader election"></a>2.2.1 Locking and leader election</h4><p>单leader复制的系统需保证任何时刻只有一个leader. 其中一个选举leader的方式为lock: 每个节点在启动时尝试获得锁, 成功获得锁的节点升级为leader. 无论锁如何实现, 都必须是线性一致性的: 所有节点都承认某个节点获得锁, 否则无效.<br>Apache ZooKeeper和etcd之类的协调服务通常用于分布式锁和leader选举. 他们使用<strong>consensus</strong>(共识)算法来实现可容错的线性一致操作. 而Apache Curator则借助ZooKeeper来实现更高级别的服务.<br>在分布式数据库中, 分布式锁在很多粒度级别上使用. Oracle RAC会为每个磁盘页面使用一个锁, 多个节点共享一个磁盘存储系统的访问权限. 由于线性一致性的锁对于事务执行至关重要, RAC会提供一个专用集群互联网络.</p>
+<h4 id="2-2-2-Constraints-and-uniqueness-guarantees"><a href="#2-2-2-Constraints-and-uniqueness-guarantees" class="headerlink" title="2.2.2 Constraints and uniqueness guarantees"></a>2.2.2 Constraints and uniqueness guarantees</h4><p>唯一性约束在数据库中很常见, 例如: 用户名或email唯一标识一个用户, 文件路径和文件名标识一个文件. 若想在写入数据时遵循约束, 就需要线性一致性(如, 两个用户同时创建相同路径和文件名的文件, 其中一个返回错误).<br>该情况与锁类似: 注册账户时, 需先为用户名获得一个锁. 该操作类似于CAS: 若用户名未被使用, 则将用户名赋予当前用户.<br>若想确保银行余额不为负, 或出售的商品没有超过库存量, 或两个人不会预定同一航线的同一座位, 就要求所有节点同意一个最新值. 实际应用中, 这种约束会被放宽(若航班被超额预定, 则将用户转移到另一条航线并补偿损失), 也就不需要线性一致性.<br>然而, 一个严格的唯一性约束需要线性一致性; 其他类型的约束(外键或属性约束)则不需要线性一致性.</p>
+<h4 id="2-2-3-Cross-channel-timing-dependencies"><a href="#2-2-3-Cross-channel-timing-dependencies" class="headerlink" title="2.2.3 Cross-channel timing dependencies"></a>2.2.3 Cross-channel timing dependencies</h4><p>对于公布比赛分数的例子, 若Alice没有告诉Bob分数, 则Bob不会知道自己的查询是陈旧的, 只会不断刷新直到看到分数. 由于系统中存在其他信道(Alice告诉Bob), 才会发现违背了线性一致性.<br>计算机系统中也有类似情况. 假设网站允许用户上传照片, 后台程序会压缩照片以加速下载, 该系统的架构和数据流如下:<br><img src="/images/System-Design/DDIA/ch-9-5.png" alt="The web server and image resizer communicate both through file storage and a message queue, opening the potential for race conditions"></p>
+<p>Image resizer负责压缩照片, 指令通过MQ从服务器发向resizer. 服务器不会将整个图片放入MQ, 因为MQ用于短消息的传输, 而一张照片有几兆大小. 因此照片会被写入到文件存储服务, 一旦写入完成, 指令会放入MQ.<br>若文件存储服务遵循线性一致性, 则一切正常; 但若不遵循线性一致性, 则存在竞争条件: MQ可能比存储服务内部的复制快, 这时resizer会拿到旧照片, 导致数据不一致.<br>该系统中存在两个信道: 文件存储和MQ. 由于没有线性一致性提供的新鲜度保证, 两个信道间就会出现竞争条件.<br>线性一致性不是唯一避免竞争条件的方法, 但却是最容易理解的. 若能控制其他信道, 也可避免竞争条件, 但会带来额外的复杂度.</p>
+<h3 id="2-3-Implementing-Linearizable-Systems"><a href="#2-3-Implementing-Linearizable-Systems" class="headerlink" title="2.3 Implementing Linearizable Systems"></a>2.3 Implementing Linearizable Systems</h3><p>线性一致性最简单的实现方法是只保留一个数据副本, 然而这样没有容错性: 若该节点失效, 则数据丢失, 只有等节点恢复才能访问数据. 为实现容错就需要<strong>复制</strong>. 以下是几种常见的复制方案:</p>
+<ul>
+<li>Single-leader replication: leader持有主副本, follower持有备份副本. 若从leader读取, 或从同步更新的follower读取, 则可能实现线性一致性. 但由于设计(快照隔离)或同步问题, 并不是所有单leader数据库都支持线性一致性.<br>如果想从leader读取数据, 必须先确定谁是leader. 一个节点认为自己是leader, 但实际上可能并不是. 若让该节点处理读请求, 很可能违反线性一致性. 使用asynchronous replication(异步复制)时, 故障切换可能会丢失已提交的写入, 并违反了持久性和线性一致性.</li>
+<li>Consensus algorithms: 共识算法与单leader复制类似. 但共识协议可防止脑裂和陈旧副本. 因此共识算法可实现线性一致性存储, ZooKeeper和etcd就是这么实现的.</li>
+<li>Multi-leader replication: 通常不是线性一致性的, 因为允许同时写入多个节点, 并异步复制到其他节点. 由于没有单一数据副本, 需要处理写入冲突.</li>
+<li>Leaderless replication: 可实现强一致性, 但取决于法定人数的具体配置, 还有如何定义强一致性. 基于日历时钟的LWW(最后写入胜利)冲突解决方法几乎是非线性一致性的, 由于存在时钟偏差, 无法保证事件顺序与时间戳一直. 宽松的法定人数也会破坏线性一致性; 即使是严格的法定人数, 也可能违反线性一致性.</li>
+</ul>
+<h4 id="2-3-1-Linearizability-and-quorums"><a href="#2-3-1-Linearizability-and-quorums" class="headerlink" title="2.3.1 Linearizability and quorums"></a>2.3.1 Linearizability and quorums</h4><p>在Dynamo风格的模型中, 严格的法定人数读写看起来满足线性一致性. 但出现网络延迟时, 可能出现竞争条件, 如下图:<br><img src="/images/System-Design/DDIA/ch-9-6.png" alt="A nonlinearizable execution, despite using a strict quorum"></p>
+<p><code>x</code>初始值为0, writer向三个replica发送<code>x = 1</code>的写请求($n &#x3D; 3, w &#x3D; 3$). A从两个节点组成的法定人数($r &#x3D; 2$)读取数据, 并从其中一个节点读取到1. B从两个节点组成的法定人数读取数据, 获得旧值0. 虽然满足了法定人数条件($m + r &gt; n$), 但不满足线性一致性: B的请求在A请求完成之后, 但B拿到旧值, A拿到新值(与Alice和Bob的情况一样).<br>也可通过降低性能来满足线性一致性: reader在将数据返回给应用前, 必须同步执行read repair(读修复); writer在发送写请求前, 必须读取法定人数节点的最新状态. 由于性能损失, Riak不执行同步读修复; Cassandra在法定人数读取时会等待读修复, 但由于使用LWW的冲突解决方案, 对于同一键的多个并发写入也会破坏线性一致性.<br>而且这种方法只能实现线性一致性的读写, 不能实现线性一致性的CAS, 因为它需要一个共识算法. 因此, 最好假设Dynamo风格的leaderless系统不提供线性一致性.</p>
+<h3 id="2-4-The-Cost-of-Linearizability"><a href="#2-4-The-Cost-of-Linearizability" class="headerlink" title="2.4 The Cost of Linearizability"></a>2.4 The Cost of Linearizability</h3><p>下图为多数据中心中的多leader复制:<br><img src="/images/System-Design/DDIA/ch-9-7.png" alt="A network interruption forcing a choice between linearizability and availability"></p>
+<p>上图两个数据中心之间发生网络中断时, 但数据中心内部网络依旧正常, 客户端也可以连接到数据中心. 由于数据中心之间的写入是异步的, 因此每个数据中心正常运行, 写入会在网络恢复后继续执行.<br>如果使用单leader复制, 则leader必然处于其中一个数据中心, 任何写入和线性一致的读取都要交由leader处理, 因此连接到follower的客户端, 其读写请求必须通过网络发送给leader所在的数据中心.<br>若数据中心间的网络中断, 连接到follower的客户端无法连接到leader, 因此无法写入任何数据, 也不能进行线性一致的读取.</p>
+<h4 id="2-4-1-The-CAP-theorem"><a href="#2-4-1-The-CAP-theorem" class="headerlink" title="2.4.1 The CAP theorem"></a>2.4.1 The CAP theorem</h4><p>上述问题不止发生在单leader和多leader复制中, 所有线性一致性的数据库都有这个问题. 即使是单个数据中心内也是如此. 面临的权衡如下:</p>
+<ul>
+<li>若应用需要线性一致性, 且某些replica与其他replica断开连接, 则这些replica无法处理请求: 要么等待网络恢复, 要么直接返回错误</li>
+<li>若应用不需要线性一致性, 则可交由任意replica处理请求, 即使出现网络中断, 应用也可照常工作</li>
+</ul>
+<p>因此, 不需要线性一致性的应用有更好的网络容错能力, 被称为CAP定理, 由Eric Brewer于2000年命名. CAP一开始只是一个经验法则, 并没有准确定义, 目的是讨论数据库的权衡. 那时分布式数据库侧重于在共享存储的集群上提供线性一致性语义, CAP定理让数据库工程师去探索分布式无共享系统的设计领域, 这类架构更适合实现大规模的网络服务.<br>CAP有时会被解释为: Consistency(一致性), Availability(可用性), 和Partition(分区), 三者只能选其二. 这种说法是错误的, 因为网络分区是一种无法避免的故障. 当网络无故障时, 系统可提供一致性和可用性; 一旦网络出错, 则只能从两者中选择一个. 因此, CAP更应该解释为: 当发生分区时, 选择一致性还是可用性.<br>CAP定理的正式定义仅限于比较狭隘的范围: 其只考虑了一种一致性模型(线性一致性)和一种故障(网络分区), 但没有提及网络延迟, 节点死亡, 或其他权衡. 因此, CAP对于设计系统而言没有实际价值.</p>
+<h4 id="2-4-2-Linearizability-and-network-delays"><a href="#2-4-2-Linearizability-and-network-delays" class="headerlink" title="2.4.2 Linearizability and network delays"></a>2.4.2 Linearizability and network delays</h4><p>虽然线性一致性是一个很有力的保证, 但现实中使用线性一致性的系统非常少. 例如, 即使是现代多核CPU的RAM也不是线性一致性: 若某个CPU上运行的线程写入某个内存地址, 之后另一个CPU上运行的线程从相同内存地址读取数据, 也不能保证读取到新值(除非使用<strong>memory barrier</strong>).<br>这是因为每个CPU都有自己的内存缓存和存储缓存区. 默认情况下, 内存访问会优先查找缓存, 任何更改会异步写入内存. 由于缓存的访问速度远高于内存, 因此对CPU的性能至关重要. 但由于存在多个数据副本, 且异步更新, 因此违反了线性一致性.<br>CAP定理对于多核内存一致性模型没有意义: 计算机内的通信被认为是可靠的, 不必担心某个CPU和其他CPU失去连接. 这里牺牲线性一致性换来的是性能提升, 而不是容错能力.<br>很多分布式数据库也是为了性能而舍弃线性一致性, 而不是为了容错能力. 线性一致性不光在网络故障时变慢, 正常时也会降低性能.<br>Attiya和Welch向我们证明: 线性一致性的存储无法与高效兼容: 如果想要线性一致性, 则读写请求的响应时间与网络延迟的不稳定性成正比. 对于高度可变延迟的网络, 读写请求的响应时间也会很高, 只有降低一致性要求才能提高性能. 因此, 对性能敏感的系统需做出一些权衡.</p>
+<h2 id="3-Ordering-Guarantees"><a href="#3-Ordering-Guarantees" class="headerlink" title="3. Ordering Guarantees"></a>3. Ordering Guarantees</h2><p>之前讨论过, 线性一致的寄存器看起来好像单个数据副本, 每个操作都会在某个时间点原子生效. 该定义意味着, 操作按照某个定义下的顺序执行, 以下是我们讨论过的<strong>顺序</strong>:</p>
+<ul>
+<li>单leader复制中的leader决定了复制日志中的<strong>写入顺序</strong>, 也就是follower的写入顺序. 若没有leader, 则并发操作会导致冲突.</li>
+<li><strong>可串行化</strong>保证事务看起来像是按照某种<strong>先后顺序</strong>执行. 它能以串行顺序执行事务, 并防止serialization conflict(序列化冲突, 通过锁或中止事务)</li>
+<li>在分布式系统中使用时间戳和时钟也是为了引入<strong>顺序</strong>, 用于确定哪个写入先发生</li>
+</ul>
+<p>事实证明, 顺序, 线性一致性和共识之间存在着某种联系. 尽管这些概念很抽象和理论化, 但可帮助我们明确系统的能力范围.</p>
+<h3 id="3-1-Ordering-and-Causality"><a href="#3-1-Ordering-and-Causality" class="headerlink" title="3.1 Ordering and Causality"></a>3.1 Ordering and Causality</h3><p>之所以<strong>顺序</strong>反复出现, 其中一个原因是: 其能保证<strong>causality</strong>(因果关系). 因果关系在很多例子中都十分重要:</p>
+<ul>
+<li>在&quot;一致前缀读&quot;中, 观察者先看到问题的答案, 然后看到被回答的问题, 这违背了因果关系, 因此让人感到困惑: 我们认为问题和答案之间存在<strong>causal dependency</strong>(因果依赖), 先有问题才能有答案.</li>
+<li>对于三个leader之间的复制, 一些写入会因网络延迟而覆盖另一些写入. 从replica的角度来看, 我们要更新一个不存在的行. 其中的因果关系是: 先创建记录, 才能更新记录.</li>
+<li>在&quot;检测并发写入&quot;中, A和B两个操作存在三种可能性: A先于B, B先于A, A和B并发. 操作发生的前后关系就是一种因果关系的体现: 若A先于B, 则B知道A的存在, 或基于A, 或依赖于A; 若A和B并发, 则A与B没有任何因果关系, 或者说, A和B互相不知道彼此.</li>
+<li>在&quot;事务的快照隔离&quot;中, 我们提到: 事务从一致性快照中读取数据, 这里的&quot;一致性&quot;意味着因果关系保持一致: 如果快照包含答案, 则必须包含被回答的问题. 从某个时间点观察数据库时, 因果关系保持一致表示: 该时间点之前发生的所有操作的影响都可见, 之后发生的操作的影响都不可见. <strong>读偏差</strong>表示读取的数据违反了因果关系.</li>
+<li>事务间的<strong>写偏差</strong>也说明了因果依赖: 事务认为Bob依然在值班, 因此允许Alice请假. 该例中, <code>是否批准请假</code>依赖于<code>当前值班情况</code>. <strong>可串行化快照隔离</strong>通过追踪事务间的因果关系来检查写偏差.</li>
+<li>Alice和Bob观看比赛的例子中, Bob听到Alice的消息后从数据库拿到旧比分, 这违背了因果关系: Alice的消息依赖于比分, 因此Bob也应看到比分.</li>
+</ul>
+<p>因果关系给事件施加了一个顺序: 因在果之前, 消息接收后发送消息, 答案在问题后. 因果依赖的操作链定义了因果顺序, 即什么在什么之前发生.<br>若系统遵循因果关系的顺序, 可认为该系统是<strong>causally consistent</strong>(因果一致的). 例如, 快照隔离提供了因果一致性: 当读取数据库时, 能看到数据的因果关系.</p>
+<h4 id="3-1-1-The-causal-order-is-not-a-total-order"><a href="#3-1-1-The-causal-order-is-not-a-total-order" class="headerlink" title="3.1.1 The causal order is not a total order"></a>3.1.1 The causal order is not a total order</h4><p><strong>Total order</strong>(全序)允许任何两个元素进行比较. 例如, 自然数就是全序的: 给定两个数字, 如5和13, 那么13大于5.<br>但数学集合不完全是全序的: <code>&#123;a, b&#125;</code>与<code>&#123;b, c&#125;</code>不一定谁大谁小, 它们是<strong>incomparable</strong>(不可比较的), 因此数学几何是<strong>partially ordered</strong>(偏序的): 某些情况下一个集合大于另一个集合, 但有时无法比较.<br>全序和偏序在不同的数据库一致性模型中的差异如下:</p>
+<ul>
+<li>Linearizability: 如果系统看起来只有一份数据副本, 且每个操作都是原子性的, 那么我们可以判断任意两个操作的先后顺序.</li>
+<li>Causality: 如果无法说明两个操作哪个先发生, 则这两个操作是并发的. 换句话说, 若两个事件存在因果关系, 则它们之间是有序的. 因果关系定义了一种偏序, 而不是全序: 有些操作之间有顺序, 有些则无法比较.</li>
+</ul>
+<p>根据上述定义, 线性一致的存储不存在并发操作: 所有操作都被全序排序在一条时间线上. 可能存在多个请求等待处理, 但系统会确保每个请求都在某个时间点原子处理.<br>并发意味着时间线存在分支和合并, 无法比较不同时间线上的操作(并发操作). 分布式版本控制系统(如Git), 其版本历史与因果关系图十分相似. 一个commit可在另一个commit之后, 但有时存在多个branch(多个开发人员同时在同一项目上工作), merge会将这些commit合并.</p>
+<h4 id="3-1-2-Linearizability-is-stronger-than-causal-consistency"><a href="#3-1-2-Linearizability-is-stronger-than-causal-consistency" class="headerlink" title="3.1.2 Linearizability is stronger than causal consistency"></a>3.1.2 Linearizability is stronger than causal consistency</h4><p>线性一致性<strong>隐含着</strong>因果关系: 任何线性一致的系统都能保证因果关系. 如果系统中存在多个信道, 线性一致性可自动保证因果关系, 系统无需做任何特殊操作.<br>由于确保了因果性, 系统也变得容易理解, 但需要牺牲性能和可用性, 尤其是系统遭遇严重网络延迟时(例如, 系统在地理上散布). 因此, 很多系统会为了性能要求而放弃线性一致性.<br>线性一致性也不是保证因果性的唯一途径. 系统可以在保持因果性的同时, 没有太多性能折损. 在所有一致性模型中, 因果一致性是最强的一致性模型, 即使网络故障时仍保持可用.<br>很多情况下, 系统看上去需要线性一致性, 实际上只需要因果一致性.</p>
+<h4 id="3-1-3-Capturing-causal-dependencies"><a href="#3-1-3-Capturing-causal-dependencies" class="headerlink" title="3.1.3 Capturing causal dependencies"></a>3.1.3 Capturing causal dependencies</h4><p>为了维护因果性, 需知道哪个操作在哪个操作之前, 这是一种偏序: 并发操作可以以任意顺序执行, 但若某个操作发生于另一个操作之前, 则所有节点都需以该顺序执行. 因此, 当一个replica处理请求时, 必须确保因果前驱的操作都已完成; 若某个前驱操作丢失, 则阻塞后续操作, 直到前驱操作完成.<br>为了确定因果依赖, 我们需要一些方法描述系统内节点的&quot;知识&quot;. 当一个节点发出写入Y的请求时看到X的值, 那么X和Y可能存在因果关系. 欺诈指控的犯罪调查时经常遇到此类问题: CEO是否在知道X的情况下做出Y决定.<br>判断某个操作是否在其他操作之前, 这种技巧在&quot;检测并发写入&quot;中提及. 在leaderless的数据存储中, 为了防止丢失更新, 需检测某个键的并发写入. 因果一致性则更进一步: 其需要跟踪整个数据库中的因果依赖, 而不是某个键.<br>为了确定因果顺序, 数据库需知道应用读取了哪个版本的数据. 可串行化快照隔离中有类似的冲突检测: 当提交事务时, 数据库会检测它所读取的版本号是否为最新的.</p>
+<h3 id="3-2-Sequence-Number-Ordering"><a href="#3-2-Sequence-Number-Ordering" class="headerlink" title="3.2 Sequence Number Ordering"></a>3.2 Sequence Number Ordering</h3><p>虽然因果性是一个重要的理论概念, 但实际中不可能跟踪所有因果关系. 对于大多数应用, 客户端会在写入前读取大量数据, 无法判断下次写入依赖于之前的哪些读取. 跟踪所有已读数据会导致巨大开销.<br>因此, 我们可以使用<strong>sequence number</strong>(序列号)或<strong>timestamp</strong>(时间戳)来排序事件. 时间戳无需从日历时钟获取, 可来自逻辑时钟.<br>这种序列号或时间戳十分紧凑(只有几个byte), 且提供全序: 每次操作都有唯一序列号, 可比较任意两个操作的序列号.<br>我们也可使用consistent with causality(与因果一致的)的全序来生成序列号: 若操作A在因果上先于操作B, 则A的序列号小于B. 并发操作可任意排序. 这种全序关系捕获了所有因果信息, 但也施加了更严格的顺序.<br>对于单leader复制, 复制日志定义了与因果一致的写操作. Leader会为每个操作分配一个单调递增的序列号. 只要follower按照复制日志中的顺序写入, 则始终保持因果一致.</p>
+<h4 id="3-2-1-Noncausal-sequence-number-generators"><a href="#3-2-1-Noncausal-sequence-number-generators" class="headerlink" title="3.2.1 Noncausal sequence number generators"></a>3.2.1 Noncausal sequence number generators</h4><p>若不存在单一leader, 则很难为每个操作分派序列号. 以下是针对多leader复制的方法:</p>
+<ul>
+<li>每个节点生成各自的序列号. 例如, 存在两个节点, 其中一个节点只生成奇数, 另一个节点只生成偶数. 可在序列号的二进制表示中预留一些位作为节点的唯一标识符, 这样可保证不同的节点不会生成相同的序列号</li>
+<li>为每个操作附加一个日历时钟的时间戳. 时间戳并不连续, 但只要分辨率足够高, 也可提供全序操作</li>
+<li>预留序列号区块. 例如, 节点A拥有$[1, 1000]$的序列区间, 节点B拥有$[1001, 2000]$的序列区间, 每个节点独立分配各自的序列号, 不够时再分配新的区间</li>
+</ul>
+<p>上述三种方法比单leader的自增计数器性能好, 且更具伸缩性. 但它们都有一个问题: 由于节点生成的序列号无法捕获跨节点的操作顺序, 序列号与因果不一致, 因而产生因果问题:</p>
+<ul>
+<li>每个节点每秒都处理不同数量的操作. 假设节点A只生成偶数序列号, 节点B只生成奇数序列号, 则A可能落后于B. 我们无法判断一个奇数序列号和一个偶数序列号哪个更先发生.</li>
+<li>日历时钟生成的时间戳受到时间偏差的影响, 会导致因果不一致</li>
+<li>对于区间分配, 假设一个序列号来自$[1001, 2000]$区间, 然而更晚的操作可能来自$[1, 1000]$区间, 序列号与因果关系也是不一致的.</li>
+</ul>
+<h4 id="3-2-2-Lamport-Timestamp"><a href="#3-2-2-Lamport-Timestamp" class="headerlink" title="3.2.2 Lamport Timestamp"></a>3.2.2 Lamport Timestamp</h4><p>虽然上述三种序列号生成方法与因果不一致, 但有另一种因果一致的序列号生成方法, 称为<strong>Lamport timestamp</strong>(兰伯特时间戳), 于1978年由Leslie Lamport提出. 以下是一个Lamport时间戳的应用:<br><img src="/images/System-Design/DDIA/ch-9-8.png" alt="Lamport timestamp provide a total ordering consistent with causality"></p>
+<p>上图中每个节点都有一个唯一标识符, 和记录操作数的计数器. Lamport时间戳由<code>(counter, node ID)</code>组成. 两个节点可能生成相同的计数值, 但由于节点ID是唯一的, 因此时间戳也是唯一.<br>Lamport时间戳与日历时钟无关, 但提供了一个全序: 当我们有两个时间戳, 谁的计数值越大, 时间戳就越大; 若计数值相同, 则由节点ID决定顺序. 截至目前, 该方法与奇数&#x2F;偶数的方法没有太大区别, 真正让Lamport时间戳实现因果一致性的关键在于: 每个节点和客户端都跟踪各自见到的最大计数值, 若节点收到的请求大于自己的计数值, 则将自己的计数器设置为该值.<br>上图中, A收到节点2的响应, 其中计数值为5, 由于该值大于自己的最大值1, 因此将计数值改为5, 下一次操作的计数值为6. 只要每次操作都携带最大计数值, 则每个因果依赖的操作都有递增的时间戳, 因此可保证Lamport时间戳与因果一致.<br>Lamport时间戳有时会与&quot;检测并发写入&quot;的版本向量混淆. 虽然两者有相似之处, 但目的不同: 版本向量用于判断一个操作是否与另一个操作并发, Lamport时间戳用于实现一个全序. 对于Lamport时间戳, 我们无法判断两个操作是否并发, 或它们之间是否存在依赖. </p>
+<h4 id="3-2-3-Timestamp-ordering-is-not-sufficient"><a href="#3-2-3-Timestamp-ordering-is-not-sufficient" class="headerlink" title="3.2.3 Timestamp ordering is not sufficient"></a>3.2.3 Timestamp ordering is not sufficient</h4><p>虽然Lamport时间戳定义了一个因果一致的全序, 但仍不足以解决分布式系统中的很多问题. 例如, 系统需要确保每个账户都有唯一用户名. 若两个用户同时使用相同用户名, 则应该是其中一个成功, 另一个失败.<br>乍看之下, 全序可以解决该问题: 时间戳更小的操作为胜者, 更大时间戳的操作失败. 由于时间戳是全序的, 因此可以比较任意两个操作. 但创建用户是一个<strong>实时</strong>问题, 而Lamport时间戳适合在事后决定胜者: 只有等到所有创建用户的操作完成后, 才能比较时间戳; 当节点收到创建用户的请求时, 需立刻做出决定, 然而此时节点并不知道其他节点是否正在处理相同用户名的请求, 也就无法比较时间戳.<br>为确保其他节点没有处理相同的用户名, 且时间戳更小的请求, 我们需要检查每个节点都在做什么. 若某个节点出现故障或断开连接, 则整个系统陷入停滞, 这并不是我们想要的容错系统.<br>这里的问题在于, 只有收集完所有操作后才能构建出一个全序; 若某个节点产生了一些操作, 但我们无法知道这些操作, 则无法构造全序关系: 这些未知操作可能出现在全序中的任意位置.<br>总之, 为了实现用户名的唯一性约束, 不能只依赖于操作的全序, 还需要知道全序何时完成. 若想创建一个用户名, 需确保其他节点没有在你的操作前写入相同用户名. </p>
+<h3 id="3-3-Total-Order-Broadcast"><a href="#3-3-Total-Order-Broadcast" class="headerlink" title="3.3 Total Order Broadcast"></a>3.3 Total Order Broadcast</h3><p>若代码只在一个CPU上运行, 则操作的全序就是CPU上执行的顺序. 但在分布式系统中, 很难让所有节点对一个全局顺序上达成一致. 虽然可以用时间戳和序列号, 但都不如单leader复制(使用时间戳就舍弃了容错能力).<br>单leader复制就像单核CPU, leader执行操作的顺序决定了操作的全序, 其挑战在于如何增加leader的吞吐量, 如何处理leader宕机, 这类问题称为<strong>total order broadcast</strong>(全序广播)或<strong>atomic broadcast</strong>(原子广播).<br>全序广播作为一种节点间交换消息的协议, 其需满足两个安全属性:</p>
+<ul>
+<li>Reliable delivery(可靠交付): 不会丢失消息, 若消息被传递给一个节点, 则将被传递给所有节点</li>
+<li>Totally ordered delivery(全序交付): 消息以相同的顺序传递给每个节点</li>
+</ul>
+<p>全序广播算法需确保可靠性和有序性, 即使节点或网络报错. 虽然会因网络中断而导致消息无法传递, 但算法可保证消息会在网络恢复后送达.</p>
+<h4 id="3-3-1-Using-total-order-broadcast"><a href="#3-3-1-Using-total-order-broadcast" class="headerlink" title="3.3.1 Using total order broadcast"></a>3.3.1 Using total order broadcast</h4><p>ZooKeeper和etcd这类共识服务都实现了全序广播, 暗示了共识与全序广播存在着紧密关联. 若每个消息都表示一次数据写入, 且每个replica以相同顺序执行, 则replica间将保持一致(复制延迟除外). 这一原理称为<strong>state machine replication</strong>(状态机复制).<br>全序广播也可用于实现可串行化的事务: 若每个消息表示一个事务, 则数据库的分区和副本都互相保持一致.<br>全序广播的一个重要表现是: 当发送消息时, 消息的顺序就被固定下来, 节点无法向之前的时间点插入消息. 从另一个角度来说, 全序广播类似于创建一个日志(如复制日志, 事务日志, 或WAL): 发送消息等同于在日志中追加消息. 由于所有节点以相同顺序传递相同的消息, 因此所有节点都可以读取日志, 并看到相同的消息序列.<br>全序广播也可用于实现锁服务来提供fencing token. 每个申请锁的请求都作为一条消息被追加到日志末尾, 且所有消息都按照日志中出现的顺序依次编号. 由于序列号单调递增, 因此可作为fencing token. 在ZooKeeper中, 序列号被称为zxid.</p>
+<h4 id="3-3-2-implementing-linearizable-storage-using-total-order-broadcast"><a href="#3-3-2-implementing-linearizable-storage-using-total-order-broadcast" class="headerlink" title="3.3.2 implementing linearizable storage using total order broadcast"></a>3.3.2 implementing linearizable storage using total order broadcast</h4><p>线性一致的系统中存在操作的全序, 但线性一致不等同于全序广播, 两者存在紧密联系.<br>全序广播是异步的: 消息以固定顺序可靠传送, 但不保证消息何时抵达; 线性一致性是新鲜度保证: 读取必须获得最新的写入值. 不过我们可以基于全局广播来实现线性一致的存储. 例如, 确保用户名的唯一性.<br>假设对于每个可能的用户名, 都有一个可进行CAS原子操作的线性一致寄存器. 每个寄存器的初始值为null. 当创建用户名时, 对该用户名的寄存器执行CAS操作: 若寄存器的值为空, 则将其设置为该用户的账户ID. 若多个用户同时获取相同用户名, 只有一个CAS操作会成功.<br>通过将全序广播作为一个可追加日志, 可实现线性一致的CAS操作:</p>
+<ol>
+<li>日志追加一个消息, 试探性地声明想要的用户名</li>
+<li>读取日志, 等待刚才追加的消息被读回</li>
+<li>检查是否有任何消息已经声明该用户名. 若声明该用户名的第一条消息是自己的消息, 则说明该用户名属于自己, 可提交声明并向客户端确认; 如果不是自己的消息, 则中止操作.</li>
+</ol>
+<p>若存在多个并发写入, 由于日志项以相同顺序发往所有节点, 因此所有节点会对最先到达者达成一致. 选择冲突写入中的第一个作为胜者, 并中止后来者, 从而让所有节点对某次写入达成一致, 类似的方法也可用于实现可序列化的多对象事务.<br>尽管上述过程能保证线性一致的写入, 但不能保证线性一致的读取: 从异步更新的日志读取到的数据可能是旧值. 以下是实现线性一致读取的方法:</p>
+<ul>
+<li>在日志中追加消息, 读取日志, 等待消息返回后再执行真正的读取. 消息在日志中的位置决定了读取发生的时间点</li>
+<li>如果日志允许以线性一致的方式获取最新日志消息的位置, 则可查询该位置, 等待该位置之前的所有消息传回, 然后执行读取(ZooKeeper <code>sync()</code>背后的思想)</li>
+<li>从同步更新的的副本中读取, 该副本一定是最新的</li>
+</ul>
+<h4 id="3-3-3-Implementing-total-order-broadcast-using-linearizable-storage"><a href="#3-3-3-Implementing-total-order-broadcast-using-linearizable-storage" class="headerlink" title="3.3.3 Implementing total order broadcast using linearizable storage"></a>3.3.3 Implementing total order broadcast using linearizable storage</h4><p>上一节讨论了如何基于全序广播构建线性一致的CAS操作. 现在反过来: 假设我们有线性一致的存储, 如何构建全序广播.<br>最简单的方法是使用线性一致的寄存器来存储一个整数, 该寄存器有<strong>自增并返回</strong>的操作, 或原子CAS操作.<br>每个要通过全序广播发送的消息, 必须先对寄存器执行<em>自增并返回</em>操作, 获取一个整数, 并将该值作为序列号附加在消息中. 之后可向所有节点发送该消息, 接收到该消息的节点会按序列号顺序传递消息.<br>与Lamport时间戳不同, 从线性一致寄存器获得的数字是连续的. 因此, 若某节点发送了序列号为4的消息, 并接收到序列号为6的消息, 那么存在序列号为5的消息未被接收. 这也是全序广播和时间戳排序的关键区别.<br>问题在于如何创建一个线性一致且具有<em>自增并返回</em>操作的整数: 若没有任何意外发生, 可放置在节点中的某个变量中; 但问题在于该节点可能断开网络, 或因节点崩溃而丢失数值. 只要思考线性一致的序列号生成器足够深入, 就不可避免地想到共识算法.</p>
+<h2 id="4-Distributed-Transactions-and-Consensus"><a href="#4-Distributed-Transactions-and-Consensus" class="headerlink" title="4. Distributed Transactions and Consensus"></a>4. Distributed Transactions and Consensus</h2><p>共识是分布式计算中最重要且最基础的问题之一. 表面上看起来很简单: 让多个节点同意某个事件. 但很多系统故障都是因为轻视了该问题. 共识在诸多场景下都十分重要:</p>
+<ul>
+<li>Leader election: 单leader复制的数据库中, 所有节点需就哪个节点成为leader达成一致. 网络故障可能导致某些节点对leader的归属权产生争议. 此时, 共识可避免错误的故障切换, 进而避免两个节点都认为自己是leader.</li>
+<li>Atomic commit: 在支持跨节点或跨分区事务的数据库中, 事务可能在某些节点上生效, 而在其他节点上失效. 若想维护事务的原子性, 需让所有节点对事务的结果达成一致. 这类共识问题也称为<strong>atomic commit</strong>(原子提交)问题.</li>
+</ul>
+<p>Ficher, Lynch和Paterson提出的<strong>FLP结果</strong>证明了: 如果存在节点崩溃的风险, 则不存在总能达成共识的算法. 在分布式系统中, 节点崩溃是一种必然, 所以无法实现共识么? FLP结果的证明环境为异步系统模型, 该模型假设算法无法使用任何时钟和超时. 如果系统允许使用超时, 或其他检测节点是否崩溃的方法, 那么可以实现共识.<br>2PC(two-phase commit)是数据库, 消息队列和服务器解决原子提交问题的常见方法. 虽然2PC并不是一个很好的共识算法, 但通过学习2PC可以更好地理解共识算法.</p>
+<h3 id="4-1-Atomic-Commit-and-Two-Phase-Commit-2PC"><a href="#4-1-Atomic-Commit-and-Two-Phase-Commit-2PC" class="headerlink" title="4.1 Atomic Commit and Two-Phase Commit(2PC)"></a>4.1 Atomic Commit and Two-Phase Commit(2PC)</h3><p>事务原子性的目的在于: 多次写入中途出错的情况下提供一个简单的语义, 事务的结果要么成功提交, 所有写入都是持久化的; 要么中止, 所有写入都被回滚.<br>原子性可避免失败的事务让数据库陷入半更新的状态. 支持多对象事务和次级索引的数据库需要原子性: 每个次级索引都是与主数据分离的数据结构, 修改数据时, 对应的次级索引也需进行对应的修改, 原子性保证次级索引与主数据保持一致.</p>
+<h4 id="4-1-1-From-single-node-to-distributed-atomic-commit"><a href="#4-1-1-From-single-node-to-distributed-atomic-commit" class="headerlink" title="4.1.1 From single-node to distributed atomic commit"></a>4.1.1 From single-node to distributed atomic commit</h4><p>对于单节点数据库, 事务的原子性由存储引擎实现. 提交事务时, 数据库会将事务的写入持久化(通常在WAL中), 然后将<strong>提交记录</strong>追加到磁盘中的日志里. 若数据库中途崩溃, 可从日志中恢复事务: 若提交记录已被写入磁盘, 说明事务已成功提交; 若没有提交记录, 则回滚事务的所有写入.<br>因此, 单节点上事务的提交依赖于磁盘写入的顺序: 首先是数据, 然后是提交记录. 磁盘是否写入提交记录决定了事务是否提交: 写入提交记录前, 事务有可能被中止(由于崩溃); 写入提交记录后, 事务成功提交. 因此, 单一设备(单个磁盘的控制器)让提交具备原子性.<br>但如果事务涉及多个节点, 例如, 分区数据库中会有多对象事务, 或按关键词分区的次级索引, 绝大多数NoSQL分布式数据存储不支持分布式事务, 但很多关系数据库集群支持.<br>此时, 将提交请求发送给所有节点, 并让节点各自提交事务是不够的, 这么做会导致某些节点成功提交, 其他节点失败, 从而违反原子性:</p>
+<ul>
+<li>某些节点检测到违反约束或冲突, 从而中止事务, 其他节点成功提交</li>
+<li>某些提交请求在网络中丢失, 最终因超时而中止, 其他节点成功接收并提交</li>
+<li>某些节点在写入记录时宕机, 并在恢复后回滚, 其他节点成功提交</li>
+</ul>
+<p>若某些节点提交事务, 而其他节点中止, 则节点间出现不一致. 一旦某个节点提交了事务, 即使发现其他节点中止了该事务, 也无法撤回. 出于该原因, 一旦确定其他节点都提交事务, 该节点也必须提交.<br>事务提交后不可被撤回: 一旦提交数据, 其写入将对其他事务可见, 因此其他客户端会依赖于其写入. 这一原则构成了<strong>读已提交</strong>隔离级别的基础.</p>
+<h4 id="4-1-2-Introduction-to-two-phase-commit"><a href="#4-1-2-Introduction-to-two-phase-commit" class="headerlink" title="4.1.2 Introduction to two-phase commit"></a>4.1.2 Introduction to two-phase commit</h4><p>2PC是一种在跨节点上实现原子事务提交的算法, 即确保所有节点都提交或中止. 2PC作为分布式数据库的经典算法, 常用于数据库, 或以XA事务形式(如Java Transaction API)服务于应用, 或以<code>WA-WSAtomicTransaction</code>形式服务于SOAP Web服务. 2PC的基本流程如下:<br><img src="/images/System-Design/DDIA/ch-9-9.png" alt="A successful execution of two-phase commit (2PC)"></p>
+<p>2PC的提交&#x2F;中止流程分为两个阶段, 而不是单节点事务中的单个提交请求. 2PC使用一个新的组件: <strong>coordinator</strong>(协调者, 也称为transaction manager). Coordinator在请求事务的应用进程中以库的形式实现(如, 嵌入在Java EE容器中), 但也可作为一个独立的进程或服务.<br>正常来说, 应用在多个节点上读写数据标志着2PC事务的开始, 这些节点称为<strong>participants</strong>(参与者). 当应用开始提交时, coordinator会开始阶段1: 向所有节点发送<strong>prepare</strong>(准备)请求, 询问所有participant是否能够提交, 并收集所有回复:</p>
+<ul>
+<li>若所有participant都回复Yes, 则coordinator可在阶段2发送<strong>commit</strong>(提交)请求, 然而提交真正进行</li>
+<li>若某个participant回复No, 则coordinator会在阶段2向所有节点发送<strong>abort</strong>(中止)请求</li>
+</ul>
+<p>这一过程类似于西式婚礼仪式: 牧师分别询问新郎和新娘是否愿意, 通常会收到双方的&quot;我愿意&quot;, 之后牧师会宣布结为夫妻, 表示事务成功提交, 这一事实会广播至所有参与者. 若新郎或新娘一方没有回复&quot;我愿意&quot;, 则婚礼中止.</p>
+<h4 id="4-1-3-A-system-of-promises"><a href="#4-1-3-A-system-of-promises" class="headerlink" title="4.1.3 A system of promises"></a>4.1.3 A system of promises</h4><p>但我们还没理解为什么跨节点的2PC能保证原子性. 为理解2PC的工作原理, 需将每一步细分:</p>
+<ol>
+<li>当应用开始一个分布式事务时, 需向coordinator请求一个事务ID, 该事务ID是全局唯一的.</li>
+<li>应用会在每个participant上开启一个单节点事务, 并为其添加事务ID. 所有读写都会在该事务中进程. 若此期间出现任何错误(节点崩溃或请求超时), coordinator和participant都可以中止事务.</li>
+<li>当应用准备提交时, coordinator会向所有participant发送带有事务ID的准备请求. 若某个请求失败或超时, coordinator会向所有participant发送中止请求.</li>
+<li>participant收到准备请求后, 需确保在任何情况下都可以提交事务, 包括将数据写入磁盘(故障, 停电, 或磁盘空间不足都不是拒绝提交的理由), 检查是否违反约束或产生冲突. 向coordinator回复YES, 表示该节点一定会成功提交. 换句话说, 虽然还未提交, 但已不能中止该事务.</li>
+<li>coordinator收到所有回复后需做出决定: 若所有participant都回复YES, 则选择提交事务; 否则中止该事务. Coordinator必须将决定写入事务日志, 若节点崩溃, 恢复后也能知道决定结果, 被称为<strong>commit point</strong>(提交点)</li>
+<li>一旦coordinator的决定写入磁盘, 会向所有participant发送提交或中止请求. 若请求失败或超时, coordinator会不断重试直到成功. 如果决定是提交, 则没有回头路, 无论重发多少遍都必须提交. 若participant在此期间崩溃, 由于之前回复了YES, 因此不能拒绝, 必须在恢复后提交.</li>
+</ol>
+<p>该协议有两个不可逆的时间点, 这些不可撤销的承诺保证了2PC的原子性: </p>
+<ol>
+<li>participant回复YES时, 承诺其之后一定能够提交(虽然coordinator可能选择中止事务)</li>
+<li>一旦coordinator做出决定, 该决定是不可逆的</li>
+</ol>
+<p>回到婚礼的比喻, 在说出&quot;我愿意&quot;之前, 新郎和新娘都可以中止事务. 然而一旦说出&quot;我愿意&quot;则无法撤销. 即使没有听到牧师宣布夫妻关系成立, 也不能改变事务必须提交的事实. 通过事务ID向牧师查询可知道是否宣布夫妻关系, 或等待牧师的下一次宣布.</p>
+<h4 id="4-1-4-Coordinator-failure"><a href="#4-1-4-Coordinator-failure" class="headerlink" title="4.1.4 Coordinator failure"></a>4.1.4 Coordinator failure</h4><p>我们已经讨论了participant崩溃或网络中断的情况: 若准备请求失败或超时, coordinator会中止事务; 若提交或中止请求失败, coordinator会不断重试. 然而没有提到coordinator崩溃的情况.<br>若coordinator在发送准备请求前崩溃, participant可安全地中止事务. 但一旦participant接收了准备请求并回复YES, 就无法中止. 若coordinator崩溃或网络中断, participant只能等待, 这种事务状态称为<strong>in doubt</strong>(存疑).<br><img src="/images/System-Design/DDIA/ch-9-10.png" alt="The coordinator crashes after participants vote &quot;yes&quot; Database 1 does not know whether to commit or abort"></p>
+<p>上图中, coordinator决定提交事务, 数据库2收到提交请求. 但还未向数据库1发送提交请求, 此时coordinator崩溃, 数据库1不知道该提交还是中止. 数据库1无法使用超时: 若使用超时并中止事务, 会数据库2不一致; 若提交, 其他数据库可能已经中止.<br>理论上, participant可询问其他所有participant是否同意提交, 但这不是2PC协议所讨论的.<br>唯一方法就是等待coordinator恢复运行, 这也是为何coordinator发送提交或中止前必须将决定写入事务日志中: coordinator恢复后可读取事务日志, 并找到所有in-doubt状态的事务. 若日志中没有提交记录, 则中止该事务. 因此, 2PC的<strong>提交点</strong>其实是coordinator上的单节点原子提交</p>
+<h4 id="4-1-5-Three-phase-commit"><a href="#4-1-5-Three-phase-commit" class="headerlink" title="4.1.5 Three-phase commit"></a>4.1.5 Three-phase commit</h4><p>由于2PC可能需要等待coordinator恢复, 因此2PC称为<strong>blocking atomic commit</strong>(阻塞原子提交)协议. 理论上, 可以将原子提交协议做成<strong>nonblocking</strong>(非阻塞), 这样即使节点崩溃也无需等待. 但这种协议实践起来很复杂.<br>作为2PC的替代方案, 还有一种称为3PC(三阶段提交)的算法, 然而, 3PC的前提是网络延迟有界, 节点响应时间有限. 但大多数系统的网络延迟都无上限, 且存在进程暂停, 因此无法保证原子性.<br>非阻塞原子提交要求一个完美的故障检测机制, 即一种可靠的机制来判断某个节点是否崩溃. 无上限延迟的网络中, 超时并不是一种可靠的故障检测机制, 即便超时, 节点也有可能未出现故障. 因此, 尽管存在coordinator故障问题, 大家仍选择使用2PC.</p>
+<h3 id="4-2-Distributed-Transactions-in-Practice"><a href="#4-2-Distributed-Transactions-in-Practice" class="headerlink" title="4.2 Distributed Transactions in Practice"></a>4.2 Distributed Transactions in Practice</h3><p>分布式事务, 尤其是2PC实现的分布式事务毁誉参半. 一方面, 其提供了重要的安全性保证; 另一方面, 其导致的运维困难和性能下降都饱受批评. 很多云服务会因运维问题而放弃实现分布式事务.<br>分布式事务的某些实现会带来严重性能损失, 例如, MySQL的分布式事务会比单节点事务慢10倍以上. 2PC的性能问题源于额外的刷盘(fsync, 用于崩溃后的恢复), 以及额外的网络往返.<br>但我们也不应无视分布式事务, 而是更加仔细地审视这些事务, 并从中学习. 首先, 必须明确什么是&quot;分布式事务&quot;, 以下是两种不同的分布式事务:</p>
+<ul>
+<li>Database-internal distributed transactions(数据库内部的分布式事务): 有些分布式数据库(配置中使用replication和partition的数据库)支持多节点间的内部事务. 例如, VoltDB和MySQL Cluster的NDB存储引擎支持内部事务. 所有参与事务的节点都运行相同的数据库软件.</li>
+<li>Heterogeneous distributed transactions(异构分布式事务): participant由两种或两种以上的技术构成. 例如, 两个数据库来自不同的供应商, 甚至是非数据库系统(如message broker). 跨系统的分布式事务必须保证原子提交, 即使系统完全不同.</li>
+</ul>
+<p>数据库内部事务没有任何兼容问题, 可使用任何协议, 并针对特定技术进行优化. 因此, 数据库内部分布式事务通常工作良好, 而异构技术的事务更具有挑战性.</p>
+<h4 id="4-2-1-Exactly-once-message-processing"><a href="#4-2-1-Exactly-once-message-processing" class="headerlink" title="4.2.1 Exactly-once message processing"></a>4.2.1 Exactly-once message processing</h4><p>异构分布式事务允许不同的系统以不同方式集成. 例如, message broker(消息代理)中的消息被标记为已处理, 当且仅当处理消息的数据库事务成功提交. 这可以通过在一个事务中原子提交message acknowledge(消息确认)和database write(数据库写入)来实现. 即使消息代理和数据库属于两个不相关的技术, 也可实现分布式事务.<br>若消息传递或数据库事务失败, 两者都会被中止, 消息代理可稍后重传消息. 因此, 通过原子提交消息处理及其副作用, 可确保消息只被处理一次, 中止事务不会带有任何副作用.<br>然而, 只有所有受事务影响的系统都使用相同的原子提交协议, 才能实现分布式事务. 例如, 假设处理消息会发送邮件, 而邮件服务器不支持2PC: 消息的重传会发送多封邮件. 但如果副作用都可以在事务中止时回滚, 则重试不会有任何影响.</p>
+<h4 id="4-2-2-XA-transactions"><a href="#4-2-2-XA-transactions" class="headerlink" title="4.2.2 XA transactions"></a>4.2.2 XA transactions</h4><p>X&#x2F;Open XA(eXtended Architecture)是一种跨异构技术实现2PC的标准. 很多传统关系数据库(PostgreSQL, MySQL, DB2, SQL Server, Oracle)和消息队列(ActiveMQ, HornetQ, MSMQ, IBM MQ)都支持XA. XA不是一个网络协议, 而是一个与coordinator连接的C API. 其他语言也实现了该API. 例如, 对于Java EE应用, XA事务会使用<strong>Java Transaction API</strong>(JTA)实现, 许多使用JDBC的数据库驱动, 以及使用JMS API的消息代理都支持JTA.<br>XA假设应用使用网络驱动或客户端库与participant(数据库或消息服务)通信. 若驱动支持XA, 意味着其会调用XA API以判断操作是否为分布式事务的一部分, 如果是, 则向数据库发送必要消息. 驱动还会向coordinator暴露回调接口, coordinator可通过回调让participant准备, 中止, 或提交.<br>事务coordinator需实现XA API. 实现的方式没有统一标准, 但coordinator通常是一个库, 被加载到发起事务的应用进程中. 其会跟踪事务中的所有participant, 发送准备请求后收集participant的回复, 并使用日志记录每次事务的决定(提交或中止).<br>若应用进程崩溃, 或所处的机器宕机, coordinator也不复存在. 任何准备好但还未提交的participant都会卡住. 由于coordinator的日志存放在应用服务器的磁盘中, 因此必须重启该服务器, 且coordinator必须读取日志以恢复每个事务的commit&#x2F;abort结果. Coordinator只能通过数据库驱动的XA回调要求participant提交或中止, 服务器无法直接联系coordinator, 因为所有通信都必须经过客户端库.</p>
+<h4 id="4-2-3-Holding-locks-while-in-doubt"><a href="#4-2-3-Holding-locks-while-in-doubt" class="headerlink" title="4.2.3 Holding locks while in doubt"></a>4.2.3 Holding locks while in doubt</h4><p>我们为何这么关心in-doubt的事务? 为何不无视该事务, 并让系统的其他部分继续运行?<br>问题在于<strong>locking</strong>(锁), 为了防止脏写, 数据库事务会获取修改行上的<strong>row-level exclusive lock</strong>(行级排它锁). 如果需要serializable isolation, 数据库会使用2PL(two-phase locking)为所有读取行获取一个shared lock(共享锁).<br>在提交或中止事务前, 数据库无法释放这些锁. 因此, 陷入in-doubt的事务会一直持有锁. 如果coordinator崩溃持续20分钟, 则这些锁会被持有20分钟. 若coordinator的日志丢失, 锁会永久保留, 直到管理员手动解决.<br>其他事务会因锁的存在而无法修改行. 有些数据库甚至会阻塞行的读取, 从而导致应用大面积不可用.</p>
+<h4 id="4-2-4-Recovering-from-coordinator-failure"><a href="#4-2-4-Recovering-from-coordinator-failure" class="headerlink" title="4.2.4 Recovering from coordinator failure"></a>4.2.4 Recovering from coordinator failure</h4><p>理论上, 崩溃后恢复的coordinator应从日志中处理in-doubt事务, 但实际上, <strong>orphaned in-doubt transaction</strong>(孤儿存疑事务)依然存在, 即处于某些原因(如, 事务日志丢失或软件bug)导致coordinator无法确定事务的决定, 事务无法自行解决, 从而一直留在数据库中, 持有锁并阻塞其他事务.<br>即使重启服务器也无法解决该问题, 因为2PC会一直保留in-doubt事务的锁. 唯一的解决方法是管理员手动决定哪些事务提交, 哪些事务回滚. 管理员必须检查每个in-doubt事务的participant, 这就需要大量人力, 并且此时系统很可能已遭遇大面积宕机, 管理员还需面对巨大精神压力.<br>许多XA实现都有一个紧急处理方案, 称为<strong>heuristic decisions</strong>(启发式决策): 允许participant单方面决定是否提交或中止in-doubt事务. heuristic是一种委婉的说法, 其实破坏了2PC承诺的原子性. 因此, heuristic decision只是为了避免灾难发生, 而不是日常使用.</p>
+<h4 id="4-2-5-Limitations-of-distributed-transactions"><a href="#4-2-5-Limitations-of-distributed-transactions" class="headerlink" title="4.2.5 Limitations of distributed transactions"></a>4.2.5 Limitations of distributed transactions</h4><p>XA事务解决了多个participant(数据系统)保持一致的问题, 但也引入了运维问题. Coordinator本身也是一种数据库, 也需要像其他数据库一样小心使用:</p>
+<ul>
+<li>若coordinator只在单台机器上运行, 则单节点的崩溃会导致整个系统停滞.</li>
+<li>很多服务器端应用都是<strong>stateless model</strong>(无状态模式), 所有持久状态都存储在数据库中, 因此应用服务器可随时添加或删除. 然而, 当coordinator成为应用服务器的一部分, 会改变其部署方式: coordinator的事务日志是持久系统状态的关键部分, 与数据库地位相同, 应用服务器也就不再是无状态的.</li>
+<li>由于XA需要兼容多种数据系统, 因此必须是所有系统的最小公因数. 例如, 其无法检测跨系统的死锁(因为需要一个标准协议来交换每个事务等待的锁信息), 也无法与SSI协同工作, 因为这需要一个跨系统定位冲突的协议.</li>
+<li>对于数据库内部分布式事务, 限制就没那么大. 但2PC成功提交事务仍需所有participant的响应, 若系统中的某个部件崩溃, 则事务失败. 分布式事务有放大局部失效的趋势, 与构建容错系统的目标相悖.</li>
+</ul>
+<h3 id="4-3-Fault-Tolerant-Consensus"><a href="#4-3-Fault-Tolerant-Consensus" class="headerlink" title="4.3 Fault-Tolerant Consensus"></a>4.3 Fault-Tolerant Consensus</h3><p>简单来说, 共识意味着多个节点就某件事达成一致. 例如, 几个人同时预定某个航班的最后一个座位, 或电影的相同位置, 共识算法负责决定互不兼容的多个操作中, 谁是胜者.<br>共识问题可形式化为: 一个或多个节点<strong>propose</strong>(提议)某些值, 共识算法<strong>decide</strong>(决定)其中一个值. 对于订座问题, 当多个用户同时购买最后一个座位, 每个节点会提议各自用户的ID, 决定则表示哪个用户获得了该座位.<br>共识算法需满足以下属性:</p>
+<ul>
+<li>Uniform agreement(一致同意): 不存在两个决定不同的节点</li>
+<li>Integrity(完整性): 不存在决定两次的节点</li>
+<li>Validity(有效性): 若节点决定了值v, 则v一定是由某个节点所提议</li>
+<li>Termination(终止): 由所有未崩溃的节点做决定</li>
+</ul>
+<p>Uniform agreement和integrity定义了共识的核心思想: 每个节点做出相同决定, 且一旦决定就不能修改. Validity属性是为了排除一些特殊算法, 例如: 无论节点提议什么值, 最终决定都为<code>null</code>. 这种算法的确满足前两个属性, 但不满足validity.<br>如果不考虑容错, 前三个属性还是比较容易满足: 可将一个节点指定为&quot;独裁者&quot;, 让该节点做出所有决定; 若该节点失效, 则系统不再做出任何决定. 这是2PC的工作方式: 一旦coordinator失效, in-doubt状态的participant无法决定是否commit或abort.<br>Termination形式化了容错的思想, 实际上可表示为: 共识算法不能什么都不做, 即使某个节点发生故障, 其他节点仍需达成决定.<br>共识的系统模型假设: 当一个节点崩溃时, 其永远不会回来. 该系统模型中, 任何需要等待节点恢复的算法都无法满足termination属性, 因此2PC不满足共识算法的要求.<br>当然, 若所有节点都崩溃, 没有任何算法可以达成决定, 容错也要有个上限: 共识算法需要<strong>大部分</strong>节点正常运行才能保证termination属性.<br>因此, termination存在一个前提: 半数以上的节点存活. 但即使大多数节点失效, 共识算法仍能保证前三个属性. 所以出现大规模中断时, 系统虽然无法处理请求, 但至少不会做出错误决定.<br>绝大多数共识算法假设系统中没有<strong>拜占庭故障</strong>. 换句话说, 如果节点不遵循协议, 其可能破坏协议的安全属性.</p>
+<h4 id="4-3-1-Consensus-algorithms-and-total-order-broadcast"><a href="#4-3-1-Consensus-algorithms-and-total-order-broadcast" class="headerlink" title="4.3.1 Consensus algorithms and total order broadcast"></a>4.3.1 Consensus algorithms and total order broadcast</h4><p>最著名的容错共识算法为VSR(Viewstamped Replication), Raft和Zab. 这些算法有一些相似之处, 但不完全相同. 本文不会深入每个算法的细节, 只会从更宏观的角度讲思路.<br>大多数算法不会直接使用上述的形式化模型(提议并决定某个值, 同时满足四种安全属性). 相反, 它们会决定值的顺序(sequence), 从而成为全序广播算法.<br>全序广播要求消息按照相同的顺序, 只发送给每个节点一次, 相当于进行了多轮共识: 在每一轮中, 节点提议下一条要发送的消息, 并在全序中决定下一条要发送的消息. 所以全序广播相当于重复进行多轮共识:</p>
+<ul>
+<li>由于uniform agreement属性, 所有节点以相同顺序发送相同消息</li>
+<li>由于integrity属性, 消息不会重复</li>
+<li>由于validity属性, 消息不会损坏, 也不会凭空出现</li>
+<li>由于termination属性, 消息不会丢失</li>
+</ul>
+<h4 id="4-3-2-Single-leader-replication-and-consensus"><a href="#4-3-2-Single-leader-replication-and-consensus" class="headerlink" title="4.3.2 Single-leader replication and consensus"></a>4.3.2 Single-leader replication and consensus</h4><p>对于单leader复制, 所有写入都交由leader, 并以相同顺序应用到follower, 从而使得副本保持最新状态, 这实际上就是一个全序广播.<br>但问题在于如何选出leader: 如果手动配置leader, 则leader所在的节点失效后, 系统无法接收写请求, 因此无法满足termination属性; 一些数据库支持自动选举leader和故障切换, 若leader所在的节点失效, 会将某个follower升级为leader, 从而实现容错的全序广播, 也就可以借助全序广播来达成共识.<br>但上述存在一个悖论: 之前我们讨论过<strong>脑裂</strong>问题: 若两个节点都认为自己是leader, 会导致数据库进入不一致的状态, 因此需要共识算法来选举一位leader, 而共识基于全序广播, 全序广播又需要leader.<br>要选出一个leader, 必须先有一个leader. 因此要解决共识问题, 必须跳出选举leader的循环</p>
+<h4 id="4-3-3-Epoch-numbering-and-quorums"><a href="#4-3-3-Epoch-numbering-and-quorums" class="headerlink" title="4.3.3 Epoch numbering and quorums"></a>4.3.3 Epoch numbering and quorums</h4><p>上述所有讨论的共识协议都使用到一个<strong>leader</strong>, 但却不能保证leader唯一. 那么可以退一步, 先提供一个更弱的保证: 协议定义了一个<strong>epoch number</strong>(纪元编号, 在Paxos中称为<strong>ballot number</strong>, 在Viewstamped Replication中称为<strong>view number</strong>. Raft中称为<strong>term number</strong>), 并保证在每个纪元中, leader是唯一的.<br>当现任leader失效时, 节点会开始一场投票来选举新leader. 每次选举都会被赋予一个递增的纪元编号, 因此纪元编号是全序且单调递增的. 若持有不同的epoch的两个leader产生冲突(可能是因为前任leader未死亡), 则更高纪元编号的leader说了算.<br>节点无法相信自己的判断, 即使自己认为自己是leader, 并不意味着其他节点认同自己的leader身份, 因此leader需要从法定人数的节点中获得投票.<br>当leader做出决定时, 需将提议值发送给其他节点, 并等待法定人数节点的响应. 法定人数通常表示大多数节点. 若节点没有见过纪元编号更高的leader, 则会同意该提议.<br>因此存在两轮投票: 第一次是为了选出一个leader, 第二次是对leader的提议表决. 关键在于, 两次投票的法定人数必须重叠: 若提议被通过, 则至少有一个节点参加了最近的leader选举. 因此, 若对提议的投票中没有出现更大的纪元编号, 说明提议的leader就是当前leader, 可以决定提议值.<br>该投票过程表面上类似于2PC, 最大的区别在于, 2PC的coordinator不是选举的, 且需要每个participant的赞成; 而容错共识算法只需要多数节点的投票. 此外, 共识算法还定义了一个恢复过程, 让节点选举出新的leader后进入一致的状态. </p>
+<h4 id="4-3-4-Limitations-of-consensus"><a href="#4-3-4-Limitations-of-consensus" class="headerlink" title="4.3.4 Limitations of consensus"></a>4.3.4 Limitations of consensus</h4><p>对于分布式系统, 共识算法是一次巨大的突破: 其为不可靠的系统带来基础的安全属性(uniform agreement, integrity和validity), 并且提供了容错(只需多数节点正常工作). 其提供了全序广播, 因此我们能以容错方式实现线性一致的原子操作.<br>然而共识算法并不能用于所有地方, 其具有很大代价:</p>
+<ul>
+<li>节点对提议进行投票的过程是一种同步复制. 虽然异步同步会在故障切换时丢失数据, 但数据库通常接受这种风险去换取更好的性能.</li>
+<li>共识系统需要严格多数来运转. 这意味着, 至少需要三个节点来容忍一个节点失效, 或五个节点来容忍两个节点失效. 若网络故障切断多数节点连接, 则整个系统陷入阻塞.</li>
+<li>大多数共识算法要求一组固定节点参与投票, 不能随意添加或移除节点. 共识算法的<strong>动态成员拓展</strong>可允许节点变化, 但十分难以理解.</li>
+<li>共识系统依赖超时来检测失效的节点. 若网络延迟波动很大, 尤其是地理上散布的系统, 经常发生节点由于网络延迟而错误认为leader已经失效. 虽然这类错误不会破坏安全属性, 但频繁的leader选举会导致性能损失, 系统会花费大量时间选举leader而不是处理请求.</li>
+<li>有时共识算法对网络问题十分敏感, 以Raft为例, 若整个网络运行正常, 只有某个网络连接不可靠, Raft会陷入leader在两个节点间不断切换的情况, 或当前leader不断被卸任. 应对不可靠网络的共识算法仍是一个开放的研究课题.</li>
+</ul>
+<h3 id="4-4-Membership-and-Coordination-Services"><a href="#4-4-Membership-and-Coordination-Services" class="headerlink" title="4.4 Membership and Coordination Services"></a>4.4 Membership and Coordination Services</h3><p>ZooKeeper和etcd被描述为&quot;分布式键值存储&quot;或&quot;协调与配置服务&quot;. 此类服务的API很像数据库: 向指定key读取和写入值. 那么为何还需要共识算法, 而不是直接使用数据库? 这些服务与数据库有何不同?<br>这里需要了解ZooKeeper的使用方式, 作为应用开发人员, 通常不会直接使用ZooKeeper, 因为其不适合用作通用数据库. 但很多其他项目依赖它: HBase, Hadoop YARN, OpenStack Nova和Kafka.<br>ZooKeeper和etcd用于保存少量数据, 这些数据可放入内存, 因此不能将所有数据放这里. 这些数据通过全序广播复制到所有节点上.<br>ZooKeeper以Google的Chubby锁服务作为原型, 不仅实现了全序广播, 还实现了其他特性, 这些特性在构建分布式系统时十分有用:</p>
+<ul>
+<li>Linearizable atomic operations(线性一致性的原子操作): 使用原子CAS操作实现锁. 若多个节点同时执行相同操作, 只有一个节点会成功. 分布式锁通常作为一个lease(租约), 其拥有一个过期时间, 以便客户端失效时释放.</li>
+<li>Total ordering of operations(操作的全序排序): 当某些资源受到锁或租约的保护时, 需要一个防护令牌来防止客户端在进程暂停的情况下彼此冲突. 每次获得锁, token都会增加. 通过全序化所有操作, ZooKeeper可为每个操作提供一个单调递增的事务ID(zxid)和版本号(cversion).</li>
+<li>Failure detection(失效检测): 客户端会在ZooKeeper维护一个长期会话, 客户端和服务器周期性交换心跳包来检查节点是否存活. 即使连接暂时中断, 或ZooKeeper节点失效, 会话依然有效. 但若心跳停止的时间长于会话的超时设定, ZooKeeper会宣布会话中止, 会话持有的锁也会被释放.</li>
+<li>Change notifications(变更通知): 客户端不仅可以看到另一个客户端创建的锁或值, 还可以观察它们的变化. 因此, 客户端可知道其他客户端何时加入集群(基于客户端写入ZooKeeper的时间), 或失效(会话超时). 通过订阅通知, 客户端不必频繁查询这些变更.</li>
+</ul>
+<p>上述所有功能中, 只有线性一致的原子操作真正需要共识. 然而, 这些特性让ZooKeeper之类的系统在分布式协调中十分有用.</p>
+<h3 id="4-4-1-Allocating-work-to-nodes"><a href="#4-4-1-Allocating-work-to-nodes" class="headerlink" title="4.4.1 Allocating work to nodes"></a>4.4.1 Allocating work to nodes</h3><p>如果有多个进程实例或服务, 其中一个需被选为leader, 则可使用ZooKeeper&#x2F;Chubby模型. 若节点失效. 其他节点可接管leader身份. 这对于单leader数据库十分有用, 也适用于作业调度程序和状态系统.<br>当存在一些分区资源(数据库, 消息流, 文件存储, 分布式Actor系统等), 并需决定将哪个分区分配给哪个节点时, 也可使用ZooKeeper&#x2F;Chubby. 当新节点加入集群时, 为了平衡负载, 需将一些分区从一些节点转移到另一些节点. 当节点被移除或失效时, 其他节点需接管该节点的工作.<br>上述任务可通过在ZooKeeper中使用原子操作, 临时节点和通知来实现. 若设计妥当, 则应用可自动从故障中恢复. 已经有不少基于ZooKeeper客户端API构建的工具(如Apache Curator), 比从头实现共识算法好很多.<br>应用最初可能只运行在一个节点上, 但最终会增长到上千个节点. 在这么多节点上进行多数选举十分低效. 相反, ZooKeeper运行在固定数量的节点上(通常是三或五个), 并在这些节点间执行多数投票, 同时支持潜在的大量客户端. 因此, 可将协调节点(共识, 操作顺序, 故障检测)的工作交由ZooKeeper这类外部服务.<br>通常来说, ZooKeeper管理的数据不会频繁更改. 例如, ZooKeeper中信息可能为: 运行在<code>10.1.1.23</code>上的节点是partition 7的leader, 这类信息可能在几分钟或几小时内发生变化. 但并不用于存储应用的运行时状态, 运行时状态可能每秒变化成千上万次. 若需要将应用的状态从一个节点复制到另一个节点, 可使用其他工具(如Apache BookKeeper).</p>
+<h3 id="4-4-2-Service-discovery"><a href="#4-4-2-Service-discovery" class="headerlink" title="4.4.2 Service discovery"></a>4.4.2 Service discovery</h3><p>ZooKeeper, etcd和Consul也常用于<strong>service discovery</strong>(服务发现, 用于找到某个服务所在的IP地址). 在云数据中心环境中, 虚拟机会被频繁添加或移除, 因此无法事前得知服务的IP地址. 相反, 我们可以让服务启动时在<strong>service registry</strong>中注册自己的网络端点, 这样就能被其他服务发现.<br>然而, 服务发现不一定需要共识, DNS就是一种查找服务名的IP地址的传统方法, 其使用多层缓存来实现高性能和可用性. DNS的读取并不是线性一致性的, 因此DNS返回的结果可能是旧值. 如果应用不介意, 则可选择DNS, 其对网络中断有更好的容错.<br>虽然服务发现不需要共识, 但leader选举需要. 因此, 若共识系统已经知道leader是谁, 那么也可使用这些信息来帮助其他服务发现leader. 一些共识系统支持只读缓存副本, 这些副本异步接受共识算法的所有决定, 但不参与投票. 因此, 这些副本可处理无需线性一致性的读请求.</p>
+<h3 id="4-4-3-Membership-services"><a href="#4-4-3-Membership-services" class="headerlink" title="4.4.3 Membership services"></a>4.4.3 Membership services</h3><p>ZooKeeper和其同类服务可看作<strong>membership services</strong>(成员资格服务)研究的一部分, 其对于构建可靠系统十分重要(如空中交通管制系统).<br>成员资格服务用于决定某些节点处于活跃状态. 由于网络延迟无上限的属性, 无法可靠地检测到另一个节点是否发生故障; 如果使用共识来检测失效节点, 那么节点可就哪些节点存活, 哪些节点死亡达成一致.<br>即使节点存活, 该节点也可能被共识错误判定为死亡. 但对于一个系统来说, 明确哪些节点构成了当前成员关系十分重要. 例如, 选择leader可能意味着选择当前成员中编号最小的节点, 若不同节点对成员组成持有不同意见, 则无法选出leader.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Distributed-System/">Distributed System</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/fa37.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">HDFS Overview</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/1a83.html">
+        <span class="next-text nav-default">The Trouble with Distributed Systems</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/da42.html';
+  var disqus_title = "Consistency and Consensus";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

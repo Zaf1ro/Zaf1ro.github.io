@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Thread Control"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/7793.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/7793.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/7793.html"/>
+
+
+<meta name="description" content="1. Thread LimitsThe Single UNIX Specification规定了几个关于thread的限制:    Name of Limit Description sysconf Argument    PTHREAD_DESTRUCTOR_ITERATIONS maximum number of times an implementation will try to dest">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Thread Control">
+<meta property="og:url" content="https://zaf1ro.github.io/p/7793.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Thread LimitsThe Single UNIX Specification规定了几个关于thread的限制:    Name of Limit Description sysconf Argument    PTHREAD_DESTRUCTOR_ITERATIONS maximum number of times an implementation will try to dest">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/thread-ctl-1.jpg">
+<meta property="article:published_time" content="2019-09-27T16:22:47.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.056Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/thread-ctl-1.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Thread Control - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Thread-Limits"><span class="toc-text">1. Thread Limits</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Thread-Attributes"><span class="toc-text">2. Thread Attributes</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-detachstate"><span class="toc-text">2.1 detachstate</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-stackaddr-stacksize"><span class="toc-text">2.2 stackaddr, stacksize</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-guardsize"><span class="toc-text">2.3 guardsize</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Synchronization-Attributes"><span class="toc-text">3. Synchronization Attributes</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Mutex-Attributes"><span class="toc-text">3.1 Mutex Attributes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Reader-Writer-Lock-Attributes"><span class="toc-text">3.2 Reader-Writer Lock Attributes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Condition-Variable-Attributes"><span class="toc-text">3.3 Condition Variable Attributes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Barrier-Attribute"><span class="toc-text">3.4 Barrier Attribute</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Reentrancy"><span class="toc-text">4. Reentrancy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Thread-Specific-Data"><span class="toc-text">5. Thread-Specific Data</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Cancel-Options"><span class="toc-text">6. Cancel Options</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Threads-and-Signals"><span class="toc-text">7. Threads and Signals</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Threads-and-fork"><span class="toc-text">8. Threads and fork</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Threads-and-I-O"><span class="toc-text">9. Threads and I&#x2F;O</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Thread Control
+        
+      </h1>
+      <time class="post-time">
+          09/27/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Thread-Limits"><a href="#1-Thread-Limits" class="headerlink" title="1. Thread Limits"></a>1. Thread Limits</h2><p>The Single UNIX Specification规定了几个关于thread的限制:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Name of Limit</th>
+<th align="center">Description</th>
+<th align="center">sysconf Argument</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">PTHREAD_DESTRUCTOR_ITERATIONS</td>
+<td align="center">maximum number of times an implementation will try to destroy the thread-specific data when a thread exits</td>
+<td align="center">_SC_THREAD_DESTRUCTOR_ITERATIONS</td>
+</tr>
+<tr>
+<td align="center">PTHREAD_KEYS_MAX</td>
+<td align="center">maximum number of keys that can be created by a process</td>
+<td align="center">_SC_THREAD_KEYS_MAX</td>
+</tr>
+<tr>
+<td align="center">PTHREAD_STACK_MIN</td>
+<td align="center">minimum number of bytes that can be used for a thread’s stack</td>
+<td align="center">_SC_THREAD_STACK_MIN</td>
+</tr>
+<tr>
+<td align="center">PTHREAD_THREADS_MAX</td>
+<td align="center">maximum number of threads that can be created in a process</td>
+<td align="center">_SC_THREAD_THREADS_MAX</td>
+</tr>
+</tbody></table>
+<p>但UNIX没有统一规定各个参数的具体数值:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Limit</th>
+<th align="center">FreeBSD 8.0</th>
+<th align="center">Linux 3.2.0</th>
+<th align="center">Mac OS X 10.6.8</th>
+<th align="center">Solaris 10</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">PTHREAD_DESTRUCTOR_ITERATIONS</td>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">no limit</td>
+</tr>
+<tr>
+<td align="center">PTHREAD_KEYS_MAX</td>
+<td align="center">256</td>
+<td align="center">1024</td>
+<td align="center">512</td>
+<td align="center">no limit</td>
+</tr>
+<tr>
+<td align="center">PTHREAD_STACK_MIN</td>
+<td align="center">2048</td>
+<td align="center">16384</td>
+<td align="center">8192</td>
+<td align="center">8192</td>
+</tr>
+<tr>
+<td align="center">PTHREAD_THREADS_MAX</td>
+<td align="center">no limit</td>
+<td align="center">no limit</td>
+<td align="center">no limit</td>
+<td align="center">no limit</td>
+</tr>
+</tbody></table>
+<h2 id="2-Thread-Attributes"><a href="#2-Thread-Attributes" class="headerlink" title="2. Thread Attributes"></a>2. Thread Attributes</h2><p>Pthread interface允许我们通过不同的参数来规范pthread和synchronization object(包含mutex, rwlock, condition variable和barrier)的行为. Pthread interface有以下同性:</p>
+<ol>
+<li>每个synchronization object都有自己的attribute object类型. 每个attribute object都可表示多个属性. thread上的程序无法知晓其attribute object, 且thread只能通过pthread函数来操作attribute object</li>
+<li>Synchronization objectd的initialization function可设置其attribute object为默认值(设为null即可))</li>
+<li>每个attribute object也有其负责析构的function, 会销毁initialization function申请的所有资源</li>
+<li>每个attribute object都有一个get function和set function, 用于获取或设置attribute object中的属性</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initializes the thread attributes object pointed to</span></span><br><span class="line"><span class="comment"> *        by attr with default attribute values</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_init</span><span class="params">(<span class="type">pthread_attr_t</span> *attr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief free all dynamic memory allocated by pthread_attr_init()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_destroy</span><span class="params">(<span class="type">pthread_attr_t</span> *attr)</span>;</span><br></pre></td></tr></table></figure>
+<p>pthread attribute object有四个属性, 且有对应的get和set function</p>
+<h3 id="2-1-detachstate"><a href="#2-1-detachstate" class="headerlink" title="2.1 detachstate"></a>2.1 detachstate</h3><p>若创造thread时已确定不需要其termination status, 则可通过设置detachstate来实现新建thread分离出去并单独运行.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the detach state attribute of the thread </span></span><br><span class="line"><span class="comment"> *        attributes object attr in the buffer pointed to by </span></span><br><span class="line"><span class="comment"> *        detachstate</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getdetachstate</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                <span class="type">int</span> *detachstate)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the detach state attribute of the thread </span></span><br><span class="line"><span class="comment"> *        attributes object referred to by attr to the value </span></span><br><span class="line"><span class="comment"> *        specified in detachstate</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setdetachstate</span><span class="params">(<span class="type">pthread_attr_t</span> *attr, <span class="type">int</span> detachstate)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-stackaddr-stacksize"><a href="#2-2-stackaddr-stacksize" class="headerlink" title="2.2 stackaddr, stacksize"></a>2.2 stackaddr, stacksize</h3><p>每个thread都有一个stack, 在创建thread时, 其stack的大小就被确定下来. attribute object可通过stacksize开调整stack的地址和大小</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the stack address and stack size attributes </span></span><br><span class="line"><span class="comment"> *        of the thread attributes object referred to by attr</span></span><br><span class="line"><span class="comment"> *        in the buffers pointed to by stackaddr and stacksize</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getstack</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, </span></span><br><span class="line"><span class="params">                          <span class="type">void</span> **stackaddr, <span class="type">size_t</span> *stacksize)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the stack address and stack size attributes of </span></span><br><span class="line"><span class="comment"> *        the thread attributes object referred to by attr to</span></span><br><span class="line"><span class="comment"> *        the values specified in stackaddr and stacksize</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setstack</span><span class="params">(<span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                          <span class="type">void</span> *stackaddr, <span class="type">size_t</span> stacksize)</span>;</span><br></pre></td></tr></table></figure>
+<p>一般情况下不需要调用这两个函数, UNIX会自动分配好所需的内存. 除非需要指定某块内存作为thread的stack. 当调用pthread_attr_setstack()后, 程序会接管stack的管理权, 因此guard size也需要程序自行设置, 必要时还需要设置guard area, 所以应避免使用该函数.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the stack size attribute of the thread </span></span><br><span class="line"><span class="comment"> *        attributes object referred to by attr in the buffer</span></span><br><span class="line"><span class="comment"> *        pointed to by stacksize</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getstacksize</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, </span></span><br><span class="line"><span class="params">                              <span class="type">size_t</span> *stacksize)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the stack size attribute of the thread </span></span><br><span class="line"><span class="comment"> *        attributes object referred to by attr to the value </span></span><br><span class="line"><span class="comment"> *        specified in stacksize</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setstacksize</span><span class="params">(<span class="type">pthread_attr_t</span> *attr, </span></span><br><span class="line"><span class="params">                              <span class="type">size_t</span> stacksize)</span>;</span><br></pre></td></tr></table></figure>
+<p>上述两个函数可在不修改stackaddr的基础上获取或设置stacksize, 但需要注意两点:</p>
+<ol>
+<li>设置的stacksize不可小于PTHREAD_STACK_MIN, 否则返回EINVAL</li>
+<li>若设置的stacksize不为STACK_ALIGN的倍数, UNIX则会向上取整至STACK_ALIGN的倍数</li>
+</ol>
+<h3 id="2-3-guardsize"><a href="#2-3-guardsize" class="headerlink" title="2.3 guardsize"></a>2.3 guardsize</h3><p>当thread发生stack overflow后, guard area会作为一块buffer来保存变量.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the guard size attribute of the thread </span></span><br><span class="line"><span class="comment"> *        attribute object to by attr in the buffer pointed </span></span><br><span class="line"><span class="comment"> *        to by guardsize</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getguardsize</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, </span></span><br><span class="line"><span class="params">                              <span class="type">size_t</span> *guardsize)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the guard size attribute of the thread </span></span><br><span class="line"><span class="comment"> *        attributes object referred to by attr to the value </span></span><br><span class="line"><span class="comment"> *        specified in guardsize</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setguardsize</span><span class="params">(<span class="type">pthread_attr_t</span> *attr, <span class="type">size_t</span> guardsize)</span>;</span><br></pre></td></tr></table></figure>
+<p>guardsize会向上取整到memory page的整数倍. 若guardsize为0, 则不需要缓存数据. 若数据已经写满stack并写入guard area后, thread会受到SIGSEGV signal. </p>
+<h2 id="3-Synchronization-Attributes"><a href="#3-Synchronization-Attributes" class="headerlink" title="3. Synchronization Attributes"></a>3. Synchronization Attributes</h2><h3 id="3-1-Mutex-Attributes"><a href="#3-1-Mutex-Attributes" class="headerlink" title="3.1 Mutex Attributes"></a>3.1 Mutex Attributes</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize a mutex attributes object attr with the </span></span><br><span class="line"><span class="comment"> *        default value for all of the attributes</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutexattr_init</span><span class="params">(<span class="type">pthread_mutexattr_t</span> *attr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief destroy a mutex attributes object</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutexattr_destroy</span><span class="params">(<span class="type">pthread_mutexattr_t</span> *attr)</span>;</span><br></pre></td></tr></table></figure>
+<p>mutex attribute有三个属性:</p>
+<ol>
+<li>process-shared<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the value of the process-shared attribute </span></span><br><span class="line"><span class="comment"> *        from the attributes object referenced by attr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutexattr_getpshared</span><span class="params">(<span class="type">const</span> <span class="type">pthread_mutexattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                 <span class="type">int</span> *pshared)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the process-shared attribute in an initialized </span></span><br><span class="line"><span class="comment"> *        attributes object referenced by attr</span></span><br><span class="line"><span class="comment"> * @param pshared: shall be one of the following values</span></span><br><span class="line"><span class="comment"> *        1. PTHREAD_PROCESS_SHARED: mutex shall be operated </span></span><br><span class="line"><span class="comment"> *           upon by any thread in any process</span></span><br><span class="line"><span class="comment"> *        2. PTHREAD_PROCESS_PRIVATE: mutex shall only be </span></span><br><span class="line"><span class="comment"> *           operated upon by threads created within the </span></span><br><span class="line"><span class="comment"> *           same process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutexattr_setpshared</span><span class="params">(<span class="type">pthread_mutexattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                 <span class="type">int</span> pshared)</span>;</span><br></pre></td></tr></table></figure></li>
+<li>robust<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the value of the robust attribute of the </span></span><br><span class="line"><span class="comment"> *        mutex attribute object referred to by attr in </span></span><br><span class="line"><span class="comment"> *        robust</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutexattr_getrobust</span><span class="params">(<span class="type">const</span> <span class="type">pthread_mutexattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                <span class="type">int</span> *robust)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the value of the robust attribute of the mutex </span></span><br><span class="line"><span class="comment"> *        attribute object referred to by attr to the value </span></span><br><span class="line"><span class="comment"> *        specified in robust</span></span><br><span class="line"><span class="comment"> * @param robust: shall be one of the following values</span></span><br><span class="line"><span class="comment"> *        1. PTHREAD_MUTEX_STALLED: default value. If owner </span></span><br><span class="line"><span class="comment"> *           dies without unlocking it, the mutex remains </span></span><br><span class="line"><span class="comment"> *           locked and other threads will block</span></span><br><span class="line"><span class="comment"> *        2. PTHREAD_MUTEX_ROBUST: If owner dies without </span></span><br><span class="line"><span class="comment"> *           unlocking it, any attempts to call </span></span><br><span class="line"><span class="comment"> *           pthread_mutex_lock() will succeed and return </span></span><br><span class="line"><span class="comment"> *           EOWNERDEAD to indicate that the mutex is in an </span></span><br><span class="line"><span class="comment"> *           inconsistent state</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutexattr_setrobust</span><span class="params">(<span class="type">pthread_mutexattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                <span class="type">int</span> robust)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief make a robust mutex consistent if it is in an </span></span><br><span class="line"><span class="comment"> *        inconsistent state. A mutex can be left in an </span></span><br><span class="line"><span class="comment"> *        inconsistent state if its owner terminates while </span></span><br><span class="line"><span class="comment"> *        holding the mutex</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_consistent</span><span class="params">(<span class="type">pthread_mutex_t</span> * mutex)</span>;</span><br></pre></td></tr></table></figure></li>
+<li>type<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the value of type attribute of the mutex </span></span><br><span class="line"><span class="comment"> *        attribute object referred to by attr in *type</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutexattr_gettype</span><span class="params">(<span class="type">const</span> <span class="type">pthread_mutexattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                              <span class="type">int</span> *type)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the value of the type attribute of the mutex </span></span><br><span class="line"><span class="comment"> *        attribute</span></span><br><span class="line"><span class="comment"> * @param type: shall be one of the following values</span></span><br><span class="line"><span class="comment"> *        1. PTHREAD_MUTEX_NORMAL: does not detect deadlock</span></span><br><span class="line"><span class="comment"> *        2. PTHREAD_MUTEX_ERRORCHECK: provides error </span></span><br><span class="line"><span class="comment"> *           checking. It shall return an error if relock a </span></span><br><span class="line"><span class="comment"> *           mutex or unlock an unlocked mutex</span></span><br><span class="line"><span class="comment"> *        3. PTHREAD_MUTEX_RECURSIVE: allows the same thread </span></span><br><span class="line"><span class="comment"> *           to lock it multiple times without first </span></span><br><span class="line"><span class="comment"> *           unlocking it</span></span><br><span class="line"><span class="comment"> *        4. PTHREAD_MUTEX_DEFAULT: recursively lock a mutex </span></span><br><span class="line"><span class="comment"> *           or unlock an unlocked mutex results in undefined</span></span><br><span class="line"><span class="comment"> *           behavior. An implementation may map this mutex </span></span><br><span class="line"><span class="comment"> *           to one of the other mutex types</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutexattr_settype</span><span class="params">(<span class="type">pthread_mutexattr_t</span> *attr, <span class="type">int</span> type)</span>;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="3-2-Reader-Writer-Lock-Attributes"><a href="#3-2-Reader-Writer-Lock-Attributes" class="headerlink" title="3.2 Reader-Writer Lock Attributes"></a>3.2 Reader-Writer Lock Attributes</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize a read-write lock attributes object attr</span></span><br><span class="line"><span class="comment"> *        with the default value for all of the attributes</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlockattr_init</span><span class="params">(<span class="type">pthread_rwlockattr_t</span> *attr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief destroy a read-write lock attributes object</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlockattr_destroy</span><span class="params">(<span class="type">pthread_rwlockattr_t</span> *attr)</span>;</span><br></pre></td></tr></table></figure>
+<p>Reader-writer lock attribute只有一个属性: process-shared</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the value of the process-shared attribute</span></span><br><span class="line"><span class="comment"> *        from the attribute object referenced by attr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlockattr_getpshared</span><span class="params">(<span class="type">const</span> <span class="type">pthread_rwlockattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                  <span class="type">int</span> *pshared)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the process-shared attribute in an attribute </span></span><br><span class="line"><span class="comment"> *        object referenced by attr</span></span><br><span class="line"><span class="comment"> * @param pshared: same as pthread_mutexattr_setpshared()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlockattr_setpshared</span><span class="params">(<span class="type">pthread_rwlockattr_t</span> *attr,</span></span><br><span class="line"><span class="params">                                  <span class="type">int</span> pshared)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-Condition-Variable-Attributes"><a href="#3-3-Condition-Variable-Attributes" class="headerlink" title="3.3 Condition Variable Attributes"></a>3.3 Condition Variable Attributes</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize a condition variable attributes object </span></span><br><span class="line"><span class="comment"> *        attr with the default value for all of the attributes</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_condattr_init</span><span class="params">(<span class="type">pthread_condattr_t</span> *attr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the object referenced by attr to an invalid value</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_condattr_destroy</span><span class="params">(<span class="type">pthread_condattr_t</span> *attr)</span>;</span><br></pre></td></tr></table></figure>
+<p>Condition variable attribute有两个属性:</p>
+<ol>
+<li>process-shared<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the value of the process-shared attribute </span></span><br><span class="line"><span class="comment"> *        from the attribute object referenced by attr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_condattr_getpshared</span><span class="params">(<span class="type">const</span> <span class="type">pthread_condattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                <span class="type">int</span> *pshared)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the process-shared attribute in an attributes </span></span><br><span class="line"><span class="comment"> *        object referenced by attr</span></span><br><span class="line"><span class="comment"> * @pshared: same as pthread_mutexattr_setpshared()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_condattr_setpshared</span><span class="params">(pthread_conda *attr, <span class="type">int</span> pshared)</span>;</span><br></pre></td></tr></table></figure></li>
+<li>clock ID<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the value of the clock attribute from the </span></span><br><span class="line"><span class="comment"> *        attribute object referenced by attr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_condattr_getclock</span><span class="params">(<span class="type">const</span> <span class="type">pthread_condattr_t</span> *attr,</span></span><br><span class="line"><span class="params">                              <span class="type">clockid_t</span> *clock_id)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the clock id attribute in an attributes object </span></span><br><span class="line"><span class="comment"> *        referenced by attr</span></span><br><span class="line"><span class="comment"> * @param clock_id: used for pthread_cond_timedwait()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_condattr_setclock</span><span class="params">(<span class="type">pthread_condattr_t</span> *attr,</span></span><br><span class="line"><span class="params">                              <span class="type">clockid_t</span> clock_id)</span>;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="3-4-Barrier-Attribute"><a href="#3-4-Barrier-Attribute" class="headerlink" title="3.4 Barrier Attribute"></a>3.4 Barrier Attribute</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize a barrier attribute object attr with the</span></span><br><span class="line"><span class="comment"> *        default value for all of the attributes</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_barrierattr_init</span><span class="params">(<span class="type">pthread_barrierattr_t</span> *attr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the object referenced by attr to an invalid value</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_barrierattr_destroy</span><span class="params">(<span class="type">pthread_barrierattr_t</span> *attr)</span>;</span><br></pre></td></tr></table></figure>
+<p>Barrier attribute只有一个属性: process-shared</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the value of the process-shared attribute </span></span><br><span class="line"><span class="comment"> *        from the attribute object referenced by attr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_barrierattr_getpshared</span><span class="params">(<span class="type">const</span> <span class="type">pthread_barrierattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                   <span class="type">int</span> *pshared)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the process-shared attribute in an attribute </span></span><br><span class="line"><span class="comment"> *        object referenced by attr</span></span><br><span class="line"><span class="comment"> * @pshared: same as pthread_mutexattr_setpshared()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_barrierattr_setpshared</span><span class="params">(<span class="type">pthread_barrierattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                                   <span class="type">int</span> pshared)</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="4-Reentrancy"><a href="#4-Reentrancy" class="headerlink" title="4. Reentrancy"></a>4. Reentrancy</h2><p>POSIX.1规定了一套符合thread-safe的方式来管理FILE对象: 使用flockfile()或ftrylockfile()来为FILE对象加锁, 文件操作完毕后调用funlockfile()解锁</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief nonblocking version of flockfile()</span></span><br><span class="line"><span class="comment"> * @return 0 for success; nonzero for failure</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ftrylockfile</span><span class="params">(FILE *fp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief wait for *fp to be no longer locked by other thread</span></span><br><span class="line"><span class="comment"> *        then make the current thread the owner of *fp, and </span></span><br><span class="line"><span class="comment"> *        increment the lockcount</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">flockfile</span><span class="params">(FILE *fp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief decrement the lock count, unlock the *fq when </span></span><br><span class="line"><span class="comment"> *        lockcount become 0</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">funlockfile</span><span class="params">(FILE *fp)</span>;</span><br></pre></td></tr></table></figure>
+<p>Standard I&#x2F;O函数在被调用时会自行获得锁, 从而保证thread-safe. 但多次调用getchar()和putchar()会导致时间大量浪费在锁操作上. 为避免不必要的多次加锁, 可使用非加锁的character-at-a-time I&#x2F;O函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">getchar_unlocked</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">getc_unlocked</span><span class="params">(FILE *fp)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">putchar_unlocked</span><span class="params">(<span class="type">int</span> c)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">putc_unlocked</span><span class="params">(<span class="type">int</span> c, FILE *fp)</span>;</span><br></pre></td></tr></table></figure>
+<p>上述4个函数在调用前必须调用flockfile()保证thread-safe, 完毕后要调用funlockfile()解锁.</p>
+<h2 id="5-Thread-Specific-Data"><a href="#5-Thread-Specific-Data" class="headerlink" title="5. Thread-Specific Data"></a>5. Thread-Specific Data</h2><p>Thread-specific data用于存储和寻找特定线程相关的数据, 数据与特定线程绑定后, 数据就不再拥有同步问题, 因为该数据不与其他线程共享.<br>尽管原则上thread-specific data上的数据不可被其他线程访问, 但由于单个进程下的所有线程共享内存空间, 所以若其他线程得知thread-specific data的内存地址, 则还是可以访问. Pthread使用key, value对应关系模型将thread-specific与一个共享的key结合在一起.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a thread-specific data *keyp visible to all </span></span><br><span class="line"><span class="comment"> *        threads in the process</span></span><br><span class="line"><span class="comment"> * @param destructor: When the thread exits, if the destructor</span></span><br><span class="line"><span class="comment"> *        has been set to a non-null value, the destructor </span></span><br><span class="line"><span class="comment"> *        function is called</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_key_create</span><span class="params">(<span class="type">pthread_key_t</span> *keyp, <span class="type">void</span> (*destructor)(<span class="type">void</span> *))</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief delete a thread-specific data key previously </span></span><br><span class="line"><span class="comment"> *        returned by pthread_key_create(). Shall not invoke </span></span><br><span class="line"><span class="comment"> *        the destructor function associated with the key.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_key_delete</span><span class="params">(<span class="type">pthread_key_t</span> key)</span>;</span><br></pre></td></tr></table></figure>
+<p>虽然pthread_key_create()创建的key可被所有thread使用, 但每个key所对应的thread-specific data因所处线程不同而不同. 若某线程拥有所有key且每个key都有自己的destructor, 当线程退出时destructor的调用顺序以系统实现而准.<br>为防止多个线程调用pthread_key_create()导致单个key不断被初始化, Pthread提供pthread_once()来保证单个key只会被初始化一次.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="type">pthread_once_t</span> initflag = PTHREAD_ONCE_INIT;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief the first call to pthread_once() by any thread in a</span></span><br><span class="line"><span class="comment"> *        process shall call initfn(). Subsequent calls of </span></span><br><span class="line"><span class="comment"> *        pthread_once() with the same once_ctl shall not </span></span><br><span class="line"><span class="comment"> *        call the initfn</span></span><br><span class="line"><span class="comment"> * @param once_ctl: determine whether the associated </span></span><br><span class="line"><span class="comment"> *        initialization routine has been called</span></span><br><span class="line"><span class="comment"> *        (PTHREAD_ONCE_INIT)</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_once</span><span class="params">(<span class="type">pthread_once_t</span> *once_ctl, <span class="type">void</span> (*initfn)(<span class="type">void</span>))</span>;</span><br></pre></td></tr></table></figure>
+<p>Key创建完毕后可将其与thread-specific data绑定:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a thread-specific data key visible to all </span></span><br><span class="line"><span class="comment"> *        threads in the process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">pthread_getspecific</span><span class="params">(<span class="type">pthread_key_t</span> key)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief associate a thread-specific value with a key obtained</span></span><br><span class="line"><span class="comment"> *        via a previous call to pthread_key_create()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_setspecific</span><span class="params">(<span class="type">pthread_key_t</span> key, <span class="type">const</span> <span class="type">void</span> *value)</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="6-Cancel-Options"><a href="#6-Cancel-Options" class="headerlink" title="6. Cancel Options"></a>6. Cancel Options</h2><p>Pthread的线程还有另外两个属性: cancelability state, cancelability type. 这两个属性会影响pthread_cancel()的行为.</p>
+<ol>
+<li><p>cancelability state</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the cancelability state of the calling thread </span></span><br><span class="line"><span class="comment"> *        to the value given in state</span></span><br><span class="line"><span class="comment"> * @param state: shall be one of the following values:</span></span><br><span class="line"><span class="comment"> *        1. PTHREAD_CANCEL_ENABLE: The thread is cancelable</span></span><br><span class="line"><span class="comment"> *        2. PTHREAD_CANCEL_DISABLE: The thread is not </span></span><br><span class="line"><span class="comment"> *           cancelable. A call to pthread_cancel() will not </span></span><br><span class="line"><span class="comment"> *           kill the thread, the cancellation request remains</span></span><br><span class="line"><span class="comment"> *           pending until the cancelability state is enabled</span></span><br><span class="line"><span class="comment"> * @param oldstate: The previous cancelability state of the </span></span><br><span class="line"><span class="comment"> *        thread</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_setcancelstate</span><span class="params">(<span class="type">int</span> state, <span class="type">int</span> *oldstate)</span>;</span><br></pre></td></tr></table></figure>
+<p> POSIX.1规定cancellation point只会在以下函数被调用时发生:<br><img src="/images/UNIX/thread-ctl-1.jpg" alt="Cancellation points defined by POSIX.1"></p>
+</li>
+<li><p>cancelability type</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the cancelability type of the calling thread to</span></span><br><span class="line"><span class="comment"> *        the value given in type</span></span><br><span class="line"><span class="comment"> * @param type: shall be one of the following values:</span></span><br><span class="line"><span class="comment"> *        1. PTHREAD_CANCEL_DEFERRED: keep the cancellation </span></span><br><span class="line"><span class="comment"> *           request pending until the next cancellation point</span></span><br><span class="line"><span class="comment"> *        2. PTHREAD_CANCEL_ASYNCHRONOUS: cancel the calling </span></span><br><span class="line"><span class="comment"> *           thread as soon as the cancellation request is </span></span><br><span class="line"><span class="comment"> *           received</span></span><br><span class="line"><span class="comment"> * @param oldtype: The previous cancelability type of the </span></span><br><span class="line"><span class="comment"> *        thread</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_setcanceltype</span><span class="params">(<span class="type">int</span> type, <span class="type">int</span> *oldtype)</span>;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="7-Threads-and-Signals"><a href="#7-Threads-and-Signals" class="headerlink" title="7. Threads and Signals"></a>7. Threads and Signals</h2><p>每个线程都有自己的signal mask, 但所有线程共享进程的signal handler. 当单个线程block signal后, 其他线程也会屏蔽该signal. Hardware fault引发的signal会发送到引发该错误的线程, 其他原因产生的signal会随机发给一个线程.<br>sigprocmask()用于进程阻塞signal, 但多线程下调用signpromask()的行为以系统实现而定. POSIX.1提供了以下函数用于线程阻塞signal:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as sigpromask()</span></span><br><span class="line"><span class="comment"> * @param how: shall be one of the following values:</span></span><br><span class="line"><span class="comment"> *        1. SIG_BLOCK: add the set of signals to the signal </span></span><br><span class="line"><span class="comment"> *           mask</span></span><br><span class="line"><span class="comment"> *        2. SIG_SETMASK: replace the signal mask with the </span></span><br><span class="line"><span class="comment"> *           set of signals</span></span><br><span class="line"><span class="comment"> *        3. SIG_UNBLOCK: remove the set of signals from the </span></span><br><span class="line"><span class="comment"> *           signal mask</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_sigmask</span><span class="params">(<span class="type">int</span> how, <span class="type">const</span> <span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">sigset_t</span> *oset)</span>;</span><br></pre></td></tr></table></figure>
+<p>线程可调用sigwait()来等待一个或多个signals</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief suspend execution of the calling thread until one </span></span><br><span class="line"><span class="comment"> *        of the signals specified in the signal set set </span></span><br><span class="line"><span class="comment"> *        becomes pending</span></span><br><span class="line"><span class="comment"> * @param signop: the number of the signal that was delivered</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sigwait</span><span class="params">(<span class="type">const</span> <span class="type">sigset_t</span> *<span class="built_in">set</span>, <span class="type">int</span> *signop)</span>;</span><br></pre></td></tr></table></figure>
+<p>使用sigwait()时需要注意以下几点:</p>
+<ul>
+<li>若sigwait()调用前已经有signal处于pending状态, sigwait()直接返回. </li>
+<li>sigwait()返回前会移除所有处于pending状态的signals; 若系统支持queued signals, 则sigwait()只会移除第一个signal, 剩余signal还会留在queue中. </li>
+<li>调用sigwait()前必须先阻塞signals. sigwait()会自动unblock这些signals并等待其到来. sigwait()返回前会恢复signal mask.</li>
+<li>若多个线程都调用了sigwait(), signal到来时只有一个线程会被唤醒, 其他线程继续等待.</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief send the signal signo to thread</span></span><br><span class="line"><span class="comment"> * @param signo: if 0, no signal is sent</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_kill</span><span class="params">(<span class="type">pthread_t</span> thread, <span class="type">int</span> signo)</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="8-Threads-and-fork"><a href="#8-Threads-and-fork" class="headerlink" title="8. Threads and fork"></a>8. Threads and fork</h2><p>线程调用fork()时会发生两件事:</p>
+<ol>
+<li>整个进程的内存地址空间都会复制到child process中: child process继承parent process中所有的synchronization object(mutex, rwlock, condition variable)</li>
+<li>child process只会复制一个线程, 也就是parent process中调用fork()的线程: 若child process不打算执行exec, 且存在被其他线程获得的锁, 由于其他线程并未被fork()复制, 被获取的锁将永远被释放, 从而导致死锁</li>
+</ol>
+<p>为避免多线程中fork()导致的inconsistent state, POSIX.1提出了以下函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief declare fork handlers to be called before and after</span></span><br><span class="line"><span class="comment"> *        fork() in the context of the thread that called </span></span><br><span class="line"><span class="comment"> *        fork()</span></span><br><span class="line"><span class="comment"> * @param prepare: shall be called in the parent before </span></span><br><span class="line"><span class="comment"> *        fork() creates the child process</span></span><br><span class="line"><span class="comment"> * @param parent: shall be called in the parent after fork() </span></span><br><span class="line"><span class="comment"> *        has created the child process, but before fork has </span></span><br><span class="line"><span class="comment"> *        returned</span></span><br><span class="line"><span class="comment"> * @param child: shall be called in the context of the child </span></span><br><span class="line"><span class="comment"> *        process before returning from fork</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_atfork</span><span class="params">(<span class="type">void</span> (*prepare)(<span class="type">void</span>), <span class="type">void</span> (*parent)(<span class="type">void</span>), </span></span><br><span class="line"><span class="params">                   <span class="type">void</span> (*child)(<span class="type">void</span>))</span>;</span><br></pre></td></tr></table></figure>
+<p>pthread_atfork()有两种用法:</p>
+<ol>
+<li>prepare()为child process解锁, fork()将无锁状态复制给child process. 创建child process后, parent()再次加锁, 保证parent process中的程序可以正常解锁.</li>
+<li>prepare()中获取所有锁, fork()将所有锁的拥有权复制给child process. 创建child process后, child()负责解锁.</li>
+</ol>
+<p>fork()用于多进程, thread用于多线程, 实际编程中不推荐多进程和多线程混用, 容易导致死锁. 以下是pthread_atfork()的缺陷:</p>
+<ul>
+<li>部分synchronization object不方便重新初始化, 例如: condition variable, barrier</li>
+<li>child process解锁由parent process获取的锁时可能触发error</li>
+<li>Recursive mutex无法被解锁, 因为无法获知加锁次数</li>
+<li>若child process只允许调用async-signal function, 则child()无法解锁, 因为解锁操作是non-async-signal function</li>
+<li>signal handler中调用fork()导致pthread_atfork()中只能调用async-signal function</li>
+</ul>
+<h2 id="9-Threads-and-I-O"><a href="#9-Threads-and-I-O" class="headerlink" title="9. Threads and I&#x2F;O"></a>9. Threads and I&#x2F;O</h2><p>由于线程共享进程中的所有file descriptor, 所以对file descriptor的非原子操作会导致文件操作出错, 例如:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Thread A */</span></span><br><span class="line">lseek(fd, <span class="number">300</span>, SEEK_SET);</span><br><span class="line">read(fd, buf1, <span class="number">100</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Thread B */</span></span><br><span class="line">lseek(fd, <span class="number">700</span>, SEEK_SET);</span><br><span class="line">read(fd, buf2, <span class="number">100</span>);</span><br></pre></td></tr></table></figure>
+<p>上述代码中thread A和thread B的交错执行会导致读取位置错误, 因此POSXI.1提出以下函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read up to count bytes from file descriptor fd at </span></span><br><span class="line"><span class="comment"> *        offset into the buffer starting at buf. The file </span></span><br><span class="line"><span class="comment"> *        offset is not changed</span></span><br><span class="line"><span class="comment"> * @return the number of bytes read on success; -1 on error </span></span><br><span class="line"><span class="comment"> *         and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">pread</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *buf, <span class="type">size_t</span> count, <span class="type">off_t</span> offset)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief write up to count bytes from the buffer starting at</span></span><br><span class="line"><span class="comment"> *        buf to the file descriptor fd at offset. The file </span></span><br><span class="line"><span class="comment"> *        offset is not changed</span></span><br><span class="line"><span class="comment"> * @return the number of bytes written on success; -1 on </span></span><br><span class="line"><span class="comment"> *         error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">pwrite</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">void</span> *buf, <span class="type">size_t</span> count, <span class="type">off_t</span> offset)</span>;</span><br></pre></td></tr></table></figure>
+<p>移动file offset和读取&#x2F;写入操作变为原子操作.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/4cb2.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Interprocess Communication</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/1101.html">
+        <span class="next-text nav-default">Threads</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/7793.html';
+  var disqus_title = "Thread Control";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

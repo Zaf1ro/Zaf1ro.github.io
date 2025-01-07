@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Kafka Essential"/>
+
+
+
+
+  <meta name="keywords" content="Distributed System," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/b805.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/b805.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/b805.html"/>
+
+
+<meta name="description" content="1. IntroductionKafka作为Message oriented middleware(MOM, 消息中间件)的一种实现, 同类工具还有RabbitMQ, RocketMQ. 该类工具主要服务于分布式系统中的message delivery(消息传递): 服务调用方(Kafka中称为provider, 生产者)向MOM系统发送message(消息), 服务提供方(Kafka中称为con">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka Essential">
+<meta property="og:url" content="https://zaf1ro.github.io/p/b805.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionKafka作为Message oriented middleware(MOM, 消息中间件)的一种实现, 同类工具还有RabbitMQ, RocketMQ. 该类工具主要服务于分布式系统中的message delivery(消息传递): 服务调用方(Kafka中称为provider, 生产者)向MOM系统发送message(消息), 服务提供方(Kafka中称为con">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kafka/offset-compaction.jpeg">
+<meta property="article:published_time" content="2022-09-12T16:56:23.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.040Z">
+<meta property="article:tag" content="Distributed System">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kafka/offset-compaction.jpeg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Kafka Essential - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Main-Concepts-and-Terminology"><span class="toc-text">2. Main Concepts and Terminology</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Message-Pattern"><span class="toc-text">3. Message Pattern</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Partition-Assignment-Strategy"><span class="toc-text">3.1 Partition Assignment Strategy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Kafka-Group-Coordinator"><span class="toc-text">3.2 Kafka Group Coordinator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-How-to-Avoid-Rebalance"><span class="toc-text">3.3 How to Avoid Rebalance</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-High-Throughput-and-High-Availability"><span class="toc-text">4. High Throughput and High Availability</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-High-Throughput"><span class="toc-text">4.1 High Throughput</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-High-Availability"><span class="toc-text">4.2 High Availability</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Data-Loss"><span class="toc-text">5. Data Loss</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Producer-Loses-Data"><span class="toc-text">5.1 Producer Loses Data</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Broker-Failure"><span class="toc-text">5.2 Broker Failure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Consumer-Loses-Data"><span class="toc-text">5.3 Consumer Loses Data</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Summary"><span class="toc-text">5.4 Summary</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-TCP-Connections"><span class="toc-text">6. TCP Connections</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-TCP-Connection-of-Producer"><span class="toc-text">6.1 TCP Connection of Producer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-TCP-Connection-of-Consumer"><span class="toc-text">6.2 TCP Connection of Consumer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Consumer-Offset"><span class="toc-text">7. Consumer Offset</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-How-Consumer-Commits-Offset"><span class="toc-text">7.1 How Consumer Commits Offset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-consumer-offsets-Topic"><span class="toc-text">7.2 __consumer_offsets Topic</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Idempotence-in-Kafka"><span class="toc-text">8.Idempotence in Kafka</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-What-is-Idempotence"><span class="toc-text">8.1 What is Idempotence</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-Messaging-semantics"><span class="toc-text">8.2 Messaging semantics</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-Idempotent-Producer"><span class="toc-text">8.3 Idempotent Producer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-Transactional-Producer"><span class="toc-text">8.4 Transactional Producer</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-1-Find-Transaction-Coordinator"><span class="toc-text">8.4.1 Find Transaction Coordinator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-2-Initialize-Transaction"><span class="toc-text">8.4.2 Initialize Transaction</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-3-Begin-Transaction"><span class="toc-text">8.4.3 Begin Transaction</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-4-Send-Message"><span class="toc-text">8.4.4 Send Message</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-4-5-Commit-Abort-transaction"><span class="toc-text">8.4.5 Commit&#x2F;Abort transaction</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-Consume-Message"><span class="toc-text">8.5. Consume Message</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-6-Impact-to-Performance"><span class="toc-text">8.6. Impact to Performance</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#8-6-1-Produce-Message"><span class="toc-text">8.6.1 Produce Message</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-6-2-Consume-Message"><span class="toc-text">8.6.2 Consume Message</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Kafka Essential
+        
+      </h1>
+      <time class="post-time">
+          09/12/22
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Kafka作为<strong>Message oriented middleware</strong>(MOM, 消息中间件)的一种实现, 同类工具还有RabbitMQ, RocketMQ. 该类工具主要服务于分布式系统中的<strong>message delivery</strong>(消息传递): 服务调用方(Kafka中称为<strong>provider</strong>, 生产者)向MOM系统发送<strong>message</strong>(消息), 服务提供方(Kafka中称为<strong>consumer</strong>, 消费者)从MOM系统接收并处理消息. 相比于两个服务直接沟通, Kafka类MOM系统具有以下优势:</p>
+<ul>
+<li>松耦合: provider无需知道consumer的地址, 无需与consumer提前建立连接(确认其是否在线), 也无需确认consumer是否完成处理. 在大型分布式项目中, 通常会包含几百种服务, 若每一种服务都与其他多个服务有依赖关系, 服务间沟通的维护成本会十分昂贵.</li>
+<li>削峰填谷: consumer可根据自身处理能力, 不必一次处理全部消息, 防止provider的大量消息压垮下游的consumer, 甚至导致整个服务链崩溃.</li>
+<li>消息模型: Kafka的<strong>topic</strong>概念提供了一种消息容器, 多个provider可向同一个消息容器中投递消息, 多个consumer可同时处理同一个消息容器内的多个消息.</li>
+<li>日志缓存: 当全体consumer不在线时(如系统维护), Kafka可临时保存消息, 防止消息丢失</li>
+</ul>
+<h2 id="2-Main-Concepts-and-Terminology"><a href="#2-Main-Concepts-and-Terminology" class="headerlink" title="2. Main Concepts and Terminology"></a>2. Main Concepts and Terminology</h2><p>对于外部服务, Kafka分为两个部分:</p>
+<ul>
+<li>Server: Kafka以一个集群的形式运行, 也就是说, 一个Kafka由多个服务器组成. 服务器中运行的服务进程称为<strong>broker</strong>, 负责接收和处理client的请求, 以及消息的持久化. 虽然多个broker可运行在一台服务器上, 但通常一台服务器只运行一个broker, 因此一个broker也可表示一个服务器; 若某个服务器宕机, 其他服务器上的broker不会受影响.</li>
+<li>Client: client与server进行交流, 用于读取, 写入和处理消息. 发送消息的client称为<strong>producer</strong>, 读取并处理消息的client称为<strong>consumer</strong></li>
+</ul>
+<p>从Kafka Server内部观察, 其包含以下几种概念:</p>
+<ul>
+<li>Message(消息): 表示业务中发生了某件事, 每个message有一个key, 一个value, 一个timestamp, 和一个可选的metadata</li>
+<li>Topic(主题): 用于分类message, topic中的message可随时读取, 且读取后不会被删除(过期后自动删除). 需要注意的是, topic只是一个逻辑概念, 并不固定存放在某个服务器或文件中, producer发送的每个message都必须拥有一个topic的属性, 同一topic的message组成整个topic. 一个topic支持多个producer同时写入, 也支持多个consumer同时读取.</li>
+<li>Partition(分区): 一个topic可拆分为一个或多个partition, 一个broker可拥有一个topic中的一个partition. 与topic不同的是, partition不是一个逻辑概念, 其作为kafka中<strong>最小的存储单元</strong>, 每个partition都是一个log文件. 需要注意的是, 一个topic下的partition拥有不同的message, partition之间并不是互为备份关系. 单个topic内的partition编号从零开始, 依次递增, 假设某个topic有100个partition, 则partition编号为0到99.</li>
+<li>Offset(偏移量): partition中的每条message都会分配一个序号, 称为<strong>offset</strong>, 当producer写入message时, 会向对应topic中的其中一个partition追加该message. 由于每个partition内的offset不同, 因此一个topic下的message是无序的, 但一个partition内的message是有序的; 如果要求topic整体有序, 则只能拥有一个partition.</li>
+</ul>
+<p>之所以提出上述概念, 是因为kafka在设计之初需保证的两个特性:</p>
+<ul>
+<li>Fault-tolerant(容错性): 为保证容错性, kafka集群需由多个服务器组成, 从而保证单个服务器宕机时不会影响到整个集群的运行. 虽然单个服务器宕机的概率极低, 但随着服务器数量的增加, 集群中出现宕机的概率也随之增加(假设宕机是随机独立事件). 若某个服务器宕机, 则其保存的数据也不可用, 因此需对数据进行冗余备份, 也就是拷贝到多台机器上(replication). 同一partition的不同副本称为<strong>replica</strong>, 分为两类:<ul>
+<li>Leader: 其中一个replica所在的broker作为leader, 负责与client交互(producer向leader写消息, consumer从leader读取消息).</li>
+<li>Follower: 其他replica作为follower, 不与任何client交互, 只负责将最新message备份到本地</li>
+</ul>
+</li>
+<li>Scalability(可拓展性), 分为两个部分:<ul>
+<li>容量拓展性: 单个topic内的message会超过单个服务器的存储上限, 因此将topic拆分为多个partition. 根据数据总量和单机容量, 可计算出需要多少个partition.</li>
+<li>负载拓展性: 若没有partition的概念, 那么一个topic的所有读写压力会集中在某个broker上, 导致失去水平拓展; 将topic拆分为多个partition后, 若分区规则合理, 则消息会被均匀地分布到不同的partition. kafka集群中的每个broker都可作为一个partition的leader, 因此同一topic下的消息会由不同broker读写.</li>
+</ul>
+</li>
+</ul>
+<p>总结: 一个Kafka集群包含多个topic(消息分类), 一个topic包含多个partition(可拓展性), 一个partition拥有多个replica, 且每个replica放置在不同broker(防止单点故障导致数据不可用), replica所在的broker分为leader和follower, producer和consumer只与leader交互. Replica身份划分延伸出一个问题: Redis和MySQL都支持读写分离(leader负责写请求, follower负责读请求), 但Kafka选择读写不分离, 其设计原因如下:</p>
+<ul>
+<li>读写是否分离并没有优劣之分, 每个工具都有各自的应用场景, 选择合适的架构更重要: MySQL和Redis的使用场景中, 读请求的数量通常比写入高一个或多个数量级, 因此需横向拓展处理读请求的能力(增加follower数量); Kafka作为MOM系统, 而不是数据存储引擎, 不会出现读多写少的情况.</li>
+<li>Kafka的数据同步方式为<strong>异步</strong>, 因此leader和follower会存在数据不一致情况, 无论是将其改为同步模式(producer延迟增加, leader写入能力下降), 还是忍受数据不一致性(consumer从follower读取到过期数据), 都存在很多问题.</li>
+<li>Kafka的最小读写单元为partition, 使得集群中每个broker都可以作为一个partition的leader, 从而不会出现某台机器负载过重</li>
+</ul>
+<p>持久化数据对于Kafka十分重要, 这决定了Kafka的吞吐量. Kafak使用<strong>log</strong>(日志)文件保存数据, 日志只能<strong>append-only</strong>(追加写), 从而避免了随机I&#x2F;O操作; 但一直写入总会耗尽磁盘, 因此需定期删除旧消息以回收磁盘. Kafka将一个日志拆分为多个<strong>log segment</strong>(日志段), 当一个日志段写满后, 会创建新的日志段, 并将旧的日志段封存起来, Kafka会定期检查日志段是否过期(默认七天), 并删除过期的日志段.</p>
+<h2 id="3-Message-Pattern"><a href="#3-Message-Pattern" class="headerlink" title="3. Message Pattern"></a>3. Message Pattern</h2><p>主流的消息模型有两种:</p>
+<ul>
+<li>P2P(点对点模型): <strong>消息发布者</strong>将消息直接发送给<strong>消息接收者</strong></li>
+<li>Pub&#x2F;Sub(发布订阅模型): <strong>消息发布者</strong>先将消息发送给<strong>消息通道</strong>, 订阅对应主题的<strong>消息订阅者</strong>获得消息推送</li>
+</ul>
+<p>传统的消息队列的缺陷在于, 消息一旦被消息, 就会从队列中删除, 且只能被一个consumer消费; 发布&#x2F;订阅模型允许多个consumer同时消费, 但单个consumer必须订阅整个主题, 导致伸缩性不高. Kafka引入了<strong>Consumer Group</strong>(消费者组)概念: consumer group包含一组consumer, topic中的partition会分配给topic中不同的consumer, 从而解决了伸缩性差的问题(consumer不必消费topic的所有partition), 提高了消费端的吞吐量(多个consumer同时消费同一topic).<br>每个consumer group拥有一个全局唯一ID, 称为<strong>Group ID</strong>. 需要注意的是, topic中一个partition只能由consumer group中的一个consumer消费(consumer与partition呈一一对应关系). Consumer消费信息时, 会保留一个字段记录已经消费到哪个partition的哪个位置, 该字段称为<strong>consumer offset</strong>(消费者位移).<br>虽然多个consumer同时消费单个topic带来了极大的伸缩性, 但也引入诸多问题:</p>
+<ul>
+<li>Kafka如何记录consumer消费到哪个partition的哪一条消息: Kafka使用<strong>offset</strong>(与<strong>consumer offset</strong>不同)表示consumer已消费了哪些消息. 对于单个consumer group, 其包含一组键值对, key为<code>&lt;topic, partition&gt;</code>, value为partition的最新位移. 老版本Kafka将位移信息保存在ZooKeeper上, 但ZooKeeper不适合频繁的写操作, 会拖慢整体性能, 因此新版本Kafka将位移信息保存在内部的topic中, 称为**__consumer_offsets**.</li>
+<li>Kafka如何为每个consumer分配partition: Kafka会自动分配单个consumer group中每个consumer要消费的partition, 假设某个consumer挂掉, Kafka会自动检测并将该consumer负责的partition分配给其他consumer, 称为<strong>Rebalance</strong>. 对于rebalance, 存在以下注意点:<ul>
+<li>Rebalance何时触发</li>
+<li>Rebalance的分配策略</li>
+<li>Rebalance的缺陷</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-1-Partition-Assignment-Strategy"><a href="#3-1-Partition-Assignment-Strategy" class="headerlink" title="3.1 Partition Assignment Strategy"></a>3.1 Partition Assignment Strategy</h3><p>Kafka提供了三种partition分配策略:</p>
+<ul>
+<li>range: 对consumer group订阅的topic中的partition按照序号排序, 并将consumer按字典序排序, 每个consumer负责消费topic中固定范围的partition, 若不能平均分配, 则排序靠前的consumer会处理额外partition.</li>
+<li>RoundRobin: 对consumer group订阅的所有topic的所有partition按照字典序排序, 然后通过轮询方式将各个partition分配给每个consumer.</li>
+<li>StickyAssignor: 该分区策略遵循两个原则:<ul>
+<li>paritition的分配尽量均匀</li>
+<li>partition的分配尽可能与上次分配相同, 若与第一条冲突, 则遵循第一条</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-2-Kafka-Group-Coordinator"><a href="#3-2-Kafka-Group-Coordinator" class="headerlink" title="3.2 Kafka Group Coordinator"></a>3.2 Kafka Group Coordinator</h3><p>Rebalance看似美好, 但也有很多弊端:</p>
+<ul>
+<li>Rebalance会暂停所有consumer, 影响consumer端的吞吐量</li>
+<li>Rebalance的执行时间很长</li>
+</ul>
+<p>由于rebalance目前没有很好的优化方案, 因此最好的方案就是尽量避免触发rebalance. 在讨论如何避免rebalance之前, 需先明白Kafka如何让consumer group中的所有consumer达成共识.<br>每个consumer group都有一个broker作为<strong>group coordinator</strong>(组协调者)负责管理位移信息和组成员, 执行rebalance. 当consumer加入一个consumer group时, 会向对应的group coordinator发送请求; 当consumer离开consumer group时, coordinator负责rebalance. 整个过程存在两个问题:</p>
+<ul>
+<li>group coordinator如何启动: 所有broker启动时都开启一个group coordinator组件, 因此所有broker都可成为group coordinator</li>
+<li>consumer如何找到group coordinator所在的broker:<ol>
+<li>consumer向任意一个broker发送<code>FindCoordinator</code>请求, 并附带consumer group的<code>Group ID</code></li>
+<li>收到请求的broker计算<code>Group ID</code>的<code>hash值</code>, 并从<code>__consumer_offsets</code>获得该consumer group的partition数量</li>
+<li><code>hash值 % partition数</code>即为某个paritition的编号</li>
+<li>该partition的leader为group coordinator, 返回给consumer</li>
+</ol>
+</li>
+</ul>
+<h3 id="3-3-How-to-Avoid-Rebalance"><a href="#3-3-How-to-Avoid-Rebalance" class="headerlink" title="3.3 How to Avoid Rebalance"></a>3.3 How to Avoid Rebalance</h3><p>要想避免触发rebalance, 必须先清楚rebalance何时触发, 分为以下三种情况:</p>
+<ul>
+<li>Consumer group下的consumer数量发生变化: 新的consumer加入group, 或已有consumer离开group</li>
+<li>订阅的topic数量发生变化: consumer group可用正则表达式匹配topic, 因此新建topic可能增加consumer group的topic数量增加</li>
+<li>Topic的partition数量发生变化: 当增加partition数量时, 订阅对应topic的consumer group会开启rebalance</li>
+</ul>
+<p>以上三种触发条件中, <code>consumer group订阅的topic数量变化</code>和<code>topic中的partition数量变化</code>都是人工操作导致的, 因此只要不手动添加就不会触发rebalance. 99%的rebalance都是因为consumer数量的变化, 分为两种情况:</p>
+<ul>
+<li>consumer的数量增加: 启动新的consumer时, 会向对应<code>Group ID</code>的consumer group中添加新的consumer, 一般是运维添加, 因此不可避免</li>
+<li>consumer的数量减少: 若手动关闭某个consumer, 则不可避免; 但某些情况下, group coordinator会错误地认为某个consumer已停止工作, 从而将其移除consumer group</li>
+</ul>
+<p>因此需了解group coordinator如何判断consumer是否存活, 以下是consumer端的一些配置参数:</p>
+<ul>
+<li><code>session.timeout.ms</code>: consumer会定期向group coordinator发送heartbeat, 表示自己仍存活, 该参数表示heartbeat超时时间. 若某个consumer不能及时发送heartbeat, group coordinator会认为该consumer已死, 并开启rebalance. 默认为45秒.</li>
+<li><code>heartbeat.interval.ms</code>: 该参数表示heartbeat发送频率, 值越小, heartbeat发送的频率越高, 可以更快速地让group coordinator决定是否开启rebalance, 但会额外消耗带宽. 默认为3秒.</li>
+<li><code>max.poll.interval.ms</code> 该参数表示两次poll之间的最大时间间隔, 若consumer无法在指定时间内完成消费, 会主动离开consumer group. 默认为5分钟.</li>
+</ul>
+<p>因此, 为避免不必要的rebalance, 可按照以下规则设置参数:</p>
+<ul>
+<li>session.timeout.ms &#x3D; 6s</li>
+<li>heartbeat.interval.ms &#x3D; 2s, 保证<code>$\text&#123;session.timeout.ms&#125; \ge 3 * \text&#123;heartbeat.interval.ms&#125;$</code>, 也就是, 超时前至少发送三次heartbeat</li>
+<li>max.poll.interval.ms的数值根据consumer的处理时间而定, 假设每次消费需要5分钟, 则该参数必须大于5分钟</li>
+</ul>
+<h2 id="4-High-Throughput-and-High-Availability"><a href="#4-High-Throughput-and-High-Availability" class="headerlink" title="4. High Throughput and High Availability"></a>4. High Throughput and High Availability</h2><h3 id="4-1-High-Throughput"><a href="#4-1-High-Throughput" class="headerlink" title="4.1 High Throughput"></a>4.1 High Throughput</h3><p>以下是Kafka高吞吐量的原因:</p>
+<ul>
+<li>操作系统层面:<ul>
+<li>Append only: 只在日志结尾追加数据, 写入速度比<strong>随机写</strong>快很多</li>
+<li>Zero copy(零拷贝): 读取数据时, 直接将数据从kernel space复制到socket buffer中, 无需经过user space</li>
+<li>Page Cache(页缓存): 将磁盘中的文件缓存到内存中, 减少I&#x2F;O操作, 并将数据是否刷入磁盘的决定权交由操作系统</li>
+</ul>
+</li>
+<li>网络通信方面:<ul>
+<li>批量发送: producer先将消息写入一个缓存池, 达到一定数量后组成一个batch, 一并发送</li>
+<li>数据压缩: producer可使用不同压缩算法减少数据传输量</li>
+</ul>
+</li>
+<li>系统设计方面:<ul>
+<li>Producer推送消息时, 可无需等待Kafka集群的任何确认(<code>acks = 0</code>)</li>
+<li>Kafka的<strong>topic</strong>概念让数据处理的单元变为partition, 让Kafka具有横向拓展能力</li>
+<li>新版Kafka将一些频繁写入的数据从ZooKeeper剥离, 避免ZooKeeper成为集群的瓶颈</li>
+<li>ISR(In-Sync Replicas): Follower不会与leader保持完全同步, 只需周期性(<code>replica.lag.time.max.ms</code>)向leader发送<code>FetchRequest</code>请求. Leader负责维护ISR列表并同步到ZooKeeper.</li>
+</ul>
+</li>
+<li>JVM方面: 由于GC(垃圾回收)会导致所有线程停止工作, 因此Kafka需减少GC的出现频率. 当producer发送信息后, 由于没有任何引用指向该内存, 很容易触发GC, 因此producer端设计了一个缓存池: 当消息来临时, 从缓存池申请一个batch; 发送batch后, 将内存还回缓存池. 若producer的写入占满整个缓存池, 会阻塞所有写入, 只能等待batch发送.</li>
+</ul>
+<h3 id="4-2-High-Availability"><a href="#4-2-High-Availability" class="headerlink" title="4.2 High Availability"></a>4.2 High Availability</h3><p>以下是Kafka能做到高可用性的原因:</p>
+<ul>
+<li>Producer端: <ul>
+<li>多producer一起提交</li>
+<li>同步提交消息: <code>commitSync()</code></li>
+<li>当写入速度过快, 会阻塞写入操作, 防止消息丢失</li>
+</ul>
+</li>
+<li>Kafka集群端:<ul>
+<li>消息备份: 每个partition存在多个replica, 且分布在不同机器上</li>
+<li>主从不分离: Leader负责读写操作, 保证消息新鲜度</li>
+<li>Leader选举: 当leader宕机时, 会选举出新的leader</li>
+</ul>
+</li>
+<li>Consumer端:<ul>
+<li>可关闭自动提交位移, 防止重复消费</li>
+<li>多consumer一起消费, 且支持rebalance</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-Data-Loss"><a href="#5-Data-Loss" class="headerlink" title="5. Data Loss"></a>5. Data Loss</h2><p>很多开发者会使用Kafka时遇到消息丢失的情况, 从而认为Kafka不可靠, 这是错误的. 在解决消息丢失问题前, 需清楚Kafka在什么情况下保持消息不丢失, 从而找到一些消息丢失的原因, 并提出相应方案: 当消息被<strong>committed</strong>(提交)后, Kafka会为该消息提供<strong>有限的</strong>持久化保证. 其中有两个关键点:</p>
+<ul>
+<li>提交消息: Producer向broker发送消息, 该消息被多个broker写入日志, 并回复producer该消息已提交, 此时producer可认为消息提交成功</li>
+<li>有限的持久化保证: 若集群中所有broker同时丢失数据, 则会导致消息永久丢失, 因此需保证至少一台broker存活</li>
+</ul>
+<p>因此, 我们可以思考下一个问题: 什么情况下Kafka会丢失数据. 大体来说分为以下三种:</p>
+<h3 id="5-1-Producer-Loses-Data"><a href="#5-1-Producer-Loses-Data" class="headerlink" title="5.1 Producer Loses Data"></a>5.1 Producer Loses Data</h3><p>Producer丢失数据是最常见的场景. 首先, producer的<code>send(msg)</code>为异步发送消息, 该函数调用后立即返回, 因此producer不能认为消息已成功提交. 例如, 网络中断会导致消息未发送至broker, 或由于消息格式不正确而被broker拒收. 解决方案是改用<code>send(msg, callback)</code>, <code>callback</code>会告诉producer消息是否提交成功, 以便后续处理.<br>当然, 消息的接收端leader也可能宕机, 存在两种情况:</p>
+<ul>
+<li>若单个broker宕机, producer会自动获得最新的metadata, 其中包含新选举的leader</li>
+<li>若所有broker宕机, producer怎么重试都会失败, 此时更需要处理Kafka集群内的问题</li>
+</ul>
+<h3 id="5-2-Broker-Failure"><a href="#5-2-Broker-Failure" class="headerlink" title="5.2 Broker Failure"></a>5.2 Broker Failure</h3><p>Kafka为做到高吞吐量和低延迟, broker接收到消息后不会立即写入磁盘, 而是由操作系统的<strong>page cache</strong>(页缓存)决定何时写入磁盘, 写入前消息会保留在内存中. 因此, 若所有broker在写入磁盘前全部宕机, 也会导致消息丢失, 不过该情况的出现概率极低.</p>
+<h3 id="5-3-Consumer-Loses-Data"><a href="#5-3-Consumer-Loses-Data" class="headerlink" title="5.3 Consumer Loses Data"></a>5.3 Consumer Loses Data</h3><p>Consumer端的消息丢失分为两种情况:</p>
+<ul>
+<li>consumer错误提交位移信息. Consumer端会保留一个<strong>offset</strong>(位移)字段, 表示已消费到<code>&lt;Topic, Partition&gt;</code>的哪个消息. 因此consumer应先消费消息, 再向group coordinator提交位移; 若consumer先提交位移, 并在消费消息前崩溃, 则会导致消息丢失. 解决方法是关闭自动提交位移, 改为手动提交</li>
+<li>consumer从leader获得多个消息, 并开启多个线程异步处理消息, 且自动提交位移. 假设某个线程运行失败, 其负责的消息未被处理, 也会导致消息丢失. 多线程消费的实现十分困难, 需尽量避免使用多线程消费消息.</li>
+</ul>
+<h3 id="5-4-Summary"><a href="#5-4-Summary" class="headerlink" title="5.4 Summary"></a>5.4 Summary</h3><ul>
+<li>Producer使用<code>send(msg, callback)</code>, 在<code>callback</code>中确认消息提交</li>
+<li>Producer端的<code>acks</code>参数: 表示消息被认为提交成功前, 需要多少个broker返回ack, 该参数有三个选项, 默认为<code>all</code>(Kafka &gt;&#x3D; 3.0):<ul>
+<li><code>acks = 0</code>: 只要producer发出信息, 就认为消息写入成功, 无需等待leader回复ack. 该选项拥有最大消息吞吐量, 也容易丢失消息</li>
+<li><code>acks = 1</code>: leader写入信息后立即回复ack, 无需等待其他replica同步成功; 若replica同步前leader宕机, 也会造成消息丢失.</li>
+<li><code>acks = all</code>: leader等待足够数量的replica同步, 再向producer发送ack; 这里的<strong>足够数量</strong>由Kafka集群的<code>min.insync.replicas</code>参数决定, 并不一定是partition的所有replica; 若没有足够数量的replica同步, 则向producer抛出<code>NotEnoughReplicasException</code>.</li>
+</ul>
+</li>
+<li>Producer端的<code>retries</code>参数: 表示producer提交消息失败时重试多少次, 默认为<strong>2147483647</strong>, 可将其设置为一个较大的值以应对网络中断等临时故障</li>
+<li>Broker端的<code>unclean.leader.election.enable</code>参数: 表示一个落后的replica是否有资格选为leader, 默认为<code>false</code>. 当一个落后的broker成为leader, 必然造成消息丢失.</li>
+<li>Broker端的<code>replication.factor</code>参数: 表示新建的topic的副本数量, 默认为<strong>1</strong>, 可将该参数设置为$\ge 3$以防止消息丢失.</li>
+<li>Broker端的<code>min.insync.replicas</code>参数: 当producer将ack设置为<code>all</code>时, leader收到多少个replica的ack才算是<strong>写入成功</strong>, 默认为<strong>1</strong>, 可设置为更高值.</li>
+<li>确保<code>$\text&#123;replication.factor&#125; \gt \text&#123;min.insync.replicas&#125;$</code>, 若两者相等, 则任意一个replica宕机都会导致数据无法写入, 可设置为<code>$\text&#123;replication.factor&#125; = \text&#123;min.insync.replicas&#125; + 1$</code></li>
+<li>Consumer端的<code>enable.auto.commit</code>参数: 表示是否自动提交offset, 默认为<strong>true</strong>. 可设置为<code>false</code>, 消费消息后手动提交位移.</li>
+</ul>
+<h2 id="6-TCP-Connections"><a href="#6-TCP-Connections" class="headerlink" title="6. TCP Connections"></a>6. TCP Connections</h2><p>Kafka中的所有通信都基于TCP, 而不是HTTP, 因为TCP具有更多底层特性, 例如:</p>
+<ul>
+<li>多路复用: 多个数据流使用同一链接, 减少TCP handshake次数</li>
+<li>消息顺序一致: TCP保证消息发送顺序与消息接收顺序一致</li>
+<li>轮询I&#x2F;O连接: 可使用Linux的<code>epoll</code>高效轮询多个TCP连接</li>
+</ul>
+<h3 id="6-1-TCP-Connection-of-Producer"><a href="#6-1-TCP-Connection-of-Producer" class="headerlink" title="6.1 TCP Connection of Producer"></a>6.1 TCP Connection of Producer</h3><p>以下是producer创建TCP连接的几种情况:</p>
+<ul>
+<li>创建producer实例时, 会在后台创建一个线程, 该线程与<code>bootstrap.servers</code>中的broker创建连接. 由于未指定topic, 因此会与所有broker建立连接. 连接建立完毕后, 会向其中一个broker发送metadata请求, 以获取Kafka集群的所有信息.<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">Producer</span> <span class="variable">producer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">KafkaProducer</span>(props);</span><br></pre></td></tr></table></figure></li>
+<li>更新metadata时: 若producer需要更新metadata且与broker没有连接, 则会创建连接. 以下是更新metadata的情况:<ul>
+<li>初始producer实例</li>
+<li>Producer端<code>metadata.max.age.ms</code>参数的倒计时结束</li>
+<li>Broker收到broker的异常响应, 如发送的消息不属于任何topic</li>
+<li>Producer无法找到partition对应的leader</li>
+</ul>
+</li>
+<li>Producer发送消息: 若producer未与消息对应的leader建立连接, 则会创建一个新的连接<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">producer.send(msg, callback)</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>以下是producer关闭TCP连接的两种方式:</p>
+<ul>
+<li>主动关闭: kill进程, 或调用<code>producer.close()</code>关闭实例</li>
+<li>自动关闭: producer端的<code>connections.max.idle.ms</code>参数: 表示某个TCP连接在指定期间内没有任何数据传输(不包括heartbeat), 则关闭该连接. 默认为9分钟, 可设置为<code>-1</code>, 表示禁止自动关闭连接.</li>
+</ul>
+<h3 id="6-2-TCP-Connection-of-Consumer"><a href="#6-2-TCP-Connection-of-Consumer" class="headerlink" title="6.2 TCP Connection of Consumer"></a>6.2 TCP Connection of Consumer</h3><p>以下是consumer创建TCP连接的几种情况:</p>
+<ul>
+<li>发送<code>FindCoordinator</code>请求: 每个consumer group都有一个group coordinator负责管理组内consumer提交的位移. 当consumer首次调用<code>poll</code>方法, 会向任意broker发送<code>FindCoordinator</code>请求, broker回复consumer group对应的group coordinator地址.</li>
+<li>连接group coordinator: consumer收到group coordinator的地址后, 会连接group coordinator, 并请求加入consumer group.</li>
+<li>获取metadata: 由于消息保存在leader, 而不是group coordinator, 因此consumer需与partition对应的leader建立连接, 在此之前, 需向任意broker请求metadata信息.</li>
+<li>消费消息: consumer为每个partition创建对应leader的连接. 假设consumer需消费5个partition, 这些partition的leader分布在4台服务器上, 则consumer需建立4个连接.</li>
+</ul>
+<p>以下是consumer关闭TCP连接的几种情况:</p>
+<ul>
+<li>主动关闭: kill掉consumer实例, 或调用<code>consumer.close()</code></li>
+<li>自动关闭: TCP连接在指定期间内(<code>connections.max.idle.ms</code>)没有任何数据传输, 会自动关闭该连接.</li>
+</ul>
+<h2 id="7-Consumer-Offset"><a href="#7-Consumer-Offset" class="headerlink" title="7. Consumer Offset"></a>7. Consumer Offset</h2><p>在讨论consumer如何提交offset之前, 需先区分两种offset:</p>
+<ul>
+<li>offset: partition的每个消息都有一个offset, 值从<strong>0</strong>开始, 假设producer发送三条消息, 则offset分别是<code>0, 1, 2</code>. 消息的offset单调递增, 且提交后不可更改.</li>
+<li>consumer offset: 每个consumer需记录自己消费到partition的哪个消息, 缩写为<strong>offset</strong>.</li>
+</ul>
+<h3 id="7-1-How-Consumer-Commits-Offset"><a href="#7-1-How-Consumer-Commits-Offset" class="headerlink" title="7.1 How Consumer Commits Offset"></a>7.1 How Consumer Commits Offset</h3><p>Consumer之所以要提交offset, 是为了避免其他consumer重复消费. 若consumer提交的offset为<strong>X</strong>, 表示offset小于<strong>X</strong>的消息都已被消费. Group coordinator不会验证consumer是否完成消费, 因此需要consumer自行保证正确性. Consumer端有两种提交offset的方式:</p>
+<ul>
+<li>自动提交: 无需用户参与, consumer会定时提交offset. Consumer端的<code>enable.auto.commit = true</code>参数表示开启自动提交, 并根据<code>auto.commit.interval.ms</code>参数(默认为5秒)每隔一段时间自动提交最新获得的offset. 自动提交的问题在于<strong>可能出现重复消费</strong>. 假设consumer每5秒自动提交一次offset, consumer在第3秒崩溃, 那么group coordinator会将前三秒的消息再次分配给其他consumer. 即便调小<code>auto.commit.interval.ms</code>来提高提交频率也无法避免重复消费.</li>
+<li>手动提交: 需consumer手动提交offset, 分为两种.<ul>
+<li>commitSync(): 同步提交. 该函数会一直等待, 直到offset成功提交至group coordinator.<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">  ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofSeconds(<span class="number">1</span>));</span><br><span class="line">  process(records);</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    consumer.commitSync();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (CommitFailedException e) &#123;</span><br><span class="line">    handle(e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>commitAsync(): 异步提交. 该函数立即返回. 该函数提供了<code>callback</code>用于提交后的处理, 如记录日志或异常处理.<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">  ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofSeconds(<span class="number">1</span>));</span><br><span class="line">  process(records);</span><br><span class="line">  consumer.commitAsync((offsets, exception) -&gt; &#123;</span><br><span class="line">   <span class="keyword">if</span> (exception != <span class="literal">null</span>)</span><br><span class="line">   handle(exception);</span><br><span class="line"> &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<p>上述两种提交offset方式各有优劣: </p>
+<ul>
+<li><code>commitSync</code>: 保证位移成功提交, 但影响consumer吞吐量</li>
+<li><code>commitAsync</code>: 保证consumer吞吐量不受影响, 但可能提交失败</li>
+</ul>
+<p>因此可结合两者优点: 若外部条件一切正常, 使用<code>commitAsync</code>; 出现网络波动等临时故障时, 使用<code>commitSync</code>处理.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofSeconds(<span class="number">1</span>));</span><br><span class="line">    process(records);</span><br><span class="line">    commitAysnc();</span><br><span class="line">  &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">  handle(e); <span class="comment">// 处理异常</span></span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    consumer.commitSync(); <span class="comment">// 最后一次提交使用同步阻塞式提交</span></span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    consumer.close();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-consumer-offsets-Topic"><a href="#7-2-consumer-offsets-Topic" class="headerlink" title="7.2 __consumer_offsets Topic"></a>7.2 __consumer_offsets Topic</h3><p>新版本Kafka将offset信息保存在<strong>__consumer_offsets</strong> topic中, 因此offset信息也是一条普通消息, 这么做既满足了offset的持久性, 也弥补了ZooKeeper写操作效率过低的缺点. 用户无需操作该topic, 其消息格式由Kafka定义, consumer通过Kafka的API提交offset信息, 而不是向该topic发送消息.<br>__consumer_offsets内每一个消息都是一个<strong>Key-Value Pair</strong>. Key为<code>&lt;Group ID, Topic, Partition&gt;</code>; Value包含offset信息, 还有一些时间戳和用户自定义数据, 这些额外信息可帮助Kafka进行维护工作, 如删除过期的offset信息.<br>当第一个consumer启动时, Kafka集群会自动创建<code>__consumer_offsets</code>. 该topic的partition数量取决于broker端的<code>offsets.topic.num.partitions</code>参数, 默认为50; 其replica数量取决于broker端的<code>offsets.topic.replication.factor</code>参数, 默认为3.<br>当使用自动提交时, 即使consumer没有进行消费, 也会不断提交最后一次获取的offset, 最终导致<code>__consumer_offsets</code>不断膨胀, 因此Kafka需要删除重复消息, 称为<strong>Compaction</strong>(压缩). 由于每条offset消息都有一个key, 假设<code>__consumer_offsets</code>中存在相同key的两条消息M1和M2, 若M1的发送时间早于M2, 那么M1为过期消息.<br><img src="/images/Kafka/offset-compaction.jpeg" alt="HDFS Write Pipeline"></p>
+<p>Kafka有专门的后台线程(Log Cleaner)定期查看哪些消息过期.</p>
+<h2 id="8-Idempotence-in-Kafka"><a href="#8-Idempotence-in-Kafka" class="headerlink" title="8.Idempotence in Kafka"></a>8.Idempotence in Kafka</h2><h3 id="8-1-What-is-Idempotence"><a href="#8-1-What-is-Idempotence" class="headerlink" title="8.1 What is Idempotence"></a>8.1 What is Idempotence</h3><p><strong>Idempotence</strong>(幂等性): 当系统多次收到同一请求时, 可保证该请求只被处理一次. 作为系统对外的一种承诺, 让开发者在不破坏系统状态的前提下安全地重试任何请求. 例如用户付款时, 网络波动可能导致系统未收到第一次付款请求, 因此用户再次付款, 系统会收到两笔付款, 若系统不支持幂等性, 则扣款两次. 但并不是所有请求都需要幂等性:</p>
+<ul>
+<li>查询操作: 无论执行多少遍, 都不会改变系统状态<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> table1 <span class="keyword">WHERE</span> col1 <span class="operator">=</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure></li>
+<li>常量赋值更新: 无论执行多少遍, 系统状态仍保持一致<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> table1 <span class="keyword">SET</span> col1 <span class="operator">=</span> <span class="number">1</span> <span class="keyword">WHERE</span> col2 <span class="operator">=</span> <span class="number">2</span>;</span><br></pre></td></tr></table></figure></li>
+<li>变量赋值更新: 每次执行都会产生新的系统状态<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> table1 <span class="keyword">SET</span> col1 <span class="operator">=</span> col1 <span class="operator">+</span> <span class="number">1</span> <span class="keyword">WHERE</span> col2 <span class="operator">=</span> <span class="number">2</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>以下是网站架构中可能导致幂等性问题的情况:</p>
+<ul>
+<li>网络波动: 第一个请求遭遇网络延迟, 客户请求第二次请求</li>
+<li>重复操作: 用户无意中发起了两次或多次请求(重复点击按钮)</li>
+<li>自动超时重试</li>
+<li>页面刷新</li>
+<li>定时任务</li>
+</ul>
+<p>实现幂等的关键在于<strong>如何区分当前请求是否与已处理的请求重复</strong>, 若系统可以过滤重复请求, 则达成幂等. 区分请求是否重复的关键有以下两点:</p>
+<ul>
+<li>如何生成唯一标识: 请求中的唯一标识必须能够区分当前请求与其他请求</li>
+<li>如何记录已处理请求: 处理完某个请求后, 必须通过某种机制记录该请求; 当新的请求到达时, 可比较并判断是否为重复请求</li>
+</ul>
+<h3 id="8-2-Messaging-semantics"><a href="#8-2-Messaging-semantics" class="headerlink" title="8.2 Messaging semantics"></a>8.2 Messaging semantics</h3><p>对于发布订阅式的分布式消息系统, 系统中的每个机器都随时可能宕机. 对于Kafka来说, 每个服务器随时可能宕机, producer与Kafka集群的网络随时可能中断. 为应对此类失败, Kafka(0.11版本)为producer提供了三种<strong>messageing semantic</strong>(消息语义):</p>
+<ul>
+<li>At-least-once(至少一次): 若producer端的配置为<code>acks=all</code>, 且收到broker的ack, 说明消息已写入; 若producer收到错误信息, 或ack超时, 则会重发该消息; 若broker成功写入消息, 但在回复ack前宕机, 则会导致同一消息多次写入. 该语义保证消息不会丢失, 但可能重复发送.</li>
+<li>At-most-once(至多一次): 若producer收到错误或ack超时, producer不会重发消息, 则消息不会被写入, 也不会传递给consumer. 该语义保证消息不会重复发送, 但可能丢失.</li>
+<li>Exactly-once(精确一次): 出错时producer会重发信息, 且broker保证消息不会被重复消费. 该语义是最理想的保证, 但也十分难以实现, 因为这需要producer和broker合作. 该语义不会丢失消息, 也不会重复发送.</li>
+</ul>
+<p>以下是导致Kafka中幂等性问题的一些情况:</p>
+<ul>
+<li>Broker宕机: 当消息写入Kafka时, 会被持久化并复制多份, 因此Kafka能承受<code>n-1</code>个broker宕机, 换句话说, 只要有一个broker在线, 就有partition可用. 若所有broker都宕机, 则消息丢失.</li>
+<li>Producer与broker之间的通信中断: producer发送消息后未收到ack, 不代表消息未被写入, 因为broker可能在<strong>写入消息前</strong>或<strong>写入消息后</strong>宕机. 由于producer无法知道Kafka集群出现什么问题, 为防止消息丢失, 只能重发消息.</li>
+<li>Consumer出错: kafka集群也无法得知consumer的状况. 若consumer消费完消息后, 还未提交offset就宕机, 则broker无法知道该消息是否消费, 只能将消息分配给其他consumer, 从而导致重复消费.</li>
+</ul>
+<h3 id="8-3-Idempotent-Producer"><a href="#8-3-Idempotent-Producer" class="headerlink" title="8.3 Idempotent Producer"></a>8.3 Idempotent Producer</h3><p>Producer默认是不幂等的, 开启需在producer端设置<code>enable.idempoten = true</code>. 为实现producer端的幂等性, Kafka引入两个新字段:</p>
+<ul>
+<li>Producer ID(PID): 每个producer初始化时会被分配一个唯一PID</li>
+<li>Sequence Number: producer发送消息时, 会为每个<code>&lt;Topic, Partition&gt;</code>附带一个从零开始且单调递增的序列号</li>
+</ul>
+<p>Broker端会为<code>&lt;PID, Topic, Partition&gt;</code>维护对应的序列号, 当producer提交消息时, 存在以下三种情况:</p>
+<ul>
+<li><code>Producer提供的序列号 = Broker的序列号 + 1</code>: 接收该消息</li>
+<li><code>Producer提供的序列号 &gt; Broker的序列号 + 1</code>: 存在消息未写入, 抛出<code>InvalidSequenceNumber</code></li>
+<li><code>Producer提供的序列号 &lt; Broker的序列号 + 1</code>: 该消息重复, 抛出<code>DuplicateSequenceNumber</code></li>
+</ul>
+<p>上述设计解决了两个问题:</p>
+<ul>
+<li>Broker写入消息, 但在回复ack前宕机, 若producer再次提交该消息, broker会识别为重复消息</li>
+<li>Producer发送两条消息, 第一条消息丢失, broker会拒绝第二条消息, 防止消息乱序</li>
+</ul>
+<p>由于broker通过<code>&lt;PID, Topic, Partition&gt;</code>区分消息, 存在以下缺陷:</p>
+<ul>
+<li>Producer只能保证单个topic中单个partition内不会出现重复消息, 无法做到跨partition的幂等性</li>
+<li>Producer只能保证单会话上的消息幂等性, 因为producer重启会导致PID更改, 从而无法保证幂等性</li>
+</ul>
+<h3 id="8-4-Transactional-Producer"><a href="#8-4-Transactional-Producer" class="headerlink" title="8.4 Transactional Producer"></a>8.4 Transactional Producer</h3><p>为解决跨partition和跨会话的幂等性, Kafka引入<strong>transaction</strong>(事务). 开启事务需在producer端设置<code>enable.idempotence = true</code>, 并为每个producer设置一个<code>transctional.id</code>, 代码如下:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">producer.initTransactions();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  producer.beginTransaction();</span><br><span class="line">  producer.send(record1);</span><br><span class="line">  producer.send(record2);</span><br><span class="line">  producer.commitTransaction();</span><br><span class="line">&#125; <span class="keyword">catch</span> (KafkaException e) &#123;</span><br><span class="line">  producer.abortTransaction();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为实现事务特性, Kafka引入一些新机制:</p>
+<ul>
+<li>Transaction Coordinator: 用于管理每个producer的消息事务, 维护<strong>Transaction Log</strong>, 该log存于一个内部topic中, 名为<code>__transaction_state</code></li>
+<li>Epoch: 一个单调递增的整数值, 用于标识最新的producer. 当两个producer拥有相同transactional id时, transaction coordinator无法区分两者, 因此producer初始化事务时, 会从transaction coordinator获取producer id和epoch; producer提交消息时会携带epoch. 当producer发送消息时(假设transactional id为<code>t1</code>, epoch为<code>e1</code>), transaction coordinator已有transactional id为<code>t1</code>且epoch为<code>e2</code>的producer(<code>e2 &gt; e1</code>), 则拒绝当前producer, 避免事务干扰.</li>
+<li>ControlBatch: producer产生的一种特殊消息, 有两种类型:<ul>
+<li>commit: 提交事务</li>
+<li>abort: 中止事务</li>
+</ul>
+</li>
+</ul>
+<p>以下是执行事务的流程:</p>
+<h4 id="8-4-1-Find-Transaction-Coordinator"><a href="#8-4-1-Find-Transaction-Coordinator" class="headerlink" title="8.4.1 Find Transaction Coordinator"></a>8.4.1 Find Transaction Coordinator</h4><p>Producer向任意一个broker发送<code>FindCoordinatorRequest</code>请求, 获取transaction coordinator的地址</p>
+<h4 id="8-4-2-Initialize-Transaction"><a href="#8-4-2-Initialize-Transaction" class="headerlink" title="8.4.2 Initialize Transaction"></a>8.4.2 Initialize Transaction</h4><p>Producer向transaction coordinator发送<code>InitpidRequest</code>请求, 其中带有transaction id, transaction coordinator回复PID和epoch; 若transaction coordinator第一次收到该transaction id, 则将<code>&lt;Transaction ID, PID&gt;</code>存入transaction log; 此外, transaction coordinator还会执行以下任务:</p>
+<ul>
+<li>增加该PID对应的epoch, 若PID相同但小于当前epoch的producer尝试开启事务, 则会拒绝该producer</li>
+<li>若该PID有未完成的事务, 则恢复之前的事务</li>
+</ul>
+<h4 id="8-4-3-Begin-Transaction"><a href="#8-4-3-Begin-Transaction" class="headerlink" title="8.4.3 Begin Transaction"></a>8.4.3 Begin Transaction</h4><p>Producer调用<code>beginTransaction()</code>, 将自身状态改为<strong>BEGIN</strong>, 且无需通知transaction coordinator, 因为transaction coordinator会在producer发送第一条消息后开启事务</p>
+<h4 id="8-4-4-Send-Message"><a href="#8-4-4-Send-Message" class="headerlink" title="8.4.4 Send Message"></a>8.4.4 Send Message</h4><p>当producer调用<code>send()</code>发送消息时, 会进行以下操作:</p>
+<ol>
+<li><code>waitOnMetadata()</code>: 确认metadata准备完毕, 否则阻塞等待</li>
+<li><code>partition()</code>: 根据<strong>消息分区器</strong>计算消息存入的partition编号</li>
+<li>将消息封装到<code>ProducerBatch</code>中</li>
+<li>若<code>ProducerBatch</code>中消息数量达到阈值, 调用<code>Sender.wakeup()</code>发送消息</li>
+</ol>
+<p>Sender向leader发送消息前, 会先向transaction coordinator发送<code>AddPartitionsToTxnRequest</code>. Transaction coordinator将<code>&lt;Transaction, Topic, Partition&gt;</code>存入transaction log, 并将事务状态设置为<strong>BEGIN</strong>.</p>
+<p>Consumer通常会在消费后调用<code>commit(A)Sync()</code>提交位移; 但事务中可能出现<strong>consume-transform-produce</strong>模式: 当前producer生成的消息来自consumer从上游producer读取的消息, 若consumer获得消息后调用<code>commit(A)Sync()</code>, 无法保证消息被下游producer成功使用并生成新的消息, 因此需要下游producer调用<code>sendOffsetsToTransaction()</code>提交位移, 该函数会进行两步操作:</p>
+<ol>
+<li>向transaction coordinator发送<code>AddOffsetsToTxnRequests</code>请求, transaction coordinator会将对应的<code>&lt;Topic, Partition&gt;</code>保存在transaction log中</li>
+<li>向group coordinator发送<code>TxnOffsetCommitRequest</code>, group coordinator会将<code>&lt;Topic, Partition&gt;</code>对应的offset保存在<code>__consumer_offsets</code>中</li>
+</ol>
+<p>需注意两点:</p>
+<ul>
+<li>写入<code>__consumer_offsets</code>中的offset信息在提交前是不可见的</li>
+<li>Group coordinator会通过PID和epoch验证producer是否有资格提交offset</li>
+</ul>
+<h4 id="8-4-5-Commit-Abort-transaction"><a href="#8-4-5-Commit-Abort-transaction" class="headerlink" title="8.4.5 Commit&#x2F;Abort transaction"></a>8.4.5 Commit&#x2F;Abort transaction</h4><p>Producer调用<code>commitTransaction()</code>或<code>abortTransaction()</code>提交或中止事务. 无论是commit还是abort, producer都会向transaction coordinator发送<code>EndTxnRequest</code>请求; 当transaction coordinator收到该请求后, 会进行如下操作:</p>
+<ol>
+<li>根据commit或abort, 将<code>PREPARE_COMMIT</code>或<code>PREPARE_ABORT</code>写入transaction log</li>
+<li>通过<code>WriteTxnMarker</code>请求, 以<code>Transaction Marker</code>的形式将<code>COMMIT</code>或<code>ABORT</code>信息发送给当前事务中每个<code>&lt;Topic, Partition&gt;</code>的leader, 并写入group coordinator的<code>__consumer_offsets</code>中</li>
+<li>将<code>COMPLETE_COMMIT</code>或<code>COMPLETE_ABORT</code>写入transaction log中</li>
+</ol>
+<h3 id="8-5-Consume-Message"><a href="#8-5-Consume-Message" class="headerlink" title="8.5. Consume Message"></a>8.5. Consume Message</h3><p>Consumer开启事务需配置为<code> isolation.level=READ_COMMITTED</code>. Consumer不会与transaction coordinator建立任何连接, 只与group coordinator沟通. Consumer会从group coordinator不断获取消息, 收到<code>commit</code>的ControlBatch时才会读取消息; 若事务被abort, 则丢弃该事务的所有消息.</p>
+<h3 id="8-6-Impact-to-Performance"><a href="#8-6-Impact-to-Performance" class="headerlink" title="8.6. Impact to Performance"></a>8.6. Impact to Performance</h3><h4 id="8-6-1-Produce-Message"><a href="#8-6-1-Produce-Message" class="headerlink" title="8.6.1 Produce Message"></a>8.6.1 Produce Message</h4><p>开启事务后, producer端有以下性能影响:</p>
+<ul>
+<li>事务开始时, producer需将partition注册到transaction coordinator</li>
+<li>事务结束时, transaction coordinator需将<code>Transaction Marker</code>发送给对应的leader</li>
+<li>事务进行时, transaction coordinator需将事务状态写入transaction log, 涉及磁盘写操作</li>
+</ul>
+<p>可以看到, 事务的开销与实际消息无关, 而是一些事务的控制消息, 因此提高单个事务中的消息数量来提高吞吐量.</p>
+<h4 id="8-6-2-Consume-Message"><a href="#8-6-2-Consume-Message" class="headerlink" title="8.6.2 Consume Message"></a>8.6.2 Consume Message</h4><p>开启事务后, consumer端的性能影响很小, 因为consumer无需与transaction coordinator建立连接, 只需过滤一些额外消息, 如ControlBatch; 并且consumer无需缓存读取的消息以等待事务结束, 仍可用zero-copy来读取消息.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Distributed-System/">Distributed System</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/93ff.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Linux namespace</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/efcc.html">
+        <span class="next-text nav-default">InnoDB Locks Set by Different SQL Statements</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/b805.html';
+  var disqus_title = "Kafka Essential";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

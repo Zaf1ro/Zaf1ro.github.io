@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Linux namespace"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/93ff.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/93ff.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/93ff.html"/>
+
+
+<meta name="description" content="1. IntroductionLinux的namespace负责实现资源隔离, 其包含以下资源:    namespace Flag Isolate    UTS CLONE_NEWUTS hostname(主机名)和domain name(域名)   IPC CLONE_NEWIPC System V IPC和POSIX message queue   PID CLONE_NEWPID proc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux namespace">
+<meta property="og:url" content="https://zaf1ro.github.io/p/93ff.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionLinux的namespace负责实现资源隔离, 其包含以下资源:    namespace Flag Isolate    UTS CLONE_NEWUTS hostname(主机名)和domain name(域名)   IPC CLONE_NEWIPC System V IPC和POSIX message queue   PID CLONE_NEWPID proc">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Docker/src-code/ch1-6-mountns-peer-groups.svg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Docker/src-code/ch1-7-docker-contain-networking.png">
+<meta property="article:published_time" content="2022-11-20T20:33:00.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.058Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Docker/src-code/ch1-6-mountns-peer-groups.svg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Linux namespace - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-namespace-API"><span class="toc-text">2. namespace API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-clone"><span class="toc-text">2.1 clone()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-proc-pid-ns"><span class="toc-text">2.2 &#x2F;proc&#x2F;[pid]&#x2F;ns</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-setns"><span class="toc-text">2.3 setns()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-unshare"><span class="toc-text">2.4 unshare()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-UTS-namespace"><span class="toc-text">3. UTS namespace</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-IPC-namespace"><span class="toc-text">4. IPC namespace</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-PID-namespace"><span class="toc-text">5. PID namespace</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-init-process-in-PID-namespace"><span class="toc-text">5.1 init process in PID namespace</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-signal-and-init-process"><span class="toc-text">5.2 signal and init process</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-mount-proc-filesystem"><span class="toc-text">5.3 mount proc filesystem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-unshare-and-setns"><span class="toc-text">5.3 unshare() and setns()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-mount-namespace"><span class="toc-text">6. mount namespace</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-shared-subtrees"><span class="toc-text">6.1 shared subtrees</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-peer-groups"><span class="toc-text">6.2 peer groups</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-mount-states"><span class="toc-text">6.3 mount states</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-example"><span class="toc-text">6.4 example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-network-namespace"><span class="toc-text">7. network namespace</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-veth"><span class="toc-text">7.1 veth</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-pipe"><span class="toc-text">7.2 pipe</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-user-namespace"><span class="toc-text">8. user namespace</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-Nested-namespace-namespace-membership"><span class="toc-text">8.1 Nested namespace, namespace membership</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-Capabilities"><span class="toc-text">8.2 Capabilities</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-User-and-group-ID-mappings"><span class="toc-text">8.3 User and group ID mappings</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Linux namespace
+        
+      </h1>
+      <time class="post-time">
+          11/20/22
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Linux的<strong>namespace</strong>负责实现资源隔离, 其包含以下资源:</p>
+<table>
+<thead>
+<tr>
+<th>namespace</th>
+<th>Flag</th>
+<th>Isolate</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UTS</td>
+<td>CLONE_NEWUTS</td>
+<td>hostname(主机名)和domain name(域名)</td>
+</tr>
+<tr>
+<td>IPC</td>
+<td>CLONE_NEWIPC</td>
+<td>System V IPC和POSIX message queue</td>
+</tr>
+<tr>
+<td>PID</td>
+<td>CLONE_NEWPID</td>
+<td>process ID</td>
+</tr>
+<tr>
+<td>Network</td>
+<td>CLONE_NEWNET</td>
+<td>network device(网络设备), stack(网络栈), port(端口)</td>
+</tr>
+<tr>
+<td>Mount</td>
+<td>CLONE_NEWNS</td>
+<td>mount ID</td>
+</tr>
+<tr>
+<td>User</td>
+<td>CLONE_NEWUSER</td>
+<td>user id和group id</td>
+</tr>
+</tbody></table>
+<p>同一namespace内的进程可感知到彼此存在, 但对其他namespace的进程一无所知, 从而让进程有一种自己处于独立系统环境的错觉, 从而达到隔离资源的目的.</p>
+<h2 id="2-namespace-API"><a href="#2-namespace-API" class="headerlink" title="2. namespace API"></a>2. namespace API</h2><p>namespace API包含以下四种:</p>
+<ul>
+<li><code>clone()</code></li>
+<li><code>setns()</code></li>
+<li><code>unshare()</code></li>
+<li><code>/proc</code>目录下的部分文件</li>
+</ul>
+<h3 id="2-1-clone"><a href="#2-1-clone" class="headerlink" title="2.1 clone()"></a>2.1 clone()</h3><p><code>clone()</code>是Docker为新进程创建一个新的namespace的最常用方法:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a new process. By contrast with `fork()`,</span></span><br><span class="line"><span class="comment"> *        these system calls provide more precise control</span></span><br><span class="line"><span class="comment"> *        over what pieces of execution context are shared</span></span><br><span class="line"><span class="comment"> *        between the calling process and the child process</span></span><br><span class="line"><span class="comment"> * @param child_func executed by created child process</span></span><br><span class="line"><span class="comment"> * @param child_stack the location of stack used by the </span></span><br><span class="line"><span class="comment"> *        child process</span></span><br><span class="line"><span class="comment"> * @param flags modify the bahavior and allow the caller to</span></span><br><span class="line"><span class="comment"> *        specify what is shared between the calling process</span></span><br><span class="line"><span class="comment"> *        and the child process</span></span><br><span class="line"><span class="comment"> * @param arg the argument of the function `child_func`</span></span><br><span class="line"><span class="comment"> * @return the thread ID of the child process in the caller</span></span><br><span class="line"><span class="comment"> *         thread on success; -1 in the caller thread on </span></span><br><span class="line"><span class="comment"> *         failure, and no child process is created</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">clone</span><span class="params">(<span class="type">int</span> (*child_func)(<span class="type">void</span> *), <span class="type">void</span> *child_stack, </span></span><br><span class="line"><span class="params">          <span class="type">int</span> flags, <span class="type">void</span> *arg)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>flags</code>可使用<code>CLONE_*</code>标识符, 与namespace相关的标识符包括: <code>CLONE_NEWIPC</code>, <code>CLONE_NEWNS</code>, <code>CLONE_NEWNET</code>, <code>CLONE_NEWPID</code>, <code>CLONE_NEWUTS</code></p>
+<h3 id="2-2-proc-pid-ns"><a href="#2-2-proc-pid-ns" class="headerlink" title="2.2 &#x2F;proc&#x2F;[pid]&#x2F;ns"></a>2.2 &#x2F;proc&#x2F;[pid]&#x2F;ns</h3><p><code>proc</code>是Linux中的一个pseudo-filesystem(伪文件系统), 也就是说, 其中的文件并不是真正的文件, 也不存在于存储设备, 而是内存中的系统信息, 并包装成文件系统, 向进程提供了一个访问kernel数据结构的接口.<br>该文件系统的类型为<code>proc</code>, 通常由系统自动挂载在<code>/proc</code>, 进程也可手动挂载: <code>mount -t proc proc /proc</code>. 绝大多数文件都是<strong>read-only</strong>(只读), 部分文件可写入, 且绝大多文件的大小为0.<br>从Linux 3.8开始, 用户可在<code>/proc/[pid]/ns</code>中看到指向不同namespace的文件, 如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">ls</span> -l /proc/$$/ns</span><br><span class="line">total 0     </span><br><span class="line">lrwxrwxrwx 1 root root 0 Nov 20 21:40 cgroup -&gt; <span class="string">&#x27;cgroup:[4026533275]&#x27;</span>                </span><br><span class="line">lrwxrwxrwx 1 root root 0 Nov 20 21:40 ipc -&gt; <span class="string">&#x27;ipc:[4026533214]&#x27;</span>                      </span><br><span class="line">lrwxrwxrwx 1 root root 0 Nov 20 21:40 mnt -&gt; <span class="string">&#x27;mnt:[4026533212]&#x27;</span>                      </span><br><span class="line">lrwxrwxrwx 1 root root 0 Nov 20 21:40 net -&gt; <span class="string">&#x27;net:[4026533218]&#x27;</span>                      </span><br><span class="line">lrwxrwxrwx 1 root root 0 Nov 20 21:40 pid -&gt; <span class="string">&#x27;pid:[4026533215]&#x27;</span>                      </span><br><span class="line">lrwxrwxrwx 1 root root 0 Nov 20 21:40 pid_for_children -&gt; <span class="string">&#x27;pid:[4026533215]&#x27;</span>         </span><br><span class="line">lrwxrwxrwx 1 root root 0 Nov 20 21:40 user -&gt; <span class="string">&#x27;user:[4026533211]&#x27;</span>                    </span><br><span class="line">lrwxrwxrwx 1 root root 0 Nov 20 21:40 uts -&gt; <span class="string">&#x27;uts:[4026533213]&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>其中, <code>$$</code>表示当前进程的PID, <code>[4026533275]</code>即为namespace编号, 若两个进程指向的namespace编号相同, 则说明两个进程处于同一namespace中, 否则处于不同namespace中.<br>需要注意的是, 若进程退出, 其目录下的namespace也会被删除; 但只要namespace文件的file descriptor存在于系统中, 即使进程退出, 还会保留该namespace文件, 例如:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">touch</span> ~/uts</span><br><span class="line">mount --<span class="built_in">bind</span> /proc/27514/ns/uts ~/uts</span><br></pre></td></tr></table></figure>
+<p>上述命令将PID为27514的UTS namespace文件挂载到<code>~/uts</code>, 即使该进程退出, 也不会删除对应的uts namespace文件.</p>
+<h3 id="2-3-setns"><a href="#2-3-setns" class="headerlink" title="2.3 setns()"></a>2.3 setns()</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allow the calling thread to move into different</span></span><br><span class="line"><span class="comment"> *        namespace</span></span><br><span class="line"><span class="comment"> * @param fd shall be one of the following:</span></span><br><span class="line"><span class="comment"> *        * a file descriptor referring to one of the magic</span></span><br><span class="line"><span class="comment"> *          links in /proc/[pid]/ns directory (or a bind </span></span><br><span class="line"><span class="comment"> *          mount to such a link)</span></span><br><span class="line"><span class="comment"> *        * a PID file descriptor (pidfd_open())</span></span><br><span class="line"><span class="comment"> * @param nstype specify which type of namespace the calling</span></span><br><span class="line"><span class="comment"> *        thread may be reassociated with. 0 allows any type</span></span><br><span class="line"><span class="comment"> *        of namespace to be joined</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setns</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> nstype)</span>;</span><br></pre></td></tr></table></figure>
+<p>为利用新的namespace, 需调用<code>execve</code>系列函数, 该函数会执行用户命令, 如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">fd = open(argv[<span class="number">1</span>], O_RDONLY); <span class="comment">// obtain namespace fd</span></span><br><span class="line">setns(fd, <span class="number">0</span>);                 <span class="comment">// join new namespace</span></span><br><span class="line">execvp(argv[<span class="number">2</span>], &amp;argv[<span class="number">2</span>]);    <span class="comment">// execute command</span></span><br></pre></td></tr></table></figure>
+<p>假设编译后的程序名为<code>setns-test</code>, 执行以下命令:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ./setns-test ~/uts /bin/bash</span><br></pre></td></tr></table></figure>
+<p>上述命令中, <code>~/uts</code>为<code>/proc/27514/ns/uts</code>的bind mount, 因此执行完毕后, 当前进程加入PID为27514的uts namespace, 并启动一个shell.</p>
+<h3 id="2-4-unshare"><a href="#2-4-unshare" class="headerlink" title="2.4 unshare()"></a>2.4 unshare()</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allow a process (or thread) to disassociate parts</span></span><br><span class="line"><span class="comment"> *        of its execution context that are currently being</span></span><br><span class="line"><span class="comment"> *        shared with other processes (or threads)</span></span><br><span class="line"><span class="comment"> *        The main use of unshare() is to allow a process </span></span><br><span class="line"><span class="comment"> *        to control its shared execution context without</span></span><br><span class="line"><span class="comment"> *        creating a new process.</span></span><br><span class="line"><span class="comment"> * @param flags a bit mask that specifies which parts of the</span></span><br><span class="line"><span class="comment"> *        execution context should be unshared</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">unshare</span><span class="params">(<span class="type">int</span> flags)</span>;</span><br></pre></td></tr></table></figure>
+<p>相对于<code>clone()</code>, <code>unshare()</code>运行在原先的进程上, 因此不需要启动一个新进程. Docker目前并没有使用该系统调用, 因此不做展开.</p>
+<h2 id="3-UTS-namespace"><a href="#3-UTS-namespace" class="headerlink" title="3. UTS namespace"></a>3. UTS namespace</h2><p>UTS(UNIX Time-sharing System) namespace提供了hostname(主机名)和domain name(域名)的隔离, 让每个docker container都能拥有独立的主机名和域名, 而非主机上的一个进程.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> STACK_SIZE (1024 * 1024)</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">char</span> child_stack [STACK_SIZE];</span><br><span class="line"><span class="type">char</span>* <span class="type">const</span> child_args[] = &#123;</span><br><span class="line">  <span class="string">&quot;/bin/bash&quot;</span>,</span><br><span class="line">  <span class="literal">NULL</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">child_main</span><span class="params">(<span class="type">void</span>* args)</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;in child process!\n&quot;</span>);</span><br><span class="line">  execv(child_args[<span class="number">0</span>], child_args);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;start program!\n&quot;</span>);</span><br><span class="line">  <span class="type">int</span> child_pid = clone(child_main, child_stack + STACK_SIZE, SIGCHLD, <span class="literal">NULL</span>);</span><br><span class="line">  waitpid(child_pid, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;exit!\n&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译并运行上述代码, 执行结果如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/code# gcc -Wall uts.c -o uts.o &amp;&amp; ./uts.o</span><br><span class="line">start program!</span><br><span class="line"><span class="keyword">in</span> child process!</span><br><span class="line">root@ubuntu:/code# <span class="built_in">exit</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line"><span class="built_in">exit</span>!</span><br></pre></td></tr></table></figure>
+<p>在上述代码中加入UTS隔离, 代码如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> STACK_SIZE (1024 * 1024)</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">char</span> child_stack [STACK_SIZE];</span><br><span class="line"><span class="type">char</span>* <span class="type">const</span> child_args[] = &#123;</span><br><span class="line">  <span class="string">&quot;/bin/bash&quot;</span>,</span><br><span class="line">  <span class="literal">NULL</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">child_main</span><span class="params">(<span class="type">void</span>* args)</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;in child process!\n&quot;</span>);</span><br><span class="line">  sethostname(<span class="string">&quot;NewHostname&quot;</span>, <span class="number">12</span>);</span><br><span class="line">  execv(child_args[<span class="number">0</span>], child_args);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;start program!\n&quot;</span>);</span><br><span class="line">  <span class="type">int</span> child_pid = clone(child_main, child_stack + STACK_SIZE, CLONE_NEWUTS | SIGCHLD, <span class="literal">NULL</span>);</span><br><span class="line">  waitpid(child_pid, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;exit!\n&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/code# gcc -Wall uts.c -o uts.o &amp;&amp; ./uts.o</span><br><span class="line">start program!</span><br><span class="line"><span class="keyword">in</span> child process!</span><br><span class="line">root@NewHostname:/code# <span class="built_in">exit</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line"><span class="built_in">exit</span>!</span><br></pre></td></tr></table></figure>
+<p>可以看到, child process改为新的主机名, 若不添加<code>CLONE_NEWUTS</code>, 则parent process的hostname也会改变.</p>
+<h2 id="4-IPC-namespace"><a href="#4-IPC-namespace" class="headerlink" title="4. IPC namespace"></a>4. IPC namespace</h2><p>IPC(Inter-Process Communication, 进程间通信)涉及的资源包括semaphore(信号量), message queue(消息队列)和shared memory(共享内存). 申请IPC资源时会申请一个全局唯一的32位ID, 因此IPC namespace包含IPC标识符, 以及实现POSIX message queue的文件系统. 同一IPC namespace的进程可查看共享的IPC资源.<br>在上一节代码中加入<code>CLONE_NEWIPC</code>, 并重命名为<code>ipc.c</code>, 修改部分如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="type">int</span> child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWIPC | CLONE_NEWUTS | SIGCHLD, <span class="literal">NULL</span>);</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>在shell中使用<code>ipcmk -Q</code>命令创建一个message queue:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/code# ipcmk -Q</span><br><span class="line">Message queue <span class="built_in">id</span>: 0</span><br></pre></td></tr></table></figure>
+<p><code>ipcs -q</code>可查看当前所有message queue:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/code# ipcs -q</span><br><span class="line">------ Message Queues --------</span><br><span class="line">key        msqid      owner      perms      used-bytes   messages</span><br><span class="line">0x50d1bfab 0          root       644        0            0</span><br></pre></td></tr></table></figure>
+<p>编译并运行代码, 在child process中查看message queue:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/code# gcc -Wall ipc.c -o ipc.o &amp;&amp; ./ipc.o</span><br><span class="line">start program!</span><br><span class="line"><span class="keyword">in</span> child process!</span><br><span class="line">root@NewHostname:/code# ipcs -q</span><br><span class="line">------ Message Queues --------</span><br><span class="line">key        msqid      owner      perms      used-bytes   messages</span><br><span class="line">root@NewHostname:/code# <span class="built_in">exit</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line"><span class="built_in">exit</span>!</span><br></pre></td></tr></table></figure>
+<p>可以看到, child process无法看到parent process声明的message queue, 说明已实现IPC隔离.</p>
+<h2 id="5-PID-namespace"><a href="#5-PID-namespace" class="headerlink" title="5. PID namespace"></a>5. PID namespace</h2><p>PID namespace会对PID重新编号, 因此两个PID namespace下的进程可能拥有相同PID. Kernel会为每个namespace维护一个树状结构和一个计数器, 最顶层的PID namespace在系统初始化时创建, 称为<strong>root namespace</strong>; 新创建的PID namespace与原本的PID namespace构成父子关系, 因此原先的PID namespace称为<strong>parent namespace</strong>, 新创建的PID namespace称为<strong>child namespace</strong>, parent namespace可看到child namespace中的进程, 并可通过signal等方式对child namespace中的进程产生影响; 但child namespace不能看到parent namespace中的任何进程.</p>
+<ul>
+<li>PID namespace中第一个创建的进程(调用<code>clone(CLONE_NEWPID)</code>创建的进程, 或进程调用<code>unshare(CLONE_NEWPID)</code>创建的第一个子进程)的PID为1, 作为该PID namespace的init进程, 该进程作为所有orphaed进程的parent process.</li>
+<li>除了root namespace, 所有PID namespace都有一个parent namespace, Linux 3.7将PID namespace树状结构的深度限制为32.</li>
+<li>child namespace中的进程可被其parent namespace, 以及所有直系ancestor namespace看到; 也就是说, 进程可向同一PID namespace中的其他进程, 或child namespace中的所有进程调用<code>kill()</code>发送signal, 或调用<code>setpriority()</code>设置nice值.</li>
+</ul>
+<p>Docker daemon则利用PID namespace监控所有运行的进程, 以下是添加了PID隔离的代码, 并命名为<code>pid.c</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="type">int</span> child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWPID | CLONE_NEWIPC | CLONE_NEWUTS | SIGCHLD, <span class="literal">NULL</span>);</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>编译并运行代码, 结果如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/code# gcc -Wall pid.c -o pid.o &amp;&amp; ./pid.o</span><br><span class="line">start program!</span><br><span class="line"><span class="keyword">in</span> child process!</span><br><span class="line">root@NewHostname:/code# <span class="built_in">echo</span> $$</span><br><span class="line">1</span><br><span class="line">root@NewHostname:/code# <span class="built_in">exit</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line"><span class="built_in">exit</span>!</span><br></pre></td></tr></table></figure>
+<p>可以发现, child process的PID变为1, 说明该进程成为新的PID namespace的init进程; 但若在child process的shell中执行<code>ps aux</code>, 仍能看到parent process的PID, 因此该命令查看的是<code>/proc</code>文件系统下的内容, 由于此时还未进行文件系统的mount隔离, 因此能看到全部进程.</p>
+<h3 id="5-1-init-process-in-PID-namespace"><a href="#5-1-init-process-in-PID-namespace" class="headerlink" title="5.1 init process in PID namespace"></a>5.1 init process in PID namespace</h3><p>UNIX系统中, init进程的PID为1, 其会维护一个进程表, 不断检查每个进程的状态. 若某个进程因其parent process提前中止而成为orphaned进程, init会成为该进程的parent process, 并回收资源, 结束该进程. 因此, init进程的设计目的在于监控和回收进程资源. PID namespace沿用了相同的树状结构, 保证每个PID namespace不会出现资源泄露.</p>
+<h3 id="5-2-signal-and-init-process"><a href="#5-2-signal-and-init-process" class="headerlink" title="5.2 signal and init process"></a>5.2 signal and init process</h3><p>PID namespace中的init进程拥有<strong>信号屏蔽</strong>的特权, 也就是说, 只要init没有设置signal handler, 则init会忽略同一PID namespace中的进程向其发送的signal, 以防止init被误杀.<br>但若parent namespace中的进程向child namespace中的init进程发送signal, 只要不是<code>SIGKILL</code>或<code>SIGSTOP</code>, init也可选择忽略; 但若是<code>SIGKILL</code>或<code>SIGSTOP</code>, init则无法捕获或忽略, 也就是说, parent namespace中的进程有权中止child namespace中的进程.<br>若init进程中止, kernel会向init所处的PID namespace中的所有进程发送<code>SIGKILL</code>, 因此该PID namespace也不复存在; 但若<code>/proc/[pid]/ns/pid</code>处于被挂载或打开状态, 则会保留该PID namespace, 但该PID namespace调用<code>fork()</code>会返回<code>ENOMEM</code>错误, 因此无法在PID namespace中创建任何进程.</p>
+<h3 id="5-3-mount-proc-filesystem"><a href="#5-3-mount-proc-filesystem" class="headerlink" title="5.3 mount proc filesystem"></a>5.3 mount proc filesystem</h3><p>由于<code>ps</code>命令通过<code>proc</code>文件系统查看进程信息, 因此即使child process加入新的PID namespace, 其仍能看到所有进程, 因此需在child process中重新挂载proc:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@NewHostname:/code# mount -t proc proc /proc</span><br><span class="line">root@NewHostname:/code# ps aux</span><br><span class="line">USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND</span><br><span class="line">root         1  0.0  0.0   4508  3924 pts/0    S    17:06   0:00 /bin/bash</span><br><span class="line">root        10  0.0  0.0   6864  1640 pts/0    R+   17:09   0:00 ps aux</span><br></pre></td></tr></table></figure>
+<p>可以看到, 新的PID namespace中只有两个进程运行; 但这么做会影响parent process, 因此代码并未实现mount point的隔离, 再次执行<code>mount -t proc proc /proc</code>即可恢复.</p>
+<h3 id="5-3-unshare-and-setns"><a href="#5-3-unshare-and-setns" class="headerlink" title="5.3 unshare() and setns()"></a>5.3 unshare() and setns()</h3><p><code>unshare()</code>允许当前进程建立新的namespace, 以实现资源隔离, 但PID namespace是一个例外: <code>unshare()</code>的调用进程不会进入新的PID namespace, 其创建的child process才会进入新的PID namespace, <code>setns()</code>也是相同原理.<br>之所以这么设计, 是因为程序调用<code>getpid()</code>获得进程的PID后, 会一直使用该PID作为进程的唯一标识; 若PID发生变化, 会引起一些库函数和程序的崩溃, 因此一旦创建进程, 其PID namespace和PID就不可改变. docker exec会使用<code>setns()</code>加入已存在的namespace, 但最终还是会调用<code>clone()</code>.</p>
+<h2 id="6-mount-namespace"><a href="#6-mount-namespace" class="headerlink" title="6. mount namespace"></a>6. mount namespace</h2><p>mount namespace通过隔离filesystem的mount point实现filesystem的隔离, 由于是Linux的第一个namespace, 因此标识位为<code>CLONE_NEWNS</code>. 可通过<code>/proc/[pid]/mounts</code>查看某个进程所处的mount namespace的filesystem, 也可通过<code>/proc/[pid]/mountstats</code>查看某个进程所处的mount namespace的文件设备信息, 包括挂载文件的名字, 文件系统类型, 挂载位置等.<br>使用<code>clone()</code>或<code>unshare()</code>创建新的mount namespace时, 新的mount namespace会按照以下规则初始化:</p>
+<ul>
+<li>若mount namespace由<code>clone()</code>创建, child process会复制parent process的mount list</li>
+<li>若mount namespace由<code>unshare()</code>创建, 则会复制当前进程的mount namespace</li>
+</ul>
+<h3 id="6-1-shared-subtrees"><a href="#6-1-shared-subtrees" class="headerlink" title="6.1 shared subtrees"></a>6.1 shared subtrees</h3><p>引入mount namespace后, 人们发现某些情景下mount namespace的隔离效果过强, 例如, 若想为多个mount namespace挂载同一光盘, 需在每个mount namespace中执行相同挂载操作, 因此Linxu 2.6.15引入了<strong>shared subtree</strong>, 该功能允许mount&#x2F;unmount event在不同mount namespace之间传播(更准确的说法是, mount&#x2F;unmount event在一个<strong>peer group</strong>中传播).<br>在shared subtree中, 每个mount point都携带一个<strong>propagation type</strong>(调用<code>mount()</code>), propagation type决定<strong>该mount point下面</strong>(immediately under this mount)的mount&#x2F;unmount event是否传播(例如, <code>/x</code>目录的propagation type决定<code>/x/y</code>上的mount操作是否传播给peer group的其他成员). 以下是四种不同的propagation type:</p>
+<ul>
+<li>MS_SHARED: 该mount point下面的mount&#x2F;unmount event会传播到同一peer group内的其他mount point(表示peer group的其他mount point会执行相同操作)</li>
+<li>MS_PRIVATE: 该mount point下面的mount&#x2F;unmount event不会传播到其他mount point, 也不接收任何event</li>
+<li>MS_SLAVE: 介于<code>MS_SHARED</code>和<code>MS_PRIVATE</code>之间, 该mount point下面的mount&#x2F;unmount event不会传播到其他mount point, 但他人(shared mount point)的event会传播到自己</li>
+<li>MS_UNBINDABLE: 与<code>MS_PRIVATE</code>相同, 该mount point下面的mount&#x2F;unmount event不会传播到其他mount point, 且该mount point不能成为bind mount的目标</li>
+</ul>
+<p>以下是shared subtree的总结:</p>
+<ul>
+<li>propagation type的单位为mount point, 一个mount namespace中, 不同mount point可拥有不同的propagation type</li>
+<li>propagation type只决定该mount point下面的mount&#x2F;unmount event的传播方式</li>
+<li>propagation type不会影响二级目录, 例如, <code>/x</code>不会决定<code>/x/y/z</code>的传播方式</li>
+</ul>
+<h3 id="6-2-peer-groups"><a href="#6-2-peer-groups" class="headerlink" title="6.2 peer groups"></a>6.2 peer groups</h3><p>一个peer group包含多个mount point, 以下是peer group的特性:</p>
+<ul>
+<li>peer group中的mount point发生mount&#x2F;unmount event时, 该event会传播给其他成员</li>
+<li>若propagation type为shared, 且满足以下其中一种情况时, peer group会添加新的成员:<ul>
+<li>生成新的mount namespace: 复制的mount point与原本的mount point属于同一peer group</li>
+<li>bind mount一个mount point: 新的mount point与原本的mount point属于同一peer group</li>
+</ul>
+</li>
+<li>mount point退出peer group的情况如下:<ul>
+<li>显式unmount一个mount point(执行<code>umount</code>命令)</li>
+<li>隐式unmount一个mount point(由于mount namespace内的进程都中止, mount namespace被删除)</li>
+</ul>
+</li>
+</ul>
+<h3 id="6-3-mount-states"><a href="#6-3-mount-states" class="headerlink" title="6.3 mount states"></a>6.3 mount states</h3><p>一个mount point可处于以下几种状态之一:</p>
+<ul>
+<li>shared mount: 该状态的mount point属于某个peer group, 例如:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"> mount --make-shared /mnt</span><br><span class="line">mount --<span class="built_in">bind</span> /mnt /tmp</span><br></pre></td></tr></table></figure>
+<code>/mnt</code>和<code>/tmp</code>的propagation type都是shared, 并属于同一个peer group. <code>/mnt</code>或<code>/tmp</code>上发生的任何mount&#x2F;unmount event会传播给对方</li>
+<li>slave mount: 每个slave mount都有一个master mount, slave mount会从master mount接收mount&#x2F;unmount event, 但不能向master mount传播event. 只有shared mount才能通过以下命令改为slave mount:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mount --make-slave mount_point</span><br></pre></td></tr></table></figure></li>
+<li>shared and slave: 一个mount既可以是shared, 也可以是slave, 该状态下的mount可接收master mount传播的event, 并拥有一个peer group, 因此可将event传播给peer group的其他mount. 严格来说, mount的状态仍为shared, 但所在的peer group是另一个peer group的slave. 当slave mount遇到以下其中一种情况时, 才会改为shared-and-slave状态:<ul>
+<li>执行<code>mount --make-shared mount</code></li>
+<li>将slave mount移动到shared mount下面</li>
+</ul>
+</li>
+<li>private mount: 不接收也不传播任何mount&#x2F;unmount event</li>
+<li>unbindable mount: 不接收也不传播任何mount&#x2F;unmount event, 也不能作为bind mount目标</li>
+</ul>
+<p>以下是mount point的状态转换图:</p>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">make-shared</th>
+<th align="left">make-slave</th>
+<th align="left">make-private</th>
+<th align="left">make-unbindable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">shared</td>
+<td align="left">shared</td>
+<td align="left">若该mount是peer group的唯一mount, 则为private; 否则为slave</td>
+<td align="left">private</td>
+<td align="left">unbindable</td>
+</tr>
+<tr>
+<td align="left">slave</td>
+<td align="left">shared-and-slave</td>
+<td align="left">slave</td>
+<td align="left">private</td>
+<td align="left">unbindable</td>
+</tr>
+<tr>
+<td align="left">shared-and-slave</td>
+<td align="left">shared-and-slave</td>
+<td align="left">slave</td>
+<td align="left">private</td>
+<td align="left">unbindable</td>
+</tr>
+<tr>
+<td align="left">private</td>
+<td align="left">shared</td>
+<td align="left">private</td>
+<td align="left">private</td>
+<td align="left">unbindable</td>
+</tr>
+<tr>
+<td align="left">unbindable</td>
+<td align="left">shared</td>
+<td align="left">unbindable</td>
+<td align="left">private</td>
+<td align="left">unbindable</td>
+</tr>
+</tbody></table>
+<h3 id="6-4-example"><a href="#6-4-example" class="headerlink" title="6.4 example"></a>6.4 example</h3><p>假设shell运行在最初的mount namespace, 并创建一个private mount point和两个shared mount point:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">sh1# mount --make-private /</span><br><span class="line">sh1# mount --make-shared /dev/sda3 /X</span><br><span class="line">sh1# mount --make-shared /dev/sda5 /Y</span><br></pre></td></tr></table></figure>
+<p>另外一个shell中, 使用<code>unshare</code>命令创建一个新的mount namespace:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">sh2# unshare -m --propagation unchanged sh</span><br></pre></td></tr></table></figure>
+<p>回到第一个shell, 创建<code>/x</code> mount point的bind mount:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">sh1# <span class="built_in">mkdir</span> /Z</span><br><span class="line">sh1# mount --<span class="built_in">bind</span> /X /Z</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/Docker/src-code/ch1-6-mountns-peer-groups.svg" alt="Mount Namespaces"></p>
+<p>上图中存在两个peer group:</p>
+<ul>
+<li>第一个peer group包含<code>X</code>, <code>X&#39;</code>(创建第二个mount namespace时复制<code>X</code>)和<code>Z</code>(bind mount <code>X</code>创建)</li>
+<li>第二个peer group包含<code>Y</code>和<code>Y&#39;</code>(创建第二个mount namespace时复制<code>Y</code>)</li>
+</ul>
+<p><code>Z</code>由bind mount创建, 但由于parent mount point <code>/</code>的propagation type为private, 因此没有复制到第二个mount namespace.</p>
+<h2 id="7-network-namespace"><a href="#7-network-namespace" class="headerlink" title="7. network namespace"></a>7. network namespace</h2><p>Network namespace负责隔离网络相关的系统资源, 例如: 网络设备, IPv4和IPv6 protocol stack, IP routing table, firewall rules, <code>/proc/net</code>目录(<code>proc/[pid]/net</code>的symbolic link), <code>/sys/class/net</code>目录, <code>/proc/sys/net</code>目录, port number(socket)等.<br>一个物理设备只能存在于一个network namespace中, 可通过veth pair(虚拟网络设备对)在两个network space间创建通道并通信.<br>物理网路设备一开始分配在initial network namespace(系统默认的network namespace), 但若存在多块物理网卡, 可将其中一块或多块分配给新创建的network namespace; 当network namespace被删除时(该network namespace中的所有进程都中止, 且network namespace的文件没有被挂载或打开), 则该network namespace的物理网卡会回到initial network namespace, 而非最后进程的父进程.</p>
+<h3 id="7-1-veth"><a href="#7-1-veth" class="headerlink" title="7.1 veth"></a>7.1 veth</h3><p><strong>veth device</strong>全称virtual Ethernet device(虚拟以太网设备), 其作为两个network namespace的桥梁, 可让两个network namespace内的网络设备彼此交流.<br>veth device总是成对出现(pair), 创建veth pair的命令如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ip link add &lt;p1-name&gt; type veth peer name &lt;p2-name&gt;</span></span><br></pre></td></tr></table></figure>
+<p><code>&lt;p1-name&gt;</code>和<code>&lt;p2-name&gt;</code>为两个veth device的自定义名称, 可将一个veth device想象成一根网线, 一端连接另一个veth device, 另一端连接一个network namespace. 首先创建一对veth pair(一个veth device名为<code>veth0</code>, 另一个veth device名为<code>veth1</code>):</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/# ip <span class="built_in">link</span> add veth0 <span class="built_in">type</span> veth peer name veth1</span><br></pre></td></tr></table></figure>
+<p>再创建两个network namespace(名为<code>ns0</code>和<code>ns1</code>), 并设置两个network namespace的IP address(<code>ns0</code>为<code>10.0.0.1</code>, <code>ns1</code>为<code>10.0.0.2</code>):</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/# ip netns add ns0</span><br><span class="line">root@ubuntu:/# ip netns add ns1</span><br></pre></td></tr></table></figure>
+<p>将<code>veth0</code>和<code>veth1</code>放入<code>ns0</code>和<code>ns1</code>中, 并启动veth device:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/# ip <span class="built_in">link</span> <span class="built_in">set</span> veth0 netns ns0</span><br><span class="line">root@ubuntu:/# ip <span class="built_in">link</span> <span class="built_in">set</span> veth1 netns ns1</span><br><span class="line">root@ubuntu:/# ip netns <span class="built_in">exec</span> ns0 ip <span class="built_in">link</span> <span class="built_in">set</span> veth0 up</span><br><span class="line">root@ubuntu:/# ip netns <span class="built_in">exec</span> ns1 ip <span class="built_in">link</span> <span class="built_in">set</span> veth1 up</span><br></pre></td></tr></table></figure>
+<p>设置<code>ns0</code>和<code>ns1</code>的IP address:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/# ip netns <span class="built_in">exec</span> ns0 ip addr add 10.0.0.1/24 dev veth0</span><br><span class="line">root@ubuntu:/# ip netns <span class="built_in">exec</span> ns1 ip addr add 10.0.0.2/24 dev veth1</span><br></pre></td></tr></table></figure>
+<p>查看<code>ns0</code>的<code>routing table</code>:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/# ip netns <span class="built_in">exec</span> ns0 route -n</span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">10.0.0.0        0.0.0.0         255.255.255.0   U     0      0        0 veth0</span><br></pre></td></tr></table></figure>
+<p>最后测试<code>ns0</code>和<code>ns1</code>是否连通:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@ubuntu:/# ip netns <span class="built_in">exec</span> ns0 ping 10.0.0.2</span><br><span class="line">PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=0.073 ms</span><br><span class="line">64 bytes from 10.0.0.2: icmp_seq=2 ttl=64 time=0.048 ms</span><br><span class="line">64 bytes from 10.0.0.2: icmp_seq=3 ttl=64 time=0.042 ms</span><br><span class="line">64 bytes from 10.0.0.2: icmp_seq=4 ttl=64 time=0.041 ms</span><br><span class="line">64 bytes from 10.0.0.2: icmp_seq=5 ttl=64 time=0.049 ms</span><br><span class="line">64 bytes from 10.0.0.2: icmp_seq=6 ttl=64 time=0.055 ms</span><br><span class="line">^C</span><br><span class="line">--- 10.0.0.2 ping statistics ---</span><br><span class="line">6 packets transmitted, 6 received, 0% packet loss, time 5142ms</span><br><span class="line">rtt min/avg/max/mdev = 0.041/0.051/0.073/0.010 ms</span><br></pre></td></tr></table></figure>
+
+<h3 id="7-2-pipe"><a href="#7-2-pipe" class="headerlink" title="7.2 pipe"></a>7.2 pipe</h3><p>启动Docker时, 会在主机上创建一个名为<strong>docker0</strong>的virtual bridge(虚拟网桥), 该主机上的container会连接到<code>docker0</code>, 使得所有container通过网桥连接到一起.<br>Docker daemon启动一个container时, 会创建一个veth pair, 将一端绑定到docker0网桥上, 另一端接入新建的network namespace(默认为<code>eth0</code>). 连接期间, Docker daemon与container初始化进程通过<strong>pipe</strong>进行通信: Docker daemon完成veth pair的创建前, container的初始化进程在pipe的另一端等待, 直到收到veth device的信息; 收到后, 初始化进程会关闭管道, 并启动<code>eth0</code>, 如下图:<br><img src="/images/Docker/src-code/ch1-7-docker-contain-networking.png" alt="Mount Namespaces"></p>
+<h2 id="8-user-namespace"><a href="#8-user-namespace" class="headerlink" title="8. user namespace"></a>8. user namespace</h2><p>User namespace用于隔离安全相关的标识符和属性, 包括user ID, group ID, root目录, key(密钥), 以及特殊权限. 一个进程只能存在于一个user namespace内, 但将一个user namespace的进程的user ID或group ID映射到另一个user namespace的进程. 通常情况下, 新建的user namespace的进程为root(该进程拥有所有权限), 并映射到外部user namesapce中的一个unprivileged user ID. 该技术给container极大的操作自由.<br>因此, container中的root并不代表container所在主机的root, 可能是一个普通用户. 以下代码用于展示user namespace中进程的user ID与其权限:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/capability.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> STACK_SIZE (1024 * 1024)</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">char</span> child_stack[STACK_SIZE];</span><br><span class="line"><span class="type">char</span>* <span class="type">const</span> child_args[] = &#123;</span><br><span class="line">  <span class="string">&quot;/bin/bash&quot;</span>,</span><br><span class="line">  <span class="literal">NULL</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">child_main</span><span class="params">(<span class="type">void</span>* args)</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;in child process!\n&quot;</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;eUID = %ld; eGID = %ld; &quot;</span>, (<span class="type">long</span>)geteuid(), (<span class="type">long</span>)getegid());</span><br><span class="line">  <span class="type">cap_t</span> caps = cap_get_proc();</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;capabilities: %s\n&quot;</span>, cap_to_text(caps, <span class="literal">NULL</span>));</span><br><span class="line">  execv(child_args[<span class="number">0</span>], child_args);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;start program!\n&quot;</span>);</span><br><span class="line">  <span class="type">int</span> child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWUSER | SIGCHLD, <span class="literal">NULL</span>);</span><br><span class="line">  waitpid(child_pid, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;exit!\n&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行上述代码前, 先查看主机上当前进程UID和GID:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">jason@ubuntu:/code$ <span class="built_in">id</span> -u</span><br><span class="line">1000</span><br><span class="line">jason@ubuntu:/code$ <span class="built_in">id</span> -g</span><br><span class="line">1000</span><br></pre></td></tr></table></figure>
+<p>执行代码后, 结果如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">jason@ubuntu:/code$ gcc userns.c -lcap -Wall -o userns.o &amp;&amp; ./userns.o</span><br><span class="line">start program!</span><br><span class="line"><span class="keyword">in</span> child process!</span><br><span class="line">eUID = 65534; eGID = 65534; capabilities: =ep</span><br><span class="line">nobody@ubuntu:/code$ <span class="built_in">id</span> -u</span><br><span class="line">65534</span><br><span class="line">nobody@ubuntu:/code$ <span class="built_in">id</span> -g</span><br><span class="line">65534</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在新建的user namespace中, 进程的UID和GID均为<strong>66534</strong>. 新建的user namespace不与任何user namespace的进程建立映射, 因此会将user ID&#x2F;group ID设置为overflow user&#x2F;group ID, 该值通常保存在<code>/proc/sys/kernel/overflowuid</code></li>
+<li><code>capabilities: =ep</code>表示进程在新建的user namespace内拥有所有capabilities(权限)</li>
+</ul>
+<h3 id="8-1-Nested-namespace-namespace-membership"><a href="#8-1-Nested-namespace-namespace-membership" class="headerlink" title="8.1 Nested namespace, namespace membership"></a>8.1 Nested namespace, namespace membership</h3><p>User namespace是一个层层嵌套的树状结构: 根节点为initial user namespace(启动系统时创建), 其他user namespace必须拥有一个parent user namespace, 以及零个或多个child user namespace. Linux规定, user namespace最多嵌套32层, 否则返回<code>EUSERS</code>错误.<br>一个进程只属于一个user namespace, 执行<code>fork()</code>&#x2F;<code>clone()</code>&#x2F;<code>unshare()</code>时, 存在以下两种情况:</p>
+<ul>
+<li><code>fork()</code>&#x2F;<code>clone()</code>不包含<code>CLONE_NEWUSER</code>: child process与parent process同属一个user namespace</li>
+<li><code>clone()</code>&#x2F;<code>unshare()</code>包含<code>CLONE_NEWUSER</code>: child process(<code>clone()</code>)或<code>unshare()</code>调用者创建新的user namespace, 且新的进程属于该user namespace</li>
+</ul>
+<p>创建user namespace后, 第一个进程拥有所有权限, 但在parent user namespace中(<code>clone()</code>)或之前的user namespace中(<code>unshare()</code>)不拥有任何权限 因此container的初始化进程可完成所有工作, 不会出现权限不足的问题.</p>
+<h3 id="8-2-Capabilities"><a href="#8-2-Capabilities" class="headerlink" title="8.2 Capabilities"></a>8.2 Capabilities</h3><p>以下规则用于判断进程是否在某个user namespace中拥有权限(capability):</p>
+<ol>
+<li>进程处于该user namespace中, 且拥有对应的权限(effective capability set)</li>
+<li>若进程在当前user namespace拥有某一项权限, 则其在child user namespace仍保留该权限</li>
+<li>创建新的user namespace时, kernel会记录创建该user namespace的进程的EUID, parent user namespace中相同EUID的进程在child user namespace中拥有所有权限</li>
+</ol>
+<p>需要注意的是, 一个进程在某个user namespace拥有权限, 并不意味着其可以做任何权限允许的事: 每个non-user namespace(如UTS namespace)都有一个关联的user namespace, 当进程访问或修改non-user namespace管理的资源时, 该资源关联的user namespace可能不是进程所在的user namespace.<br>也有一些资源不归属user namespace管理, 例如: 修改系统时间(<code>CAP_SYS_TIME</code>), 加载某个kernel module(<code>CAP_SYS_MODULE</code>), 或创建一个device(<code>CAP_MKNOD</code>), 上述操作要求进程满足两个条件:</p>
+<ul>
+<li>进程处于initial user namespace</li>
+<li>进程拥有响应权限</li>
+</ul>
+<p>以UTS namespace为例, 创建一个新的user namesapce, 由于第一个进程拥有所有权限, 理论上可以修改hostname:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">jason@ubuntu:/$ unshare -U /bin/bash</span><br><span class="line">nobody@ubuntu:/$ hostname</span><br><span class="line">ubuntu</span><br><span class="line">nobody@ubuntu:/$ hostname ubuntu2</span><br><span class="line">hostname: you must be root to change the host name</span><br></pre></td></tr></table></figure>
+<p>实际上nobody并不能修改hostname, 因此kernel检查权限时, 会按照以下步骤:</p>
+<ol>
+<li>查看资源所属的non-user namespace: nobody尝试修改hostname, 因此属于UTS namespace</li>
+<li>查看进程所在的non-user namespace: 进程只创建了新的user namespace, 没有创建新的UTS namespace, 因此进程处于initial UTS namespace(系统启动时创建)</li>
+<li>查看non-user namespace关联的user namespace: 系统启动时, initial user namespace与其他initial non-user namespace相关联, 因此initial UTS namespace与initial user namespace相关联</li>
+<li>查看进程是否在user namespace中拥有相应权限: nobody没有initial user namespace中映射的uid和gid, 因此没有权限</li>
+</ol>
+<h3 id="8-3-User-and-group-ID-mappings"><a href="#8-3-User-and-group-ID-mappings" class="headerlink" title="8.3 User and group ID mappings"></a>8.3 User and group ID mappings</h3><p>创建新的user namespace时, 不存在与parent user namespace的任何映射user&#x2F;group ID映射. <code>/proc/[PID]/uid_map</code>和<code>/proc/[PID]/gid_map</code>可实现user&#x2F;group ID的绑定, 文件格式如下:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">ID-inside-ns  ID-outside-ns  length</span><br></pre></td></tr></table></figure>
+<ul>
+<li>ID-inside-ns: 表示PID所在user namespace的起始UID&#x2F;GID</li>
+<li>ID-outside-ns: 表示某个user namespace的起始UID&#x2F;GID, user namespace的选择取决于<strong>写入进程</strong>与<strong>PID</strong>的关系:<ul>
+<li>若写入进程与PID处于同一user namespace, 则<code>ID-outside-ns</code>为PID的parent user namespace中的UID&#x2F;GID</li>
+<li>若写入进程与PID处于不同user namespace, 则<code>ID-outside-ns</code>为写入进程所在的user namespace中的UID&#x2F;GID</li>
+</ul>
+</li>
+<li>length: 表示UID&#x2F;GID的映射范围, 通常为1. 假设<code>uid_pid</code>中一行为<code>uid1 uid2 n</code>, 表示<code>[uid1, uid1+n)</code>映射到<code>[uid2, uid2+n)</code></li>
+</ul>
+<p>写入<code>/proc/[PID]/uid_map</code>和<code>/proc/[PID]/gid_map</code>必须满足以下所有条件:</p>
+<ul>
+<li>写入进程拥有PID所在user namespace的<code>CAP_SETUID</code>权限</li>
+<li>写入进程要么处于PID所在的user namespace, 要么处于PID的parent user namespace</li>
+<li>若映射的uid为parent namespace中的root(0), 则需满足以下其中一种条件:<ul>
+<li>若写入进程处于parent user namespace, 则该进程必须拥有<code>CAP_SETFCAP</code>权限</li>
+<li>若写入进程处于child user namespace, 则创建该user namespace的进程需拥有<code>CAP_SETFCAP</code>权限</li>
+</ul>
+</li>
+<li>需满足以下其中一种条件<ul>
+<li>写入<code>uid_map</code>&#x2F;<code>gid_map</code>的一行将写入进程的EUID&#x2F;EGID映射为parent user namespace的user&#x2F;group ID. 该规则允许新建user namespace的进程将自身映射到parent user namespace.</li>
+<li>若写入进程拥有<code>CAP_SETUID</code>&#x2F;<code>CAP_SETGID</code>, 则将parent user namespace的任何user&#x2F;group ID映射到child user namespace</li>
+</ul>
+</li>
+</ul>
+<p>修改后的代码如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/capability.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> STACK_SIZE (1024 * 1024)</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">char</span> child_stack[STACK_SIZE];</span><br><span class="line"><span class="type">char</span>* <span class="type">const</span> child_args[] = &#123;</span><br><span class="line">  <span class="string">&quot;/bin/bash&quot;</span>,</span><br><span class="line">  <span class="literal">NULL</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">set_uid_map</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">int</span> inside_id, <span class="type">int</span> outside_id, <span class="type">int</span> length)</span> &#123;</span><br><span class="line">  <span class="type">char</span> path[<span class="number">256</span>];</span><br><span class="line">  <span class="built_in">sprintf</span>(path, <span class="string">&quot;/proc/%d/uid_map&quot;</span>, getpid());</span><br><span class="line">  FILE* uid_map = fopen(path, <span class="string">&quot;w&quot;</span>);</span><br><span class="line">  <span class="built_in">fprintf</span>(uid_map, <span class="string">&quot;%d %d %d&quot;</span>, inside_id, outside_id, length);</span><br><span class="line">  fclose(uid_map);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">set_gid_map</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">int</span> inside_id, <span class="type">int</span> outside_id, <span class="type">int</span> length)</span> &#123;</span><br><span class="line">  <span class="type">char</span> path[<span class="number">256</span>];</span><br><span class="line">  <span class="built_in">sprintf</span>(path, <span class="string">&quot;/proc/%d/gid_map&quot;</span>, getpid());</span><br><span class="line">  FILE* gid_map = fopen(path, <span class="string">&quot;w&quot;</span>);</span><br><span class="line">  <span class="built_in">fprintf</span>(gid_map, <span class="string">&quot;%d %d %d&quot;</span>, inside_id, outside_id, length);</span><br><span class="line">  fclose(gid_map);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">child_main</span><span class="params">(<span class="type">void</span>* args)</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;in child process!\n&quot;</span>);</span><br><span class="line">  set_uid_map(getpid(), <span class="number">0</span>, <span class="number">1000</span>, <span class="number">1</span>);</span><br><span class="line">  set_gid_map(getpid(), <span class="number">0</span>, <span class="number">1000</span>, <span class="number">1</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;eUID = %ld; eGID = %ld; &quot;</span>, (<span class="type">long</span>)geteuid(), (<span class="type">long</span>)getegid());</span><br><span class="line">  <span class="type">cap_t</span> caps = cap_get_proc();</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;capabilities: %s\n&quot;</span>, cap_to_text(caps, <span class="literal">NULL</span>));</span><br><span class="line">  execv(child_args[<span class="number">0</span>], child_args);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;start program!\n&quot;</span>);</span><br><span class="line">  <span class="type">int</span> child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWUSER | SIGCHLD, <span class="literal">NULL</span>);</span><br><span class="line">  waitpid(child_pid, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;exit!\n&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行后的结果如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">jason@ubuntu:/code$ gcc userns.c -Wall -lcap -o userns.o &amp;&amp; ./userns.o</span><br><span class="line">start program!</span><br><span class="line"><span class="keyword">in</span> child process!</span><br><span class="line">eUID = 0; eGID = 65534; capabilities: =ep</span><br><span class="line">root@ubuntu:/code#</span><br></pre></td></tr></table></figure>
+<p>可以看到, child user namespace中的进程成为root, 映射的进程uid为1000</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/f10b.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Linux cgroups</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/b805.html">
+        <span class="next-text nav-default">Kafka Essential</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/93ff.html';
+  var disqus_title = "Linux namespace";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

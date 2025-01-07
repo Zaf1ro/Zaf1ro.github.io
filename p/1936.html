@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Services"/>
+
+
+
+
+  <meta name="keywords" content="K8s," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/1936.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/1936.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/1936.html"/>
+
+
+<meta name="description" content="1. IntroductionKubernetes不支持配置单个Pod的IP address或hostname, 因为这样做有几个缺陷:  Pod生存周期短暂. Pod的数量随时可能增加或减少, 且所处的worker node随时改变 Pod被确定到某个worker node后才能获得一个明确的IP address, 因此client无法提前得知pod的IP address Horizontal">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Services">
+<meta property="og:url" content="https://zaf1ro.github.io/p/1936.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionKubernetes不支持配置单个Pod的IP address或hostname, 因为这样做有几个缺陷:  Pod生存周期短暂. Pod的数量随时可能增加或减少, 且所处的worker node随时改变 Pod被确定到某个worker node后才能获得一个明确的IP address, 因此client无法提前得知pod的IP address Horizontal">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-6.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-7.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-8.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-9.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-10.png">
+<meta property="article:published_time" content="2019-10-21T12:34:21.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.030Z">
+<meta property="article:tag" content="K8s">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/svc-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Services - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Create-Services"><span class="toc-text">1.1 Create Services</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-1-Remotely-Execute-Commands-in-Running-Containers"><span class="toc-text">1.1.1 Remotely Execute Commands in Running Containers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-2-Configure-Session-Affinity-on-the-Service"><span class="toc-text">1.1.2 Configure Session Affinity on the Service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-3-Expose-Multiple-Ports-in-the-Same-Service"><span class="toc-text">1.1.3 Expose Multiple Ports in the Same Service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-4-Use-Named-Ports"><span class="toc-text">1.1.4 Use Named Ports</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Discover-Services"><span class="toc-text">1.2 Discover Services</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-Discover-Services-through-Environment-Variables"><span class="toc-text">1.2.1 Discover Services through Environment Variables</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-Discover-Services-through-DNS"><span class="toc-text">1.2.2 Discover Services through DNS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-Run-a-Shell-in-a-Pod-s-Container"><span class="toc-text">1.2.3 Run a Shell in a Pod&#39;s Container</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Connect-to-Services-Living-Outside-the-Cluster"><span class="toc-text">2. Connect to Services Living Outside the Cluster</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Endpoints"><span class="toc-text">2.1 Endpoints</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Manually-Configure-Service-Endpoints"><span class="toc-text">2.2 Manually Configure Service Endpoints</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Create-an-Alias-for-an-External-Service"><span class="toc-text">2.3 Create an Alias for an External Service</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Expose-Services-to-External-Clients"><span class="toc-text">3. Expose Services to External Clients</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-NodePort"><span class="toc-text">3.1 NodePort</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-LoadBalancer"><span class="toc-text">3.2 LoadBalancer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-The-Peculiarities-of-External-Connections"><span class="toc-text">3.3 The Peculiarities of External Connections</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Expose-Services-Externally-through-an-Ingress-Resource"><span class="toc-text">4. Expose Services Externally through an Ingress Resource</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Access-the-Service-through-the-Ingress"><span class="toc-text">4.1 Access the Service through the Ingress</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Expose-Multiple-Services-through-the-Same-Ingress"><span class="toc-text">4.2 Expose Multiple Services through the Same Ingress</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Configure-Ingress-to-handle-TLS-Traffic"><span class="toc-text">4.2 Configure Ingress to handle TLS Traffic</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Signal-when-a-Pod-is-Ready-to-Accept-Connections"><span class="toc-text">5. Signal when a Pod is Ready to Accept Connections</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Add-a-Readiness-Probe-to-a-Pod"><span class="toc-text">5.1 Add a Readiness Probe to a Pod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-What-Readiness-Probe-Should-Do"><span class="toc-text">5.2 What Readiness Probe Should Do</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Headless-Service"><span class="toc-text">6. Headless Service</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-Create-a-Headless-Service"><span class="toc-text">6.1 Create a Headless Service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Discover-Pods-through-DNS"><span class="toc-text">6.2 Discover Pods through DNS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-Discover-all-pods-that-aren-t-ready"><span class="toc-text">6.3 Discover all pods that aren&#39;t ready</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Services
+        
+      </h1>
+      <time class="post-time">
+          10/21/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Kubernetes不支持配置单个Pod的IP address或hostname, 因为这样做有几个缺陷:</p>
+<ol>
+<li>Pod生存周期短暂. Pod的数量随时可能增加或减少, 且所处的worker node随时改变</li>
+<li>Pod被确定到某个worker node后才能获得一个明确的IP address, 因此client无法提前得知pod的IP address</li>
+<li>Horizontal scaling提供了多个Pod来实现相同服务, 因此同服务类型的Pod应共享一个IP address</li>
+</ol>
+<p>为解决这些问题, Kubernetes提供了Service作为一个resource为一组Pod提供入口. Service会提供了一个不变的IP address和Port: 当client想要连接该组Pod时, 可直接访问其Service的IP address和Port; client也不必在乎Pod处于哪个worker node之中, 或cluster中有几个Pod.<br>假设现在有frontend web server和backend web server: frontend web server有多个Pod实现horizontal scaling; backend web server则只有一个Pod. 因此client需要通过service连接frontend web server中的一个pod, frontend web server的pod再通过另一个service连接backend web server的Pod.<br><img src="/images/Kubernetes/svc-1.png" alt="Both internal and external clients usually connect to pods through services"></p>
+<h3 id="1-1-Create-Services"><a href="#1-1-Create-Services" class="headerlink" title="1.1 Create Services"></a>1.1 Create Services</h3><p>Service使用label selector来选择Pod. 以下是两种创建service的方式:</p>
+<ol>
+<li>调用<strong>kubectl expose</strong> command来创建service</li>
+<li>创建YAML文件并调用<strong>kubectl create</strong>创建service, port指service暴露的端口, targetPort指Pod暴露的端口. 例如:<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">8080</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span> </span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>调用<strong>kubectl get svc</strong>可查看当前cluster上的所有service:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get svc</span><br><span class="line">NAME       CLUSTER-IP     EXTERNAL-IP PORT(S) AGE</span><br><span class="line">kubernetes 10.111.240.1   &lt;none&gt;      443/TCP 30d</span><br><span class="line">kubia      10.111.249.153 &lt;none&gt;      80/TCP  6m </span><br></pre></td></tr></table></figure>
+<p>注意: service中的cluster IP只是虚拟地址, 只有cluster内的Pod才能访问该IP address. 以下是在cluster内部测试service的几种方法:</p>
+<ol>
+<li>创建新的Pod并向cluster IP发送请求, 查看是否得到回复</li>
+<li>通过ssh进入cluster中的worker node, 调用curl command发送请求, 查看是否得到回复</li>
+<li>利用现有Pod执行curl command向service发送请求, 查看是否得到回复</li>
+</ol>
+<h4 id="1-1-1-Remotely-Execute-Commands-in-Running-Containers"><a href="#1-1-1-Remotely-Execute-Commands-in-Running-Containers" class="headerlink" title="1.1.1 Remotely Execute Commands in Running Containers"></a>1.1.1 Remotely Execute Commands in Running Containers</h4><p><strong>kubectl exec</strong>可实现远程在Pod的container内部执行command. 以下是从名为kubia-7nog1的Pod中执行curl command的例子:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl <span class="built_in">exec</span> kubia-7nog1 -- curl -s http://10.111.249.153</span><br><span class="line">You’ve hit kubia-gzwli</span><br></pre></td></tr></table></figure>
+<p>Double dash(- -)作为kubectl的option之一, 可防止kubectl读取命令时将**- -<strong>后的command当做kubectl的参数. 若不使用- -, 则</strong>-s<strong>会被当做kubectl的参数而引发错误. 以下是整个</strong>kubectl exec**的执行流程:<br><img src="/images/Kubernetes/svc-2.png" alt="Using kubectl exec to test out a connection to the service by running curl in one of the pods"></p>
+<h4 id="1-1-2-Configure-Session-Affinity-on-the-Service"><a href="#1-1-2-Configure-Session-Affinity-on-the-Service" class="headerlink" title="1.1.2 Configure Session Affinity on the Service"></a>1.1.2 Configure Session Affinity on the Service</h4><p>由于client每次请求时都可能遇到不同的Pod, 因为service会随机挑选一个Pod服务client. 若需要特定client始终连接特定Pod, 则需要设置sessionAffinity属性:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">sessionAffinity:</span> <span class="string">ClientIP</span></span><br><span class="line">  <span class="string">...</span></span><br></pre></td></tr></table></figure>
+<p>sessionAffinity默认为None. 由于Kubernetes service无法操作TCP&#x2F;IP的应用层(例如: HTTP), 所以无法通过cookie设置session affinity, 只能通过IP address进行load balance. 当设置为ClientIP后, 即使同一个IP address下有多个client连接, 也只会连接到同一Pod.</p>
+<h4 id="1-1-3-Expose-Multiple-Ports-in-the-Same-Service"><a href="#1-1-3-Expose-Multiple-Ports-in-the-Same-Service" class="headerlink" title="1.1.3 Expose Multiple Ports in the Same Service"></a>1.1.3 Expose Multiple Ports in the Same Service</h4><p>Kubernetes Service支持多个port. 当使用多个Port时, 必须为每个Port指定名字:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">  <span class="attr">spec:</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">8080</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">https</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">443</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">8443</span></span><br><span class="line">    <span class="attr">selector:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">kubia</span> </span><br></pre></td></tr></table></figure>
+
+<h4 id="1-1-4-Use-Named-Ports"><a href="#1-1-4-Use-Named-Ports" class="headerlink" title="1.1.4 Use Named Ports"></a>1.1.4 Use Named Ports</h4><p>Service YAML文件中的targetPort也可以用端口名来代替一个确定的端口号: 首先需要Pod暴露其port number和对应的port name:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">      <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">https</span></span><br><span class="line">      <span class="attr">containerPort:</span> <span class="number">8443</span> </span><br></pre></td></tr></table></figure>
+<p>之后就可以在Service用port name替代port number, 这样即便Pod修改其port number, Service也不需要做任何修改:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="string">http</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">https</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">443</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="string">https</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-Discover-Services"><a href="#1-2-Discover-Services" class="headerlink" title="1.2 Discover Services"></a>1.2 Discover Services</h3><p>虽然Service提供了一个稳定的IP address和多个Port允许client随时与Pod通信, 但client如何获知Service的IP address和Port? Kubernetes提供了多种方式方便client获知并连接至Service.</p>
+<h4 id="1-2-1-Discover-Services-through-Environment-Variables"><a href="#1-2-1-Discover-Services-through-Environment-Variables" class="headerlink" title="1.2.1 Discover Services through Environment Variables"></a>1.2.1 Discover Services through Environment Variables</h4><p>当Pod被启动时, Kubernetes会为其初始化environment variables, 其中就包括其service所指向的IP address和Port. 但必须保证Service在Pod之前被创建, 否则无法通过environment variables查看. </p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl <span class="built_in">exec</span> kubia-3inly <span class="built_in">env</span></span><br><span class="line">PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</span><br><span class="line">HOSTNAME=kubia-3inly</span><br><span class="line">KUBERNETES_SERVICE_HOST=10.111.240.1</span><br><span class="line">KUBERNETES_SERVICE_PORT=443</span><br><span class="line">...</span><br><span class="line">KUBIA_SERVICE_HOST=10.111.249.153</span><br><span class="line">KUBIA_SERVICE_PORT=80</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-2-2-Discover-Services-through-DNS"><a href="#1-2-2-Discover-Services-through-DNS" class="headerlink" title="1.2.2 Discover Services through DNS"></a>1.2.2 Discover Services through DNS</h4><p>在Kubernetes的kube-system namespace下有一个Pod叫做kube-dns, 它可作为一个DNS server负责将FQDN(fully qualified domain name, 也就是Service的域名)转换为Service IP address. 每个Service在DNS server内部都有一个DNS entry.<br>以backend database service为例, 其FQDN为:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">backend-database.default.svc.cluster.locals</span><br></pre></td></tr></table></figure>
+<p>backend-database为Service的名字, default表示Service所处的namespace, svc.cluster.local则是cluster domain的后缀, 每个cluster local service共享该后缀, 因此也可以不写这个后缀. 若frontend web server的Pod与backend database同一namespace, 则可以省略<strong>default</strong>, FQDN直接写<strong>backend-database</strong>即可.</p>
+<h4 id="1-2-3-Run-a-Shell-in-a-Pod-s-Container"><a href="#1-2-3-Run-a-Shell-in-a-Pod-s-Container" class="headerlink" title="1.2.3 Run a Shell in a Pod&#39;s Container"></a>1.2.3 Run a Shell in a Pod&#39;s Container</h4><p>直接进入Pod后查看**&#x2F;etc&#x2F;resolv.conf**也可以看到FQDN</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@kubia-3inly:/# <span class="built_in">cat</span> /etc/resolv.conf</span><br><span class="line">search default.svc.cluster.local svc.cluster.local cluster.local ...</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-Connect-to-Services-Living-Outside-the-Cluster"><a href="#2-Connect-to-Services-Living-Outside-the-Cluster" class="headerlink" title="2. Connect to Services Living Outside the Cluster"></a>2. Connect to Services Living Outside the Cluster</h2><p>第一节只针对cluster内的Pod通信, 以下提到的是cluster内的Pod向cluster外的service发送信息.</p>
+<h3 id="2-1-Endpoints"><a href="#2-1-Endpoints" class="headerlink" title="2.1 Endpoints"></a>2.1 Endpoints</h3><p>Kubernetes中, Service并不会直接与Pod相连, 而是与Endpoint连接. Endpoint作为Kubernetes中的一种resource, 其包含一个或多个IP address&#x2F;Port number, 负责将Pod和Service连接起来. 当调用**kubectl describe svc ...**时可看到Service拥有的Endpoints:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl describe svc kubia</span><br><span class="line">Name: kubia</span><br><span class="line">Namespace: default</span><br><span class="line">Labels: &lt;none&gt;</span><br><span class="line">Selector: app=kubia</span><br><span class="line">Type: ClusterIP</span><br><span class="line">IP: 10.111.249.153</span><br><span class="line">Port: &lt;<span class="built_in">unset</span>&gt; 80/TCP</span><br><span class="line">Endpoints: 10.108.1.4:8080,10.108.2.5:8080,10.108.2.6:8080</span><br><span class="line">Session Affinity: None</span><br></pre></td></tr></table></figure>
+<p>也可调用**kubectl get endpoints ...**直接读取Service拥有的Endpoints:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get endpoints kubia</span><br><span class="line">NAME  ENDPOINTS                                       AGE</span><br><span class="line">kubia 10.108.1.4:8080,10.108.2.5:8080,10.108.2.6:8080 1h</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Manually-Configure-Service-Endpoints"><a href="#2-2-Manually-Configure-Service-Endpoints" class="headerlink" title="2.2 Manually Configure Service Endpoints"></a>2.2 Manually Configure Service Endpoints</h3><p>一旦Service指定label selector, Kubernetes会自动找到符合label的Pod并创建相对应的Endpoints. 因此, 若需手动创建Endpoint, 应避免在Service中使用label selector, 如下:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">external-service</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span> </span><br></pre></td></tr></table></figure>
+<p>Endpoints的创建方式与其他resource相同, 创建YAML文件即可. Endpoint必须与某个Service同名, 并在subsets中指定cluster外部的service IP address&#x2F;Port.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Endpoints</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">external-service</span></span><br><span class="line"><span class="attr">subsets:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">addresses:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">ip:</span> <span class="number">11.11</span><span class="number">.11</span><span class="number">.11</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">ip:</span> <span class="number">22.22</span><span class="number">.22</span><span class="number">.22</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span> </span><br></pre></td></tr></table></figure>
+<p>创建Service和Endpoints完毕后, 这之后创建的Pod中environment variables都含有该Service的IP address&#x2F;Port.<br><img src="/images/Kubernetes/svc-3.png" alt="Pods consuming a service with two external endpoints"></p>
+<h3 id="2-3-Create-an-Alias-for-an-External-Service"><a href="#2-3-Create-an-Alias-for-an-External-Service" class="headerlink" title="2.3 Create an Alias for an External Service"></a>2.3 Create an Alias for an External Service</h3><p>Service的spec.type默认为ClusterIP, 表示Service只能由cluster内部的Pod访问, 因此需要创建Endpoint将内部访问映射到外部IP address. 若将Service的spec.type设置为ExternalName, Kubernetes会将Service映射到cluster外部的域名上, 从而实现cluster外部的访问功能.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">external-service</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">ExternalName</span></span><br><span class="line">  <span class="attr">externalName:</span> <span class="string">someapi.somecompany.com</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+<p>Kubernetes会为ExternalName类型的Service创建一个CNAME DNS record. 当cluster内的Pod访问external-service.default.svc.cluster.local时, 请求会被转移到someapi.somecompany.com, 因此Service也不需要cluster IP.</p>
+<h2 id="3-Expose-Services-to-External-Clients"><a href="#3-Expose-Services-to-External-Clients" class="headerlink" title="3. Expose Services to External Clients"></a>3. Expose Services to External Clients</h2><p>第一节和第二节只针对cluster内的Pod向cluster内或cluster外发送请求. 本节则着重于cluster外部向cluster内的Pod发送请求. 例如: 为frontend web server创建Service, 从而让cluster外的client可以访问到.<br><img src="/images/Kubernetes/svc-4.png" alt="Exposing a service to external clients"></p>
+<h3 id="3-1-NodePort"><a href="#3-1-NodePort" class="headerlink" title="3.1 NodePort"></a>3.1 NodePort</h3><p>当使用NodePort类型的Service时, Kubernetes会在每个worker node上保留一个Port用于该Service使用. 以下是创建NodePort Service的例子:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia-nodeport</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">8080</span></span><br><span class="line">    <span class="attr">nodePort:</span> <span class="number">30123</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br></pre></td></tr></table></figure>
+<p>NodePort也支持Service创建其cluster IP, 但多一个属性: nodePort. 当cluster外的client访问cluster中任意worker node的nodePort时, 会被Service导向其Pod, 从而实现cluster外的client访问cluster内的Pod. 假设cluster中有两个worker node, cluster中的Service如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get svc kubia-nodeport</span><br><span class="line">NAME           CLUSTER-IP     EXTERNAL-IP PORT(S)      AGE</span><br><span class="line">kubia-nodeport 10.111.254.223 &lt;nodes&gt;     80:30123/TCP 2m</span><br></pre></td></tr></table></figure>
+<p>共有三种方式访问该Service:</p>
+<ol>
+<li>10.11.254.223:80 inside the cluster</li>
+<li>&lt;1st node’s IP&gt;:30123 outside the cluster</li>
+<li>&lt;2nd node’s IP&gt;:30123 outside the cluster</li>
+</ol>
+<p><img src="/images/Kubernetes/svc-5.png" alt="An external client connecting to a NodePort service either through Node 1 or 2"></p>
+<p>无论cluster外的client向哪个worker node发送请求, 只要经过30123端口, 都会被Service捕获并传送到相应的Pod. </p>
+<h3 id="3-2-LoadBalancer"><a href="#3-2-LoadBalancer" class="headerlink" title="3.2 LoadBalancer"></a>3.2 LoadBalancer</h3><p>LoadBalancer提供了一个公有IP地址来将所有请求转移到worker node上. 作为NodePort的升级版, cluster外的client不需要知道worker node的地址即可与cluster内的Pod通信. LoadBalancer Service的创建方式如下:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia-loadbalancer</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">LoadBalancer</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">8080</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br></pre></td></tr></table></figure>
+<p>大部分cloud infrastructure都支持LoadBalancer. 但执行<strong>kubectl create</strong>创建LoadBalancer后, cloud infrastructure会创建load balancer并将其IP address写入Service. </p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get svc kubia-loadbalancer</span><br><span class="line">NAME               CLUSTER-IP     EXTERNAL-IP    PORT(S)      AGE</span><br><span class="line">kubia-loadbalancer 10.111.241.153 130.211.53.173 80:32143/TCP 1m</span><br></pre></td></tr></table></figure>
+<p>上述例子中, 130.211.53.173即为load balancer的公有IP地址.<br><img src="/images/Kubernetes/svc-6.png" alt="An external client connecting to a LoadBalancer service"></p>
+<h3 id="3-3-The-Peculiarities-of-External-Connections"><a href="#3-3-The-Peculiarities-of-External-Connections" class="headerlink" title="3.3 The Peculiarities of External Connections"></a>3.3 The Peculiarities of External Connections</h3><p>Clsuter外的client通过NodePort Service(包括LoadBalancer)访问Pod时, 会由Service随机挑选一个Pod与client进行通信. Client访问的worker node不一定含有Pod, 因此Service需要额外的一个network hop重定位到拥有Pod的worker node. 若不想进行这额外的一步重定向, 可在Service中设置:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">spec:</span><br><span class="line">  externalTrafficPolicy: Local</span><br></pre></td></tr></table></figure>
+<p>若client访问的worker node没有Pod, 则请求会被一直挂起, 因此需要保证load balancer总能将请求发向拥有Pod的worker node. 使用externalTrafficPolicy还有另一个缺点: 造成访问Pod的频次失去平衡. 假设cluster中存在两个worker nodes, node A有一个Pod, node B中有两个Pod. 则访问的结果如下:<br><img src="/images/Kubernetes/svc-7.png" alt="A Service using the Local external traffic policy may lead to uneven load distribution across pods"></p>
+<p>当cluster内的client通过Service访问Pod时, Pod可以得知client的cluster IP地址; 但当cluster外的client访问Pod时, 其源地址经过SNAT(Source Network Address Translation)后已被修改, 因此Pod无法得知client的真实IP地址.</p>
+<h2 id="4-Expose-Services-Externally-through-an-Ingress-Resource"><a href="#4-Expose-Services-Externally-through-an-Ingress-Resource" class="headerlink" title="4. Expose Services Externally through an Ingress Resource"></a>4. Expose Services Externally through an Ingress Resource</h2><p>LoadBalancer虽然解决了Pod的通讯入口问题, 但每次创建一个Service都需要一个公有IP地址, 代价太高. Kubernetes为此提供Ingress, Ingress只需一个公有IP地址, 通过不同的host和path为多个Service提供外部通讯的入口:<br><img src="/images/Kubernetes/svc-8.png" alt="Multiple services can be exposed through a single Ingresss"></p>
+<p>以下是创建Ingress的YAML示例. 所有<strong>kubia.example.com</strong>的请求都会被重定向到<strong>kubia-nodeport</strong> service的80端口</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">extensions/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Ingress</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">rules:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">host:</span> <span class="string">kubia.example.com</span></span><br><span class="line">    <span class="attr">http:</span></span><br><span class="line">      <span class="attr">paths:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">        <span class="attr">backend:</span></span><br><span class="line">          <span class="attr">serviceName:</span> <span class="string">kubia-nodeport</span></span><br><span class="line">          <span class="attr">servicePort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-Access-the-Service-through-the-Ingress"><a href="#4-1-Access-the-Service-through-the-Ingress" class="headerlink" title="4.1 Access the Service through the Ingress"></a>4.1 Access the Service through the Ingress</h3><p>如需查看Ingress的IP:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get ingresses</span><br><span class="line">NAME  HOSTS             ADDRESS        PORTS AGE</span><br><span class="line">kubia kubia.example.com 192.168.99.100 80    29m</span><br></pre></td></tr></table></figure>
+<p>得知Ingress的IP地址后, 即可配置DNS server将设置的域名解析到该IP地址. 当cluster外的client向该域名发送请求时, 请求首先会经过DNS解析转发至Ingress的IP地址, Ingress Controller再通过判断Host header并发送至某个Service, 被选中的Service通过Endpoints找到可用的Pod.<br><img src="/images/Kubernetes/svc-9.png" alt="Access pods through an Ingress"></p>
+<h3 id="4-2-Expose-Multiple-Services-through-the-Same-Ingress"><a href="#4-2-Expose-Multiple-Services-through-the-Same-Ingress" class="headerlink" title="4.2 Expose Multiple Services through the Same Ingress"></a>4.2 Expose Multiple Services through the Same Ingress</h3><p>Ingress的两个属性让单个IP地址指向不同的Services: rules和paths. </p>
+<ol>
+<li>paths可指定同一个host下的不同path<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">host:</span> <span class="string">kubia.example.com</span></span><br><span class="line">    <span class="attr">http:</span></span><br><span class="line">      <span class="attr">paths:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/kubia</span></span><br><span class="line">        <span class="attr">backend:</span></span><br><span class="line">          <span class="attr">serviceName:</span> <span class="string">kubia</span></span><br><span class="line">          <span class="attr">servicePort:</span> <span class="number">80</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/foo</span></span><br><span class="line">        <span class="attr">backend:</span></span><br><span class="line">          <span class="attr">serviceName:</span> <span class="string">bar</span></span><br><span class="line">          <span class="attr">servicePort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></li>
+<li>rules可指向不同的host<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line">  <span class="attr">spec:</span></span><br><span class="line">    <span class="attr">rules:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">host:</span> <span class="string">foo.example.com</span></span><br><span class="line">      <span class="attr">http:</span></span><br><span class="line">        <span class="attr">paths:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">          <span class="attr">backend:</span></span><br><span class="line">            <span class="attr">serviceName:</span> <span class="string">foo</span></span><br><span class="line">            <span class="attr">servicePort:</span> <span class="number">80</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">host:</span> <span class="string">bar.example.com</span></span><br><span class="line">      <span class="attr">http:</span></span><br><span class="line">        <span class="attr">paths:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">          <span class="attr">backend:</span></span><br><span class="line">            <span class="attr">serviceName:</span> <span class="string">bar</span></span><br><span class="line">            <span class="attr">servicePort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="4-2-Configure-Ingress-to-handle-TLS-Traffic"><a href="#4-2-Configure-Ingress-to-handle-TLS-Traffic" class="headerlink" title="4.2 Configure Ingress to handle TLS Traffic"></a>4.2 Configure Ingress to handle TLS Traffic</h3><p>当client向Ingress Controller创建TLS连接时, Ingress Controller会终止TLS连接, 因为client与controller之间是加密的, 但controller与Pod却不是. 因此需要在controller中加入certificate和private key, Pod中的进程不必支持TLS. Certificate和private key都需要放在Kubernetes中的一种resource中: Secret. </p>
+<ol>
+<li>创建private key和certificate:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ openssl genrsa -out tls.key 2048</span><br><span class="line">$ openssl req -new -x509 -key tls.key -out tls.cert -days 360 </span><br><span class="line">-subj /CN=kubia.example.com</span><br></pre></td></tr></table></figure></li>
+<li>创建Secret. 本例中Secret名为<strong>tls-secret</strong><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create secret tls tls-secret --cert=tls.cert --key=tls.key</span><br><span class="line">secret <span class="string">&quot;tls-secret&quot;</span> created</span><br></pre></td></tr></table></figure></li>
+<li>在Ingress中加入Secret<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">extensions/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Ingress</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">tls:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">hosts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">kubia.example.com</span></span><br><span class="line">    <span class="attr">secretName:</span> <span class="string">tls-secret</span></span><br><span class="line">  <span class="attr">rules:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">host:</span> <span class="string">kubia.example.com</span></span><br><span class="line">    <span class="attr">http:</span></span><br><span class="line">      <span class="attr">paths:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">        <span class="attr">backend:</span></span><br><span class="line">          <span class="attr">serviceName:</span> <span class="string">kubia-nodeport</span></span><br><span class="line">          <span class="attr">servicePort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="5-Signal-when-a-Pod-is-Ready-to-Accept-Connections"><a href="#5-Signal-when-a-Pod-is-Ready-to-Accept-Connections" class="headerlink" title="5. Signal when a Pod is Ready to Accept Connections"></a>5. Signal when a Pod is Ready to Accept Connections</h2><p>当某个Pod被创建时, 若其带有Service选中的label, 则其会被直接纳入到Service的管理中. 此时Pod可能未启动完毕, 若收到client请求, 则可能发生不确定的异常情况. Kubernetes提出readiness probe来帮助Service判断Pod是否可以处理请求, readiness probe会定期检查Pod, 但并不负责终止或重启container.<br>与liveness probe相同, readiness probe也有三种类型:</p>
+<ul>
+<li>An Exec probe: 在container中执行command并检查exit status code是否为0</li>
+<li>An HTTP GET probe: 向container发送HTTP GET请求并检查HTTP status code</li>
+<li>A TCP Socket probe: 向container的特定端口创建TCP connection并检查connection是否创建成功</li>
+</ul>
+<p>假设Service有3个Pod, 其中一个Pod的readiness probe探测到container没有正常运行, 则Service不会将client的请求转发给该Pod.<br><img src="/images/Kubernetes/svc-10.png" alt="A pod whose readiness probe fails is removed as an endpoint of a service"></p>
+<h3 id="5-1-Add-a-Readiness-Probe-to-a-Pod"><a href="#5-1-Add-a-Readiness-Probe-to-a-Pod" class="headerlink" title="5.1 Add a Readiness Probe to a Pod"></a>5.1 Add a Readiness Probe to a Pod</h3><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ReplicationController</span></span><br><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="string">...</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="string">...</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">luksa/kubia</span></span><br><span class="line">        <span class="attr">readinessProbe:</span></span><br><span class="line">          <span class="attr">exec:</span></span><br><span class="line">            <span class="attr">command:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="string">ls</span></span><br><span class="line">            <span class="bullet">-</span> <span class="string">/var/ready</span></span><br><span class="line">        <span class="string">...</span></span><br></pre></td></tr></table></figure>
+<p>上述YAML文件中为container指定一个readiness probe. 该readiness probe会在Pod被创建后执行<strong>ls &#x2F;var&#x2F;ready</strong>. 若**&#x2F;var&#x2F;ready<strong>不存在, 则Pod不会接收到任何请求; 若</strong>&#x2F;var&#x2F;ready**存在, 则该Pod的状态会被切换为Ready.</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get pods</span><br><span class="line">NAME        READY STATUS  RESTARTS AGE</span><br><span class="line">kubia-53thy 0/1   Running 0        1m</span><br></pre></td></tr></table></figure>
+<p>除此之外, readiness probe和liveness probe一样具有其他属性值: initialDelaySeconds, timeoutSeconds, periodSeconds</p>
+<h3 id="5-2-What-Readiness-Probe-Should-Do"><a href="#5-2-What-Readiness-Probe-Should-Do" class="headerlink" title="5.2 What Readiness Probe Should Do"></a>5.2 What Readiness Probe Should Do</h3><ol>
+<li>为保证client的请求总会成功, 一定要在Pod中加入readiness probe来不断探测container是否能够接受请求; 否则client可能会连接到正在启动或不可用的Pod.</li>
+<li>当Pod被关闭时, 一旦Pod收到termination signal, Service就会将该Pod从列表中除名, 所以不需要readiness probe做任何退出操作.</li>
+</ol>
+<h2 id="6-Headless-Service"><a href="#6-Headless-Service" class="headerlink" title="6. Headless Service"></a>6. Headless Service</h2><p>Service使得cluster内外的client可轻松地与Service管辖的Pod通信, 但Service只能随机选取一个Pod通信, 且Service内部无法让一个Pod与另一个特定的Pod互相通信. 因为Service只生成一个Cluster IP来表示所有Pods, 无法为每个Pod生成一个单独的IP. 为此, Kubernetes允许为Pod提供DNS lookup: 创建Service时, 将clusterIP设置为None, DNS server会直接返回Service管辖内所有Pod的IP, 而不是cluster IP. Pod可利用这些信息来连接另一个Pod.</p>
+<h3 id="6-1-Create-a-Headless-Service"><a href="#6-1-Create-a-Headless-Service" class="headerlink" title="6.1 Create a Headless Service"></a>6.1 Create a Headless Service</h3><p>创建一个clusterIP为None的Service:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia-headless</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">clusterIP:</span> <span class="string">None</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">8080</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-Discover-Pods-through-DNS"><a href="#6-2-Discover-Pods-through-DNS" class="headerlink" title="6.2 Discover Pods through DNS"></a>6.2 Discover Pods through DNS</h3><p>由于当前Service管辖的Pod没有DNS lookup功能, 所以需要新建一个Pod来提供DNS lookup:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl run dnsutils --image=tutum/dnsutils</span><br><span class="line">--generator=run-pod/v1 --<span class="built_in">command</span> -- <span class="built_in">sleep</span> infinity</span><br><span class="line">pod <span class="string">&quot;dnsutils&quot;</span> created</span><br></pre></td></tr></table></figure>
+<p>接下来就可以利用新的Pod查看Service内Pod的IP和域名</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl <span class="built_in">exec</span> dnsutils nslookup kubia-headless</span><br><span class="line">...</span><br><span class="line">Name: kubia-headless.default.svc.cluster.local</span><br><span class="line">Address: 10.108.1.4</span><br><span class="line">Name: kubia-headless.default.svc.cluster.local</span><br><span class="line">Address: 10.108.2.5 </span><br></pre></td></tr></table></figure>
+<p>上述例子中, headless service的FQDN为kubia-headless.default.svc.cluster.local, 该Service共有两个Pod处于Ready状态. 虽然Service依然提供load balance, 但client通过headless service访问特定Pod时并不会经过service proxy.</p>
+<h3 id="6-3-Discover-all-pods-that-aren-t-ready"><a href="#6-3-Discover-all-pods-that-aren-t-ready" class="headerlink" title="6.3 Discover all pods that aren&#39;t ready"></a>6.3 Discover all pods that aren&#39;t ready</h3><p>若需让Service展示所有管辖内的Pod, 即便Pod没有处于Ready状态, 需在创建Service时使用alpha feature或publishNotReadyAddresses域来标示:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="string">...</span></span><br><span class="line">  <span class="attr">annotations:</span></span><br><span class="line">    <span class="attr">service.alpha.kubernetes.io/tolerate-unready-endpoints:</span> <span class="string">&quot;true&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ----- or -----</span></span><br><span class="line"></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="string">...</span></span><br><span class="line">  <span class="attr">publishNotReadyAddresses:</span> <span class="literal">true</span></span><br><span class="line">  <span class="string">...</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/K8s/">K8s</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/f56f.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Volumes</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/17e0.html">
+        <span class="next-text nav-default">Replication Controllers</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/1936.html';
+  var disqus_title = "Services";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

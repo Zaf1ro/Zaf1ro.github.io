@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="exp() and ln()"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/d42f.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/d42f.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/d42f.html"/>
+
+
+<meta name="description" content="1. 以e为底的指数函数考虑到exp(x)的定义域为整个实数域, 所以需要先对x进行分段:  整数段: 使用快速幂来求解&#x2F;* 假设exp为正值且为整数值 *&#x2F;public double pow1(double base, int exp) &amp;#123;  double res &#x3D; 1.0;  while (exp &gt; 0) &amp;#123;    if ((exp &amp; 0x1) &#x3D;&#x3D; 1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="exp() and ln()">
+<meta property="og:url" content="https://zaf1ro.github.io/p/d42f.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 以e为底的指数函数考虑到exp(x)的定义域为整个实数域, 所以需要先对x进行分段:  整数段: 使用快速幂来求解&#x2F;* 假设exp为正值且为整数值 *&#x2F;public double pow1(double base, int exp) &amp;#123;  double res &#x3D; 1.0;  while (exp &gt; 0) &amp;#123;    if ((exp &amp; 0x1) &#x3D;&#x3D; 1">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-03-11T19:03:17.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.026Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+exp() and ln() - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BB%A5e%E4%B8%BA%E5%BA%95%E7%9A%84%E6%8C%87%E6%95%B0%E5%87%BD%E6%95%B0"><span class="toc-text">1. 以e为底的指数函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ln"><span class="toc-text">2. ln()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%8B%93%E5%B1%95%E5%BA%94%E7%94%A8-%E5%AE%9E%E6%95%B0%E6%AC%A1%E6%96%B9"><span class="toc-text">3. 拓展应用: 实数次方</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          exp() and ln()
+        
+      </h1>
+      <time class="post-time">
+          03/11/18
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-以e为底的指数函数"><a href="#1-以e为底的指数函数" class="headerlink" title="1. 以e为底的指数函数"></a>1. 以e为底的指数函数</h2><p>考虑到exp(x)的定义域为整个实数域, 所以需要先对x进行分段:</p>
+<ul>
+<li>整数段: 使用快速幂来求解<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 假设exp为正值且为整数值 */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">pow1</span><span class="params">(<span class="type">double</span> base, <span class="type">int</span> exp)</span> &#123;</span><br><span class="line">  <span class="type">double</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">1.0</span>;</span><br><span class="line">  <span class="keyword">while</span> (exp &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> ((exp &amp; <span class="number">0x1</span>) == <span class="number">1</span>) res *= base;</span><br><span class="line">    base *= base;</span><br><span class="line">    exp &gt;&gt;= <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>小数段: 使用泰勒展开式不断提高精度<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">pow2</span><span class="params">(<span class="type">double</span> exp)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (exp &gt; <span class="number">1e-3</span>) &#123;</span><br><span class="line">    <span class="type">double</span> <span class="variable">ee</span> <span class="operator">=</span> pow2(exp / <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">return</span> ee * ee;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span> + exp + exp*exp/<span class="number">2</span> + pow1(exp, <span class="number">3</span>)/<span class="number">6</span> + pow1(exp,<span class="number">4</span>)/<span class="number">24</span> + pow1(exp,<span class="number">5</span>)/<span class="number">120</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>这里之所以用泰勒展开式求小数段e的次方, 是因为在泰勒展开式写作:<br>$$<br>g(x) &#x3D; \sum_{n&#x3D;0}^\infty\frac{f^{(n)}(x_0)}{n!}(x-x_0)^n<br>$$<br>其中$\frac{d}{dx}(e^x) &#x3D; e^x$, 而且$x_0$为0, 所以$f(x) &#x3D; exp(x)$时的泰勒展开式为<br>$$<br>g(x) &#x3D; \sum_{n&#x3D;0}^\infty\frac{e^0}{n!}x^n &#x3D; \sum_{n&#x3D;0}^\infty\frac{x^n}{n!} &#x3D; 1 + x + \frac{x^2}{2} + \cdots + \frac{x^n}{n!} + \cdots<br>$$</p>
+<p>由于我们无法计算无限项之和, 所以需要降低有限项之和的误差. 这里有两个方法:</p>
+<ol>
+<li>计算更多项n, 缺点在于$x^n$和$n!$的计算量变大</li>
+<li>由于$e^n &#x3D; e^{\frac{n}{2}} * e^{\frac{n}{2}}$, 所以可通过计算$e^{\frac{n}{2}}$来降低误差, 因为这里求得是0到n的收敛, n越接近0则误差越小</li>
+</ol>
+<p>最后是exp()函数的代码:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">exp</span><span class="params">(<span class="type">double</span> exp)</span> &#123;</span><br><span class="line">  <span class="type">double</span> <span class="variable">absExp</span> <span class="operator">=</span> Math.abs(exp);</span><br><span class="line">  <span class="type">double</span> <span class="variable">res</span> <span class="operator">=</span> pow1(e, (<span class="type">int</span>)absExp) * pow2(absExp - (<span class="type">int</span>)absExp);</span><br><span class="line">  <span class="keyword">return</span> exp &lt; <span class="number">0</span> ? <span class="number">1</span>/res : res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-ln"><a href="#2-ln" class="headerlink" title="2. ln()"></a>2. ln()</h2><p>Java中的Math.log()也就是ln(), ln()可用辛普森积分公式来求结果. 以下是辛普森积分公式:<br>$$<br>\int_a^bf(x)dx &#x3D; \frac{b-a}{6}[ f(a) + 4f\left( \frac{a+b}{2} \right) + f(b)] \\<br>\because \int_a^b\frac{1}{x}dx &#x3D; \ln{|b|} - \ln{|a|}\\<br>\therefore \int_1^b\frac{1}{x}dx &#x3D; \ln{|b|}<br>$$<br>因此ln(x)可通过用辛普森积分公式求结果:<br>$$<br>\ln{n} &#x3D; \int_1^n\frac{1}{x}dx &#x3D; \frac{n-1}{6}[ 1 + 4\frac{2}{1+n} + \frac{1}{n} ]<br>$$</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">simpson</span><span class="params">(<span class="type">double</span> a, <span class="type">double</span> b)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> ((b - a)/<span class="number">6</span>)*(<span class="number">1</span>/a+<span class="number">4</span>*(<span class="number">2</span>/(a+b))+<span class="number">1</span>/b);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">helper</span><span class="params">(<span class="type">double</span> a, <span class="type">double</span> b)</span> &#123;</span><br><span class="line">  <span class="type">double</span> <span class="variable">res</span> <span class="operator">=</span> simpson(a, b);</span><br><span class="line">  <span class="type">double</span> <span class="variable">mid</span> <span class="operator">=</span> a + (b - a) / <span class="number">2</span>;</span><br><span class="line">  <span class="type">double</span> <span class="variable">left</span> <span class="operator">=</span> simpson(a, mid);</span><br><span class="line">  <span class="type">double</span> <span class="variable">right</span> <span class="operator">=</span> simpson(mid, b);</span><br><span class="line">  <span class="keyword">if</span> (Math.abs(right + left - res) &gt; <span class="number">1e-10</span>)</span><br><span class="line">    <span class="keyword">return</span> helper(a, mid) + helper(mid, b);</span><br><span class="line">  <span class="keyword">return</span> left + right;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">ln</span><span class="params">(<span class="type">double</span> x)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> helper(<span class="number">1</span>, x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-拓展应用-实数次方"><a href="#3-拓展应用-实数次方" class="headerlink" title="3. 拓展应用: 实数次方"></a>3. 拓展应用: 实数次方</h3><p>由于$a^x &#x3D; exp(x\ln{a})$, 所以$a^x$完全可以通过指数函数和对数函数实现</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">powf</span><span class="params">(<span class="type">double</span> a, <span class="type">double</span> x)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> exp(x * ln(a));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/27b4.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">cos() and sin()</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/5452.html">
+        <span class="next-text nav-default">MATLAB</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/d42f.html';
+  var disqus_title = "exp() and ln()";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

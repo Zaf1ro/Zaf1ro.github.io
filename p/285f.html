@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Topological Sort"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/285f.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/285f.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/285f.html"/>
+
+
+<meta name="description" content="207. Course ScheduleThere are a total of numCourses courses you have to take, labeled from 0 to numCourses - 1. You are given an array prerequisites where $\text&amp;#123;prerequisites&amp;#125;[i] &#x3D; [a_i, b_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Topological Sort">
+<meta property="og:url" content="https://zaf1ro.github.io/p/285f.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="207. Course ScheduleThere are a total of numCourses courses you have to take, labeled from 0 to numCourses - 1. You are given an array prerequisites where $\text&amp;#123;prerequisites&amp;#125;[i] &#x3D; [a_i, b_">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-03-11T23:10:16.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.026Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Topological Sort - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#207-Course-Schedule"><span class="toc-text">207. Course Schedule</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kahn-s-algorithm"><span class="toc-text">Kahn&#39;s algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#329-Longest-Increasing-Path-in-a-Matrix"><span class="toc-text">329. Longest Increasing Path in a Matrix</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kahn-s-algorithm-1"><span class="toc-text">Kahn&#39;s algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1632-Rank-Transform-of-a-Matrix"><span class="toc-text">1632. Rank Transform of a Matrix</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kahn-s-algorithm-union-find"><span class="toc-text">Kahn&#39;s algorithm + union find</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2246-Longest-Path-With-Different-Adjacent-Characters"><span class="toc-text">2246. Longest Path With Different Adjacent Characters</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kahn-s-algorithm-2"><span class="toc-text">Kahn&#39;s algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2127-Maximum-Employees-to-Be-Invited-to-a-Meeting"><span class="toc-text">2127. Maximum Employees to Be Invited to a Meeting</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kahn-s-algorithm-Pseudoforest"><span class="toc-text">Kahn&#39;s algorithm + Pseudoforest</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Topological Sort
+        
+      </h1>
+      <time class="post-time">
+          03/11/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="207-Course-Schedule"><a href="#207-Course-Schedule" class="headerlink" title="207. Course Schedule"></a>207. Course Schedule</h2><p>There are a total of <code>numCourses</code> courses you have to take, labeled from <code>0</code> to <code>numCourses - 1</code>. You are given an array prerequisites where <code>$\text&#123;prerequisites&#125;[i] = [a_i, b_i]$</code> indicates that you must take course <code>$b_i$</code> first if you want to take course <code>$a_i$</code>.</p>
+<p>For example, the pair <code>[0, 1]</code>, indicates that to take course <code>0</code> you have to first take course <code>1</code>.<br>Return <code>true</code> if you can finish all courses. Otherwise, return <code>false</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: numCourses = 2, prerequisites = [[1,0]]</span><br><span class="line">Output: true</span><br><span class="line">Explanation: There are a total of 2 courses to take.</span><br><span class="line">To take course 1 you should have finished course 0. So it is possible.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Kahn-s-algorithm"><a href="#Kahn-s-algorithm" class="headerlink" title="Kahn&#39;s algorithm"></a>Kahn&#39;s algorithm</h3><p>Topological sort用于在DAG(Directed Acyclic Graph, 有向无环图)中对每个vertex排序. 例如, graph中的vertex表示需要执行的任务, edge表示一个任务依赖另一个任务的结果, 若graph为DAG, 则topological sort可提供一种合理的任务执行顺序; 但若graph中存在circle, 则无法排序. 一个DAG至少存在一种排序方式.<br>Kahn算法是最经典的topological sort算法, 思路如下:</p>
+<ul>
+<li>将所有<strong>indegree</strong>(入度, 指向该vertex的edge数)为0的vertex放入queue</li>
+<li>不断取出queue元素, 直至queue为空<ul>
+<li>取出一个vertex(<code>v1</code>), 将<code>v1</code>放入执行序列<code>list</code>中</li>
+<li>遍历<code>v1</code>指向的vertex(<code>v2</code>), 将<code>v2</code>的indegree - 1</li>
+<li>若<code>v2</code>的indegree为0, 将<code>v2</code>放入queue</li>
+</ul>
+</li>
+<li>queue为空时, 若<code>list</code>包含所有vertex, 说明图中无环, <code>list</code>即为一个topologically sorted order</li>
+</ul>
+<p>该算法的时间复杂度为<code>$O(v + e)$</code>(v为vertex数, e为edge数)</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">canFinish</span><span class="params">(<span class="type">int</span> numCourses, <span class="type">int</span>[][] prerequisites)</span> &#123;</span><br><span class="line">        List&lt;Integer&gt;[] nodes = <span class="keyword">new</span> <span class="title class_">List</span>[numCourses];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; numCourses; i++) &#123;</span><br><span class="line">            nodes[i] = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span>[] indegrees = <span class="keyword">new</span> <span class="title class_">int</span>[numCourses];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] p: prerequisites) &#123;</span><br><span class="line">            <span class="keyword">if</span> (p[<span class="number">0</span>] == p[<span class="number">1</span>]) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            indegrees[p[<span class="number">0</span>]]++;</span><br><span class="line">            nodes[p[<span class="number">1</span>]].add(p[<span class="number">0</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        Queue&lt;Integer&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; numCourses; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (indegrees[i] == <span class="number">0</span>) &#123;</span><br><span class="line">                q.offer(i);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> q.poll();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j: nodes[i]) &#123;</span><br><span class="line">                <span class="keyword">if</span> (--indegrees[j] == <span class="number">0</span>) &#123;</span><br><span class="line">                    q.offer(j);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            cnt++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cnt == numCourses;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="329-Longest-Increasing-Path-in-a-Matrix"><a href="#329-Longest-Increasing-Path-in-a-Matrix" class="headerlink" title="329. Longest Increasing Path in a Matrix"></a>329. Longest Increasing Path in a Matrix</h2><p>Given an <code>m x n</code> integers <code>matrix</code>, return the length of the longest increasing path in <code>matrix</code>.</p>
+<p>From each cell, you can either move in four directions: left, right, up, or down. You <strong>may not</strong> move <strong>diagonally</strong> or move <strong>outside the boundary</strong> (i.e., wrap-around is not allowed).</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: matrix = [[9,9,4],[6,6,8],[2,1,1]]</span><br><span class="line">Output: 4</span><br><span class="line">Explanation: The longest increasing path is [1, 2, 6, 9].</span><br></pre></td></tr></table></figure>
+
+<h3 id="Kahn-s-algorithm-1"><a href="#Kahn-s-algorithm-1" class="headerlink" title="Kahn&#39;s algorithm"></a>Kahn&#39;s algorithm</h3><p>每个格子的最长递增路径只与周围四格的数值和路径长度有关, 假设当前格子的数值(<code>matrix[i][j]</code>)大于其他格子(<code>matrix[x][y]</code>), 则<code>path[i][j] = max(path[x][y] + 1), (x,y)与(i,j)相邻</code>.</p>
+<p>将matrix中的格子想象成vertex, 将数值的增长作为edge 整个matrix可看作一个DAG. 若多个节点可能指向同一中间节点, 则中间节点应选取相邻节点的最长路径, indegree为0的节点路径为1, 向数值更高的节点不断推进即可得到最长递增路径.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">longestIncreasingPath</span><span class="params">(<span class="type">int</span>[][] matrix)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> matrix.length, n = matrix[<span class="number">0</span>].length;</span><br><span class="line">        List&lt;Integer&gt;[] edges = <span class="keyword">new</span> <span class="title class_">List</span>[m * n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m * n; i++) &#123;</span><br><span class="line">            edges[i] = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span>[] indegrees = <span class="keyword">new</span> <span class="title class_">int</span>[m * n];</span><br><span class="line">        <span class="type">int</span>[][] dirs = &#123;&#123;<span class="number">0</span>,<span class="number">1</span>&#125;, &#123;<span class="number">1</span>,<span class="number">0</span>&#125;, &#123;<span class="number">0</span>,-<span class="number">1</span>&#125;, &#123;-<span class="number">1</span>,<span class="number">0</span>&#125;&#125;;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span>[] dir: dirs) &#123;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> i + dir[<span class="number">0</span>], y = j + dir[<span class="number">1</span>];</span><br><span class="line">                    <span class="keyword">if</span> (x &lt; <span class="number">0</span> || x &gt;= m || y &lt; <span class="number">0</span> || y &gt;= n || matrix[x][y] &lt;= matrix[i][j]) <span class="keyword">continue</span>;</span><br><span class="line">                    indegrees[x * n + y]++;</span><br><span class="line">                    edges[i * n + j].add(x * n + y);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        Queue&lt;<span class="type">int</span>[]&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m * n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (indegrees[i] == <span class="number">0</span>) q.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;i, <span class="number">1</span>&#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span>[] path = <span class="keyword">new</span> <span class="title class_">int</span>[m * n];</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span>[] t = q.poll();</span><br><span class="line">            res = Math.max(res, t[<span class="number">1</span>]);</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j: edges[t[<span class="number">0</span>]]) &#123;</span><br><span class="line">                <span class="keyword">if</span> (--indegrees[j] == <span class="number">0</span>) &#123;</span><br><span class="line">                    path[j] = Math.max(path[j], t[<span class="number">1</span>]+<span class="number">1</span>);</span><br><span class="line">                    q.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;j, path[j]&#125;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="1632-Rank-Transform-of-a-Matrix"><a href="#1632-Rank-Transform-of-a-Matrix" class="headerlink" title="1632. Rank Transform of a Matrix"></a>1632. Rank Transform of a Matrix</h2><p>Given an <code>m x n</code> matrix, return a new matrix <code>answer</code> where <code>answer[row][col]</code> is the <strong>rank</strong> of <code>matrix[row][col]</code>.</p>
+<p>The <strong>rank</strong> is an <strong>integer</strong> that represents how large an element is compared to other elements. It is calculated using the following rules:</p>
+<ul>
+<li>The rank is an integer starting from 1.</li>
+<li>If two elements p and q are in the <strong>same row or column</strong>, then:<ul>
+<li>If <code>p &lt; q</code> then <code>rank(p) &lt; rank(q)</code></li>
+<li>If <code>p == q</code> then <code>rank(p) == rank(q)</code></li>
+<li>If <code>p &gt; q</code> then <code>rank(p) &gt; rank(q)</code></li>
+</ul>
+</li>
+<li>The <strong>rank</strong> should be as <strong>small</strong> as possible.</li>
+</ul>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: matrix = [[1,2],[3,4]]</span><br><span class="line">Output: [[1,2],[2,3]]</span><br><span class="line">Explanation:</span><br><span class="line">The rank of matrix[0][0] is 1 because it is the smallest integer in its row and column.</span><br><span class="line">The rank of matrix[0][1] is 2 because matrix[0][1] &gt; matrix[0][0] and matrix[0][0] is rank 1.</span><br><span class="line">The rank of matrix[1][0] is 2 because matrix[1][0] &gt; matrix[0][0] and matrix[0][0] is rank 1.</span><br><span class="line">The rank of matrix[1][1] is 3 because matrix[1][1] &gt; matrix[0][1], matrix[1][1] &gt; matrix[1][0], and both matrix[0][1] and matrix[1][0] are rank 2.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Kahn-s-algorithm-union-find"><a href="#Kahn-s-algorithm-union-find" class="headerlink" title="Kahn&#39;s algorithm + union find"></a>Kahn&#39;s algorithm + union find</h3><p>对于第i行, 第j列的数字<code>m[i][j]</code>, 其需和同行&#x2F;同列的其他数字比较: 假设第i行有m个数字比<code>m[i][j]</code>小, 第j列上有n个数字比<code>m[i][j]</code>小, 则该数字的rank至少为<code>max(m, n) + 1</code>; 若同行或同列中出现相同值的数字, 则这两个数字必须拥有相同rank值, 这导致即便两个数字不同行也不同列, 也可能拥有相同的rank值(<code>m[i][j] == m[k][j] == m[k][t]</code>). 因此题目可拆分为两个问题:</p>
+<ul>
+<li>若同行或同列中的数字数值不同, 如何分配rank值</li>
+<li>若同行或同列中的数字数值相同, 如何保证rank值相同</li>
+</ul>
+<p>以行为例, 假设一行中存在n个数字(不存在相同数值), 对其排序后可获得一个递增数组, 将每个数字想象为一个节点, 数值偏小的节点指向数值更大的节点, 从而形成一个DAG. 对每一列执行相同操作后, 整个图会存在一些节点的<strong>indegree</strong>为0, 表示该节点在同行同列中的数值最小, 因此其rank值最低(<code>1</code>), 再使用topological sort为不同大小的数字分配rank值. 对于同行或同列上数值相同的数字, 可使用union find, 将数值相同的数字放入一个集合, 之后分配rank值时统一处理.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[] parents, ranks;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[][] matrixRankTransform(<span class="type">int</span>[][] matrix) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> matrix.length, n = matrix[<span class="number">0</span>].length;</span><br><span class="line">        parents = <span class="keyword">new</span> <span class="title class_">int</span>[m*n];</span><br><span class="line">        ranks = <span class="keyword">new</span> <span class="title class_">int</span>[m*n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; m*n; i++) &#123;</span><br><span class="line">            parents[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// store the same value in one row into subset</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            Map&lt;Integer, List&lt;Integer&gt;&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                map.putIfAbsent(matrix[i][j], <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">                map.get(matrix[i][j]).add(i*n+j);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (List&lt;Integer&gt; arr: map.values()) &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> <span class="number">1</span>; k &lt; arr.size(); k++) &#123;</span><br><span class="line">                    union(arr.get(k-<span class="number">1</span>), arr.get(k));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// store the same value in one column into subset</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            Map&lt;Integer, List&lt;Integer&gt;&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">                map.putIfAbsent(matrix[i][j], <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">                map.get(matrix[i][j]).add(i*n+j);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (List&lt;Integer&gt; arr: map.values()) &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> <span class="number">1</span>; k &lt; arr.size(); k++) &#123;</span><br><span class="line">                    union(arr.get(k-<span class="number">1</span>), arr.get(k));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span>[] indegrees = <span class="keyword">new</span> <span class="title class_">int</span>[m * n];</span><br><span class="line">        List&lt;Integer&gt;[] edges = <span class="keyword">new</span> <span class="title class_">List</span>[m * n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m*n; i++) &#123;</span><br><span class="line">            edges[i] = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// connect sorted numbers in one row</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="type">int</span>[][] arr = <span class="keyword">new</span> <span class="title class_">int</span>[n][<span class="number">2</span>];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                arr[j][<span class="number">0</span>] = matrix[i][j];</span><br><span class="line">                arr[j][<span class="number">1</span>] = j;</span><br><span class="line">            &#125;</span><br><span class="line">            Arrays.sort(arr, (a,b) -&gt; a[<span class="number">0</span>] - b[<span class="number">0</span>]);</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">1</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (arr[j-<span class="number">1</span>][<span class="number">0</span>] == arr[j][<span class="number">0</span>]) <span class="keyword">continue</span>;</span><br><span class="line">                <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> find(i * n + arr[j-<span class="number">1</span>][<span class="number">1</span>]), p2 = find(i * n + arr[j][<span class="number">1</span>]);</span><br><span class="line">                edges[p1].add(p2);</span><br><span class="line">                indegrees[p2]++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// connect sorted numbers in one column</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            <span class="type">int</span>[][] arr = <span class="keyword">new</span> <span class="title class_">int</span>[m][<span class="number">2</span>];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">                arr[i][<span class="number">0</span>] = matrix[i][j];</span><br><span class="line">                arr[i][<span class="number">1</span>] = i;</span><br><span class="line">            &#125;</span><br><span class="line">            Arrays.sort(arr, (a,b) -&gt; a[<span class="number">0</span>] - b[<span class="number">0</span>]);</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; m; i++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (arr[i-<span class="number">1</span>][<span class="number">0</span>] == arr[i][<span class="number">0</span>]) <span class="keyword">continue</span>;</span><br><span class="line">                <span class="type">int</span> <span class="variable">p1</span> <span class="operator">=</span> find(arr[i-<span class="number">1</span>][<span class="number">1</span>] * n + j), p2 = find(arr[i][<span class="number">1</span>] * n + j);</span><br><span class="line">                edges[p1].add(p2);</span><br><span class="line">                indegrees[p2]++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// topological sort</span></span><br><span class="line">        Queue&lt;Integer&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m*n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i == find(i) &amp;&amp; indegrees[i] == <span class="number">0</span>) &#123;</span><br><span class="line">                q.offer(i);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        Arrays.fill(ranks, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> q.poll();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j: edges[i]) &#123;</span><br><span class="line">                ranks[j] = Math.max(ranks[j], ranks[i]+<span class="number">1</span>);</span><br><span class="line">                <span class="keyword">if</span> (--indegrees[j] == <span class="number">0</span>) q.offer(j);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// fill rank</span></span><br><span class="line">        <span class="type">int</span>[][] ans = <span class="keyword">new</span> <span class="title class_">int</span>[m][n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                ans[i][j] = ranks[find(i * n + j)];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">find</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (parents[i] != i) parents[i] = find(parents[i]);</span><br><span class="line">        <span class="keyword">return</span> parents[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">union</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> j)</span> &#123;</span><br><span class="line">        i = find(i);</span><br><span class="line">        j = find(j);</span><br><span class="line">        <span class="keyword">if</span> (i == j) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">if</span> (ranks[i] &lt;= ranks[j]) &#123;</span><br><span class="line">            parents[i] = j;</span><br><span class="line">            <span class="keyword">if</span> (ranks[i] == ranks[j]) ranks[j]++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            parents[j] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2246-Longest-Path-With-Different-Adjacent-Characters"><a href="#2246-Longest-Path-With-Different-Adjacent-Characters" class="headerlink" title="2246. Longest Path With Different Adjacent Characters"></a>2246. Longest Path With Different Adjacent Characters</h2><p> You are given a <strong>tree</strong> (i.e. a connected, undirected graph that has no cycles) <strong>rooted</strong> at node <code>0</code> consisting of <code>n</code> nodes numbered from <code>0</code> to <code>n - 1</code>. The tree is represented by a <strong>0-indexed</strong> array <code>parent</code> of size <code>n</code>, where <code>parent[i]</code> is the parent of node <code>i</code>. Since node <code>0</code> is the root, <code>parent[0] == -1</code>.</p>
+<p>You are also given a string <code>s </code>of length <code>n</code>, where <code>s[i]</code> is the character assigned to node <code>i</code>.</p>
+<p>Return the length of the <strong>longest path</strong> in the tree such that no pair of <strong>adjacent</strong> nodes on the path have the same character assigned to them.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: parent = [-1,0,0,1,1,2], s = &quot;abacbe&quot;</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: The longest path where each two adjacent nodes have different characters in the tree is the path: 0 -&gt; 1 -&gt; 3. The length of this path is 3, so 3 is returned.</span><br><span class="line">It can be proven that there is no longer path that satisfies the conditions.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Kahn-s-algorithm-2"><a href="#Kahn-s-algorithm-2" class="headerlink" title="Kahn&#39;s algorithm"></a>Kahn&#39;s algorithm</h3><p>题目要求找到树上一条最长路径, 路径上的相邻字符不能重复, 该题目类似于tree的最大路径和: 对于当前节点<code>node</code>, 其存在<code>n</code>个子节点(<code>$\text&#123;child&#125;_1, \text&#123;child&#125;_2, \cdots, \text&#123;child&#125;_&#123;n-1&#125;, \text&#123;child&#125;_n$</code>), 对于每个子节点, 存在两种情况:</p>
+<ul>
+<li>若<code>node</code>上的字符与<code>$\text&#123;child&#125;_i$</code>相同: 不考虑该子树</li>
+<li>若<code>node</code>上的字符与<code>$\text&#123;child&#125;_i$</code>不同: 记录该子树的最长路径长度</li>
+</ul>
+<p>对于一个节点来说, 最长路径值为<code>1 + 子树的最长路径 + 子树的第二长路径</code>, 因此不必记录每个子树的长度, 只需记录前两名的长度. 使用topological sort可避免访问一个节点多次, 因为没有访问一个节点的所有子树之前, 我们不能处理该节点; 当所有子树处理完毕时, 其父节点的indegree应为0.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">longestPath</span><span class="params">(<span class="type">int</span>[] parent, String s)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> s.length(), res = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span>[][] path = <span class="keyword">new</span> <span class="title class_">int</span>[n][<span class="number">2</span>];</span><br><span class="line">        <span class="type">int</span>[] indegrees = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (parent[i] &lt; <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">            indegrees[parent[i]]++;</span><br><span class="line">        &#125;</span><br><span class="line">        Queue&lt;Integer&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (indegrees[i] == <span class="number">0</span>) &#123;</span><br><span class="line">                q.offer(i);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> q.poll(), j = parent[i];</span><br><span class="line">            res = Math.max(res, <span class="number">1</span> + path[i][<span class="number">0</span>] + path[i][<span class="number">1</span>]); <span class="comment">// longest path for current node</span></span><br><span class="line">            <span class="keyword">if</span> (j == -<span class="number">1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (--indegrees[j] == <span class="number">0</span>) &#123;</span><br><span class="line">                q.offer(j);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (s.charAt(i) == s.charAt(j)) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="type">int</span> <span class="variable">p</span> <span class="operator">=</span> <span class="number">1</span> + Math.max(path[i][<span class="number">0</span>], path[i][<span class="number">1</span>]); <span class="comment">// longest path for parent node</span></span><br><span class="line">            <span class="keyword">if</span> (p &gt; path[j][<span class="number">0</span>]) &#123; <span class="comment">// update longest path</span></span><br><span class="line">                path[j][<span class="number">1</span>] = path[j][<span class="number">0</span>];</span><br><span class="line">                path[j][<span class="number">0</span>] = p;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (p &gt; path[j][<span class="number">1</span>]) &#123; <span class="comment">// update second longest path</span></span><br><span class="line">                path[j][<span class="number">1</span>] = p;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2127-Maximum-Employees-to-Be-Invited-to-a-Meeting"><a href="#2127-Maximum-Employees-to-Be-Invited-to-a-Meeting" class="headerlink" title="2127. Maximum Employees to Be Invited to a Meeting"></a>2127. Maximum Employees to Be Invited to a Meeting</h2><p>A company is organizing a meeting and has a list of n employees, waiting to be invited. They have arranged for a large <strong>circular</strong> table, capable of seating <strong>any number</strong> of employees.</p>
+<p>The employees are numbered from <code>0</code> to <code>n - 1</code>. Each employee has a <strong>favorite</strong> person and they will attend the meeting <strong>only if</strong> they can sit next to their favorite person at the table. The favorite person of an employee is <strong>not</strong> themself.</p>
+<p>Given a <strong>0-indexed</strong> integer array <code>favorite</code>, where <code>favorite[i]</code> denotes the favorite person of the <code>$i^&#123;th&#125;$</code> employee, return the <strong>maximum number of employees</strong> that can be invited to the meeting.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: favorite = [2,2,1,2]</span><br><span class="line">Output: 3</span><br><span class="line">Explanation:</span><br><span class="line">The above figure shows how the company can invite employees 0, 1, and 2, and seat them at the round table.</span><br><span class="line">All employees cannot be invited because employee 2 cannot sit beside employees 0, 1, and 3, simultaneously.</span><br><span class="line">Note that the company can also invite employees 1, 2, and 3, and give them their desired seats.</span><br><span class="line">The maximum number of employees that can be invited to the meeting is 3.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Kahn-s-algorithm-Pseudoforest"><a href="#Kahn-s-algorithm-Pseudoforest" class="headerlink" title="Kahn&#39;s algorithm + Pseudoforest"></a>Kahn&#39;s algorithm + Pseudoforest</h3><p>把每个员工想象为vertex, 员工之间的喜爱就是edge, 例如, <code>$\text&#123;favorite&#125;[v_1] = v_2$</code>, 则<code>$v_1$</code>指向<code>$v_2$</code>, 由于每个人必须有一个喜爱的人, 且不能指定自己为喜爱的人, 因此graph存在以下特性:</p>
+<ul>
+<li>图中必存在一个或多个circle(环).</li>
+<li>非circle上的vertex会指向circle上的vertex</li>
+<li>任意两个circle不存在交集: 若两个circle共享一个vertex, 则该vertex的outdegree为2, 但一个员工只能有一个喜爱的人, 因此不可能存在.</li>
+</ul>
+<p>由于是圆桌会议, 因此一个人身边只能坐两个人. 假设多个vertex指向同一vertex, 该vertex只能选择一个人坐在其身边(另一边要坐喜爱的人). 根据vertex的位置, 可将vertex分为两类:</p>
+<ul>
+<li>circleVertex: circle上的vertex</li>
+<li>branchVertex: 不构成circle, 但直接或间接指向circle上的vertex</li>
+</ul>
+<p>circle的数量也会导致排座方案不同:</p>
+<ul>
+<li>circleVertex的数量为2: 假设$v_1$指向$v_2$, $v_2$指向$v_1$, 则$v_1$和$v_2$可坐在一起, $v_1$的另一侧可坐指向$v_1$的branchVertex, $v_2$同理</li>
+<li>circleVertex的数量大于2: circleVertex的左右两端已坐满人(员工喜爱的人, 喜爱该员工的人), 由于无法移除任何一个circleVertex(只要移除其中一个, 指向该节点的节点就无法参与会议, 导致所有circleVertex都不能参加会议), 因此只能移除所有branchVertex</li>
+</ul>
+<p>因此, 会议的排座方案有两种, 两者取最大值即为结果:</p>
+<ul>
+<li>全部由circleVertex数量为2的circle组成, 每个circleVertex都可以携带一个最长的branchVertex</li>
+<li>由一个circleVertex数量大于2的circle组成, 但每个circleVertex必须移除所有branchVertex</li>
+</ul>
+<p>代码方面: 先使用topological sort计算每个circleVertex上的branchVert的数量, 再遍历每个circle, 计算circleVertex数量.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maximumInvitations</span><span class="params">(<span class="type">int</span>[] favorite)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> favorite.length;</span><br><span class="line">        <span class="type">int</span>[] indegrees = <span class="keyword">new</span> <span class="title class_">int</span>[n], branch = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            indegrees[favorite[i]]++; </span><br><span class="line">        &#125;</span><br><span class="line">        Queue&lt;Integer&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (indegrees[i] == <span class="number">0</span>) &#123;</span><br><span class="line">                q.offer(i);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>, c1 = <span class="number">0</span>, c2 = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> q.poll(), j = favorite[i];</span><br><span class="line">            cnt++;</span><br><span class="line">            <span class="keyword">if</span> (--indegrees[j] == <span class="number">0</span>) &#123;</span><br><span class="line">                q.offer(j);</span><br><span class="line">            &#125;</span><br><span class="line">            branch[j] = Math.max(branch[j], <span class="number">1</span> + branch[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (cnt &lt; n) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, nodeOnBranch = <span class="number">0</span>, nodeOnCircle = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (indegrees[i] == <span class="number">0</span>) i++;</span><br><span class="line">            <span class="keyword">while</span> (indegrees[i] &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                nodeOnCircle++;</span><br><span class="line">                cnt++;</span><br><span class="line">                nodeOnBranch += branch[i];</span><br><span class="line">                --indegrees[i];</span><br><span class="line">                i = favorite[i];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (nodeOnCircle &gt; <span class="number">2</span>) &#123;</span><br><span class="line">                c1 = Math.max(c1, nodeOnCircle);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                c2 += nodeOnCircle + nodeOnBranch;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> Math.max(c1, c2);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/a577.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Radix Sort</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/c8ae.html">
+        <span class="next-text nav-default">Shortest Path in Graph</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/285f.html';
+  var disqus_title = "Topological Sort";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

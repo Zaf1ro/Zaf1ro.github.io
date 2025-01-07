@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Unique ID Generator"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/b1ee.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/b1ee.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/b1ee.html"/>
+
+
+<meta name="description" content="1. IntroductionFirst thought: use a primary key with the auto_increment attribute in a traditional database. But auto_increment does not work in a distributed environment because a single database ser">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Unique ID Generator">
+<meta property="og:url" content="https://zaf1ro.github.io/p/b1ee.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionFirst thought: use a primary key with the auto_increment attribute in a traditional database. But auto_increment does not work in a distributed environment because a single database ser">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/7-multi-master-replication.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/7-twitter-snowflake.jpg">
+<meta property="article:published_time" content="2024-04-13T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.054Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/7-multi-master-replication.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Unique ID Generator - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Understand-the-Problem-and-Establish-Design-Scope"><span class="toc-text">2. Understand the Problem and Establish Design Scope</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Propose-high-level-design-and-get-buy-in"><span class="toc-text">3. Propose high-level design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Multi-master-replication"><span class="toc-text">3.1 Multi-master replication</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-UUID"><span class="toc-text">3.2 UUID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Ticket-Server"><span class="toc-text">3.3 Ticket Server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Twitter-Snowflake"><span class="toc-text">3.4 Twitter Snowflake</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Design-deep-dive"><span class="toc-text">4. Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Timestamp"><span class="toc-text">4.1 Timestamp</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Sequence-number"><span class="toc-text">4.2 Sequence number</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Wrap-up"><span class="toc-text">5. Wrap up</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Unique ID Generator
+        
+      </h1>
+      <time class="post-time">
+          04/13/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>First thought: use a primary key with the <code>auto_increment</code> attribute in a traditional database. But <code>auto_increment</code> does not work in a distributed environment because a single database server is not large enough and generating unique IDs across multiple databases with minimal delay is challenging.</p>
+<h2 id="2-Understand-the-Problem-and-Establish-Design-Scope"><a href="#2-Understand-the-Problem-and-Establish-Design-Scope" class="headerlink" title="2. Understand the Problem and Establish Design Scope"></a>2. Understand the Problem and Establish Design Scope</h2><ul>
+<li>What are the characteristics of unique IDs: IDs must be unique and sortable</li>
+<li>For each new record, does ID increment by 1: The ID increments by time but not necessarily only increments by 1</li>
+<li>Do IDs only contain numerical values?: Yes</li>
+<li>What is the ID length requirement?: 64-bit</li>
+<li>What is the scale of the system?: generate 10,000 IDs per second</li>
+</ul>
+<p>Requirements:</p>
+<ul>
+<li>IDs must be unique.</li>
+<li>IDs are numerical values only.</li>
+<li>IDs fit into 64-bit.</li>
+<li>IDs are ordered by date.</li>
+<li>Ability to generate over 10,000 unique IDs per second</li>
+</ul>
+<h2 id="3-Propose-high-level-design-and-get-buy-in"><a href="#3-Propose-high-level-design-and-get-buy-in" class="headerlink" title="3. Propose high-level design and get buy-in"></a>3. Propose high-level design and get buy-in</h2><p>The options to generate unique IDs:</p>
+<ul>
+<li>Multi-master replication</li>
+<li>UUID</li>
+<li>Ticket server</li>
+<li>Twitter snowflake approach</li>
+</ul>
+<h3 id="3-1-Multi-master-replication"><a href="#3-1-Multi-master-replication" class="headerlink" title="3.1 Multi-master replication"></a>3.1 Multi-master replication</h3><p>This approach uses the <code>auto_increment</code> feature. Instead of increasing the next ID by 1, we increase it by <code>k</code>, where <code>k</code> is the number of database servers in use.<br><img src="/images/System-Design/Interview/7-multi-master-replication.jpg" alt="Multi-master replication"></p>
+<p>Drawbacks:</p>
+<ul>
+<li>Hard to scale with multiple data centers</li>
+<li>IDs do not go up with time across multiple servers</li>
+<li>It does not scale well when a server is added or removed</li>
+</ul>
+<h3 id="3-2-UUID"><a href="#3-2-UUID" class="headerlink" title="3.2 UUID"></a>3.2 UUID</h3><p>UUID is a 128-bit number used to identify information in computer systems. UUID has a very low probability of getting collision, and can be generated independently without coordination between servers.</p>
+<ul>
+<li>Pros:<ul>
+<li>simple: No need to coordinate between servers</li>
+<li>easy to scale: each web server is responsible for generating IDs they consume</li>
+</ul>
+</li>
+<li>Cons:<ul>
+<li>IDs are 128 bits long, but our requirement is 64 bits</li>
+<li>IDs don&#39;t go up with time</li>
+<li>IDs could be non-numeric</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-3-Ticket-Server"><a href="#3-3-Ticket-Server" class="headerlink" title="3.3 Ticket Server"></a>3.3 Ticket Server</h3><p>The idea is to use a centralized <code>auto_increment</code> feature in a single database server</p>
+<ul>
+<li>Pros:<ul>
+<li>Numeric IDs</li>
+<li>Easy to implement, and works for small to medium-scale applications</li>
+</ul>
+</li>
+<li>Cons:<ul>
+<li>Single point of failure</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-4-Twitter-Snowflake"><a href="#3-4-Twitter-Snowflake" class="headerlink" title="3.4 Twitter Snowflake"></a>3.4 Twitter Snowflake</h3><p>Instead of generating an ID directly, we divide an ID into different sections:<br><img src="/images/System-Design/Interview/7-twitter-snowflake.jpg" alt="Twitter snowflake"></p>
+<ul>
+<li>Sign bit: 1 bit, always be 0, reserved for future uses</li>
+<li>Timestamp: 41 bits, milliseconds since the custom epochs</li>
+<li>Datacenter ID: 5 bits -&gt; 32 datacenters</li>
+<li>Machine ID:  5 bits -&gt; 32 machines per datacenter</li>
+<li>Sequence number: 12 bits -&gt; For every ID generated on that machine, the sequence number is incremented by 1. The number is reset to 0 every millisecond.</li>
+</ul>
+<h2 id="4-Design-deep-dive"><a href="#4-Design-deep-dive" class="headerlink" title="4. Design deep dive"></a>4. Design deep dive</h2><p>Assume we use Twitter snowflake approach as ID generator. Datacenter IDs and machine IDs are chosen at the startup time, generally fixed once the system is up running; Timestamp and sequence numbers are generated when the ID generator is running.</p>
+<h3 id="4-1-Timestamp"><a href="#4-1-Timestamp" class="headerlink" title="4.1 Timestamp"></a>4.1 Timestamp</h3><p>An example of how binary representation is converted to UTC: 297616116568(timestamp) + 1288834974657(epoch) &#x3D; 1586451091225(UTC) &#x3D; Apr 09 2020 16:51:31 UTC.<br>The maximum timestamp that can be represented in 41 bits is <code>$2^&#123;41&#125; - 1 = 2199023255551$</code> milliseconds (ms), about 69 years. After 69 years, we will need a new epoch time or adopt other techniques to migrate IDs.</p>
+<h3 id="4-2-Sequence-number"><a href="#4-2-Sequence-number" class="headerlink" title="4.2 Sequence number"></a>4.2 Sequence number</h3><p>Sequence number is 12 bits, which give us <code>$2^&#123;12&#125; = 4096$</code> combinations. It means a machine can support a maximum of 4096 new IDs per millisecond.</p>
+<h2 id="5-Wrap-up"><a href="#5-Wrap-up" class="headerlink" title="5. Wrap up"></a>5. Wrap up</h2><p>additional talking points:</p>
+<ul>
+<li>Clock synchronization: we assume ID generation servers have the same clock. This assumption might not be true when a server is running on multiple cores. Solution: Network Time Protocol</li>
+<li>Section length tuning: fewer sequence numbers but more timestamp bits are effective for low concurrency and long-term applications</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/7eaa.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - URL Shortener</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/9f9c.html">
+        <span class="next-text nav-default">System Design - Key Value Store</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/b1ee.html';
+  var disqus_title = "System Design - Unique ID Generator";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

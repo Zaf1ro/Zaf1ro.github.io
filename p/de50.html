@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="RCU"/>
+
+
+
+
+  <meta name="keywords" content="Concurrency," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/de50.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/de50.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/de50.html"/>
+
+
+<meta name="description" content="1. IntroRead-Copy-Update(RCU)作为一种同步机制为reader端提供了极快的读取速度和高并发性. 与RCU相同使用场景的锁应为rwlock(读写锁), 它们都适用于Reader-Writer(RCU的updater可理解为rwlock中的writer)的场景,  但也存在些许不同:  RCU允许多个reader和最多一个updater并发运行, rwlock只允许多个re">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RCU">
+<meta property="og:url" content="https://zaf1ro.github.io/p/de50.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroRead-Copy-Update(RCU)作为一种同步机制为reader端提供了极快的读取速度和高并发性. 与RCU相同使用场景的锁应为rwlock(读写锁), 它们都适用于Reader-Writer(RCU的updater可理解为rwlock中的writer)的场景,  但也存在些许不同:  RCU允许多个reader和最多一个updater并发运行, rwlock只允许多个re">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/rcu-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/rcu-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/rcu-3.png">
+<meta property="article:published_time" content="2019-07-02T23:51:07.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.033Z">
+<meta property="article:tag" content="Concurrency">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/multithreading/Basic/rcu-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+RCU - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Intro"><span class="toc-text">1. Intro</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-RCU-Implementation"><span class="toc-text">2. RCU Implementation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-RCU-Synchronize"><span class="toc-text">3. RCU Synchronize</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Read-side"><span class="toc-text">3.1 Read-side</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Quiescent-State"><span class="toc-text">3.2 Quiescent State</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          RCU
+        
+      </h1>
+      <time class="post-time">
+          07/02/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Intro"><a href="#1-Intro" class="headerlink" title="1. Intro"></a>1. Intro</h2><p>Read-Copy-Update(RCU)作为一种同步机制为reader端提供了极快的读取速度和高并发性. 与RCU相同使用场景的锁应为rwlock(读写锁), 它们都适用于Reader-Writer(RCU的updater可理解为rwlock中的writer)的场景,  但也存在些许不同:</p>
+<ol>
+<li>RCU允许多个reader和最多一个updater并发运行, rwlock只允许多个reader同时运行.</li>
+<li>rwlock需要使用spinlock来确保有且只有一个writer进入critical section, RCU不需要spinlock.</li>
+<li>rwlock需要counter来统计当前reader数量, RCU不需要counter.</li>
+</ol>
+<p>用一张图可以更容易地理解RCU和rwlock的区别:<br><img src="/images/multithreading/Basic/rcu-1.png" alt="RCU and rwlock"></p>
+<p>从图上可以看出: 使用rwlock时, writer的同步极大阻碍了性能, 因为每一次writer想进入critical section都需要等待所有reader读取完毕. 且reader和writer对counter和spinlock的访问也会导致大量cache miss.<br>但RCU并不是完美的, RCU的使用场景比较局限, 主要适用于以下几个场景:</p>
+<ol>
+<li>RCU只能保护动态分配的数据结构, 必须通过指针来访问该数据结构</li>
+<li>受RCU保护的critical section不能sleep(Sleepable RCU暂不讨论)</li>
+<li>读写不对称, 对updater性能无要求, 但对reader要求极高(读多写少)</li>
+<li>reader对新旧数据不敏感</li>
+</ol>
+<h2 id="2-RCU-Implementation"><a href="#2-RCU-Implementation" class="headerlink" title="2. RCU Implementation"></a>2. RCU Implementation</h2><p>RCU涉及的数据有两种: 一个是指向要保护数据的指针, 称为RCU protected pointer. 另外一个是通过指针访问的共享数据, 称为RCU protected data. Reader始终通过RCU protected pointer来访问RCU protected data. 当Updater需要修改RCU protected data时可以先创建一个副本, 然后将RCU protected pointer指向新的副本. 由于指针赋值是原子操作, 所以不需要锁. 整个RCU update分为两部分:</p>
+<ol>
+<li>Removal: updater分配一个RCU protected data并更新数据, 更新完毕后将RCU protected pointer指向新副本, 这之后的reader读取的都将是最新数据. 图中Reader 0和1读取的是旧数据, Updater此时修改了pointer指向, 因此reader 2和3读取的都是新数据.</li>
+<li>Reclamation: RCU是一个等待事物结束的方式. 当RCU protected pointer不再指向旧数据时, 需要寻找时机来回收旧数据. 首先不能立即回收, 因为可能还有reader在使用旧数据; 其次不能太晚回收, 因为大量的update会产生大量旧数据, 从而导致内存占用严重. 最完美的回收时间应为旧数据最后一个reader退出的时间, 也就是说没有reader在访问旧数据. 从RCU protected pointer转移到最后一个reader离开旧数据的等待时间称为grace period.</li>
+</ol>
+<h2 id="3-RCU-Synchronize"><a href="#3-RCU-Synchronize" class="headerlink" title="3. RCU Synchronize"></a>3. RCU Synchronize</h2><p>整个RCU的实现中最难的一部分就是判断grace period的结束, 内核中实现的函数为<code>synchronize_rcu()</code>.<br><img src="/images/multithreading/Basic/rcu-2.png" alt="Grace Period"></p>
+<p><code>synchronize_rcu()</code>会等待所有已经进行的reader完成读取, 不会等待函数调用之后的reader, 例如:</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">CPU 0</th>
+<th align="center">CPU 1</th>
+<th align="center">CPU 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">0</td>
+<td align="center">rcu_read_lock()</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center"></td>
+<td align="center">enter synchronize_rcu()</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">rcu_read_lock()</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">rcu_read_unlock()</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center"></td>
+<td align="center">exit synchronize_rcu()</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">rcu_read_unlock()</td>
+</tr>
+</tbody></table>
+<h3 id="3-1-Read-side"><a href="#3-1-Read-side" class="headerlink" title="3.1 Read-side"></a>3.1 Read-side</h3><p>在Tree RCU的实现中, rcu_read_lock和rcu_read_unlock的实现非常简单，分别是关闭抢占和打开抢占:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> __rcu_read_lock(<span class="type">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">preempt_disable</span>();</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span> __rcu_read_unlock(<span class="type">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">preempt_enable</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>RCU的reader不允许critical section被block, 所以reader进入critical section之前会将该CPU设置为non-preemptive(非抢占模式), 离开critical section将CPU重新设置为preemptive(抢占模式). 所以如果每个CPU都发生过抢夺, 说明不在rcu_read_lock和rcu_read_unlock之间.</p>
+<h3 id="3-2-Quiescent-State"><a href="#3-2-Quiescent-State" class="headerlink" title="3.2 Quiescent State"></a>3.2 Quiescent State</h3><p>reader的critical section之外的时间都称之为quiescent state, RCU在CPU进入quiescent state后会调用回调函数标记该CPU已退出critical section. 为避免抢夺某个全局变量来统计所有CPU都进入过quiescent state, RCU使用Tree RCU来减轻竞争.<br><img src="/images/multithreading/Basic/rcu-3.png" alt="Tree RCU"></p>
+<p>Tree RCU使用rcu_node节点来管理CPU: 假设有4个CPU, rcu_node1管理CPU1和CPU2，rcu_node2管理CPU3和CPU4, 再用一个rcu_node3作为根节点管理rcu_node1和2. 当CPU1和CPU2经历quiescent state后清除rcu_node1中的对应位，CPU3和CPU4经历经历quiescent state后清除rcu_node2中的对应位。rcu_node1和rcu_node2中的对应位都清除后，就可以清除增加的rcu_node3中的对应位.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Concurrency/">Concurrency</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/aabf.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">File I/O</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/25e7.html">
+        <span class="next-text nav-default">Types of Locks</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/de50.html';
+  var disqus_title = "RCU";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

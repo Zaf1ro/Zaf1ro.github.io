@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Spring Transaction"/>
+
+
+
+
+  <meta name="keywords" content="Full Stack," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/46eb.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/46eb.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/46eb.html"/>
+
+
+<meta name="description" content="1. Transaction数据库系统中, 一个Transaction(事务)应具备以下四种属性:  Atomicity (原子性): 通常一个事务会包含多个statement(声明), 该属性可确保一个事务作为一个不可分割的单元, 声明要么全部成功, 要么全部失败. 之所以需要该属性, 是因为相比于所有声明都无效, 部分声明生效会引起更大问题. Consistency (一致性): 该属性确保事">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Transaction">
+<meta property="og:url" content="https://zaf1ro.github.io/p/46eb.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Transaction数据库系统中, 一个Transaction(事务)应具备以下四种属性:  Atomicity (原子性): 通常一个事务会包含多个statement(声明), 该属性可确保一个事务作为一个不可分割的单元, 声明要么全部成功, 要么全部失败. 之所以需要该属性, 是因为相比于所有声明都无效, 部分声明生效会引起更大问题. Consistency (一致性): 该属性确保事">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-05-16T12:16:20.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.041Z">
+<meta property="article:tag" content="Full Stack">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Spring Transaction - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Transaction"><span class="toc-text">1. Transaction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Isolation-Levels"><span class="toc-text">2. Isolation Levels</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Read-Phenomena"><span class="toc-text">3. Read Phenomena</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Dirty-reads-%E8%84%8F%E8%AF%BB"><span class="toc-text">3.1 Dirty reads (脏读)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Non-repeatable-reads-%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB"><span class="toc-text">3.2 Non-repeatable reads (不可重复读)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Phantom-reads-%E5%B9%BB%E8%AF%BB"><span class="toc-text">3.3 Phantom reads (幻读)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-JDBC"><span class="toc-text">4. JDBC</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Distributed-Transaction"><span class="toc-text">5. Distributed Transaction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Local-Transaction-Model"><span class="toc-text">5.1 Local Transaction Model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Distributed-Transaction-Model"><span class="toc-text">5.2 Distributed Transaction Model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-XA-Transaction"><span class="toc-text">5.3 XA Transaction</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-2PC"><span class="toc-text">5.3.1 2PC</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-3PC"><span class="toc-text">5.3.2 3PC</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-JTA"><span class="toc-text">5.4 JTA</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Spring-Transaction"><span class="toc-text">6. Spring Transaction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-TransactionManager-in-Spring-Transaction"><span class="toc-text">6.1 TransactionManager in Spring Transaction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-TransactionDefinition"><span class="toc-text">6.2 TransactionDefinition</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-TransactionStatus"><span class="toc-text">6.3 TransactionStatus</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Spring Transaction
+        
+      </h1>
+      <time class="post-time">
+          05/16/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Transaction"><a href="#1-Transaction" class="headerlink" title="1. Transaction"></a>1. Transaction</h2><p>数据库系统中, 一个Transaction(事务)应具备以下四种属性:</p>
+<ul>
+<li>Atomicity (原子性): 通常一个事务会包含多个statement(声明), 该属性可确保一个事务作为一个不可分割的单元, 声明要么全部成功, 要么全部失败. 之所以需要该属性, 是因为相比于所有声明都无效, 部分声明生效会引起更大问题.</li>
+<li>Consistency (一致性): 该属性确保事务只会将数据库从一种consistent state转化为另一种consistent state. 换句话说, 数据库中写入的所有数据都是有效的(constraint, trigger, cascade). 该属性可防止数据因非法事务而损坏.</li>
+<li>Isolation (隔离性): 数据库中可能存在多个事务同时执行, 该属性保证多个并发事务的执行结果与顺序执行的结果一致. 根据<strong>isolation level</strong>(隔离级别)不同, 并发事务之间的透明度也会不同.</li>
+<li>Durability (持久性): 数据库运行期间随时会发生系统故障(断电或崩溃), 该属性可保证committed transaction(已提交的事务)永远保持提交状态. 换句话说, 已提交的事务会保存在non-volatile memory(如磁盘)中.</li>
+</ul>
+<h2 id="2-Isolation-Levels"><a href="#2-Isolation-Levels" class="headerlink" title="2. Isolation Levels"></a>2. Isolation Levels</h2><p>事务中的隔离性决定了一个正在执行的事务如何观察其他事务对数据的增删改, 通常分为四个隔离级别:</p>
+<ul>
+<li>Read Uncommitted: 一个事务的执行期间可读取到另一个事务还未提交的结果</li>
+<li>Read Committed: 一个事务的执行期间只能读取到另一个事务已提交的结果</li>
+<li>Repeatable Read: 一个事务的执行期间对同一个数据的多次读取结果始终一致, 无论其他事务是否更新该数据</li>
+<li>Serializable: 数据库中所有事务都按照某个顺序依次执行</li>
+</ul>
+<p>可以发现, 上述隔离级别从上向下隔离性越来越强, 但并发性越来越弱, 使用何种隔离级别取决于业务需求和并发要求.</p>
+<h2 id="3-Read-Phenomena"><a href="#3-Read-Phenomena" class="headerlink" title="3. Read Phenomena"></a>3. Read Phenomena</h2><p>当一个事务读取另一个事务正在更新的数据时, SQL 92将其分为三种read phenomena(读取现象). 假设我们拥有一个名为<code>users</code>的table, 其中包含两行数据:</p>
+<table>
+<thead>
+<tr>
+<th align="center">id</th>
+<th align="center">name</th>
+<th align="center">age</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">Alice</td>
+<td align="center">20</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">Bob</td>
+<td align="center">25</td>
+</tr>
+</tbody></table>
+<h3 id="3-1-Dirty-reads-脏读"><a href="#3-1-Dirty-reads-脏读" class="headerlink" title="3.1 Dirty reads (脏读)"></a>3.1 Dirty reads (脏读)</h3><p>Read uncommitted隔离级别下的事务会读取到其他事务还未提交的数据, 造成脏读.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Transaction 1</th>
+<th align="center">Transaction 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">BEGIN; <br> SELECT age FROM users WHERE id &#x3D; 1; <br> -- retrieves 20</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">BEGIN; <br> UPDATE users SET age &#x3D; 21 WHERE id &#x3D; 1;</td>
+</tr>
+<tr>
+<td align="center">SELECT age FROM users WHERE id &#x3D; 1; <br> -- READ UNCOMMITTED: 21 <br> -- READ COMMITTED: 20 <br> -- REPEATABLE READ: 20 <br> -- SERIALIZABLE: 20 <br> COMMIT;</td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<h3 id="3-2-Non-repeatable-reads-不可重复读"><a href="#3-2-Non-repeatable-reads-不可重复读" class="headerlink" title="3.2 Non-repeatable reads (不可重复读)"></a>3.2 Non-repeatable reads (不可重复读)</h3><p>Read committed隔离级别下的事务会读取到其他事务已提交的数据, 造成对同一数据的两次查询结果不一样, 也称为<strong>不可重复读</strong>.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Transaction 1</th>
+<th align="center">Transaction 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">BEGIN; <br> SELECT age FROM users WHERE id &#x3D; 1; <br> -- retrieves 20</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">BEGIN; <br> UPDATE users SET age &#x3D; 21 WHERE id &#x3D; 1; <br> COMMIT;</td>
+</tr>
+<tr>
+<td align="center">SELECT age FROM users WHERE id &#x3D; 1; <br> -- READ UNCOMMITTED: 21<br> -- READ COMMITTED: 21<br> -- REPEATABLE READ: 20<br> -- SERIALIZABLE: 20<br> COMMIT;</td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<h3 id="3-3-Phantom-reads-幻读"><a href="#3-3-Phantom-reads-幻读" class="headerlink" title="3.3 Phantom reads (幻读)"></a>3.3 Phantom reads (幻读)</h3><p>Repeatable read隔离级别可保证一个事务中对同一数据的多次查询结果一致, 但无法保证对同一范围的多次搜索结果一致, 因为其他事务可能增加或删除数据, 也称为<strong>幻读</strong>.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Transaction 1</th>
+<th align="center">Transaction 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">BEGIN; <br> SELECT name FROM users WHERE age &gt; 17; <br> -- retrieves Alice and Bob</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">BEGIN; <br> INSERT INTO users VALUES (3, &#39;Carol&#39;, 26); <br> COMMIT;</td>
+</tr>
+<tr>
+<td align="center">SELECT name FROM users WHERE age &gt; 17; <br> -- READ UNCOMMITTED: Alice, Bob and Carol <br> -- READ COMMITTED: Alice, Bob and Carol <br> -- REPEATABLE READ: Alice, Bob and Carol <br> -- SERIALIZABLE: Alice and Bob <br> COMMIT;</td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<h2 id="4-JDBC"><a href="#4-JDBC" class="headerlink" title="4. JDBC"></a>4. JDBC</h2><p>JDBC(Java Database Connectivity)是Java编程语言的一组API, 定义了client如何连接到数据库, 以及如何对数据库中的数据进行增删改查. JDBC driver则是client端的adapter, 用于将Java程序转换为数据库可理解的协议. JDBC诞生前, 由于存在多个数据库厂商, 且每个厂商提供的数据库驱动不同, 因此开发者需要熟悉数据库的驱动; 当切换到其他数据库时, 需要重新学习驱动并修改代码.<br>JDBC让开发者无需在意不同数据库的区别, 只需学习如何调用JDBC的接口. 几乎所有数据库厂商都支持JDBC, 例如: PostgreSQL, IBM DB2, MySql, Oracle Database等. 由于JDBC从JDK 1.1开始就成为Java的一部分, 因此开发者无需额外安装.</p>
+<h2 id="5-Distributed-Transaction"><a href="#5-Distributed-Transaction" class="headerlink" title="5. Distributed Transaction"></a>5. Distributed Transaction</h2><p>应用程序可借助<strong>JTA</strong>实现distributed transaction(分布式事务), 换句话说, 一个事务内可访问和更新多个计算机资源. 以下是分布式事务模型中会出现的组件:</p>
+<ul>
+<li>The application: 应用程序</li>
+<li>The application server: JavaEE Web容器, 如Tomcat, Jetty</li>
+<li>The transaction manager: 用于协调分布式事务中的资源, 决定是否提交事务或回滚事务</li>
+<li>The resource adapter: 负责应用程序&#x2F;应用服务器与数据库之间的通信, 如JDBC</li>
+<li>The resource manager: 符合管理计算机资源的系统, 如RDBMS</li>
+</ul>
+<h3 id="5-1-Local-Transaction-Model"><a href="#5-1-Local-Transaction-Model" class="headerlink" title="5.1 Local Transaction Model"></a>5.1 Local Transaction Model</h3><p>Java application访问relational database是一种最简单的本地事务处理模型, 该模型涉及以下组件:</p>
+<ul>
+<li>Application: Java编写的业务逻辑</li>
+<li>Resource manager: RDBMS(relational database management system), 例如Oracle或SQL Server</li>
+<li>Resource adapter: application与resource manager的沟通媒介, 本例中为JDBC driver</li>
+</ul>
+<p>事务处理流程:</p>
+<ol>
+<li>应用程序向JDBC driver请求数据</li>
+<li>JDBC driver将该请求翻译为RDMBMS可接受的格式, 并通过网络向database发送请求</li>
+<li>RDBMS将数据返回给JDBC driver</li>
+<li>JDBC driver将数据翻译为应用程序可接受的格式</li>
+</ol>
+<h3 id="5-2-Distributed-Transaction-Model"><a href="#5-2-Distributed-Transaction-Model" class="headerlink" title="5.2 Distributed Transaction Model"></a>5.2 Distributed Transaction Model</h3><p>本地事务模型中, 一个应用程序只拥有一个数据库, 因此只需要借助数据库自身的事务机制即可执行事务; 但现实中, 一个大型项目会拥有多个不同类型的数据库, 若其中一个数据库无法执行某个更新操作, 则需回滚其他数据库提交的数据, 这时需要一个coordinator来协调不同resource manager, 称为<strong>transaction manager</strong>. Transaction manager负责决定是否进行commit或rollback: commit会导致事务成功执行, rollback则会让数据维持不变.</p>
+<h3 id="5-3-XA-Transaction"><a href="#5-3-XA-Transaction" class="headerlink" title="5.3 XA Transaction"></a>5.3 XA Transaction</h3><p>在介绍JTA之前, 必须先了解XA Protocol. XA协议是由X&#x2F;Open组织提出的分布式事务处理规范, 定义了transaction manager和resource manager之间的接口. 目前主流的数据库(如Oracle, DB2和MySQL innoDB)都支持XA协议.<br>XA协议中定义了2PC(Two-Phase Commit Protocol, 二阶段提交协议)和3PC(Three-Phase Commit Protocol, 三阶段提交协议), 这两种算法可实现分布式系统下的事务提交.</p>
+<h4 id="5-3-1-2PC"><a href="#5-3-1-2PC" class="headerlink" title="5.3.1 2PC"></a>5.3.1 2PC</h4><p>二阶段提交将整个事务提交分为<strong>prepare</strong>和<strong>commit</strong>两个阶段:</p>
+<ol>
+<li>Prepare: transaction manager会向每个resource manager发送prepare请求. resource manager回复<code>yes</code>表示可完成事务; <code>no</code>表示无法完成该事务.</li>
+<li>Commit: 若某个resource manager回复<code>no</code>, 则向所有resource manager发送<code>rollback</code>请求; 若所有resource manager都回复<code>yes</code>, 则向所有resource manager发送<code>commit</code>请求.</li>
+</ol>
+<p>2PC存在的问题:</p>
+<ul>
+<li>同步阻塞: prepare阶段中, 所有resource manager都必须锁定数据库, 若其他事务想要修改数据, 需等待当前事务完成.</li>
+<li>单点故障: 若prepare阶段成功, 但transaction manager崩溃, 则所有resource manager都处于锁定状态, 所有事务都将无限期等待.</li>
+<li>数据不一致: 若prepare阶段成功, 但transaction manager向某个resource manager发送commit请求失败, 或resource manager宕机, 会导致部分数据更新, 部分未更新, 从而造成数据不一致.</li>
+</ul>
+<h4 id="5-3-2-3PC"><a href="#5-3-2-3PC" class="headerlink" title="5.3.2 3PC"></a>5.3.2 3PC</h4><p>为解决2PC的问题, 3PC进行了一些改进:</p>
+<ul>
+<li>引入了超时机制</li>
+<li>将事务处理分为三个阶段: <strong>canCommit</strong>, <strong>preCommit</strong>, <strong>doCommit</strong></li>
+</ul>
+<ol>
+<li>canCommit: 该阶段中, transaction manager会询问resource manager是否可以执行事务. transaction manager在本地日志写入<code>BEGIN_COMMIT</code>, 进入<code>WAIT</code>状态, 并向所有resource manager发送<code>VOTE_REQEUEST</code>消息; resource manager尝试锁定数据, 若成功则回复<code>VOTE_ABORT</code>; 失败则回复<code>VOTE_COMMIT</code>. 若所有resource manager都回复<code>VOTE_COMMIT</code>, 则进入下一阶段.</li>
+<li>preCommit: 该阶段会提交事务, 并且transaction manager和resource manager都有超时机制. Transaction manager向所有resource manager发送请求:<ul>
+<li>若resource manager收到请求, 会提交事务, 并根据执行结果回复<code>YES</code>或<code>NO</code></li>
+<li>若resource manager在超时前未收到请求, 也会自动提交事务, 并返回<code>YES</code>或<code>NO</code></li>
+<li>若transaction manager收到所有<code>YES</code>回复, 会在本地日志写入<code>PREPARE_COMMIT</code>, 并进入下一阶段</li>
+<li>若transaction manager收到<code>NO</code>回复或等待超时:<ul>
+<li>transaction manager在本地日志中写入<code>GLOBAL_ABORT</code>, 并进入<code>ABORT</code>状态</li>
+<li>transaction manager向所有resource manager发送<code>GLOBAL_ABORT</code>消息</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>doCommit: 该阶段决定事务是否提交. transaction manager向所有resource manager发送<code>GLOBAL_COMMIT</code>消息:<ul>
+<li>若resource manager收到<code>GLOBAL_COMMIT</code>消息, 会回复<code>ACK</code></li>
+<li>若transaction manager收到所有<code>ACK</code>, transaction manager在本地日志中写入<code>END_TRANSACTION</code>, 表示完成该事务</li>
+<li>若transaction manager未收到所有<code>ACK</code>, 则会向所有resource manager发送<code>GLOBAL_ABORT</code>, 并进入<code>ABORT</code>状态</li>
+</ul>
+</li>
+</ol>
+<p>相比于2PC, 3PC解决了单点故障问题, 并减少阻塞, 因为一旦resource manager无法收到transaction manager的消息, 会自动执行commit, 而不是一直锁定数据; 但这种机制也会导致数据一致性问题: 若transaction manager发出的<code>GLOBAL_ABORT</code>请求未被resource manager及时接收到, 会导致部分resource manager回滚数据, 而部分resource manager未执行回滚.</p>
+<h3 id="5-4-JTA"><a href="#5-4-JTA" class="headerlink" title="5.4 JTA"></a>5.4 JTA</h3><p>JTA指定了<strong>transaction manager</strong>与<strong>application, application server和resource manager</strong>之间的Java接口, 换句话说, JTA是XA协议的Java实现. JTA提供了以下三个接口:</p>
+<ul>
+<li>UserTransaction: 该接口允许application控制事务的边界</li>
+<li>TransactionManager: 该接口允许application server代表application控制事务边界</li>
+<li>XAResource: XA接口的Java映射</li>
+</ul>
+<p>需要注意的是, JTA只是一个接口, 以下是JTA的不同实现方式:</p>
+<ul>
+<li>JavaEE容器中的JTA实现, 如Tomcat, Jetty</li>
+<li>开源JTA实现, 如Atomikos, Bitronix</li>
+<li>ORM框架, 如Hibernate</li>
+</ul>
+<h2 id="6-Spring-Transaction"><a href="#6-Spring-Transaction" class="headerlink" title="6. Spring Transaction"></a>6. Spring Transaction</h2><p>使用Spring框架来管理事务有以下优点:</p>
+<ul>
+<li>Spring提供一个跨不同transaction API的编程模型, 包括JTA, JDBC, Hibernate, JPA</li>
+<li>支持declarative transaction management(声明式事务管理)</li>
+<li>相比于JTA, Spring框架提供了一个更简单的programmatic transaction management(编程式事务管理)</li>
+</ul>
+<h3 id="6-1-TransactionManager-in-Spring-Transaction"><a href="#6-1-TransactionManager-in-Spring-Transaction" class="headerlink" title="6.1 TransactionManager in Spring Transaction"></a>6.1 TransactionManager in Spring Transaction</h3><p>Spring事务抽象的关键在于transaction strategy(事务策略). 一个事务策略由<code>TransactionManager</code>定义, 尤其是命令式事务管理的<code>org.springframework.transaction.PlatformTransactionManager</code>接口和反应式事务管理的<code>org.springframework.transaction.ReactiveTransactionManager</code>接口. 以下是<code>PlatformTransactionManager </code>的定义:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">PlatformTransactionManager</span> <span class="keyword">extends</span> <span class="title class_">TransactionManager</span> &#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return an active transaction or create a new one according to the specified propagation behavior.</span></span><br><span class="line"><span class="comment">   * </span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> definition a TransactionDefinition instance which describes propagation behavior, isolation level, timeout etc.</span></span><br><span class="line"><span class="comment">   * <span class="doctag">@return</span> a transaction status object representing the new or current transaction</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  TransactionStatus <span class="title function_">getTransaction</span><span class="params">(TransactionDefinition definition)</span> <span class="keyword">throws</span> TransactionException;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Commit the given transaction, with regard to its status</span></span><br><span class="line"><span class="comment">   * </span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> status object returned by the getTransaction method</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">commit</span><span class="params">(TransactionStatus status)</span> <span class="keyword">throws</span> TransactionException;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Perform a rollback of the given transaction.</span></span><br><span class="line"><span class="comment">   * </span></span><br><span class="line"><span class="comment">   * <span class="doctag">@param</span> status object returned by the getTransaction method</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">rollback</span><span class="params">(TransactionStatus status)</span> <span class="keyword">throws</span> TransactionException;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>PlatformTransactionManager</code>: 事务的管理者, Spring事务的核心</li>
+<li><code>TransactionDefinition</code>: 事务定义信息, 包括事务隔离级别, 传播行为, 超时, 只读, 回滚规则</li>
+<li><code>TransactionStatus</code>: 事务本身</li>
+</ul>
+<p>可以发现, Spring并不真正管理事务, 只提供了一种管理事务的接口, 开发者无需在意事务在底层如何管理, 只需按照<code>PlatformTransactionManager</code>的接口去管理事务. 使用该接口前, 必须先提供该接口的实现, 以下是<code>PlatformTransactionManager</code>的不同实现:</p>
+<ul>
+<li><code>DataSourceTransactionManager</code>: JDBC</li>
+<li><code>HibernateTransactionManager</code>: Hibernate</li>
+<li><code>JpaTransactionManager</code>: JPA</li>
+<li><code>JtaTransactionManager</code>: JTA, 支持分布式事务管理</li>
+</ul>
+<h3 id="6-2-TransactionDefinition"><a href="#6-2-TransactionDefinition" class="headerlink" title="6.2 TransactionDefinition"></a>6.2 TransactionDefinition</h3><p>在讨论<code>TransactionDefinition</code>之前, 必须先了解什么是事务的传播. 例如, 方法A是一个事务方法, 当在方法A中调用方法B时, B是否应该作为事务的一部分. <code>TransactionDefinition</code>中定义了六种事务传播方式:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">PROPAGATION_REQUIRED</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">PROPAGATION_SUPPORTS</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">PROPAGATION_MANDATORY</span> <span class="operator">=</span> <span class="number">2</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">PROPAGATION_REQUIRES_NEW</span> <span class="operator">=</span> <span class="number">3</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">PROPAGATION_NOT_SUPPORTED</span> <span class="operator">=</span> <span class="number">4</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">PROPAGATION_NEVER</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">PROPAGATION_NESTED</span> <span class="operator">=</span> <span class="number">6</span>;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="center">事务传播类型</th>
+<th align="center">外部不存在事务</th>
+<th align="center">外部存在事务</th>
+<th align="center">适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">PROPAGATION_REQUIRED</td>
+<td align="center">开启一个新事务</td>
+<td align="center">加入外部事务</td>
+<td align="center">增删改</td>
+</tr>
+<tr>
+<td align="center">PROPAGATION_REQUIRES_NEW</td>
+<td align="center">开启一个新事务</td>
+<td align="center">挂起外部事务, 创建一个新事务</td>
+<td align="center">内外事务不相关</td>
+</tr>
+<tr>
+<td align="center">PROPAGATION_SUPPORTS</td>
+<td align="center">不开启新事务</td>
+<td align="center">加入外部事务</td>
+<td align="center">查询</td>
+</tr>
+<tr>
+<td align="center">PROPAGATION_NOT_SUPPORTED</td>
+<td align="center">不开启新事务</td>
+<td align="center">挂起外部事务</td>
+<td align="center">让当前函数跳出事务</td>
+</tr>
+<tr>
+<td align="center">PROPAGATION_MANDATORY</td>
+<td align="center">抛出异常</td>
+<td align="center">加入外部事务</td>
+<td align="center">保证当前函数处于某个事务之中</td>
+</tr>
+<tr>
+<td align="center">PROPAGATION_NEVER</td>
+<td align="center">不开启新事务</td>
+<td align="center">抛出异常</td>
+<td align="center">保证当前函数一定不处于某个事务之中</td>
+</tr>
+<tr>
+<td align="center">PROPAGATION_NESTED</td>
+<td align="center">开启一个新事务</td>
+<td align="center">加入外部事务</td>
+<td align="center">只适用于<code>DataSourceTransactionManager</code>和JDBC3 driver, 事务传播性质与<code>PROPAGATION_REQUIRED</code>相同, 但支持回滚到外部事务的save point</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TransactionDefinition</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the propagation behavior. The default is PROPAGATION_REQUIRED.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">getPropagationBehavior</span><span class="params">()</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the isolation level. The default is ISOLATION_DEFAULT</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">getIsolationLevel</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the the maximum amount of time that a transaction can run before it is</span></span><br><span class="line"><span class="comment">     * automatically rolled back.</span></span><br><span class="line"><span class="comment">     * Only for use with PROPAGATION_REQUIRED or PROPAGATION_REQUIRES_NEW.</span></span><br><span class="line"><span class="comment">     * The default value for the timeout property is -1.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">int</span> <span class="title function_">getTimeout</span><span class="params">()</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return whether to optimize as a read-only transaction.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="type">boolean</span> <span class="title function_">isReadOnly</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return the name of this transaction</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Nullable</span></span><br><span class="line">    String <span class="title function_">getName</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-TransactionStatus"><a href="#6-3-TransactionStatus" class="headerlink" title="6.3 TransactionStatus"></a>6.3 TransactionStatus</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">TransactionStatus</span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return true if the current transaction is a new transaction; return false if it </span></span><br><span class="line"><span class="comment">   * participates in an existing transaction.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">isNewTransaction</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether this transaction internally carries a savepoint, or, is this a nested</span></span><br><span class="line"><span class="comment">   * transaction based on a savepoint</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">hasSavepoint</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Let transaction manager only rollback the current transaction, instead of throwing</span></span><br><span class="line"><span class="comment">   * an expcetion </span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">setRollbackOnly</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether the transaction has been marked as rollback-only</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> <span class="title function_">isRollbackOnly</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Return whether this transaction has already been committed or rolled back.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">boolean</span> isCompleted;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Full-Stack/">Full Stack</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/8be9.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">DP - Longest Common Subsequence</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/9de.html">
+        <span class="next-text nav-default">React.js</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/46eb.html';
+  var disqus_title = "Spring Transaction";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

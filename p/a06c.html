@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Bounded Context"/>
+
+
+
+
+  <meta name="keywords" content="Microservices," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/a06c.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/a06c.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/a06c.html"/>
+
+
+<meta name="description" content="1. How to Identify Bounded ContextBounded Context的好处很明显, 为domain划清边界, 并在内部建立自己的Ubiquitous Language, 让domain model中的属性与其上下文一致. 但问题也很明显: 如何找到每个domain的Bounded Context. 下面是一个已经划分好的BC. 很多项目中可能没有那么多时间深入探讨do">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bounded Context">
+<meta property="og:url" content="https://zaf1ro.github.io/p/a06c.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. How to Identify Bounded ContextBounded Context的好处很明显, 为domain划清边界, 并在内部建立自己的Ubiquitous Language, 让domain model中的属性与其上下文一致. 但问题也很明显: 如何找到每个domain的Bounded Context. 下面是一个已经划分好的BC. 很多项目中可能没有那么多时间深入探讨do">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-7-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-7-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-7-3.png">
+<meta property="article:published_time" content="2021-02-23T01:54:32.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.036Z">
+<meta property="article:tag" content="Microservices">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/microservice/bounded-context-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Bounded Context - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-How-to-Identify-Bounded-Context"><span class="toc-text">1. How to Identify Bounded Context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Linguistic"><span class="toc-text">2. Linguistic</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Business-Capability"><span class="toc-text">3. Business Capability</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Autonomy"><span class="toc-text">4. Autonomy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Keep-the-microservice-context-boundaries-relatively-small"><span class="toc-text">5. Keep the microservice context boundaries relatively small</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Conway-Laws"><span class="toc-text">6. Conway Laws</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Cinema-Example"><span class="toc-text">7. Cinema Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Summary"><span class="toc-text">8. Summary</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-Size-of-Bounded-Context"><span class="toc-text">8.1 Size of Bounded Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-Misunderstanding-of-BC"><span class="toc-text">8.2 Misunderstanding of BC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-3-Power-of-Bounded-Context"><span class="toc-text">8.3 Power of Bounded Context</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Bounded Context
+        
+      </h1>
+      <time class="post-time">
+          02/22/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-How-to-Identify-Bounded-Context"><a href="#1-How-to-Identify-Bounded-Context" class="headerlink" title="1. How to Identify Bounded Context"></a>1. How to Identify Bounded Context</h2><p>Bounded Context的好处很明显, 为domain划清边界, 并在内部建立自己的Ubiquitous Language, 让domain model中的属性与其上下文一致. 但问题也很明显: 如何找到每个domain的Bounded Context. 下面是一个已经划分好的BC.<br><img src="/images/microservice/bounded-context-1.png" alt="A divided bounded context"></p>
+<p>很多项目中可能没有那么多时间深入探讨domain knowledge, 但这并意味着我们应该彻底忽略业务层面的抽象. 如果混淆了Operational Level(操作层)与Knowledge Level(知识层), 就缺乏业务规则模型的抽象, 从而导致代码腐化, 团队沟通和代码维护成本不断增加. 通常来说, 划分BC需要系统分析和业务能力, 但如果团队中没有domain expert或面对陌生的业务, 可以从以下两点出发: </p>
+<ul>
+<li>Linguistic(语意)</li>
+<li>Business Capability(业务能力)</li>
+</ul>
+<h2 id="2-Linguistic"><a href="#2-Linguistic" class="headerlink" title="2. Linguistic"></a>2. Linguistic</h2><p>在Bounded Context中, 我们用Ubiquitous Language命名各种概念的实体, 因此BC本质上是一个语意边界. 当对某个实体设置不同的定义时, 我们就需要一个新的BC, 以此保证BC中的语意保持一致.<br>当需求有所改变时, 也需要重新审视Bounded Context之间的匹配程度. 如果新实体符合某个BC中的Ubiquitous Language, 则加入到该BC中; 如果不符合, 则需要建立新的BC. 以下是语意划分BC的三点总结:</p>
+<ul>
+<li>注意经常出现的词汇和句子</li>
+<li>注意拥有相似概念或名称, 但在不同语境下存在歧义的词汇和句子</li>
+<li>当某个BC经常使用其他BC的语言时, 需要考虑其必要性, 可能需要合并BC</li>
+</ul>
+<h2 id="3-Business-Capability"><a href="#3-Business-Capability" class="headerlink" title="3. Business Capability"></a>3. Business Capability</h2><p>刚开始划分BC时很容易陷入一个误区: 按照<strong>实体</strong>去决定BC. 例如: 按照顾客, 订单, 商品等名词来划分. 上述例子犯了一个错误: BC的划分不取决于数据模型, 而取决于<strong>业务能力</strong>. <strong>用户</strong>作为一个BC很容易被其他BC共享, 甚至会和ORM框架捆绑, 这都不符合DDD的思想, 也破坏了BC的一致性. 举个例子, 根据业务能力可以将项目划分为以下几个BC:</p>
+<ul>
+<li>Membership: 会员管理</li>
+<li>Order: 订单</li>
+<li>Shipping: 物流</li>
+<li>Payment: 支付</li>
+</ul>
+<p><strong>用户</strong>在每个BC有不同的含义, 例如:</p>
+<ul>
+<li>Membership中, <strong>用户</strong>可能包含名称, 个人资料, 会员等级, 会员点数</li>
+<li>Order中, <strong>用户</strong>可能包含买家名称</li>
+<li>Shipping中, <strong>用户</strong>可能包含联系地址, 电话号码</li>
+<li>Payment中, <strong>用户</strong>可能包含付款人信息</li>
+</ul>
+<p>理想情况下, 每个BC对应一个subdomain; 但根据Business Capability划分BC, 可能导致BC跨越多个subdomain. </p>
+<h2 id="4-Autonomy"><a href="#4-Autonomy" class="headerlink" title="4. Autonomy"></a>4. Autonomy</h2><p>通常好的系统都有Autonomy(自治性), 可减少彼此依赖. 这种依赖不仅是逻辑上的依赖, 该包含底层数据的依赖. 理想情况下, 我们希望每个系统都有自己的数据库, 保证不被外界污染. 因此, 当某个数据库不完全属于某个BC时, 可以考虑将其拆分出去.<br>举个例子, <strong>购物</strong>BC只需要处理购物服务, 对于<strong>会员</strong>功能, 由于其他系统也需要查询会员身份, 因此不应放置在<strong>购物</strong>这个BC中, 而应新增一个<strong>身份管理</strong>BC. 当<strong>购物</strong>BC需要查询身份时, 与<strong>身份管理</strong>BC沟通即可.</p>
+<h2 id="5-Keep-the-microservice-context-boundaries-relatively-small"><a href="#5-Keep-the-microservice-context-boundaries-relatively-small" class="headerlink" title="5. Keep the microservice context boundaries relatively small"></a>5. Keep the microservice context boundaries relatively small</h2><p>Bounded Context作为天然边界, 可以用于microservice的划分. Microservice的目标是通过组件化服务来支持大型且复杂的系统. 但microservice的划分并不是越小越好, 这之间存在两个相互矛盾的目标:</p>
+<ol>
+<li>创造尽可能小的microservices, 增加可维护性和开发效率</li>
+<li>避免多个microservices之间有过多的通信, 提高程序运行效率</li>
+</ol>
+<p>开发者应不断地缩小每个microservices的边界, 直到microservices之间的通信成本超过了某个限度. Cohesion是单个BC的关键. 若两个microservices总需要和对方合作, 则它们应合并为一个microservices. 另一个考量方式是autonomy(自治权), 若一个microservices必须依赖另一个microservices才能处理请求, 则该microservice并不具备autonomy.</p>
+<h2 id="6-Conway-Laws"><a href="#6-Conway-Laws" class="headerlink" title="6. Conway Laws"></a>6. Conway Laws</h2><p>根据<strong>Conway Laws</strong>, 软件系统的架构应符合开发团队的架构. 对于Legacy system, 若该系统已经难以维护, 且没有更多时间重构, 这是应将该系统独立为一个BC, 并建立多个Adapter去连接其他BC. 很多时候导入Bounded Context并没有获得预期效果, 问题可能出在组织架构上. 忽视开发团队的架构而去细分BC只会提高部门合作成本.<br>从某种角度来说, BC其实是开发组织的分工, 当组织越来越大时, 贴近BC的分工能让开发者能容易管理与合作. 从而减少团队间的依赖关系, 以达到更高的自治性.</p>
+<h2 id="7-Cinema-Example"><a href="#7-Cinema-Example" class="headerlink" title="7. Cinema Example"></a>7. Cinema Example</h2><p>假设我们需要建立一个电影院系统, 具体需求如下:</p>
+<ul>
+<li><strong>Box Office</strong>(售票处)可以售票给顾客, 同时检查顾客的<strong>身份</strong>, <strong>时间</strong>, <strong>电影</strong>, <strong>座位</strong></li>
+<li>与<strong>Online Booking</strong>(第三方订票网站)合作, 利用线上方式预订电影票</li>
+<li><strong>Auditorium</strong>(放映厅)会在顾客进入前检查电影票</li>
+<li>顾客可在售票处购买食物, 然后去<strong>Concession Stand</strong>(小卖部)领食物</li>
+<li>小卖部还负责管理食物的库存, 少于50%时要及时补货</li>
+</ul>
+<p>分析过后, 可以将整个业务分为三个主要需求: 售票, 观影, 食物. 其中<strong>观影</strong>是电影院的core domain, 其他的属于supporting subdomain.<br><img src="/images/microservice/bounded-context-7-1.png" alt="Cinema Subdomain"></p>
+<p>根据每个domain的情况, 分为以下几个Bounded Contexts:</p>
+<ul>
+<li>Box Office Context: 售票处</li>
+<li>Online Booking: 网上售票</li>
+<li>Concession Stand Context: 小卖部</li>
+<li>Inventory Context: 仓库</li>
+<li>Auditorium Context: 放映厅</li>
+</ul>
+<p><img src="/images/microservice/bounded-context-7-2.png" alt="Cinema Bounded Context"></p>
+<p>可以看到, 很多bounded context都会用到<strong>ticket</strong>(电影票)这个实体. 一个电影票在不同的context中可能有不同行为:<br><img src="/images/microservice/bounded-context-7-3.png" alt="Ticket in Different Contexts"></p>
+<h2 id="8-Summary"><a href="#8-Summary" class="headerlink" title="8. Summary"></a>8. Summary</h2><h3 id="8-1-Size-of-Bounded-Context"><a href="#8-1-Size-of-Bounded-Context" class="headerlink" title="8.1 Size of Bounded Context"></a>8.1 Size of Bounded Context</h3><p>Bounded Context并没有一个固定的大小, 主要看语义和业务能力来判断. 在项目刚开始时, 业务逻辑相对简单, 通常不需要太多BC就可以完成所有需求; 但随着项目不断扩大, 会有越来越多的外部概念渗入BC, 从而导致迭代速度降低, 沟通成本增大.</p>
+<h3 id="8-2-Misunderstanding-of-BC"><a href="#8-2-Misunderstanding-of-BC" class="headerlink" title="8.2 Misunderstanding of BC"></a>8.2 Misunderstanding of BC</h3><ol>
+<li>从一开始划分BC, 之后再也不改动: 应随着项目复杂度的提升而不断划分BC, BC的划分不会一步到位</li>
+<li>根据技术划分BC: 比如说根据数据库划分, 根据外部依赖划分, 这些都不能决定BC的边界</li>
+<li>根据开发任务划分BC: 新的功能或需求并不能代表我们需要新增一个BC, 保持BC的语意一致性才是重心</li>
+</ol>
+<h2 id="8-3-Power-of-Bounded-Context"><a href="#8-3-Power-of-Bounded-Context" class="headerlink" title="8.3 Power of Bounded Context"></a>8.3 Power of Bounded Context</h2><ul>
+<li>概念不会混淆: 在BC的语意边界内调用服务时, 开发者很清楚自己在做什么. 例如: 当使用User这个名词时, 很容易弄不明白这到底代表什么, User可以表示客户, 或管理员, 或User系统.</li>
+<li>分离业务功能: 当我们开发某个功能时, 很可能牵扯到另一个业务功能. 例如: 订单系统可能牵扯权限问题, 那么权限到底应该会放在哪里比较好. 以下是两种思路:<ol>
+<li>在所有需要判断的地方都放置判断语句</li>
+<li>在一开始访问时判断, 之后不再验证</li>
+</ol>
+</li>
+</ul>
+<p>无论选择哪种处理方式, 都需要将权限判断作为一个单独的BC分离出来. 这样可以避免很多重复代码, 且维护成本更低.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/7dc1.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Context Mapping</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/5a33.html">
+        <span class="next-text nav-default">Domain, Subdomain, and Bounded Context</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/a06c.html';
+  var disqus_title = "Bounded Context";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Parser (2)"/>
+
+
+
+
+  <meta name="keywords" content="Compiler," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/610c.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/610c.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/610c.html"/>
+
+
+<meta name="description" content="1. Bottom-Up Parsing从parse tree角度来说, Bottom-up parser从叶子节点出发, 不断向上收缩, 直到root. 其中, scanner返回的每个单词都是一个叶子节点, 这些叶子节点构成了parse tree的下边缘. 为构建一个derivation, parser需要根据语法和parse tree中的节点来构成nonterminal symbol. pa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Parser (2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/610c.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Bottom-Up Parsing从parse tree角度来说, Bottom-up parser从叶子节点出发, 不断向上收缩, 直到root. 其中, scanner返回的每个单词都是一个叶子节点, 这些叶子节点构成了parse tree的下边缘. 为构建一个derivation, parser需要根据语法和parse tree中的节点来构成nonterminal symbol. pa">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-6.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-7.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-8.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-9.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/3-10.png">
+<meta property="article:published_time" content="2020-03-03T15:46:43.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.032Z">
+<meta property="article:tag" content="Compiler">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Compiler/3-5.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Parser (2) - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Bottom-Up-Parsing"><span class="toc-text">1. Bottom-Up Parsing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-The-LR-1-Parsing-Algorithm"><span class="toc-text">1.1. The LR(1) Parsing Algorithm</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Build-LR-1-Tables"><span class="toc-text">1.2 Build LR(1) Tables</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-The-closure-Procedure"><span class="toc-text">1.2.1 The closure Procedure</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-The-goto-Procedure"><span class="toc-text">1.2.2 The goto Procedure</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-The-Canonical-Collection-for-the-Parentheses-Grammar"><span class="toc-text">1.2.3 The Canonical Collection for the Parentheses Grammar</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-4-Filling-in-the-Tables"><span class="toc-text">1.2.4 Filling in the Tables</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Errors-in-the-Table-Construction"><span class="toc-text">1.3 Errors in the Table Construction</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Practical-Issues"><span class="toc-text">2. Practical Issues</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Error-Recovery"><span class="toc-text">2.1 Error Recovery</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Unary-Operators"><span class="toc-text">2.2 Unary Operators</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Handle-Context-Sensitive-Ambiguity"><span class="toc-text">2.3 Handle Context-Sensitive Ambiguity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Left-Versus-Right-Recursion"><span class="toc-text">2.4 Left Versus Right Recursion</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-Stack-Depth"><span class="toc-text">2.4.1 Stack Depth</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-2-Associativity"><span class="toc-text">2.4.2 Associativity</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Advanced-Topics"><span class="toc-text">3. Advanced Topics</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Optimize-a-Grammar"><span class="toc-text">3.1 Optimize a Grammar</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Reduce-the-Size-of-LR-1-Table"><span class="toc-text">3.2 Reduce the Size of LR(1) Table</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Parser (2)
+        
+      </h1>
+      <time class="post-time">
+          03/03/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Bottom-Up-Parsing"><a href="#1-Bottom-Up-Parsing" class="headerlink" title="1. Bottom-Up Parsing"></a>1. Bottom-Up Parsing</h2><p>从parse tree角度来说, Bottom-up parser从叶子节点出发, 不断向上收缩, 直到root. 其中, scanner返回的每个单词都是一个叶子节点, 这些叶子节点构成了parse tree的下边缘. 为构建一个derivation, parser需要根据语法和parse tree中的节点来构成nonterminal symbol. parse tree中的叶子节点表示scanner返回的单词, 叶子节点之上的节点表示可推导出的语法, parse将沿着已完成的parse tree上边缘不断推断, 直到回到根节点.<br>假设存在一个production: $A \rightarrow \beta$, 在parse tree的上边缘已经找到$\beta$, 其右端位于k, 那么parser可将$\beta$替换为A, 从而创建新的上边缘. 若有效推导中, 需要在位置k用A替换$\beta$, 那么$(A \rightarrow \beta, k)$这种推导称为handle, 用A替换$\beta$称为reduction, 可减少上边缘的symbol数量.<br>Buttom-up parser中最关键的问题在于寻找handle, 并重复一个简单的过程: parser在parse tree的上边缘找到一个handle $(A \rightarrow \beta, k)$, 并将位置k的$\beta$替换为A, 直到出现以下两种情况之一:</p>
+<ol>
+<li>parse tree的上边缘只有一个节点, 该节点为goal symbol, 表示语法分析成功</li>
+<li>无法找到handle, 表示语法分析失败</li>
+</ol>
+<p>Button-up parser从goal symbol出发, 向最终语句方向推导, parser会按照逆向推导各个步骤:<br>$$<br>Goal &#x3D; \gamma_1 \rightarrow \gamma_2 \rightarrow \cdots \rightarrow \gamma_{n-1} \rightarrow \gamma_{n} &#x3D; sentence<br>$$</p>
+<p>Buttm-up parser会先发现$\gamma_i \rightarrow \gamma_{i+1}$, 然而才发现$\gamma_{i-1} \rightarrow \gamma_i$, 因为parse tree是树型结构, 在匹配$\gamma_i$之前, parser必须在parse tree的上边缘发现$\gamma_i$对应的节点. Scanner按照从左向右的顺序返回归类后的单词, 为使parser的推导方向与scanner的扫描方向一致吗, parser需要将寻找最右推导, 并首先匹配最左叶子节点, 最后匹配最右叶子节点. 这样当parser需要更多信息来推导时, 可直接调用scanner来获取单词.<br>LR(1)作为buttom-up parser中的一种, 使用一个前瞻符号来寻找从$\gamma_i$到$\gamma_{i-1}$的handle, L表示从左(Left)到右扫描, R表示反向(Reverse)最右推导, 1表示一个前瞻符号. </p>
+<h3 id="1-1-The-LR-1-Parsing-Algorithm"><a href="#1-1-The-LR-1-Parsing-Algorithm" class="headerlink" title="1.1. The LR(1) Parsing Algorithm"></a>1.1. The LR(1) Parsing Algorithm</h3><p>LR(1) parser可借助Action和Goto两个表来快速定位handle, 算法如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">push $;</span><br><span class="line">push start state, $s_0$;</span><br><span class="line">word $\leftarrow$ NextWord( );</span><br><span class="line">while (true)</span><br><span class="line">  state $\leftarrow$ top of stack;</span><br><span class="line">  if Action[state, word] = &quot;$\textit&#123;reduce&#125; \ A \rightarrow \beta$&quot;</span><br><span class="line">    pop 2 × |$\beta$| symbols;</span><br><span class="line">    state $\leftarrow$ top of stack;</span><br><span class="line">    push A;</span><br><span class="line">    push Goto[state, A];</span><br><span class="line">  else if Action[state, word] = &quot;$\textit&#123;shift&#125; \ s_i$&quot;</span><br><span class="line">    push word;</span><br><span class="line">    push $s_i$;</span><br><span class="line">    word $\leftarrow$ NextWord( );</span><br><span class="line">  else if Action[state, word] = &quot;$accept$&quot;</span><br><span class="line">    break;</span><br><span class="line">  else</span><br><span class="line">    Fail( );</span><br><span class="line">report success; /* executed break on &quot;accept&quot; case */</span><br></pre></td></tr></table></figure>
+<p>上述算法存在四种情况: </p>
+<ol>
+<li>当LR(1)找到一个handle $(A \rightarrow \beta, k)$时, 将当前矩形中位置k处的$\beta$替换为A, 也就是reduction</li>
+<li>当LR(1)无法找到handle, 则将单词和状态加入栈中</li>
+<li>语法推导成功</li>
+<li>语法推导失败</li>
+</ol>
+<p>其中, 前瞻符号表示production后紧接的第一个terminal symbol, 也就是算法中不存放于栈中的第一个单词. 当LR(1) parser无法找到handle时会不断将单词压入栈中, 直到找到一个handle并进行reduction. 以括号语法为例:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 $&#123;Goal&#125; \rightarrow &#123;List&#125;$</span><br><span class="line">2 $&#123;List&#125; \rightarrow &#123;List&#125; \ &#123;Pair&#125;$</span><br><span class="line">3     $| \ Pair$</span><br><span class="line">4 $&#123;Pair&#125; \rightarrow \underline&#123;(&#125; \ &#123;Pair&#125; \ \underline&#123;)&#125;$</span><br><span class="line">5     $| \ \underline&#123;(&#125; \ \underline&#123;)&#125;$</span><br></pre></td></tr></table></figure>
+<p>以下是Action表和Goto表:<br><img src="/images/Compiler/3-5.png" alt="Action and Goto Tables"></p>
+<p>以下是LR(1) parser处理输入串$\underline{(}\underline{)}$的操作序列:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Iteration</th>
+<th align="center">State</th>
+<th align="center">word</th>
+<th align="center">Stack</th>
+<th align="center">Handle</th>
+<th align="center">Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">initial</td>
+<td align="center">-</td>
+<td align="center">\underline{(}</td>
+<td align="center">\$ 0</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">\underline{(}</td>
+<td align="center">\$ 0</td>
+<td align="center">-</td>
+<td align="center">shift 3</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">\underline{(}</td>
+<td align="center">\$ 0 \underline{(} 3</td>
+<td align="center">-</td>
+<td align="center">shift 7</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">7</td>
+<td align="center">eof</td>
+<td align="center">\$ 0 \underline{(} 3 \underline{)} 7</td>
+<td align="center">$\underline{(}$ $\underline{)}$</td>
+<td align="center">reduce 5</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">2</td>
+<td align="center">eof</td>
+<td align="center">\$ 0 Pair 2</td>
+<td align="center">Pair</td>
+<td align="center">reduce 3</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">1</td>
+<td align="center">eof</td>
+<td align="center">\$ 0 List 1</td>
+<td align="center">List</td>
+<td align="center">accept</td>
+</tr>
+</tbody></table>
+<p>表中第一行为初始状态, 从第二行开始进入while循环. 第一次循环栈中没有任何handle, 将$\underline{(}$加入到栈中; 第二次循环栈中依然没有任何handle, 将$\underline{)}$移入栈中; 第三次循环栈中存在handle: $\langle \text{Pair} \rightarrow \underline{(} \ \underline{)}, eof \rangle$并进行reduce; 第四次循环stack中存在handle: $\langle \text{List} \rightarrow \text{Pair}, eof \rangle$并进行reduce; 第五次循环stack存在handle: $\langle \text{Goal} \rightarrow \text{Goal}, eof \rangle$. Parser需要使用两个shift和三个reduce操作, 花费的时间与输入字符串长度成正比. 以下是输入串为$\underline{(} \ \underline{(} \ \underline{) \ }\underline{)} \ \underline{(} \ \underline{)}$的操作序列:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Iteration</th>
+<th align="center">State</th>
+<th align="center">word</th>
+<th align="center">Stack</th>
+<th align="center">Handle</th>
+<th align="center">Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">initial</td>
+<td align="center">-</td>
+<td align="center">$\underline{(}$</td>
+<td align="center">\$ 0</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">$\underline{(}$</td>
+<td align="center">\$ 0</td>
+<td align="center">-</td>
+<td align="center">shift 3</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">$\underline{(}$</td>
+<td align="center">\$ 0 $\underline{(}$ 3</td>
+<td align="center">-</td>
+<td align="center">shift 6</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">6</td>
+<td align="center">$\underline{)}$</td>
+<td align="center">\$ 0 $\underline{(}$ 3 $\underline{(}$ 6</td>
+<td align="center">-</td>
+<td align="center">shift 10</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">10</td>
+<td align="center">$\underline{)}$</td>
+<td align="center">\$ 0 $\underline{(}$ 3 $\underline{(}$ 6 $\underline{)}$ 10</td>
+<td align="center">$\underline{(} \underline{)}$</td>
+<td align="center">reduce 5</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">5</td>
+<td align="center">$\underline{)}$</td>
+<td align="center">\$ 0 $\underline{(}$ 3 Pair 5</td>
+<td align="center">-</td>
+<td align="center">shift 8</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">8</td>
+<td align="center">$\underline{(}$</td>
+<td align="center">\$ 0 $\underline{(}$ 3 Pair 5 $\underline{)}$ 8</td>
+<td align="center">$\underline{(}$ Pair $\underline{)}$</td>
+<td align="center">reduce 4</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td align="center">2</td>
+<td align="center">$\underline{(}$</td>
+<td align="center">\$ 0 Pair 2</td>
+<td align="center">Pair</td>
+<td align="center">reduce 3</td>
+</tr>
+<tr>
+<td align="center">8</td>
+<td align="center">1</td>
+<td align="center">$\underline{(}$</td>
+<td align="center">\$ 0 List 1</td>
+<td align="center">-</td>
+<td align="center">shift 3</td>
+</tr>
+<tr>
+<td align="center">9</td>
+<td align="center">3</td>
+<td align="center">$\underline{)}$</td>
+<td align="center">\$ 0 List 1 \underline{(} 3</td>
+<td align="center">-</td>
+<td align="center">shift 7</td>
+</tr>
+<tr>
+<td align="center">10</td>
+<td align="center">7</td>
+<td align="center">eof</td>
+<td align="center">\$ 0 List 1 \underline{(} 3 \underline{)} 7</td>
+<td align="center">$\underline{(} \underline{)}$</td>
+<td align="center">reduce 5</td>
+</tr>
+<tr>
+<td align="center">11</td>
+<td align="center">4</td>
+<td align="center">eof</td>
+<td align="center">\$ 0 List 1 Pair 4</td>
+<td align="center">List Pair</td>
+<td align="center">reduce 2</td>
+</tr>
+<tr>
+<td align="center">12</td>
+<td align="center">1</td>
+<td align="center">eof</td>
+<td align="center">\$ 0 List 1</td>
+<td align="center">List</td>
+<td align="center">accept</td>
+</tr>
+</tbody></table>
+<p>当输入错误字符串时, 如$\underline{(} \ \underline{)} \ \underline{)}$, 其操作序列如下:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Iteration</th>
+<th align="center">State</th>
+<th align="center">word</th>
+<th align="center">Stack</th>
+<th align="center">Handle</th>
+<th align="center">Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">initial</td>
+<td align="center">-</td>
+<td align="center">$\underline{(}$</td>
+<td align="center">\$ 0</td>
+<td align="center">-</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">$\underline{(}$</td>
+<td align="center">\$ 0</td>
+<td align="center">-</td>
+<td align="center">shift 3</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">3</td>
+<td align="center">$\underline{)}$</td>
+<td align="center">\$ 0 $\underline{(}$ 3</td>
+<td align="center">-</td>
+<td align="center">shift 7</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">7</td>
+<td align="center">$\underline{)}$</td>
+<td align="center">\$ 0 $\underline{(}$ $\underline{)}$ 7</td>
+<td align="center">-</td>
+<td align="center">error</td>
+</tr>
+</tbody></table>
+<p>前两次迭代与之前相同, 第三次迭代Action表中对应项不为shift, reduce或accpet, 因此判定为error. 当表项中无效时, LR(1) parser即可认为语法错误. 这种性质让parser可将错误定位到某个具体位置, 利用上下文信息和语法知识, 可构建出错误诊断信息.</p>
+<h3 id="1-2-Build-LR-1-Tables"><a href="#1-2-Build-LR-1-Tables" class="headerlink" title="1.2 Build LR(1) Tables"></a>1.2 Build LR(1) Tables</h3><p>为构建Action和Goto表, LR(1) parser需要构建一个handle-recognizing automation(句柄识别自动机)的模型来填充表格, 这一模型叫做canonical collection of sets of LR(1) items(LR(1)项集的规范族), 表示parser中所有可能状态之间的转移. Action和Goto表将所有潜在handle信息都保存在表中, 并将潜在handle称为LR(1) item, 表示为$[A \rightarrow \beta \bullet \gamma, a]$, 其中, $A \rightarrow \beta\gamma$为production, $\bullet$表示栈顶的位置, a为前瞻符号, 也可理解为FOLLOW(A). 一个production的所有item集合称为$CC_i$, 所有$CC_i$集合称为canonical collection, 表示为$CC &#x3D; \{CC_0, CC_1, CC_2, \cdots, CC_n\}$.<br>对于production $A \rightarrow \beta\gamma$和前瞻符号a来说, 可产生三种不同的item, 且每个item都有不同的解释:</p>
+<ol>
+<li>$[A \rightarrow \bullet \beta \gamma]$: 该item并没有读取任何单词, 但A作为一种<strong>可能的</strong>reduce等待验证</li>
+<li>$[A \rightarrow \beta \bullet \gamma]$: 该item已读取到$\beta$, 说明已经<strong>部分完成</strong>了reduce</li>
+<li>$[A \rightarrow \beta \gamma \bullet]$: 该item已经读取完$\beta \gamma$, 并且a作为前瞻符号符合A的语法, 因此<strong>完成</strong>reduce</li>
+</ol>
+<p>以下是括号语法的全部LR(1) items:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Goal $\rightarrow$ $\bullet$ List, eof]</span><br><span class="line">[Goal $\rightarrow$ List $\bullet$, eof]</span><br><span class="line">[List $\rightarrow$ $\bullet$ List Pair, eof]</span><br><span class="line">[List $\rightarrow$ $\bullet$ List Pair, $\underline&#123;(&#125;$]</span><br><span class="line">[List $\rightarrow$ List $\bullet$ Pair, $\underline&#123;(&#125;$]</span><br><span class="line">[List $\rightarrow$ List $\bullet$ Pair, eof]</span><br><span class="line">[List $\rightarrow$ List Pair $\bullet$, eof]</span><br><span class="line">[List $\rightarrow$ List Pair $\bullet$, $\underline&#123;(&#125;$]</span><br><span class="line">[List $\rightarrow$ $\bullet$ Pair, eof]</span><br><span class="line">[List $\rightarrow$ $\bullet$ Pair, $\underline&#123;(&#125;$]</span><br><span class="line">[List $\rightarrow$ Pair $\bullet$, eof]</span><br><span class="line">[List $\rightarrow$ Pair $\bullet$, $\underline&#123;(&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ $\underline&#123;(&#125;$Pair$\underline&#123;)&#125;$, eof]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ $\underline&#123;(&#125;$Pair$\underline&#123;)&#125;$, $\underline&#123;)&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ $\underline&#123;(&#125;$Pair$\underline&#123;)&#125;$, $\underline&#123;)&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\bullet$ Pair$\underline&#123;)&#125;$, eof]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\bullet$ Pair$\underline&#123;)&#125;$, $\underline&#123;)&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\bullet$ Pair$\underline&#123;)&#125;$, $\underline&#123;(&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$Pair $\bullet$ $\underline&#123;)&#125;$, eof]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$Pair $\bullet$ $\underline&#123;)&#125;$, $\underline&#123;)&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$Pair $\bullet$ $\underline&#123;)&#125;$, $\underline&#123;(&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$Pair$\underline&#123;)&#125;$ $\bullet$, eof]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$Pair$\underline&#123;)&#125;$ $\bullet$, $\underline&#123;)&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$Pair$\underline&#123;)&#125;$ $\bullet$, $\underline&#123;(&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ $\underline&#123;(&#125;$ $\underline&#123;)&#125;$, eof]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ $\underline&#123;(&#125;$ $\underline&#123;)&#125;$, $\underline&#123;(&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ $\underline&#123;(&#125;$ $\underline&#123;)&#125;$, $\underline&#123;)&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\bullet$ $\underline&#123;)&#125;$, eof]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\bullet$ $\underline&#123;)&#125;$, $\underline&#123;(&#125;$] </span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\bullet$ $\underline&#123;)&#125;$, $\underline&#123;)&#125;$]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\underline&#123;)&#125;$ $\bullet$, eof]</span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\underline&#123;)&#125;$ $\bullet$, $\underline&#123;(&#125;$] </span><br><span class="line">[Pair $\rightarrow$ $\underline&#123;(&#125;$ $\underline&#123;)&#125;$ $\bullet$, $\underline&#123;)&#125;$]</span><br></pre></td></tr></table></figure>
+<p>需要特别说明其中两个items: 第一个是[Goal $\rightarrow$ $\bullet$ List, eof], 表示parser的初始状态, 此时parser正寻找一个可reduce为Goal的字符串, 每个parser都是从该状态开始; 第二个是[Goal $\rightarrow$ List $\bullet$, eof], 表示parser期望的最终状态, 即parser找到一个可reduce为Goal的字符串. 所以语法分析都是从第一个item开始, 结束于第二个item.<br>为构建canonical collection of sets of LR(1) items, 也就是$CC$, parser需要一种算法从初始状态开始, 找出所有状态转移. 该算法包含两个基本操作: closure和goto</p>
+<ol>
+<li>closure: 将item中隐含的item添加到集合中, 例如, 现在有一个item [Goal $\rightarrow$ $\bullet$ List, eof], 可以看到 $\bullet$ 之后紧跟了一个nonterminal symbol, 因此该item隐含另外两个items: [List $\rightarrow$ $\bullet$ List Pair, eof]和[List $\rightarrow$ $\bullet$ Pair, eof]</li>
+<li>goto: 为模拟parser对于某个语法符号x的转移, 需将item集合中的所有$\bullet$后移一位, 也就是移到x之后.</li>
+</ol>
+<p>[Goal $\rightarrow$ $\bullet$ List, eof]作为一个item表示parser的起始状态, 该项构成$CC$中的第一个item集合$CC_0$</p>
+<h4 id="1-2-1-The-closure-Procedure"><a href="#1-2-1-The-closure-Procedure" class="headerlink" title="1.2.1 The closure Procedure"></a>1.2.1 The closure Procedure</h4><p>为计算完整的初始状态$CC_0$m 需要通过closure将初始状态item中的所有隐含item加入到$CC_0$中. 以下是closure的算法实现:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">closure(s)</span><br><span class="line">  while (s is still changing)</span><br><span class="line">    for each item [$A \rightarrow \beta \bullet C \delta, a$] $\in$ s</span><br><span class="line">      for each production $C \rightarrow \gamma \in P$</span><br><span class="line">        for each b $\in$ FIRST($\delta a$)</span><br><span class="line">          s $\leftarrow$ s $\cup$ &#123;[$C \rightarrow \bullet \ \gamma, b$]&#125;</span><br><span class="line">  return s</span><br></pre></td></tr></table></figure>
+<p>closure()中的参数s是一个item集合, 算法会不断遍历集合中的每个item, 若$\bullet$后面紧跟一个nonterminal symbol C, 则将C的所有production加入到集合中, 并将$\bullet$放置在production开始位置, 依次循环, 直到不再添加新的item.<br>以$[A \rightarrow \beta \bullet C\delta, a]$为例, 该item说明parser已经读取$\beta$, 如果能reduce出C, 且之后紧跟$\delta a$, 则能reduce为A. 因此新添加的item之后必须紧跟$\delta a$. 假设C的production为$C \rightarrow \gamma$, 则closure()会将$\bullet$放在$\gamma$之前, 其前瞻符号为FIRST($\delta a$). 若$\delta$为$\epsilon$, 则前瞻符号为a.<br>回到括号语法, 其初始状态的item为[Goal $\rightarrow$ $\bullet$ List, eof], 使用closure()后$CC_0$扩展为item集合:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Goal $\rightarrow$ $\bullet$ List, eof]</span><br><span class="line">[List $\rightarrow$ $\bullet$ List Pair, eof]</span><br><span class="line">[List $\rightarrow$ $\bullet$ List Pair, (]</span><br><span class="line">[List $\rightarrow$ $\bullet$ Pair, eof]</span><br><span class="line">[List $\rightarrow$ $\bullet$ Pair, (]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (Pair), eof]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (Pair), (]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (), eof]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (), (]</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-2-2-The-goto-Procedure"><a href="#1-2-2-The-goto-Procedure" class="headerlink" title="1.2.2 The goto Procedure"></a>1.2.2 The goto Procedure</h4><p>以下是goto的算法实现:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">goto(s, x)</span><br><span class="line">  moved $\leftarrow \phi$</span><br><span class="line">  for each item i ∈ s</span><br><span class="line">    if the form of i is [$\alpha \rightarrow \beta \bullet x\delta, a$] then</span><br><span class="line">      moved $\leftarrow$ moved $\cup$ &#123;[$\alpha \rightarrow \beta x \bullet \delta, a$]&#125;</span><br><span class="line">  return closure(moved)</span><br></pre></td></tr></table></figure>
+<p>goto()函数有两个参数, s表示item集合, x表示语法符号. goto()会遍历s中的所有item, 若$cdot$后紧跟x, 则将$\bullet$后移一位, 并将新的item加入到集合moved中, 最后调用closure()获得完备集合. 以上一节的$CC_0$为例, goto($CC_0, \underline{(}$)的返回为:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ ( $\bullet$ Pair), eof] </span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ Pair), (] </span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ ), eof]</span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ ), (] </span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (Pair), )] </span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (), )]</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-2-3-The-Canonical-Collection-for-the-Parentheses-Grammar"><a href="#1-2-3-The-Canonical-Collection-for-the-Parentheses-Grammar" class="headerlink" title="1.2.3 The Canonical Collection for the Parentheses Grammar"></a>1.2.3 The Canonical Collection for the Parentheses Grammar</h4><p>有了closure()和goto()后就可以构建canonical collection of sets of LR(1) items. 从$CC_0$开始, 不断后移$cdot$, 直到所有$CC_i$的所有item都递到句尾. 以下是算法实现:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$CC_0$ $\leftarrow$ closure(&#123;[S&#x27; $\rightarrow \bullet$ S, eof]&#125;)</span><br><span class="line">$CC$ $\leftarrow$ &#123;$CC_0$&#125;</span><br><span class="line">while (new sets are still being added to $CC$)</span><br><span class="line">  for each unmarked set $CC_i \in CC$</span><br><span class="line">    mark $CC_i$ as processed</span><br><span class="line">    for each x following a $\bullet$ in an item in $CC_i$</span><br><span class="line">      temp $\leftarrow$ goto($CC_i$, x)</span><br><span class="line">      if temp $\notin CC$</span><br><span class="line">        then $CC \leftarrow CC \ \cup$ &#123;temp&#125;</span><br><span class="line">      record transition from $CC_i$ to temp on x</span><br></pre></td></tr></table></figure>
+<p>需要注意的是, $CC$集合只会单调扩张, 并不会缩小. 假设该语法存在n个LR(1) items, 则$CC$中最多存在$2^n$个item set. 以括号语法为例, 其$CC_0$集合如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Goal $\rightarrow \bullet$ List, eof]</span><br><span class="line">[List $\rightarrow \bullet$ List Pair, eof]</span><br><span class="line">[List $\rightarrow \bullet$ List Pair, (]</span><br><span class="line">[List $\rightarrow \bullet$ Pair, eof]</span><br><span class="line">[List $\rightarrow \bullet$ Pair, (]</span><br><span class="line">[Pair $\rightarrow \bullet$ (Pair), eof]</span><br><span class="line">[Pair $\rightarrow \bullet$ (Pair), (]</span><br><span class="line">[Pair $\rightarrow \bullet$ (), eof]</span><br><span class="line">[Pair $\rightarrow \bullet$ (), (]</span><br></pre></td></tr></table></figure>
+<ol>
+<li>第一次迭代: $CC_0$中的$\bullet$紧跟三种语法符号: List, Pair和$\underline{(}$, 所以可以生成三个item集合:</li>
+<li>$CC_1$: goto($CC_0$, List)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Goal $\rightarrow$ List $\bullet$, eof] </span><br><span class="line">[List $\rightarrow$ List $\bullet$ Pair, eof] </span><br><span class="line">[List $\rightarrow$ List $\bullet$ Pair, (]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (Pair), eof] </span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (Pair), (] </span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (), eof]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (), (]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_2$: goto($CC_0$, Pair)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[List $\rightarrow$ Pair $\bullet$, eof]</span><br><span class="line">[List $\rightarrow$ Pair $\bullet$, (]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_3$: goto($CC_0, \underline{(}$)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ $\bullet$ (Pair), )]</span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ Pair), eof]</span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ Pair), (]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (), )]</span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ ), eof]</span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ ), (]</span><br></pre></td></tr></table></figure></li>
+<li>第二次迭代: 从$CC_1$, $CC_3$推导新的item集合, 产生的4个新的item集合:</li>
+<li>$CC_4$: goto($CC_1$, Pair)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[List $\rightarrow$ List Pair $\bullet$, eof]</span><br><span class="line">[List $\rightarrow$ List Pair $\bullet$, (]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_5$: goto($CC_3$, Pair)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ (Pair$ \bullet$  ), eof]</span><br><span class="line">[Pair $\rightarrow$ (Pair$ \bullet$ ), (]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_6$: goto($CC_3, \underline{)}$)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ $\bullet$ (Pair), )]</span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ Pair), )]</span><br><span class="line">[Pair $\rightarrow$ $\bullet$ (), )]</span><br><span class="line">[Pair $\rightarrow$ ( $\bullet$ ), )]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_7$: goto($CC_3, \underline{)}$)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ () $\bullet$, eof]</span><br><span class="line">[Pair $\rightarrow$ () $\bullet$, (]</span><br></pre></td></tr></table></figure></li>
+<li>第三次迭代: 从$CC_5$, $CC_6$推导新的item集合, 产生的3个新的item集合:</li>
+<li>$CC_8$: goto($CC_5, \underline{)}$)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ (Pair) $\bullet$, eof] [Pair $\rightarrow$ (Pair) $\bullet$, (]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_9$: goto($CC_6, Pair$)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ (Pair $\bullet$ ), )]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_{10}$: goto($CC_6, \underline{(}$)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ () $\bullet$, )]</span><br></pre></td></tr></table></figure></li>
+<li>第四次迭代: 从$CC_9$推导新的item集合, 产生1个新的item集合:</li>
+<li>$CC_{11}$: goto($CC_9, \underline{)}$)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[Pair $\rightarrow$ (Pair) $\bullet$, )]</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>以下是括号语法canonical collection中的所有item集合的转换图:</p>
+<table>
+<thead>
+<tr>
+<th align="center">item</th>
+<th align="center">Goal</th>
+<th align="center">List</th>
+<th align="center">Pair</th>
+<th align="center">$\underline{(}$</th>
+<th align="center">$\underline{)}$</th>
+<th align="center">eof</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$CC_0$</td>
+<td align="center">$\phi$</td>
+<td align="center">$CC_1$</td>
+<td align="center">$CC_2$</td>
+<td align="center">$CC_3$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_1$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$CC_4$</td>
+<td align="center">$CC_3$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_2$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_3$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$CC_5$</td>
+<td align="center">$CC_6$</td>
+<td align="center">$CC_7$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_4$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_5$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$CC_8$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_6$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$CC_9$</td>
+<td align="center">$CC_6$</td>
+<td align="center">$CC_{10}$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_7$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_8$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_9$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$CC_{11}$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_{10}$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+</tr>
+<tr>
+<td align="center">$CC_{11}$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+<td align="center">$\phi$</td>
+</tr>
+</tbody></table>
+<h4 id="1-2-4-Filling-in-the-Tables"><a href="#1-2-4-Filling-in-the-Tables" class="headerlink" title="1.2.4 Filling in the Tables"></a>1.2.4 Filling in the Tables</h4><p>拥有canonical collection后就可以开始创建Action表和Goto表, 每个$CC_i$都作为一个parser的状态. Action表中会对三种情况产生表项:</p>
+<ol>
+<li>$[A \rightarrow \beta \bullet c \gamma, a]$: 表示parser遇到terminal symbol c, 这时只需向前移位. $\beta$和$\gamma$可以为$\epsilon$</li>
+<li>$[A \rightarrow \beta \bullet, a]$: 表示parser已识别完毕handle, 可reduce为A</li>
+<li>$[S&#39; \rightarrow S \bullet, eof]$: 表示parser识别到目标状态, 表示语法分析成功</li>
+</ol>
+<p>Goto只针对一种情况: $[A \rightarrow \beta \bullet C \gamma]$, 其中C为nonterminal symbol, 说明parser需要展开C. 以下是LR(1)的填表算法:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">for each $CC_i \in CC$</span><br><span class="line">  for each item $I \in CC_i$</span><br><span class="line">    if I is [$A \rightarrow \beta \bullet c \gamma$,a] and goto($CC_i$,c) = $CC_j$ then</span><br><span class="line">      Action[i, c] $\leftarrow$ &quot;shift j&quot;</span><br><span class="line">    else if I is [$A \rightarrow \beta \ \bullet$, a] then</span><br><span class="line">      Action[i, a] $\leftarrow$ &quot;reduce $A \rightarrow \beta$&quot;</span><br><span class="line">    else if I is [$S&#x27; \rightarrow S \ \bullet$, eof] then</span><br><span class="line">      Action[i, eof] $\leftarrow$ &quot;accept&quot;</span><br><span class="line">  for each $n \in NT$</span><br><span class="line">    if goto($CC_i$, n) = $CC_j$ then</span><br><span class="line">      Goto[i, n] $\leftarrow$ j</span><br></pre></td></tr></table></figure>
+<p>该算法中忽略了$\bullet$后紧跟nonterminal symbol的情况, 因为parser会使用Goto表不断展开nonterminal symbol直到找到一个terminal symbol, 因此reduce和accpet只针对terminal symbol. 以下是括号算法handle查找的DFA图:<br><img src="/images/Compiler/3-6.png" alt="Handle-Finding DFA for the Parentheses"></p>
+<p>LR(1) parser运行时会交错进行两种操作: shift和reduce. shift表示DFA中两个中间状态之间的转移, 并将沿途的handle和状态压入栈中; reduce表示从中间状态到目标状态的转移, 并将状态和handle从栈中弹出, 让过去的状态浮现在栈顶, parser再利用旧状态, 前瞻符号和Goto表来继续寻找handle. 无论是shift还是reduce, 都存在状态的转移, 唯一区别在于是否将状态和handle加入栈中或从栈中弹出.</p>
+<h3 id="1-3-Errors-in-the-Table-Construction"><a href="#1-3-Errors-in-the-Table-Construction" class="headerlink" title="1.3 Errors in the Table Construction"></a>1.3 Errors in the Table Construction</h3><p>以if-then-else结构的二义性语法为例, 其语法如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 $Goal \rightarrow Stmt$</span><br><span class="line">2 $Stmt \rightarrow \text&#123;if expr then&#125; \ Stmt$</span><br><span class="line">3      $| \ \text&#123;if expr then&#125; \ Stmt \ \text&#123;else&#125; \ Stmt$</span><br><span class="line">4      $| \ \text&#123;assign&#125;$</span><br></pre></td></tr></table></figure>
+<p>首先根据初始状态[Goal $\rightarrow$ $\bullet$ Stmt, eof]来生成第一个item集合$CC_0$:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Goal&#125;$ $\rightarrow$ $\bullet$ $\textit&#123;Stmt&#125;$, eof] </span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$, eof]</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ assign, eof] </span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$, eof]</span><br></pre></td></tr></table></figure>
+<ol>
+<li>第一次迭代: 根据$CC_0$中的$\bullet$紧跟的语法符号进行转移, 生成三个新的item集合:</li>
+<li>$CC_1$: goto($CC_0$, Stmt)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Goal&#125;$ $\rightarrow$ $\textit&#123;Stmt&#125;$ $\bullet$,eof]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_2$: goto($CC_0$, if)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if $\bullet$ expr then $\textit&#123;Stmt&#125;$ ,eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if $\bullet$ expr then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$ ,eof]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_3$: goto($CC_0$, assign)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ assign $\bullet$, eof]</span><br></pre></td></tr></table></figure></li>
+<li>第二次迭代: 由于$CC_1$和$CC_3$已经完成转移, 只需从$CC_2$出发, 对expr符号进行转移, 得到一个新的item集合:</li>
+<li>$CC_4$: goto($CC_2$, expr)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr $\bullet$ then $\textit&#123;Stmt&#125;$, eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr $\bullet$ then $\textit&#123;Stmt&#125;$ else Stmt&#125;$, eof]</span><br></pre></td></tr></table></figure></li>
+<li>第三次迭代: 从$CC_4$出发, 对then符号进行转移, 得到一个新的item集合:</li>
+<li>$CC_5$: goto($CC_4$, then)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\bullet$ $\textit&#123;Stmt&#125;$, eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\bullet$ $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$, eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ assign, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;]</span><br></pre></td></tr></table></figure></li>
+<li>第四次迭代: 从$CC_5$出发, 对Stmt, if和assign进行转移, 得到三个新的item集合</li>
+<li>$CC_6$: goto($CC_5$, Stmt)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ $\bullet$, eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ $\bullet$ else $\textit&#123;Stmt&#125;$, eof]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_7$: goto($CC_5$, if)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if $\bullet$ expr then $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if $\bullet$ expr then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_8$: goto($CC_5$, assign)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ assign $\bullet$, &#123;eof, else&#125;]</span><br></pre></td></tr></table></figure></li>
+<li>第五次迭代: 对$CC_6$的else符号和$CC_7$的expr符号进行转移, 生成2个新的item集合:</li>
+<li>$CC_9$: goto($CC_6$, else)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ else $\bullet$ $\textit&#123;Stmt&#125;$, eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$, eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$, eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ assign, eof]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_{10}$: goto($CC_7$, expr)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr $\bullet$ then $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr $\bullet$ then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;]</span><br></pre></td></tr></table></figure></li>
+<li>第六次迭代: 对$CC_9$的Stmt符号和$CC_{10}$的then符号进行转移, 生成2个新的item集合:</li>
+<li>$CC_{11}$: goto($CC_9$, Stmt)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$ $\bullet$, eof]</span><br></pre></td></tr></table></figure></li>
+<li>$CC_{12}$: goto($CC_{10}$, then)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\bullet$ $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\bullet$ $\textit&#123;Stmt&#125;$ else Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$ else Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ assign, &#123;eof, else&#125;]</span><br></pre></td></tr></table></figure></li>
+<li>第七次迭代: 对$CC_{12}$的Stmt符号进行转移, 获得1个新的item集合:</li>
+<li>$CC_{13}$: goto($CC_{12}$, Stmt)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ $\bullet$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ $\bullet$ else $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;]</span><br></pre></td></tr></table></figure></li>
+<li>第八次迭代: 对$CC_{13}$的else符号进行转移, 获得1个新的item集合:</li>
+<li>$CC_{14}$: goto($CC_{13}$, else)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ else $\bullet$ Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ if expr then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$, &#123;eof, else&#125;],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ $\bullet$ assign, &#123;eof, else&#125;]</span><br></pre></td></tr></table></figure></li>
+<li>第九次迭代: 对$CC_15$的Stmt符号进行转移, 获得1个新的item集合:</li>
+<li>$CC_{15}$: goto($CC_{14}$, Stmt)  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ else $\textit&#123;Stmt&#125;$ $\bullet$, &#123;eof, else&#125;]</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>其中, $CC_{13}$中的item存在shift-reduce conflict: </p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ $\bullet$, eof],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ $\bullet$ else $\textit&#123;Stmt&#125;$, eof]</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ $\bullet$, else],</span><br><span class="line">[$\textit&#123;Stmt&#125;$ $\rightarrow$ if expr then $\textit&#123;Stmt&#125;$ $\bullet$ else $\textit&#123;Stmt&#125;$, else]</span><br></pre></td></tr></table></figure>
+<p>但parser解析到else或eof时, 可选择reduce为Stmt, 也可选择shift到其他状态, 这种冲突是语法的二义性导致的问题. 除了shift-reduce conflict, 还存在reduce-reduce conflict, 例如: $[A \rightarrow \gamma \delta \bullet, a]$和$[B \rightarrow \gamma \delta \bullet, a]$, 前瞻符号a会导致A和B的reduce冲突, 需要重构语法来消除二义性.</p>
+<h2 id="2-Practical-Issues"><a href="#2-Practical-Issues" class="headerlink" title="2. Practical Issues"></a>2. Practical Issues</h2><h3 id="2-1-Error-Recovery"><a href="#2-1-Error-Recovery" class="headerlink" title="2.1 Error Recovery"></a>2.1 Error Recovery</h3><p>当编译包含语法错误的代码时, 编译器会汇报尽量多的语法错误. 但上述所讲述的parser遇到语法错误就会停止运行, 这导致每次编译只能汇报一个语法错误. 为了在一次编译中找到尽量多的语法错误, 需要一种从错误中恢复的机制: 转换到另一个状态. 当parser遇到一个语法错误时, 会不断丢弃输入字符, 直到找到一个synchronizing word(同步单词), 并将内部状态重置为与同步按此相一致的状态. 很多语法以semicolon(分号)作为单个语句的终止符, 因此parser检测到错误时可直接抛弃整条语句, 直到找到下一个semicolon, 并将状态重置为成功识别语句的目标状态.<br>对于LR(1) parser, 再同步机制更为负责. Parser需要不断丢弃输入, 直到找到semicolon; 接下从上到下扫描栈, 直到找到一个非错误表项. </p>
+<h3 id="2-2-Unary-Operators"><a href="#2-2-Unary-Operators" class="headerlink" title="2.2 Unary Operators"></a>2.2 Unary Operators</h3><p>表达式语法只包含二元运算符, 但代数运算包含大量一元运算符, 如负号. 程序设计语言中也存在很多一元运算符, 如递增, 递减, 取址, 引用, 取反. 向表达式语法添加一元运算符时应谨慎处理.<br>一般来说, 一元运算符的优先级高于二元运算符, 例如一元绝对值运算符$||$, 其优先级高于$\times$和$\div$, 但低于Factor, 以便使用$||$对括号内的表达式求值. 以下是添加了绝对值后的语法:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">0  $\textit&#123;Goal&#125; \rightarrow \textit&#123;Expr&#125;$</span><br><span class="line">1  $\textit&#123;Expr&#125; \rightarrow \textit&#123;Expr&#125; + \textit&#123;Term&#125;$</span><br><span class="line">2      | $\textit&#123;Expr&#125; - \textit&#123;Term&#125;$</span><br><span class="line">3      | $\textit&#123;Term&#125;$</span><br><span class="line">4  $\textit&#123;Term&#125; \rightarrow \textit&#123;Term&#125; \times \textit&#123;Value&#125;$</span><br><span class="line">5      | $\textit&#123;Term&#125; \div \textit&#123;Value&#125;$</span><br><span class="line">6      | $\textit&#123;Value&#125;$</span><br><span class="line">7  $\textit&#123;Value&#125; \rightarrow || \ \textit&#123;Factor&#125;$</span><br><span class="line">8      | $\textit&#123;Factor&#125;$</span><br><span class="line">9  $\textit&#123;Factor&#125; \rightarrow ( \ \textit&#123;Expr&#125; \ )$</span><br><span class="line">10     | num</span><br><span class="line">11     | name</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Handle-Context-Sensitive-Ambiguity"><a href="#2-3-Handle-Context-Sensitive-Ambiguity" class="headerlink" title="2.3 Handle Context-Sensitive Ambiguity"></a>2.3 Handle Context-Sensitive Ambiguity</h3><p>当使用一个单词或符号来表示两种不同语义时, 可能导致语法二义性. 以早期程序设计语言为例, 它们会用括号来表示函数参数和数组下标, 其语法如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Factor&#125; \rightarrow \textit&#123;FunctionReference&#125;$</span><br><span class="line">2      | $\textit&#123;ArrayReference&#125;$</span><br><span class="line">3      | ( $\textit&#123;Expr&#125;$ )</span><br><span class="line">4      | num</span><br><span class="line">5      | name</span><br><span class="line">6 $\textit&#123;FunctionReference&#125; \rightarrow$ name ( $\textit&#123;ArgList&#125;$ )</span><br><span class="line">7 $\textit&#123;ArrayReference&#125; \rightarrow$ name ( $\textit&#123;ArgList&#125;$ )</span><br></pre></td></tr></table></figure>
+<p>面对代码为$fee(i, j)$时, parser不知道fee是二维数组还是函数名称, 因为FunctionReference和ArrayReference产生了reduce-reduce conflict. 这时有两种方法解决, 一个是重写语法, 将函数参数和数组引用合并为一个产生式, 将问题拖延到后续步骤解决; 或通过声明类型归类标识符, 修改为以下语法:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$\textit&#123;FunctionReference&#125; \rightarrow$ function-name ( $\textit&#123;ArgList&#125;$ )</span><br><span class="line">$\textit&#123;ArrayReference&#125; \rightarrow$ variable-name ( $\textit&#123;ArgList&#125;$ )</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-Left-Versus-Right-Recursion"><a href="#2-4-Left-Versus-Right-Recursion" class="headerlink" title="2.4 Left Versus Right Recursion"></a>2.4 Left Versus Right Recursion</h3><p>Top-down parser需要使用右递归语法, 而buttom-up parser可适应左递归或右递归语法, 因此需要在左右递归之间做出一个选择. 通常需要考虑以下两个因素:</p>
+<h4 id="2-4-1-Stack-Depth"><a href="#2-4-1-Stack-Depth" class="headerlink" title="2.4.1 Stack Depth"></a>2.4.1 Stack Depth</h4><p>一般来说, 左递归使用的栈深度较小, 以下列语法为例:</p>
+<ol>
+<li>左递归语法: 先将$elt_1$压入栈中, 将其reduce为List; 然后将$elt_2$压入栈中, reduce为List, 以此类推, 将剩下的所有elt压入并reduce为List. 栈的最大深度为2.<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$\textit&#123;List&#125; \rightarrow \textit&#123;List&#125; \ \text&#123;elt&#125;$</span><br><span class="line">    | $\text&#123;elt&#125;$</span><br></pre></td></tr></table></figure></li>
+<li>右递归语法: 将所有elt压入栈中, 取出$elt_5$并reduce为List, 并以此类推, 将栈中剩下的elt弹出并reduce为List. 栈的最大深度为5.<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$\textit&#123;List&#125; \rightarrow \text&#123;elt&#125; \ \textit&#123;List&#125;$</span><br><span class="line">    | $\text&#123;elt&#125;$</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>右递归语法需要更多栈空间, 其最大栈深度与输入字符的数量相关; 左递归语法的最大深度则取决于语法本身, 与输入流无关.</p>
+<h4 id="2-4-2-Associativity"><a href="#2-4-2-Associativity" class="headerlink" title="2.4.2 Associativity"></a>2.4.2 Associativity</h4><p>左递归语法具有左结合性, 右递归语法具有右结合性. 对于输入$X_1 + X_2 + X_3$来说, 左递归语法遵守从左到右的求值顺序, 等同于$(X_1 + X_2) + X_3$; 右递归语法遵守从右到左的求值顺序, 等同于$X_1 + (X_2 + X_3)$, 两种语法都可获得正确结果. 但对于$X_1 - X_2 + X_3$, 左递归等同于$(X_1 - X_2) + X_3$, 右递归等同于$X_1 - (X_2 + X_3)$, 两者会造成全完不同的结果. 因此必须遵守语言规定的求值次序, 并谨慎的生成intermediate<br>representation, 以反映正确的结合性.</p>
+<h2 id="3-Advanced-Topics"><a href="#3-Advanced-Topics" class="headerlink" title="3. Advanced Topics"></a>3. Advanced Topics</h2><h3 id="3-1-Optimize-a-Grammar"><a href="#3-1-Optimize-a-Grammar" class="headerlink" title="3.1 Optimize a Grammar"></a>3.1 Optimize a Grammar</h3><p>语法本身对解析语法的工作量有直接影响. Top-down parser和button-up parser都需要构建推导: Top-down parser对每个production进行expand(扩展); Button-up parser对每个production进行reduce(规约). 若production较短, 则语法分析的所需时间就会较短.<br>通常可通过重写语法来降低parser tree的高度, 以此减少expand或reduce的操作次数. 以括号语法为例, 输入流$a + 2 x b$的parse tree如下:<br><img src="/images/Compiler/3-7.png" alt="Parse Tree for a + 2 x b (1)"></p>
+<p>任何只有一个子节点的内部节点都是优化的候选者, 可将Factor添加到Term中, 如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Term&#125; \rightarrow \textit&#123;Term&#125; \ \times \ ( \ \textit&#123;Expr&#125; \ )$</span><br><span class="line">2     | $\textit&#123;Term&#125;$ $\times$ name</span><br><span class="line">3     | $\textit&#123;Term&#125;$ $\times$ num</span><br><span class="line">4     | $\textit&#123;Term&#125;$ $\div$ $( \ \textit&#123;Expr&#125; \ )$</span><br><span class="line">5     | $\textit&#123;Term&#125;$ $\div$ name</span><br><span class="line">6     | $\textit&#123;Term&#125;$ $\div$ num</span><br><span class="line">7     | ( $\textit&#123;Expr&#125;$ )</span><br><span class="line">8     | name</span><br><span class="line">9     | num</span><br></pre></td></tr></table></figure>
+<p>以下是parse tree:<br><img src="/images/Compiler/3-8.png" alt="Parse Tree for a + 2 x b (2)"></p>
+<p>语法优化后, 消除了3个reduce操作, 但shift操作数量不变. 一般来说, production只含有一个符号都是可以折叠起来, 这种production被称为useless production; 但有时这种production可是的语法更为紧凑, 更具有可读性. </p>
+<h3 id="3-2-Reduce-the-Size-of-LR-1-Table"><a href="#3-2-Reduce-the-Size-of-LR-1-Table" class="headerlink" title="3.2 Reduce the Size of LR(1) Table"></a>3.2 Reduce the Size of LR(1) Table</h3><p>本节将介绍三种缩小LR(1) table的方法, 以下是代数表达式的Action table和Goto table:<br><img src="/images/Compiler/3-9.png" alt="Action Table for the Classic Expression Grammar"><br><img src="/images/Compiler/3-10.png" alt="Goto Table for the Classic Expression Grammar"></p>
+<ol>
+<li><p>Combine Rows or Columns<br>若存在两行或者两列拥有相同表项, 则可以合并两者. Action table中第7行到第10行相同, 第4, 14, 21, 22, 24和25行也相同, 因此只需要实现一次. 合并后Action表减少9行, 节省了28%空间. 合并行列虽然能直接减小表体积, 但可能降低表的访问速度, 因为需要添加一个额外的表访问方式, 必须在内存访问和内存空间之间做出权衡.</p>
+</li>
+<li><p>Shrink the Grammar<br>通过重写语法来减少production数量来缩小表体积. 例如: 将$\times$和$\div$合并为terminal symbol <strong>muldiv</strong>, 将$+$和$-$合并为terminal symbol <strong>addsub</strong>, 将num和name合并为一个符号<strong>val</strong>. 重写后的语法如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 $\textit&#123;Goal&#125; \rightarrow \textit&#123;Expr&#125;$</span><br><span class="line">2 $\textit&#123;Expr&#125; \rightarrow \textit&#123;Expr&#125;$ addsub $\textit&#123;Term&#125;$</span><br><span class="line">3     | $\textit&#123;Term&#125;$</span><br><span class="line">4 $\textit&#123;Term&#125; \rightarrow \textit&#123;Term&#125;$ muldiv $\textit&#123;Factor&#125;$</span><br><span class="line">5     | $\textit&#123;Factor&#125;$</span><br><span class="line">6 $\textit&#123;Factor&#125;$ $\rightarrow$ $( \ \textit&#123;Expr&#125; \ )$</span><br><span class="line">7     | val</span><br></pre></td></tr></table></figure>
+<p>  Action table因此减少了三列.</p>
+</li>
+<li><p>Directly Encoding the Table<br>作为最终的改进方式, parser generator可直接放弃table-driven skeleton parser, 而选择hard-coded方式, 将每个状态变成一个小的case语句来替代Action table和Goto table. 这种方式可避免表示Action table和Goto table中的空表项, 也就是语法错误的表项. 使用适当的代码布局技术, 生成的parser在instruction cache和paging system中呈现出很强的局部性; 缺点在于, 这种方式生成的代码几乎不可读. </p>
+</li>
+<li><p>Use Other Construction Algorithms<br>除了canonical LR(1), 还有一些其他的LL parser. 例如: SLR(1), LALR(1)就和lookahead LR(1), 这些算法都可以生成更小的表. 但这些算法也存在一些局限性, canonical LR(1)相比之下还是最通用的构造法. 虽然产生的表体积最大, 但可接受的语法范畴也最大.</p>
+</li>
+</ol>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Compiler/">Compiler</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/ab2f.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Context Sensitive Analysis (1)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/52ae.html">
+        <span class="next-text nav-default">Parser (1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/610c.html';
+  var disqus_title = "Parser (2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

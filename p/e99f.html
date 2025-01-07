@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Counting"/>
+
+
+
+
+  <meta name="keywords" content="Concurrency," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/e99f.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/e99f.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/e99f.html"/>
+
+
+<meta name="description" content="1. IntroCounting(计数)似乎是最基础简单的操作, 但在并发系统中就变得具有挑战性. 单线程中的计数可写成以下处理: long counter &#x3D; 0;void inc_count(void)&amp;#123;  counter++;&amp;#125;long read_count(void)&amp;#123;  return counter;&amp;#125; 很明显, 并发情况下并不能这么计数, 因为变">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Counting">
+<meta property="og:url" content="https://zaf1ro.github.io/p/e99f.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroCounting(计数)似乎是最基础简单的操作, 但在并发系统中就变得具有挑战性. 单线程中的计数可写成以下处理: long counter &#x3D; 0;void inc_count(void)&amp;#123;  counter++;&amp;#125;long read_count(void)&amp;#123;  return counter;&amp;#125; 很明显, 并发情况下并不能这么计数, 因为变">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/counting-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/counting-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/counting-3.png">
+<meta property="article:published_time" content="2019-05-25T12:45:12.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.032Z">
+<meta property="article:tag" content="Concurrency">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/multithreading/Basic/counting-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Counting - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Intro"><span class="toc-text">1. Intro</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Statistical-Counter"><span class="toc-text">2. Statistical Counter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Per-Thread-Statistical-Counters"><span class="toc-text">2.1 Per-Thread Statistical Counters</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Eventually-Consistent-Array-Based-Implementation"><span class="toc-text">2.2 Eventually Consistent Array-Based Implementation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Approximate-Limit-Counters"><span class="toc-text">3. Approximate Limit Counters</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Simple-Limit-Counter-Implementation"><span class="toc-text">3.1 Simple Limit Counter Implementation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Exact-Limit-Counters"><span class="toc-text">4. Exact Limit Counters</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Atomic-Limit-Counter-Implementation"><span class="toc-text">4.1 Atomic Limit Counter Implementation</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Counting
+        
+      </h1>
+      <time class="post-time">
+          05/25/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Intro"><a href="#1-Intro" class="headerlink" title="1. Intro"></a>1. Intro</h2><p>Counting(计数)似乎是最基础简单的操作, 但在并发系统中就变得具有挑战性. 单线程中的计数可写成以下处理:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">long</span> counter = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">inc_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  counter++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">long</span> <span class="title function_">read_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> counter;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很明显, 并发情况下并不能这么计数, 因为变量counter作为CPU争抢的资源, 必须有保护机制保证counter+1操作的consistency(一致性)</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">atomic_t</span> counter = ATOMIC_INIT(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">inc_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">atomic_inc</span>(&amp;counter);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">long</span> <span class="title function_">read_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="type">atomic_read</span>(&amp;counter);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里我们使用atomic operation来解决data race, 因为atomic operation适合于这种简单的操作(加减操作), 且代价比锁机制小. 然而对于超大数据量的情况, atomic operation的表现并不够快, 主要原因在于cache miss: 每当CPU想要对counter进行+1操作, counter所在cache很可能不在该CPU的cache中, 这时就需要移动counter到该CPU的cache中. 由于每个CPU都有机会更新counter, 导致大部分时间用于在cache之间移动counter, 如下图:<br><img src="/images/multithreading/Basic/counting-1.png" alt="Data Flow For Global Atomic Increment"></p>
+<h2 id="2-Statistical-Counter"><a href="#2-Statistical-Counter" class="headerlink" title="2. Statistical Counter"></a>2. Statistical Counter</h2><p>假设有一台服务器每秒接受数百万个数据包, 每接受到一个数据包都要counter+1, 服务器上的监控器每隔5秒要读取计数器的数值. 该计数系统的特点在于: counter更新频率极高, 但读取频率很低.</p>
+<h3 id="2-1-Per-Thread-Statistical-Counters"><a href="#2-1-Per-Thread-Statistical-Counters" class="headerlink" title="2.1 Per-Thread Statistical Counters"></a>2.1 Per-Thread Statistical Counters</h3><p>为避免时间浪费在cache miss上, 可使用pre-thread variable让每个CPU维护自己的counter变量, 当需要读取计数结果时, 把每个线程的counter相加即可, 这样不需要频繁在cache之间移动:<br><img src="/images/multithreading/Basic/counting-2.png" alt="Data Flow For Per-Thread Increment"></p>
+<p>代码如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">DEFINE_PER_THREAD(<span class="type">long</span>, counter);</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">inc_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  __get_thread_var(counter)++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">long</span> <span class="title function_">read_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> t;</span><br><span class="line">  <span class="type">long</span> sum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  for_each_thread(t)</span><br><span class="line">    sum += per_thread(counter, t);</span><br><span class="line">  <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然以上代码解决了<code>inc_count()</code>的速度问题, 但还存在另外两个问题:</p>
+<ol>
+<li>如果调用<code>read_count()</code>时<code>inc_count()</code>同样在运行, 则最后得到的计数结果并不是准确的, 因为并没有使用atomic operation或lock来保证一致性</li>
+<li>gcc并未提供一个类似<code>for_each_thread()</code>的函数</li>
+<li>Pre-thread variable随thread结束而被清除. 假设<code>read_count()</code>在某个计数thread运行结束后尝试获取该thread的counter变量, 会导致错误.</li>
+</ol>
+<h3 id="2-2-Eventually-Consistent-Array-Based-Implementation"><a href="#2-2-Eventually-Consistent-Array-Based-Implementation" class="headerlink" title="2.2 Eventually Consistent Array-Based Implementation"></a>2.2 Eventually Consistent Array-Based Implementation</h3><p>为解决以上三个问题, 可以在不影响<code>inc_count()</code>和<code>read_count()</code>的性能下提出以下三点解决方案:</p>
+<ol>
+<li>虽然不能在不使用atomic operation或lock且不断运行<code>inc_count()</code>的情况下获得准确的计数结果, 可以退而求其次, 尝试在所有thread运行结束后获得准确的总计数结果, 也就是Eventually Consistent(最终一致性)</li>
+<li>维护一个array来跟踪所有thread的pre-thread variables</li>
+<li>Thread在结束之前将其pre-thread variable传给array</li>
+</ol>
+<p>实现代码如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">long</span> __thread counter = <span class="number">0</span>;</span><br><span class="line"><span class="type">long</span> *counterp[NR_THREADS] = &#123; <span class="literal">NULL</span> &#125;;</span><br><span class="line"><span class="type">long</span> finalcount = <span class="number">0</span>;</span><br><span class="line">DEFINE_SPINLOCK(final_mutex);</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">inc_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  counter++;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Add all counter variables from array `counterp`</span></span><br><span class="line"><span class="type">long</span> <span class="title function_">read_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> t;</span><br><span class="line">  <span class="type">long</span> sum;</span><br><span class="line">  </span><br><span class="line">  spin_lock(&amp;final_mutex);</span><br><span class="line">  sum = finalcount;</span><br><span class="line">  for_each_thread(t)</span><br><span class="line">    <span class="keyword">if</span> (counterp[t] != <span class="literal">NULL</span>)</span><br><span class="line">        sum += *counterp[t];</span><br><span class="line">  spin_unlock(&amp;final_mutex);</span><br><span class="line">  <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Must be called by each thread before its first use of this counter</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">count_register_thread</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> idx = smp_thread_id();</span><br><span class="line">  </span><br><span class="line">  spin_lock(&amp;final_mutex);</span><br><span class="line">  counterp[idx] = &amp;counter;</span><br><span class="line">  spin_unlock(&amp;final_mutex);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Must be called by each thread before thread exits</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">count_unregister_thread</span><span class="params">(<span class="type">int</span> nthreadsexpected)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> idx = smp_thread_id();</span><br><span class="line">  </span><br><span class="line">  spin_lock(&amp;final_mutex);</span><br><span class="line">  finalcount += counter;</span><br><span class="line">  counterp[idx] = <span class="literal">NULL</span>;</span><br><span class="line">  spin_unlock(&amp;final_mutex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样既可以保证<code>inc_count()</code>, <code>read_count()</code>的效率, 也能一定程度上保证数据一致性, 但也存在部分缺陷, 例如: 数组counterp的大小限制了线程的数量</p>
+<h2 id="3-Approximate-Limit-Counters"><a href="#3-Approximate-Limit-Counters" class="headerlink" title="3. Approximate Limit Counters"></a>3. Approximate Limit Counters</h2><p>假设需要设计一个计数器来监控某个structure(结构体): </p>
+<ul>
+<li>allocate(分配)该结构体时计数器+1</li>
+<li>销毁结构体时计数器-1</li>
+<li>结构体的数量上限为10000个, 若申请数量超过上限则获取分配失败</li>
+</ul>
+<h3 id="3-1-Simple-Limit-Counter-Implementation"><a href="#3-1-Simple-Limit-Counter-Implementation" class="headerlink" title="3.1 Simple Limit Counter Implementation"></a>3.1 Simple Limit Counter Implementation</h3><p>一种简单的设计思路: 将10000这个限制值平均划分给多个thread，然后给每个thread一个固定个数的结构体池. 假如有100个thread，则每个thread管理100个结构体. 但这种设计无法应对一种常见情况: 某个thread一直被要求分配结构体, 另一个thread一直销毁结构体. 由于thread之间无法共享结构体, 导致thread会经常处于结构体过剩或饥饿的状态.<br>这时需要采用部分分治的方法, 除了每个thread维护一个counter外, 还要维护一个全局counter, 当出现结构体过剩或饥饿时及时扩大或缩小thread的资源池.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Pre-thread varibles</span></span><br><span class="line"><span class="comment">// thread&#x27;s counter</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> __thread counter = <span class="number">0</span>;</span><br><span class="line"><span class="comment">// upper bound of thread&#x27;s counter</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> __thread countermax = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Global variables</span></span><br><span class="line"><span class="comment">// upper bound for number of structures</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> g_countermax = <span class="number">10000</span>;</span><br><span class="line"><span class="comment">// The total number of allocated structures</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> g_counter = <span class="number">0</span>;</span><br><span class="line"><span class="comment">// Sum of all of the per-thread countermax variables</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> g_reserve = <span class="number">0</span>;</span><br><span class="line"><span class="comment">// References the corresponding thread’s counter variable</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> *counterp[NR_THREADS] = &#123; <span class="literal">NULL</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Guards all of the global variables</span></span><br><span class="line">DEFINE_SPINLOCK(gblcnt_mutex);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Adds the specified value `delta` to the counter.</span></span><br><span class="line"><span class="comment"> * @return If successful, return 1. Otherwise, return 0.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">add_count</span><span class="params">(<span class="type">unsigned</span> <span class="type">long</span> delta)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// fastpath</span></span><br><span class="line">  <span class="keyword">if</span> (countermax - counter &gt;= delta) &#123; <span class="comment">// checks to see if there is room for delta on counter</span></span><br><span class="line">    counter += delta;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// slowpath</span></span><br><span class="line">  spin_lock(&amp;gblcnt_mutex); <span class="comment">// Before access global variables, acquire gblcnt_mutex</span></span><br><span class="line">  globalize_count();</span><br><span class="line">  <span class="keyword">if</span> (g_countermax - g_counter - g_reserve &lt; delta) &#123; <span class="comment">// no more room for structure</span></span><br><span class="line">    spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  g_counter += delta;</span><br><span class="line">  balance_count();</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Subtracts the specified value `delta` from the counter</span></span><br><span class="line"><span class="comment"> * @return If successful, return 1. Otherwise, return 0.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sub_count</span><span class="params">(<span class="type">unsigned</span> <span class="type">long</span> delta)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (counter &gt;= delta) &#123;</span><br><span class="line">    counter -= delta;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  globalize_count();</span><br><span class="line">  <span class="keyword">if</span> (g_counter &lt; delta) &#123;</span><br><span class="line">    spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  g_counter -= delta;</span><br><span class="line">  balance_count();</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> <span class="title function_">read_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> t;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span> sum;</span><br><span class="line">  </span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  sum = g_counter;</span><br><span class="line">  for_each_thread(t)</span><br><span class="line">    <span class="keyword">if</span> (counterp[t] != <span class="literal">NULL</span>)</span><br><span class="line">      sum += *counterp[t];</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">  <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所有pre-thread variables和global variables之间的不等式如下:</p>
+<p>$$<br>\begin{align}<br>\tag{1} \text{g_counter} + \text{g_reserve} \leq \text{g_countermax}  \\<br>\tag{2} \sum_{i&#x3D;1}^{nThreads}(countermax_i) \leq \text{g_reserve} \\<br>\tag{3} counter_i \leq countermax_i<br>\end{align}<br>$$</p>
+<p><img src="/images/multithreading/Basic/counting-3.png" alt="Simple Limit Counter Variable Relationships"></p>
+<p>每当thread需要调用global variables时, 说明thread结构体过剩或饥饿, 需要调用<code>globalize_count()</code>和<code>balance_count()</code>来更新pre-thread variables和global variables:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Clear out this thread’s counter state</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">globalize_count</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  g_counter += counter;</span><br><span class="line">  counter = <span class="number">0</span>;</span><br><span class="line">  g_reserve -= countermax;</span><br><span class="line">  countermax = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Set this thread’s countermax to re-enable the fastpath</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">balance_count</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  countermax = g_countermax - g_counter - g_reserve;</span><br><span class="line">  countermax /= num_online_threads();</span><br><span class="line">  g_reserve += countermax;</span><br><span class="line">  counter = countermax / <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">if</span> (counter &gt; g_counter)</span><br><span class="line">    counter = g_counter;</span><br><span class="line">  g_counter -= counter;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Set up state for newly created threads</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">count_register_thread</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> idx = smp_thread_id();</span><br><span class="line">  </span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  counterp[idx] = &amp;counter;</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Tear down state for a soon-to-be-exiting thread</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">count_unregister_thread</span><span class="params">(<span class="type">int</span> nthreadsexpected)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> idx = smp_thread_id();</span><br><span class="line"></span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  globalize_count();</span><br><span class="line">  counterp[idx] = <span class="literal">NULL</span>;</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该计数系统还是存在两个互为矛盾的缺陷:</p>
+<ol>
+<li><strong>部分分治</strong>的思路让fastpath部分运行极快, 但当thread数量过多时, thread的countermax和counter数值过小, 因而导致无法进入fastpath, 运算性能下降.</li>
+<li>如果限制thread数量, 让单个thread的countermax的数值变大. 假设单个thread的countermax为R, 则g_countermax的accuracy(精确度)降低R&#x2F;2. 因此精确度和运算性能之间形成了相互制衡.</li>
+</ol>
+<h2 id="4-Exact-Limit-Counters"><a href="#4-Exact-Limit-Counters" class="headerlink" title="4. Exact Limit Counters"></a>4. Exact Limit Counters</h2><p>实现一个精确上限的计数器有两种方式:</p>
+<ul>
+<li>放弃单个thread的pre-thread variables, 全部使用global variables</li>
+<li>使用atomic instruction操作单个线程的thread的pre-thread variables, 但允许thread之间相互操作</li>
+</ul>
+<p>这里选择使用第二种方法来实现Exact Limit Counters</p>
+<h3 id="4-1-Atomic-Limit-Counter-Implementation"><a href="#4-1-Atomic-Limit-Counter-Implementation" class="headerlink" title="4.1 Atomic Limit Counter Implementation"></a>4.1 Atomic Limit Counter Implementation</h3><p>由于pre-thread variables有两个(counter和countermax), 但atomic operation只能对单个variable操作, 所以这里选择将counter和countermax放入一个int变量中, counter占前16位, countermax占后16位</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">atomic_t</span> __thread ctrandmax = ATOMIC_INIT(<span class="number">0</span>); <span class="comment">// counter and countermax</span></span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> g_countermax = <span class="number">10000</span>;</span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> g_counter = <span class="number">0</span>;</span><br><span class="line"><span class="type">unsigned</span> <span class="type">long</span> g_reserve = <span class="number">0</span>;</span><br><span class="line"><span class="type">atomic_t</span> *counterp[NR_THREADS] = &#123; <span class="literal">NULL</span> &#125;;</span><br><span class="line">DEFINE_SPINLOCK(gblcnt_mutex);</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CM_BITS (sizeof(atomic_t) * 4) <span class="comment">// number of bits used for counter or countermax</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_COUNTERMAX ((1 &lt;&lt; CM_BITS) - 1) <span class="comment">// bitmask for counter or countermax</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">split_ctrandmax_int</span><span class="params">(<span class="type">int</span> cami, <span class="type">int</span> *c, <span class="type">int</span> *cm)</span></span><br><span class="line">&#123;</span><br><span class="line">  *c = (cami &gt;&gt; CM_BITS) &amp; MAX_COUNTERMAX;</span><br><span class="line">  *cm = cami &amp; MAX_COUNTERMAX;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Extract counter `c` and countermax `cm` from ctrandmax `cam` </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">split_ctrandmax</span><span class="params">(<span class="type">atomic_t</span> *cam, <span class="type">int</span> *old, <span class="type">int</span> *c, <span class="type">int</span> *cm)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> cami = <span class="type">atomic_read</span>(cam);</span><br><span class="line">  *old = cami;</span><br><span class="line">  split_ctrandmax_int(cami, c, cm);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Combine counter `c` and countermax `cm` to ctrandmax</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">merge_ctrandmax</span><span class="params">(<span class="type">int</span> c, <span class="type">int</span> cm)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> cami;</span><br><span class="line">  cami = (c &lt;&lt; CM_BITS) | cm;</span><br><span class="line">  <span class="keyword">return</span> ((<span class="type">int</span>)cami);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来是add_count()和sub_count():</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">add_count</span><span class="params">(<span class="type">unsigned</span> <span class="type">long</span> delta)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> c;</span><br><span class="line">  <span class="type">int</span> cm;</span><br><span class="line">  <span class="type">int</span> old;</span><br><span class="line">  <span class="type">int</span> new;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    split_ctrandmax(&amp;ctrandmax, &amp;old, &amp;c, &amp;cm);</span><br><span class="line">    <span class="keyword">if</span> (delta &gt; MAX_COUNTERMAX || c + delta &gt; cm)</span><br><span class="line">      <span class="keyword">goto</span> slowpath;</span><br><span class="line">    new = merge_ctrandmax(c + delta, cm);</span><br><span class="line">  &#125; <span class="keyword">while</span> (atomic_cmpxchg(&amp;ctrandmax, old, new) != old); </span><br><span class="line">  <span class="comment">// atomically compares ctrandmax to old, replace ctrandmax with new if success</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">slowpath:</span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  globalize_count();</span><br><span class="line">  <span class="keyword">if</span> (g_countermax - g_counter - g_reserve &lt; delta) &#123;</span><br><span class="line">    <span class="comment">// flush all threads’ local state to the global counters</span></span><br><span class="line">    flush_local_count();</span><br><span class="line">    <span class="keyword">if</span> (g_countermax - g_counter - g_reserve &lt; delta) &#123; <span class="comment">// no space for allocation</span></span><br><span class="line">      spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  g_counter += delta;</span><br><span class="line">  balance_count();</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sub_count</span><span class="params">(<span class="type">unsigned</span> <span class="type">long</span> delta)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> c;</span><br><span class="line">  <span class="type">int</span> cm;</span><br><span class="line">  <span class="type">int</span> old;</span><br><span class="line">  <span class="type">int</span> new;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    split_ctrandmax(&amp;ctrandmax, &amp;old, &amp;c, &amp;cm);</span><br><span class="line">    <span class="keyword">if</span> (delta &gt; c)</span><br><span class="line">      <span class="keyword">goto</span> slowpath;</span><br><span class="line">    new = merge_ctrandmax(c - delta, cm);</span><br><span class="line">  &#125; <span class="keyword">while</span> (atomic_cmpxchg(&amp;ctrandmax, old, new) != old);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">slowpath:</span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  globalize_count();</span><br><span class="line">  <span class="keyword">if</span> (g_counter &lt; delta) &#123;</span><br><span class="line">    flush_local_count();</span><br><span class="line">    <span class="keyword">if</span> (g_counter &lt; delta) &#123;</span><br><span class="line">      spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">      <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  g_counter -= delta;</span><br><span class="line">  balance_count();</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>read_count()</code>的实现与Approximate Limit Counters基本相同, 唯一区别在于调用<code>split_ctrandmax()</code>提取counter:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">long</span> <span class="title function_">read_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> c;</span><br><span class="line">  <span class="type">int</span> cm;</span><br><span class="line">  <span class="type">int</span> old;</span><br><span class="line">  <span class="type">int</span> t;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span> sum;</span><br><span class="line">  </span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  sum = g_counter;</span><br><span class="line">  for_each_thread(t)</span><br><span class="line">    <span class="keyword">if</span> (counterp[t] != <span class="literal">NULL</span>) &#123; <span class="comment">// get counter from ctrandmax</span></span><br><span class="line">      split_ctrandmax(counterp[t], &amp;old, &amp;c, &amp;cm);</span><br><span class="line">      sum += c;</span><br><span class="line">    &#125;</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">  <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后是最重要的<code>flush_local_count()</code>和其他函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">globalize_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> c;</span><br><span class="line">  <span class="type">int</span> cm;</span><br><span class="line">  <span class="type">int</span> old;</span><br><span class="line"></span><br><span class="line">  split_ctrandmax(&amp;ctrandmax, &amp;old, &amp;c, &amp;cm);</span><br><span class="line">  g_counter += c;</span><br><span class="line">  g_reserve -= cm;</span><br><span class="line">  old = merge_ctrandmax(<span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="type">atomic_set</span>(&amp;ctrandmax, old);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">flush_local_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> c;</span><br><span class="line">  <span class="type">int</span> cm;</span><br><span class="line">  <span class="type">int</span> old;</span><br><span class="line">  <span class="type">int</span> t;</span><br><span class="line">  <span class="type">int</span> zero;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (g_reserve == <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  zero = merge_ctrandmax(<span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  for_each_thread(t)</span><br><span class="line">    <span class="keyword">if</span> (counterp[t] != <span class="literal">NULL</span>) &#123;</span><br><span class="line">      <span class="comment">// initializes countermax with zero</span></span><br><span class="line">      old = <span class="type">atomic_xchg</span>(counterp[t], zero);</span><br><span class="line">      <span class="comment">// update g_counter and g_reserve</span></span><br><span class="line">      split_ctrandmax_int(old, &amp;c, &amp;cm);</span><br><span class="line">      g_counter += c;</span><br><span class="line">      g_reserve -= cm;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">balance_count</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> c;</span><br><span class="line">  <span class="type">int</span> cm;</span><br><span class="line">  <span class="type">int</span> old;</span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span> limit;</span><br><span class="line">  </span><br><span class="line">  limit = g_countermax - g_counter - g_reserve;</span><br><span class="line">  limit /= num_online_threads();</span><br><span class="line">  <span class="keyword">if</span> (limit &gt; MAX_COUNTERMAX)</span><br><span class="line">    cm = MAX_COUNTERMAX;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    cm = limit;</span><br><span class="line">  g_reserve += cm;</span><br><span class="line">  c = cm / <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">if</span> (c &gt; g_counter)</span><br><span class="line">    c = g_counter;</span><br><span class="line">  g_counter -= c;</span><br><span class="line">  old = merge_ctrandmax(c, cm);</span><br><span class="line">  <span class="type">atomic_set</span>(&amp;ctrandmax, old);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">count_register_thread</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> idx = smp_thread_id();</span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  counterp[idx] = &amp;ctrandmax;</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">count_unregister_thread</span><span class="params">(<span class="type">int</span> nthreadsexpected)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> idx = smp_thread_id();</span><br><span class="line">  spin_lock(&amp;gblcnt_mutex);</span><br><span class="line">  globalize_count();</span><br><span class="line">  counterp[idx] = <span class="literal">NULL</span>;</span><br><span class="line">  spin_unlock(&amp;gblcnt_mutex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于<code>flush_local_count()</code>允许某个thread操作其他thread的pre-thread variables, 因而需要使用atomic operations来操作pre-thread variables. 尽管atomic operations让fastpath变慢, 但某些情况下是值得的.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Concurrency/">Concurrency</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/2e0d.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Deadlock</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/d031.html">
+        <span class="next-text nav-default">Tools of Parallel-Programming Trade</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/e99f.html';
+  var disqus_title = "Counting";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

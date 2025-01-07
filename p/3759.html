@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Evolution of HTTP"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/3759.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/3759.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/3759.html"/>
+
+
+<meta name="description" content="1. TCP 通过ACK确认receiver(接收方)是否收到数据, 从而提供可靠连接 ACK还实现了sliding window, 接收方可告知发送方是否增加或减少发送速率, 从而避免网络拥塞 TCP keepalive: 即使长时间没有数据交换, TCP仍允许connection保持活动状态  2. HTTP 0.9 and HTTP 1.0HTTP 0.9 基于TCP连接, HTTP无需担心">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Evolution of HTTP">
+<meta property="og:url" content="https://zaf1ro.github.io/p/3759.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. TCP 通过ACK确认receiver(接收方)是否收到数据, 从而提供可靠连接 ACK还实现了sliding window, 接收方可告知发送方是否增加或减少发送速率, 从而避免网络拥塞 TCP keepalive: 即使长时间没有数据交换, TCP仍允许connection保持活动状态  2. HTTP 0.9 and HTTP 1.0HTTP 0.9 基于TCP连接, HTTP无需担心">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-05-31T01:38:05.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.045Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Evolution of HTTP - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-TCP"><span class="toc-text">1. TCP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-HTTP-0-9-and-HTTP-1-0"><span class="toc-text">2. HTTP 0.9 and HTTP 1.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HTTP-0-9"><span class="toc-text">HTTP 0.9</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HTTP-1-0"><span class="toc-text">HTTP 1.0</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Summary"><span class="toc-text">Summary</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-HTTP-1-1"><span class="toc-text">3. HTTP 1.1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Extensions-of-HTTP-1-1"><span class="toc-text">Extensions of HTTP 1.1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Cons-of-HTTP-Pipelining"><span class="toc-text">Cons of HTTP Pipelining</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Reduce-Response-Time-in-HTTP-1-x"><span class="toc-text">4. Reduce Response Time in HTTP 1.x</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-spliting"><span class="toc-text">4.1 spliting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-inlining"><span class="toc-text">4.2 inlining</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-concatenation"><span class="toc-text">4.3 concatenation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-sharding"><span class="toc-text">4.4 sharding</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-HTTP-2-0"><span class="toc-text">5. HTTP 2.0</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Evolution of HTTP
+        
+      </h1>
+      <time class="post-time">
+          05/30/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-TCP"><a href="#1-TCP" class="headerlink" title="1. TCP"></a>1. TCP</h2><ol>
+<li>通过ACK确认receiver(接收方)是否收到数据, 从而提供<code>可靠</code>连接</li>
+<li>ACK还实现了<strong>sliding window</strong>, 接收方可告知发送方是否增加或减少发送速率, 从而避免网络拥塞</li>
+<li>TCP keepalive: 即使长时间没有数据交换, TCP仍允许connection保持活动状态</li>
+</ol>
+<h2 id="2-HTTP-0-9-and-HTTP-1-0"><a href="#2-HTTP-0-9-and-HTTP-1-0" class="headerlink" title="2. HTTP 0.9 and HTTP 1.0"></a>2. HTTP 0.9 and HTTP 1.0</h2><h3 id="HTTP-0-9"><a href="#HTTP-0-9" class="headerlink" title="HTTP 0.9"></a>HTTP 0.9</h3><ul>
+<li>基于TCP连接, HTTP无需担心数据是否传输成功</li>
+<li>TCP面向packet, 而HTTP面向connection</li>
+<li>HTTP request中只有GET方法和资源地址, 如<code>GET /mypage.html</code></li>
+<li>HTTP response中只有HTML文件</li>
+<li>无连接: 每次HTTP连接只处理一个请求, 处理完立即关闭连接</li>
+<li>无状态: HTTP连接没有记忆, 换句话说, 前后两次连接没有任何关系</li>
+</ul>
+<h3 id="HTTP-1-0"><a href="#HTTP-1-0" class="headerlink" title="HTTP 1.0"></a>HTTP 1.0</h3><ul>
+<li>GET方法加入版本信息: <code>HTTP/1.0</code></li>
+<li>引入HTTP Header: HTTP request和response都包含HTTP Header</li>
+<li>HTTP response的header引入Content-Type, 从此HTTP response可返回除HTML之外的文件</li>
+<li>引入Status Code(状态码), 从此浏览器可判断请求是否成功</li>
+<li>引入POST和HEAD方法</li>
+</ul>
+<h3 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h3><p>HTTP 1.0相对于HTTP 0.9的最大区别在于HTTP Header, 从此client可请求不同类型的文件; HTTP 0.9始于上世纪九十年代, 当时的服务器性能无法同时支持过多TCP连接, 因此HTTP 0.9&#x2F;1.0的很多设计以此为前提; 但随着硬件的不断发展, 服务端和客户端提出了更多业务要求:</p>
+<ul>
+<li>安全性低: 明文通信会被中间人窃听, 且client无法验证对方身份</li>
+<li>效率低下: 无连接特性导致TCP连接频繁中断</li>
+<li>实时通信: Server无法主动向client发信息, 只能采取client轮询机制, 导致大量连接建立并断开</li>
+<li>并发受限: 单个client向同一域名发起的并发连接数量有限</li>
+</ul>
+<h2 id="3-HTTP-1-1"><a href="#3-HTTP-1-1" class="headerlink" title="3. HTTP 1.1"></a>3. HTTP 1.1</h2><p>HTTP 1.1与HTTP 1.0只间隔几个月, 最初的HTTP 1.1只有以下更新:</p>
+<ul>
+<li>持久连接: 由于HTTP 1.0会在请求结束后立即断开连接, HTTP1.1添加<code>Keep-Alive</code>(保持连接)以保持连接, 从而减少频繁的TCP分手和握手, 并减少慢启动的时间</li>
+<li>分块加载: 引入<strong>Chunked Eesponse</strong>(分块响应), 发送大文件时, 可将HTTP response拆分为多个更小的chunk, 从而不必发送整个文件</li>
+<li>无需等待: 引入<strong>HTTP Pipelining</strong>(HTTP管线化), 让多个HTTP request同时提交, 让下一个request不必等待上一次request的response</li>
+<li>内容协商: 引入language, encoding, type等HTTP Header, 让client和server就如何交换内容达成一致</li>
+<li>缓存控制: 引入Cache-Control, 允许server决定资源缓存时间</li>
+</ul>
+<h3 id="Extensions-of-HTTP-1-1"><a href="#Extensions-of-HTTP-1-1" class="headerlink" title="Extensions of HTTP 1.1"></a>Extensions of HTTP 1.1</h3><p>HTTP 1.1始于RFC 2068, 并在接下来的十几年间进行多次更新(RFC 2616, RFC 7230, RFC 7235):</p>
+<ul>
+<li>SSL: 在TCP和HTTP之间加入了SSL, 加密信息以保证server和client间交换的消息不会被第三方获取</li>
+<li>HTTP Method: 引入更多HTTP方法, 如PUT, PATCH, DELETE, CONNECT, TRACE, OPTIONS</li>
+<li>WebSocket: 实现client和server的双向通信, 让server可以向client发送信息</li>
+</ul>
+<h3 id="Cons-of-HTTP-Pipelining"><a href="#Cons-of-HTTP-Pipelining" class="headerlink" title="Cons of HTTP Pipelining"></a>Cons of HTTP Pipelining</h3><p>由于HTTP pipelining规定server必须依次回复request, 这就导致了<code>对头阻塞</code>(HOL blocking), 因为超时的response可能会导致后面的response阻塞.<br>并且部分server和大部分proxy都不支持pipelining, server的错误支持会导致client端出现异常, 并且在性能上并没有太大提升, 所以很多浏览器默认关闭了pipelining.<br>并且只有GET和HEAD类型的request能被pipelining化, 其他类型的request不可以(例如: POST).</p>
+<h2 id="4-Reduce-Response-Time-in-HTTP-1-x"><a href="#4-Reduce-Response-Time-in-HTTP-1-x" class="headerlink" title="4. Reduce Response Time in HTTP 1.x"></a>4. Reduce Response Time in HTTP 1.x</h2><p>HTTP 1.x存在如下特性:</p>
+<ul>
+<li>传输文本格式信息, 可读性好但消息传递效率低</li>
+<li>不支持双工通信</li>
+<li>多个资源请求需发送多次请求</li>
+</ul>
+<p>HTTP 1.x环境下的相应解决方案:</p>
+<ul>
+<li>使用websocket实现双工通信</li>
+<li>将动态页面与静态资源分离</li>
+<li>将体积较大的视频和图片缓存到CDN</li>
+</ul>
+<h3 id="4-1-spliting"><a href="#4-1-spliting" class="headerlink" title="4.1 spliting"></a>4.1 spliting</h3><p>由于HTTP1.1中使用单个连接依次发送请求, 并且TCP的慢启动特性, 导致传输一个大文件比传输多个小文件快得多(大文件的文件大小与小文件总共大小相同).server端可以将多个需要传输的文件拼接成一个大文件直接传输给client, 然后通过JS或CSS裁剪成需要的小图片.</p>
+<h3 id="4-2-inlining"><a href="#4-2-inlining" class="headerlink" title="4.2 inlining"></a>4.2 inlining</h3><p>与spriting相同, 可将图片的原始数据写入CSS之中, 通过传输一个较大的CSS来传输多个图片文件</p>
+<figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="selector-class">.icon1</span>&#123;</span><br><span class="line">  <span class="attribute">background</span>: <span class="built_in">url</span>(<span class="string">data: image/png; base64, &lt;data&gt;</span>) no-repeat;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-concatenation"><a href="#4-3-concatenation" class="headerlink" title="4.3 concatenation"></a>4.3 concatenation</h3><p>通过工具将多个JS文件合并成一个文件, 也是为了减少TCP慢启动. 但如果用户只想要JS文件中的一小部分, 那么只能全部下载, 这样也增加了时延, 且这么做对于开发不利.</p>
+<h3 id="4-4-sharding"><a href="#4-4-sharding" class="headerlink" title="4.4 sharding"></a>4.4 sharding</h3><p>根据<a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec8.html#sec8.1.4">HTTP1.1标准</a>可知, 对同一域名建立的连接数不能超过二个, 因此无法通过并发提高速度. 但可以将服务分散在多台主机上, 同一个域名内的资源分布在不同主机名的主机上, 这样用户可以从多个主机名上获取各个资源, 用户和网站之间也就建立了更多连接, 从而减少加载时间.</p>
+<h2 id="5-HTTP-2-0"><a href="#5-HTTP-2-0" class="headerlink" title="5. HTTP 2.0"></a>5. HTTP 2.0</h2><p>HTTP 2.0的主要目标是提升协议性能: 在兼容HTTP的前提下, 提高传输性能, 实现低延迟和高吞吐量. 以下是HTTP 2.0的更新:</p>
+<ul>
+<li>二进制协议: 可读性差, 但信息传输效率更高</li>
+<li>多路复用: HTTP2允许单个连接中client发起多个请求, 不会因为某个超时请求导致后续请求无法及时发送, 这样不会发生HTTP1.1的线头阻塞</li>
+<li>二进制分帧: HTTP 2.0中的一次连接可发送多个<strong>stream</strong>, 每个stream包含一个<strong>message</strong>(request或response), 每个message包含两个<strong>frame</strong>, 其中HTTP Header被封装到HEADER frame中, Request Body部分封装到DATA frame中. 由于TCP存在慢启动, 导致短时间的HTTP连接十分低效, 因此可使用同一TCP连接实现低延迟</li>
+<li>首部压缩: HTTP2.0使用<strong>DEFLATE</strong>算法压缩HTTP Header, 从而提高带宽效率</li>
+<li>服务器推送: HTTP1.x中server只能针对client的一个request回复一个response. HTTP2中server可以对client的request发送多个response. 这样client在请求一个页面时就可以获取所有资源(HTML, CSS和其他资源), 从未减少了往返时间</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/33da.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">TOS and DS</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/c196.html">
+        <span class="next-text nav-default">Memory Alignment</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/3759.html';
+  var disqus_title = "Evolution of HTTP";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

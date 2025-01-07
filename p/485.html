@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="assert.h"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/485.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/485.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/485.html"/>
+
+
+<meta name="description" content="1. 概述assert宏的原型定义在&lt;assert.h&gt;中,其作用是如果条件返回错误,则终止程序执行,原型定义: #include &lt;assert.h&gt;void assert(int expression);  assert的作用是计算expression,如果其值为假(为0),则先向stderr打印一条出错信息,然后通过abort终止程序运行,例如: #include &amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="assert.h">
+<meta property="og:url" content="https://zaf1ro.github.io/p/485.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 概述assert宏的原型定义在&lt;assert.h&gt;中,其作用是如果条件返回错误,则终止程序执行,原型定义: #include &lt;assert.h&gt;void assert(int expression);  assert的作用是计算expression,如果其值为假(为0),则先向stderr打印一条出错信息,然后通过abort终止程序运行,例如: #include &amp;">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-03-14T22:29:24.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.046Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+assert.h - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="toc-text">1. 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%BC%BA%E7%82%B9"><span class="toc-text">2. 缺点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">3. 使用场景:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%AE%8F-NDEBUG"><span class="toc-text">4. 宏 NDEBUG</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84assert%E5%AE%8F"><span class="toc-text">5. 一个简单的assert宏</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%AD%A3%E7%A1%AE%E7%89%88%E6%9C%AC"><span class="toc-text">6. 正确版本</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          assert.h
+        
+      </h1>
+      <time class="post-time">
+          03/14/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><p>assert宏的原型定义在<code>&lt;assert.h&gt;</code>中,其作用是如果条件返回错误,则终止程序执行,原型定义:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">assert</span><span class="params">(<span class="type">int</span> expression)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>assert的作用是计算expression,如果其值为假(为0),则先向stderr打印一条出错信息,然后通过abort终止程序运行,例如:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  FILE* fp;</span><br><span class="line">  fp = open(<span class="string">&quot;test.txt&quot;</span>, <span class="string">&quot;w&quot;</span>);</span><br><span class="line"></span><br><span class="line">  assert(fp); <span class="comment">// 由于是写入方式,所以不会报错,如果test.txt不存在则创建名为test.txt的文件</span></span><br><span class="line">  fclose(fp);</span><br><span class="line"></span><br><span class="line">  fp = open(<span class="string">&quot;test2.txt&quot;</span>, <span class="string">&quot;r&quot;</span>);</span><br><span class="line">  assert(fp); <span class="comment">// 如果test2.txt不存在则直接报错并退出程序</span></span><br><span class="line">  fclose(fp); <span class="comment">// 如果打不开test2.txt则不会执行该语句</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-缺点"><a href="#2-缺点" class="headerlink" title="2. 缺点"></a>2. 缺点</h2><ol>
+<li>频繁调用会极大地影响程序的性能,增加额外的开销.在调试结束后,可以在<code>&lt;assert.h&gt;</code>前插入<code>#define NDEBUG</code>禁止assert调用:<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NDEBUG</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br></pre></td></tr></table></figure></li>
+<li>当向代码中添加assert时要确保这些断言没有副作用:<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">assert(m++ &gt; <span class="number">0</span>);       <span class="comment">// 最终m的值可能因编译器不同而不同</span></span><br><span class="line">assert(myFunc(<span class="number">0</span>) == <span class="number">1</span>) <span class="comment">// 要确保myFunc()没有副作用</span></span><br></pre></td></tr></table></figure></li>
+<li>一个assert只能检查一个条件,如果需要检查多个条件,那么需要写多条assert:<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">assert(a&gt;<span class="number">0</span> &amp;&amp; b&lt;<span class="number">0</span>);</span><br><span class="line"><span class="comment">// error</span></span><br><span class="line">assert(a &gt; <span class="number">0</span>);</span><br><span class="line">assert(b &lt; <span class="number">0</span>);</span><br><span class="line"><span class="comment">// correct</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="3-使用场景"><a href="#3-使用场景" class="headerlink" title="3. 使用场景:"></a>3. 使用场景:</h2><ol>
+<li>捕获逻辑错误: 条件必须为真,根据程序的逻辑可以设置断言  <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">assert(numMols &gt; <span class="number">0</span>);    <span class="comment">// 判断数量是否大于0</span></span><br></pre></td></tr></table></figure></li>
+<li>检查结果: 对于得到的数值进行判断  <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">assert(numMols &lt; nums); <span class="comment">// 确保结果小于某个值</span></span><br></pre></td></tr></table></figure></li>
+<li>查找未处理的错误: 使用断言来找到程序中可能出现的错误,例如判断文件是否打开</li>
+</ol>
+<h2 id="4-宏-NDEBUG"><a href="#4-宏-NDEBUG" class="headerlink" title="4. 宏 NDEBUG"></a>4. 宏 NDEBUG</h2><p>需要注意的是, assert虽然使得代码变得简单, 但并不应该出现在正式产品中. 程序的终止对于用户并无价值, 只能在调试程序时使用assert, 所以需要一种方法来将断言在特定情况下无效化. 我们可以通过定义宏NDEBUG来改变assert的展开方式:</p>
+<ul>
+<li>如果没有定义NDEBUG, 则头文件会将assert展开为一个表达式, 并判断断言是否为假, 如果为假则输出错误信息并终止程序<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">assert</span><span class="params">(<span class="type">int</span> expression)</span>;</span><br></pre></td></tr></table></figure></li>
+<li>如果定义了NDEBUG, 则头文件将assert定义为不执行任何操作的静止形式<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> NDEBUG  <span class="comment">/* disable assertion */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> assert(ignore) ((void) 0)</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="5-一个简单的assert宏"><a href="#5-一个简单的assert宏" class="headerlink" title="5. 一个简单的assert宏"></a>5. 一个简单的assert宏</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> assert(test) <span class="keyword">if</span>(!(test)) \</span></span><br><span class="line"><span class="meta">  fprintf(stderr, <span class="string">&quot;Assertion failed: %s, file %s, line %i\n&quot;</span>, \</span></span><br><span class="line"><span class="meta">  #test, __FILE__, __LINE__)</span></span><br></pre></td></tr></table></figure>
+<p>上述的assert编写存在以下几个问题:</p>
+<ol>
+<li>宏不应调用库的任何输出函数, 例如fprintf, 也不能引用宏stderr. 因为这些名字只有在<code>&lt;stdio.h&gt;</code>中正确声明或定义时才能使用, 由于程序中不一定包含<code>&lt;stdio.h&gt;</code>, 所以可能导致程序编译失败.</li>
+<li>宏应能扩展为一个void类型的表达式, 因为程序可能将assert包含在一个表达式中, 这时就不能使用if语句, 需要换一个条件操作符, 例如: <code>(assert(0&lt;x), x&lt;y)</code></li>
+<li>宏应该可扩展为有效且紧凑的代码, 但这个版本的assert却调用了一个需要传递5个参数的函数.</li>
+</ol>
+<h2 id="6-正确版本"><a href="#6-正确版本" class="headerlink" title="6. 正确版本"></a>6. 正确版本</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// assert.h</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">undef</span> assert <span class="comment">/* remove existing definition */</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> NDEBUG</span></span><br><span class="line">  <span class="meta">#<span class="keyword">define</span> assert(test) ((void) 0)</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span> <span class="comment">/* NDEBUG not defined */</span></span></span><br><span class="line">  <span class="type">void</span> _Assert(<span class="type">char</span> *);</span><br><span class="line"></span><br><span class="line">  <span class="meta">#<span class="keyword">define</span> _STR(x) _VAL(x)</span></span><br><span class="line">  <span class="meta">#<span class="keyword">define</span> _VAL(x) #x</span></span><br><span class="line">  <span class="meta">#<span class="keyword">define</span> assert(test) ((test) ? (void) 0 \</span></span><br><span class="line"><span class="meta">   : _Assert(__FILE__<span class="string">&quot;:&quot;</span>_VAL(__LINE__)<span class="string">&quot; &quot;</span>#test))</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<p><code>__LINE__</code>作为一个宏, 需要先用宏将其转换为十进制常量, 再将其转换为字符串常量</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// xassert.c</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> _Assert(<span class="type">char</span>* mesg)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">fputs</span>(mesg, <span class="built_in">stderr</span>);</span><br><span class="line">  <span class="built_in">fputs</span>(<span class="string">&quot; -- assertion failed\n&quot;</span>, <span class="built_in">stderr</span>);</span><br><span class="line">  <span class="built_in">abort</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是测试代码:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* test assert macro */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NDEBUG</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> val = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">field_abort</span><span class="params">(<span class="type">int</span> sig)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (val == <span class="number">1</span>) &#123;  <span class="comment">/* expected result */</span></span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;SUCCESS testing &lt;assert.h&gt;&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;  <span class="comment">/* unexpected result */</span></span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;FAILURE testing &lt;assert.h&gt;&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">dummy</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line">  assert(i == <span class="number">0</span>);</span><br><span class="line">  assert(i == <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">undef</span> NDEBUG</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;assert.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  assert(signal(SIGABRT, &amp;field_abort) != SIG_ERR);</span><br><span class="line">  dummy();</span><br><span class="line">  assert(val == <span class="number">0</span>);  <span class="comment">/* should not abort */</span></span><br><span class="line">  ++val;</span><br><span class="line">  <span class="built_in">fputs</span>(<span class="string">&quot;Sample assertion failure message -- \n&quot;</span>, <span class="built_in">stderr</span>);</span><br><span class="line">  assert(val == <span class="number">0</span>);  <span class="comment">/* should abort */</span></span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;FAILURE testing &lt;assert.h&gt;&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span>(EXIT_FAILURE);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/2828.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Macro Definition</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/7f56.html">
+        <span class="next-text nav-default">BitTorrent Protocol Specification</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/485.html';
+  var disqus_title = "assert.h";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

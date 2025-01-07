@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="I/O Multiplexing"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/e03d.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/e03d.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/e03d.html"/>
+
+
+<meta name="description" content="1. IntroductionTCP中常常要面对这样一个问题: 多个file或socket需要同时处理. 例如: TCP client需从standard input中获取用户输入, 并读取来自socket的数据, 这种同时应对多个I&#x2F;O conditions的能力称为I&#x2F;O multiplexing(I&#x2F;O多路复用).I&#x2F;O multiplexing主要用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="I&#x2F;O Multiplexing">
+<meta property="og:url" content="https://zaf1ro.github.io/p/e03d.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionTCP中常常要面对这样一个问题: 多个file或socket需要同时处理. 例如: TCP client需从standard input中获取用户输入, 并读取来自socket的数据, 这种同时应对多个I&#x2F;O conditions的能力称为I&#x2F;O multiplexing(I&#x2F;O多路复用).I&#x2F;O multiplexing主要用">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-2-blocking-io-model.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-2-nonblocking-io-model.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-2-io-multiplexing-model.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-2-signal-driven-io-model.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-2-asyn-io-model.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-2-io-models.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-5-stop-and-wait-mode.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-8-data-struct-tcp-svr-listen-sock.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-8-data-struct-first-cli-conn.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-8-data-struct-second-cli-conn.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/6-8-data-struct-first-cli-terminate.gif">
+<meta property="article:published_time" content="2019-12-04T19:15:55.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.043Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/6-2-blocking-io-model.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+I/O Multiplexing - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-I-O-Models"><span class="toc-text">2. I&#x2F;O Models</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Blocking-I-O-Model"><span class="toc-text">2.1 Blocking I&#x2F;O Model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Nonblocking-I-O-Model"><span class="toc-text">2.2 Nonblocking I&#x2F;O Model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-I-O-Multiplexing-Model"><span class="toc-text">2.3 I&#x2F;O Multiplexing Model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Signal-Driven-I-O-Model"><span class="toc-text">2.4 Signal-Driven I&#x2F;O Model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Asynchronous-I-O-Model"><span class="toc-text">2.5 Asynchronous I&#x2F;O Model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-Comparison-of-the-I-O-Models"><span class="toc-text">2.6 Comparison of the I&#x2F;O Models</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-select-Function"><span class="toc-text">3. select Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-str-cli-Function-Revisited"><span class="toc-text">4. str_cli Function (Revisited)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Batch-Input-and-Buffering"><span class="toc-text">5. Batch Input and Buffering</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-shutdown-Function"><span class="toc-text">6. shutdown Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-str-cli-Function-Revisited-Again"><span class="toc-text">7. str_cli Function (Revisited Again)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-TCP-Echo-Server-Revisited"><span class="toc-text">8. TCP Echo Server (Revisited)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-pselect-Function"><span class="toc-text">9. pselect Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-poll-Function"><span class="toc-text">10. poll Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-TCP-Echo-Server-Revisited-Again"><span class="toc-text">11. TCP Echo Server (Revisited Again)</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          I/O Multiplexing
+        
+      </h1>
+      <time class="post-time">
+          12/04/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>TCP中常常要面对这样一个问题: 多个file或socket需要同时处理. 例如: TCP client需从standard input中获取用户输入, 并读取来自socket的数据, 这种同时应对多个I&#x2F;O conditions的能力称为<strong>I&#x2F;O multiplexing</strong>(I&#x2F;O多路复用).<br>I&#x2F;O multiplexing主要用于network application的以下场景:</p>
+<ul>
+<li>client处理多个descriptor</li>
+<li>处理多个socket</li>
+<li>TCP server处理listening socket和其connected socket</li>
+<li>server同时处理TCP和UDP</li>
+<li>server同时处理多个protocols</li>
+</ul>
+<h2 id="2-I-O-Models"><a href="#2-I-O-Models" class="headerlink" title="2. I&#x2F;O Models"></a>2. I&#x2F;O Models</h2><p>以下是UNIX中的5种<strong>I&#x2F;O Model</strong>:</p>
+<ul>
+<li>blocking I&#x2F;O</li>
+<li>nonblocking I&#x2F;O</li>
+<li>I&#x2F;O multiplexing (select and poll)</li>
+<li>signal driven I&#x2F;O (SIGIO)</li>
+<li>asynchronous I&#x2F;O (the POSIX <code>aio_</code> functions)</li>
+</ul>
+<p>无论是哪种I&#x2F;O model, 所有读取操作都可拆分为以下步骤:</p>
+<ol>
+<li>等待数据就绪(network application中为等待数据到达socket)</li>
+<li>将数据从kernel复制到process中</li>
+</ol>
+<h3 id="2-1-Blocking-I-O-Model"><a href="#2-1-Blocking-I-O-Model" class="headerlink" title="2.1 Blocking I&#x2F;O Model"></a>2.1 Blocking I&#x2F;O Model</h3><p>Blocking I&#x2F;O model是最常见的I&#x2F;O model, 实现方式最简单. 以datagram socket为例, 读取操作的流程如下:<br><img src="/images/Network/UNP/6-2-blocking-io-model.gif" alt="Blocking I/O model"></p>
+<p>上述例子中, 调用<code>recvfrom()</code>会等待数据到达socket, 并主动将数据从kernel复制到process. 进程必须等待<code>recvfrom()</code>完成, 或被signal打断.</p>
+<h3 id="2-2-Nonblocking-I-O-Model"><a href="#2-2-Nonblocking-I-O-Model" class="headerlink" title="2.2 Nonblocking I&#x2F;O Model"></a>2.2 Nonblocking I&#x2F;O Model</h3><p>Nonblocking I&#x2F;O model不阻塞进程, 进程立即获得结果. 以下是读取操作的流程:<br><img src="/images/Network/UNP/6-2-nonblocking-io-model.gif" alt="Nonblocking I/O model"></p>
+<p>前三次调用<code>recvfrom()</code>时, 由于socket未收到数据, kernel返回<code>EWOULDBLOCK</code>; 第四次调用<code>recvfrom()</code>, 其会将数据从kernel复制到process中. Nonblocking I&#x2F;O model永不挂起的特性使得程序必须使用loop不断调用<code>recvfrom()</code>, 称为<strong>polling</strong>, 虽然不会长时间挂起, 但浪费CPU时间.</p>
+<h3 id="2-3-I-O-Multiplexing-Model"><a href="#2-3-I-O-Multiplexing-Model" class="headerlink" title="2.3 I&#x2F;O Multiplexing Model"></a>2.3 I&#x2F;O Multiplexing Model</h3><p>I&#x2F;O Multiplexing model中, 进程使用<code>select</code>或<code>poll</code>阻塞多个system call. 以下是读取操作的流程:<br><img src="/images/Network/UNP/6-2-io-multiplexing-model.gif" alt="I/O multiplexing model"></p>
+<p>上述例子使用<code>select()</code>监听多个sockets, 一旦socket处于readable状态, 则通知进程并调用<code>recvfrom()</code>, 将数据从kernel复制到process中. 虽然<code>select()</code>阻塞进程, 但<code>select()</code>能够同时监听多个socket, multithreading blocking I&#x2F;O可实现相同效果, 但更消耗资源.</p>
+<h3 id="2-4-Signal-Driven-I-O-Model"><a href="#2-4-Signal-Driven-I-O-Model" class="headerlink" title="2.4 Signal-Driven I&#x2F;O Model"></a>2.4 Signal-Driven I&#x2F;O Model</h3><p>Signal-driven I&#x2F;O model通过<code>SIGIO</code> signal提醒进程file descriptor已准备就绪. 以下是读取操作的流程:<br><img src="/images/Network/UNP/6-2-signal-driven-io-model.gif" alt="Signal-Driven I/O model"></p>
+<p>首先调用<code>sigaction()</code>设置一个signal handler, 该操作不会阻塞进程; socket收到数据时, 进程会收到<code>SIGIO</code>, 调用signal handler中的<code>recvfrom()</code>, 其将数据从kernel复制到process. 该model的优点在于不用阻塞进程, 但需设置signal handler.</p>
+<h3 id="2-5-Asynchronous-I-O-Model"><a href="#2-5-Asynchronous-I-O-Model" class="headerlink" title="2.5 Asynchronous I&#x2F;O Model"></a>2.5 Asynchronous I&#x2F;O Model</h3><p>POSIX.1定义了该I&#x2F;O model: asynchronous function通知kernel开始读取操作, 操作完毕后, kernel通知function. 与signal-driven I&#x2F;O model不同的是: asynchronous I&#x2F;O会完成所有任务(等待数据, 将数据从kernel复制到process); signal-driven I&#x2F;O则需手动读取数据.<br><img src="/images/Network/UNP/6-2-asyn-io-model.gif" alt="Asynchronous I/O model"></p>
+<p>POSIX.1的所有asynchronous I&#x2F;O function以<code>aio_</code>或<code>lio_</code>开头, 且不会阻塞进程, 结束时用signal通知进程. </p>
+<h3 id="2-6-Comparison-of-the-I-O-Models"><a href="#2-6-Comparison-of-the-I-O-Models" class="headerlink" title="2.6 Comparison of the I&#x2F;O Models"></a>2.6 Comparison of the I&#x2F;O Models</h3><p>以下是5种I&#x2F;O models的读取操作对比:<br><img src="/images/Network/UNP/6-2-io-models.gif" alt="Comparison of the five I/O models"></p>
+<h2 id="3-select-Function"><a href="#3-select-Function" class="headerlink" title="3. select Function"></a>3. select Function</h2><p>进程调用<code>select()</code>可通知kernel等待一个或多个事件发生, 当其中一个或多个事件发生时, 进程会被唤醒. <code>select()</code>可监听file descriptor的三种事件: </p>
+<ul>
+<li>read</li>
+<li>write</li>
+<li>exception</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/select.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> &#123;</span></span><br><span class="line">  <span class="type">long</span> tv_sec;  <span class="comment">/* seconds */</span></span><br><span class="line">  <span class="type">long</span> tv_usec; <span class="comment">/* microseconds */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">FD_CLR</span><span class="params">(<span class="type">int</span> fd, fd_set *<span class="built_in">set</span>)</span>;   <span class="comment">/* remove a file descriptor from the set */</span></span><br><span class="line"><span class="type">int</span>  <span class="title function_">FD_ISSET</span><span class="params">(<span class="type">int</span> fd, fd_set *<span class="built_in">set</span>)</span>; <span class="comment">/* test to see if a file descriptor is part of the set */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">FD_SET</span><span class="params">(<span class="type">int</span> fd, fd_set *<span class="built_in">set</span>)</span>;   <span class="comment">/* add a file descriptor to the set */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">FD_ZERO</span><span class="params">(fd_set *<span class="built_in">set</span>)</span>;          <span class="comment">/* clear a set */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allow a program to monitor multiple file </span></span><br><span class="line"><span class="comment"> *        descriptors waiting until one or more of </span></span><br><span class="line"><span class="comment"> *        the file descriptors become &quot;ready&quot; for </span></span><br><span class="line"><span class="comment"> *        I/O operation</span></span><br><span class="line"><span class="comment"> * @param nfds: the highest-numbered file descriptor</span></span><br><span class="line"><span class="comment"> * @param timeout: specify the interval that select()</span></span><br><span class="line"><span class="comment"> *        should block waiting for a file descriptor </span></span><br><span class="line"><span class="comment"> *        to become ready</span></span><br><span class="line"><span class="comment"> * @return return the number of file descriptors </span></span><br><span class="line"><span class="comment"> *         contained in the three returned descriptor</span></span><br><span class="line"><span class="comment"> *         sets; Or return -1 on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">select</span><span class="params">(<span class="type">int</span> nfds, fd_set *readfds, fd_set *writefds,</span></span><br><span class="line"><span class="params">           fd_set *exceptfds, <span class="keyword">struct</span> timeval *timeout)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>以下是<code>select()</code>的三种等待情况:</p>
+<ul>
+<li>无限等待: 若<code>timeout</code>为NULL, 除非某个file descriptor处于ready状态, 否则<code>select()</code>会一直等待</li>
+<li>最多等待一定时间: 若<code>timeout</code>指定的<code>timeval</code> struct不为0, 即便没有file descriptor处于ready状态, <code>select()</code>也会返回</li>
+<li>不等待: 若<code>timeout</code>指定的<code>timeval</code> struct为0, <code>select()</code>立刻返回, 称为<code>polling</code></li>
+</ul>
+<p>若进程捕获到signal并从signal handler返回, 则自动打断<code>select()</code>并设置相应<code>errno</code>. <code>select()</code>中的<code>readfds</code>, <code>writefds</code>和<code>exceptfds</code>分别监听read, write和exception事件, 其中exception包含以下情况:</p>
+<ul>
+<li>socket收到out-of-band data</li>
+<li>packet mode下pseudo-terminal master收到control status information</li>
+</ul>
+<p><code>select()</code>通过<code>fd_set</code>设置或清除某个file descriptor的监听, 每个file descriptor占<code>fd_set</code>的一个bit; 当某个file descriptor被添加到<code>readfds</code>和<code>writefds</code>时, 表示同时监听该file descriptor的read和write事件. 以下是socket处于<strong>ready</strong>状态的几种情况:</p>
+<ol>
+<li>socket处于readable状态:<ol>
+<li>socket receive buffer中的字节数大于或等于low-water mark. Send buffer的low-water mark可通过SO_RCVLOWAT socket option设置, 默认为1.</li>
+<li>socket收到FIN后(TCP connection), <code>read()</code>不会阻塞, 返回0</li>
+<li>当socket调用<code>listen()</code>变为passive listening socket, 且有一个或多个connection时, <code>accept()</code>不会阻塞</li>
+<li>存在socket error时, <code>read()</code>不会阻塞, 返回-1</li>
+</ol>
+</li>
+<li>socket处于writable状态:<ol>
+<li><p>socket send buffer中空闲空间大于或等于low-water mark, 且满足以下其中一个条件:</p>
+<ul>
+<li>socket已连接</li>
+<li>socket不需要连接(如: UDP)</li>
+</ul>
+<p> Receive buffer的low-water mark可通过<code>SO_SNDLOWAT</code> socket option设置, 默认为2048.</p>
+</li>
+<li><p>socket已关闭连接, 调用<code>write()</code>会产生<code>SIGPIPE</code> signal</p>
+</li>
+<li><p>socket调用non-blocking connect建立连接</p>
+</li>
+<li><p>存在socket error时, <code>write()</code>不会阻塞, 返回-1</p>
+</li>
+</ol>
+</li>
+<li>socket处于exception状态: socket接收到out-of-band data</li>
+</ol>
+<p>以下是socket状态的总结:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Condition</th>
+<th align="center">Readable</th>
+<th align="center">Writable</th>
+<th align="center">Exception</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Data to read</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Read half of the connection closed</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">New connection ready for listening socket</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Space available for writing</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Write half of the connection closed</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Pending error</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+</tr>
+<tr>
+<td align="center">TCP out-of-band data</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+</tr>
+</tbody></table>
+<h2 id="4-str-cli-Function-Revisited"><a href="#4-str-cli-Function-Revisited" class="headerlink" title="4. str_cli Function (Revisited)"></a>4. str_cli Function (Revisited)</h2><p>以下是使用<code>select()</code>重写后的TCP client:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>     maxfdp1;</span><br><span class="line">  fd_set  rset;</span><br><span class="line">  <span class="type">char</span>    sendline[MAXLINE], recvline[MAXLINE];</span><br><span class="line"></span><br><span class="line">  FD_ZERO(&amp;rset); <span class="comment">/* initialize fd_set */</span></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    FD_SET(fileno(fp), &amp;rset);</span><br><span class="line">    FD_SET(sockfd, &amp;rset);</span><br><span class="line">    maxfdp1 = max(fileno(fp), sockfd) + <span class="number">1</span>;</span><br><span class="line">    Select(maxfdp1, &amp;rset, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(sockfd, &amp;rset)) &#123;  <span class="comment">/* socket is readable */</span></span><br><span class="line">      <span class="keyword">if</span> (Readline(sockfd, recvline, MAXLINE) == <span class="number">0</span>)</span><br><span class="line">        err_quit(<span class="string">&quot;str_cli: server terminated prematurely&quot;</span>);</span><br><span class="line">      Fputs(recvline, <span class="built_in">stdout</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(fileno(fp), &amp;rset)) &#123;  <span class="comment">/* input is readable */</span></span><br><span class="line">      <span class="keyword">if</span> (Fgets(sendline, MAXLINE, fp) == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span>; <span class="comment">/* all done */</span></span><br><span class="line">      Writen(sockfd, sendline, <span class="built_in">strlen</span>(sendline));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>TCP client中要监听socket descriptor和stdin是否处于readable, 以下是socket处于readable状态的三种情况:</p>
+<ol>
+<li>对端TCP socket发送数据, <code>read()</code>返回值大于0</li>
+<li>对端TCP socket发送FIN, <code>read()</code>返回0</li>
+<li>对端TCP socket发送RST, <code>read()</code>返回-1</li>
+</ol>
+<h2 id="5-Batch-Input-and-Buffering"><a href="#5-Batch-Input-and-Buffering" class="headerlink" title="5. Batch Input and Buffering"></a>5. Batch Input and Buffering</h2><p>使用<code>select()</code>后, TCP client端就从stop-and-wait mode变为batch mode(批量模式). 之前server和client每次通信需要1个RTT时间, 但batch mode下数据以最快速度传输, 如下图:<br><img src="/images/Network/UNP/6-5-stop-and-wait-mode.gif" alt="Time line of stop-and-wait mode: interactive input"></p>
+<p>但batch mode存在一些问题:</p>
+<ol>
+<li>向stdio输入EOF时, 会导致connection完全关闭, 从而导致request还没发出, 或丢失还没接收的数据. 解决方案: 使用<code>shutdown()</code>向server发送FIN, 关闭one-half of the TCP connection, 这样可让client端的socket继续接收数据</li>
+<li>buffering虽然提高network application的性能, 但增加了复杂度. 若stdio buffer中存在多行数据, <code>select()</code>只会被唤醒一次, 并调用<code>fgets()</code>从stdio中读取一行数据, 剩下的数据依然留在stdio buffer中.</li>
+<li><code>readline()</code>也存在buffer的问题: 由于<code>readline()</code>有自己的buffer, 所以需修改其实现.</li>
+</ol>
+<h2 id="6-shutdown-Function"><a href="#6-shutdown-Function" class="headerlink" title="6. shutdown Function"></a>6. shutdown Function</h2><p>正常情况下, network application会调用<code>close()</code>来关闭connection, 但<code>close()</code>存在以下两个缺陷:</p>
+<ol>
+<li><code>close()</code>只会减少descriptor的reference count, 只有reference count降为0时, descriptor才会被关闭; <code>shutdown()</code>则直接开始TCP connection termination.</li>
+<li><code>close()</code>会停止双向数据传输(read和write). 当socket发送完数据后仍需接收数据, 则不能调用<code>close()</code>关闭connection</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Cause all or part of a full-duplex connection on the </span></span><br><span class="line"><span class="comment"> * socket associated with the file descriptor socket to be shut down</span></span><br><span class="line"><span class="comment"> * @param how: shall be one of the following values:</span></span><br><span class="line"><span class="comment"> * 1. SHUT_RD: disable further receive operations</span></span><br><span class="line"><span class="comment"> * 2. SHUT_WR: disable further send operations</span></span><br><span class="line"><span class="comment"> * 3. SHUT_RDWR: disable further send and receive operations</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">shutdown</span><span class="params">(<span class="type">int</span> socket, <span class="type">int</span> how)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-str-cli-Function-Revisited-Again"><a href="#7-str-cli-Function-Revisited-Again" class="headerlink" title="7. str_cli Function (Revisited Again)"></a>7. str_cli Function (Revisited Again)</h2><p>使用<code>shutdown()</code>改写后的<code>str_cli()</code>如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">str_cli</span><span class="params">(FILE *fp, <span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>     maxfdp1, stdineof = <span class="number">0</span>;</span><br><span class="line">  fd_set  rset;</span><br><span class="line">  <span class="type">char</span>    sendline[MAXLINE], recvline[MAXLINE];</span><br><span class="line"></span><br><span class="line">  heartbeat_cli(sockfd, <span class="number">1</span>, <span class="number">5</span>);</span><br><span class="line"></span><br><span class="line">  FD_ZERO(&amp;rset);</span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    <span class="keyword">if</span> (stdineof == <span class="number">0</span>)</span><br><span class="line">      FD_SET(fileno(fp), &amp;rset);</span><br><span class="line">    FD_SET(sockfd, &amp;rset);</span><br><span class="line">    maxfdp1 = max(fileno(fp), sockfd) + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (select(maxfdp1, &amp;rset, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        err_sys(<span class="string">&quot;select error&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(sockfd, &amp;rset)) &#123;  <span class="comment">/* socket is readable */</span></span><br><span class="line">      <span class="keyword">if</span> (Readline(sockfd, recvline, MAXLINE) == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (stdineof == <span class="number">1</span>)</span><br><span class="line">          <span class="keyword">return</span>;  <span class="comment">/* normal termination */</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">          err_quit(<span class="string">&quot;str_cli: server terminated prematurely&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      Writen(STDOUT_FILENO, recvline, <span class="built_in">strlen</span>(recvline));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(fileno(fp), &amp;rset)) &#123;  <span class="comment">/* input is readable */</span></span><br><span class="line">      <span class="keyword">if</span> (Fgets(sendline, MAXLINE, fp) == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        stdineof = <span class="number">1</span>;</span><br><span class="line">        alarm(<span class="number">0</span>);  <span class="comment">/* turn of heartbeat */</span></span><br><span class="line">        Shutdown(sockfd, SHUT_WR);  <span class="comment">/* send FIN */</span></span><br><span class="line">        FD_CLR(fileno(fp), &amp;rset);</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      Writen(sockfd, sendline, <span class="built_in">strlen</span>(sendline));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-TCP-Echo-Server-Revisited"><a href="#8-TCP-Echo-Server-Revisited" class="headerlink" title="8. TCP Echo Server (Revisited)"></a>8. TCP Echo Server (Revisited)</h2><p>TCP server也可用<code>select()</code>改写, 来替代client connection线程. 由于server端不需要监听写入操作, 所以只需要维护一个read descriptor set. 其中, 前三个file descriptors为stdio, stdout, stderr, 第四个file descriptor为listening descriptor; 剩下的descriptor为connected socket descriptor. 例如: <code>client</code>数组存储connected socket descriptor, <code>rset</code>维护read descriptor set, 如下图:<br><img src="/images/Network/UNP/6-8-data-struct-tcp-svr-listen-sock.gif" alt="Data structures for TCP server with just a listening socket"></p>
+<p><code>client</code>数组中, <strong>-1</strong>表示不可用file descriptor; rset中, <strong>0</strong>表示不监听该file descriptor, <strong>1</strong>表示监听该file descriptor. 当client1与server建立连接后, server会将该connected descriptor添加到<code>client</code>和<code>rset</code>中, 如下图:<br><img src="/images/Network/UNP/6-8-data-struct-first-cli-conn.jpg" alt="Data structures after first client connection is established"></p>
+<p>一段时间后, client2与server建立连接, 情况如下:<br><img src="/images/Network/UNP/6-8-data-struct-second-cli-conn.jpg" alt="Data structures after second client connection is established"></p>
+<p>client1与server断开连接, <code>client[0]</code>置为-1, rset中<code>descriptor 4</code>置为0, 如下图:<br><img src="/images/Network/UNP/6-8-data-struct-first-cli-terminate.gif" alt="Data structures after first client terminates its connection"></p>
+<p>使用<code>select()</code>的TCP server端代码如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>       i, maxi, maxfd, listenfd, connfd, sockfd;</span><br><span class="line">  <span class="type">int</span>       nready, client[FD_SETSIZE];</span><br><span class="line">  <span class="type">ssize_t</span>   n;</span><br><span class="line">  fd_set    rset, allset;</span><br><span class="line">  <span class="type">char</span>      buf[MAXLINE];</span><br><span class="line">  <span class="type">socklen_t</span> clilen;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  listenfd = Socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family      = AF_INET;</span><br><span class="line">  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">  servaddr.sin_port        = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">  Bind(listenfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  Listen(listenfd, LISTENQ);</span><br><span class="line"></span><br><span class="line">  maxfd = listenfd;  <span class="comment">/* initialize */</span></span><br><span class="line">  maxi = <span class="number">-1</span>;  <span class="comment">/* index into client[] array */</span></span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; FD_SETSIZE; i++)</span><br><span class="line">    client[i] = <span class="number">-1</span>;  <span class="comment">/* -1 indicates available entry */</span></span><br><span class="line">  FD_ZERO(&amp;allset);</span><br><span class="line">  FD_SET(listenfd, &amp;allset);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    rset = allset;  <span class="comment">/* structure assignment */</span></span><br><span class="line">    nready = Select(maxfd+<span class="number">1</span>, &amp;rset, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (FD_ISSET(listenfd, &amp;rset)) &#123;  <span class="comment">/* new client connection */</span></span><br><span class="line">      clilen = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">      connfd = Accept(listenfd, (SA *) &amp;cliaddr, &amp;clilen);</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* use the first unused entry for the connected socket */</span></span><br><span class="line">      <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; FD_SETSIZE; i++)</span><br><span class="line">        <span class="keyword">if</span> (client[i] &lt; <span class="number">0</span>) &#123;</span><br><span class="line">          client[i] = connfd;  <span class="comment">/* save descriptor */</span></span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (i == FD_SETSIZE) err_quit(<span class="string">&quot;too many clients&quot;</span>);</span><br><span class="line"></span><br><span class="line">      FD_SET(connfd, &amp;allset);  <span class="comment">/* add new descriptor to set */</span></span><br><span class="line">      <span class="keyword">if</span> (connfd &gt; maxfd) maxfd = connfd;  <span class="comment">/* for select */</span></span><br><span class="line">      <span class="keyword">if</span> (i &gt; maxi) maxi = i;  <span class="comment">/* max index in client[] array */</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">/* no more readable descriptors */</span></span><br><span class="line">      <span class="keyword">if</span> (--nready &lt;= <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt;= maxi; i++) &#123;  <span class="comment">/* check all clients for data */</span></span><br><span class="line">      <span class="keyword">if</span> ((sockfd = client[i]) &lt; <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">      <span class="keyword">if</span> (FD_ISSET(sockfd, &amp;rset)) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((n = Read(sockfd, buf, MAXLINE)) == <span class="number">0</span>) &#123;</span><br><span class="line">          Close(sockfd);</span><br><span class="line">          FD_CLR(sockfd, &amp;allset);</span><br><span class="line">          client[i] = <span class="number">-1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          Writen(sockfd, buf, n);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">/* no more readable descriptors */</span></span><br><span class="line">        <span class="keyword">if</span> (--nready &lt;= <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="9-pselect-Function"><a href="#9-pselect-Function" class="headerlink" title="9. pselect Function"></a>9. pselect Function</h2><p>POSIX.1引入了<code>pselect()</code>, 并在很多UNIX系统中使用.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/select.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brrief Same as select()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pselect</span><span class="params">(<span class="type">int</span> nfds, fd_set *readfds, fd_set *writefds,</span></span><br><span class="line"><span class="params">            fd_set *exceptfds, <span class="type">const</span> <span class="keyword">struct</span> timespec *timeout,</span></span><br><span class="line"><span class="params">            <span class="type">const</span> <span class="type">sigset_t</span> *sigmask)</span>;</span><br></pre></td></tr></table></figure>
+<p>虽然<code>pselect()</code>功能上与<code>select()</code>相同, 但存在以下几点不同:</p>
+<ol>
+<li><code>select()</code>使用<strong>struct timeval</strong>(仅支持microseconds)作为timeout类型; <code>pselect()</code>则使用<strong>struct timespec</strong>(支持nanoseconds)</li>
+<li><code>select()</code>没有sigmask参数, <code>pselect()</code>则支持屏蔽特定signal</li>
+</ol>
+<p>需要注意:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">ready = pselect(nfds, &amp;readfds, &amp;writefds, &amp;exceptfds, timeout, &amp;sigmask);</span><br></pre></td></tr></table></figure>
+<p>相当于原子性地执行以下代码:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">sigset_t</span> origmask;</span><br><span class="line">sigprocmask(SIG_SETMASK, &amp;sigmask, &amp;origmask);</span><br><span class="line">ready = select(nfds, &amp;readfds, &amp;writefds, &amp;exceptfds, timeout);</span><br><span class="line">sigprocmask(SIG_SETMASK, &amp;origmask, <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+<p>可以看出, <code>pselect()</code>的sigmask只用于运行时, 调用结束后会恢复原本的signal mask; <code>select()</code>不会修改signal mask. 这导致一个问题: 假设某个signal已经被block, 但又需要<code>select()</code>运行时捕获该signal, 则需要调用<code>sigprocmask()</code>解除signal的block, 并在<code>select()</code>运行结束后调用<code>sigprocmask()</code>恢复对该signal的block. 因而产生了两个race condition: </p>
+<ul>
+<li>解除阻塞signal后, 调用<code>select()</code>前signal到达, 导致signal丢失</li>
+<li><code>select()</code>调用后, 重新阻塞signal前signal到达, 导致signal丢失</li>
+</ul>
+<p>因此引入<code>pselect()</code>解决该问题.</p>
+<h2 id="10-poll-Function"><a href="#10-poll-Function" class="headerlink" title="10. poll Function"></a>10. poll Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;poll.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> &#123;</span></span><br><span class="line">  <span class="type">int</span>   fd;       <span class="comment">/* file descriptor */</span></span><br><span class="line">  <span class="type">short</span> events;   <span class="comment">/* requested events */</span></span><br><span class="line">  <span class="type">short</span> revents;  <span class="comment">/* returned events */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Same as select(), wait for one of a set of file </span></span><br><span class="line"><span class="comment"> *        descriptors to become ready to perform I/O</span></span><br><span class="line"><span class="comment"> * @param fds: the set of file descriptors</span></span><br><span class="line"><span class="comment"> * @param nfds: the number of items in the fds</span></span><br><span class="line"><span class="comment"> * @param timeout: the minimum number of milliseconds that </span></span><br><span class="line"><span class="comment"> *        polls() will block</span></span><br><span class="line"><span class="comment"> * @return a positive number for the number of ready descriptor; </span></span><br><span class="line"><span class="comment"> *         0 for the timeout and no file descriptor are ready; </span></span><br><span class="line"><span class="comment"> *         -1 for error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">poll</span><span class="params">(<span class="keyword">struct</span> pollfd *fds, <span class="type">nfds_t</span> nfds, <span class="type">int</span> timeout)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>pollfd struct</code>不仅包含file descriptor, 还包含可监听事件(events)与已发生事件(revents). 以下是事件(event)分类:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Constant</th>
+<th align="center">events</th>
+<th align="center">revents</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">POLLIN</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Normal or priority band data can be read</td>
+</tr>
+<tr>
+<td align="center">POLLRDNORM</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Normal data can be read</td>
+</tr>
+<tr>
+<td align="center">POLLRDBAND</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Priority band data can be read</td>
+</tr>
+<tr>
+<td align="center">POLLPRI</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">High-priority data cab be read</td>
+</tr>
+<tr>
+<td align="center">POLLOUT</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Normal data can be writen</td>
+</tr>
+<tr>
+<td align="center">POLLWRNORM</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Normal data can be writen</td>
+</tr>
+<tr>
+<td align="center">POLLWRBAND</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Priority band data can be writen</td>
+</tr>
+<tr>
+<td align="center">POLLERR</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">Error has occurred</td>
+</tr>
+<tr>
+<td align="center">POLLHUP</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">Hangup has occurred</td>
+</tr>
+<tr>
+<td align="center">POLLNVAL</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">Descriptor is not an open file</td>
+</tr>
+</tbody></table>
+<p><code>poll()</code>将所有数据分为三种: normal, priority band, 和high-priority. 对于TCP或UDP数据, POSIX.1的<code>poll()</code>将其分类如下:</p>
+<ul>
+<li>所有TCP和UDP数据都为normal</li>
+<li>TCP的out-of-band data为priority band</li>
+<li>TCP connection被中断(例如, 收到FIN)也是normal</li>
+<li>TCP connection发生的error(例如, 收到RST或超时)可被当做normal, 也可被当做POLLERR</li>
+<li>listening socket收到新的connection时, 可被当做normal或priority band</li>
+<li>nonblocking connect的执行完毕会让socket处于可写状态</li>
+</ul>
+<p><code>timeout</code>参数表示<code>poll()</code>在返回前等待多长时间:</p>
+<table>
+<thead>
+<tr>
+<th align="center">timeout value</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">INFTIM</td>
+<td align="center">Wait forever</td>
+</tr>
+<tr>
+<td align="center">0</td>
+<td align="center">Return immediately, do not block</td>
+</tr>
+<tr>
+<td align="center">&gt; 0</td>
+<td align="center">Wait specified number of milliseconds</td>
+</tr>
+</tbody></table>
+<h2 id="11-TCP-Echo-Server-Revisited-Again"><a href="#11-TCP-Echo-Server-Revisited-Again" class="headerlink" title="11. TCP Echo Server (Revisited Again)"></a>11. TCP Echo Server (Revisited Again)</h2><p>以下为<code>poll()</code>替代<code>select()</code>后的TCP server:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>     i, maxi, listenfd, connfd, sockfd;</span><br><span class="line">  <span class="type">int</span>     nready;</span><br><span class="line">  <span class="type">ssize_t</span> n;</span><br><span class="line">  <span class="type">char</span>    buf[MAXLINE];</span><br><span class="line">  <span class="type">socklen_t</span> clilen;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> <span class="title">client</span>[<span class="title">OPEN_MAX</span>];</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  listenfd = Socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sin_family      = AF_INET;</span><br><span class="line">  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">  servaddr.sin_port        = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">  Bind(listenfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  Listen(listenfd, LISTENQ);</span><br><span class="line"></span><br><span class="line">  client[<span class="number">0</span>].fd = listenfd;</span><br><span class="line">  client[<span class="number">0</span>].events = POLLRDNORM;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; OPEN_MAX; i++)</span><br><span class="line">    client[i].fd = <span class="number">-1</span>;  <span class="comment">/* -1 indicates available entry */</span></span><br><span class="line">  maxi = <span class="number">0</span>;  <span class="comment">/* max index into client[] array */</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    nready = Poll(client, maxi+<span class="number">1</span>, INFTIM);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* new client connection */</span></span><br><span class="line">    <span class="keyword">if</span> (client[<span class="number">0</span>].revents &amp; POLLRDNORM) &#123;</span><br><span class="line">      clilen = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">      connfd = Accept(listenfd, (SA *) &amp;cliaddr, &amp;clilen);</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* find an entry for the new descriptor */</span></span><br><span class="line">      <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; OPEN_MAX; i++)</span><br><span class="line">        <span class="keyword">if</span> (client[i].fd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">          client[i].fd = connfd;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (i == OPEN_MAX) err_quit(<span class="string">&quot;too many clients&quot;</span>);</span><br><span class="line"></span><br><span class="line">      client[i].events = POLLRDNORM;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (i &gt; maxi) maxi = i;  <span class="comment">/* update max index */</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">/* no more readable descriptors */</span></span><br><span class="line">      <span class="keyword">if</span> (--nready &lt;= <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* check all clients for data */</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt;= maxi; i++) &#123;</span><br><span class="line">      <span class="keyword">if</span> ((sockfd = client[i].fd) &lt; <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (client[i].revents &amp; (POLLRDNORM | POLLERR)) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((n = read(sockfd, buf, MAXLINE)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">if</span> (errno == ECONNRESET) &#123;  <span class="comment">/* connection reset by client */</span></span><br><span class="line">            Close(sockfd);</span><br><span class="line">            client[i].fd = <span class="number">-1</span>;</span><br><span class="line">          &#125; <span class="keyword">else</span></span><br><span class="line">            err_sys(<span class="string">&quot;read error&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123;  <span class="comment">/* connection closed by client */</span></span><br><span class="line">          Close(sockfd);</span><br><span class="line">          client[i].fd = <span class="number">-1</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span></span><br><span class="line">          Writen(sockfd, buf, n);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* no more readable descriptors */</span></span><br><span class="line">        <span class="keyword">if</span> (--nready &lt;= <span class="number">0</span>) <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/abba.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Socket Options</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/66fb.html">
+        <span class="next-text nav-default">TCP Client/Server</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/e03d.html';
+  var disqus_title = "I/O Multiplexing";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

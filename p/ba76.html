@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Process Relationships"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/ba76.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/ba76.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/ba76.html"/>
+
+
+<meta name="description" content="1. Terminal Logins早期UNIX系统中, terminal要么是local(接线直连主机), 要么是remote(通过modem连接), 这些登录都要通过kernel内的terminal device driver.随着bitmapped graphical terminal(位图图形终端)的出现, windowing system(窗口系统)提供了与主机交互的新方式. 应用程序可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Process Relationships">
+<meta property="og:url" content="https://zaf1ro.github.io/p/ba76.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Terminal Logins早期UNIX系统中, terminal要么是local(接线直连主机), 要么是remote(通过modem连接), 这些登录都要通过kernel内的terminal device driver.随着bitmapped graphical terminal(位图图形终端)的出现, windowing system(窗口系统)提供了与主机交互的新方式. 应用程序可">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-2-process-when-login.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-2-process-after-login.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-2-process-of-login.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-3-telnet-login.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-3-network-login.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-5-process-group-and-session.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-6-term-and-session.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-8-job-ctrl-with-fg-and-bg-job.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-11-impl-of-session-and-proc-grp.jpg">
+<meta property="article:published_time" content="2019-09-11T18:52:00.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.057Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/9-2-process-when-login.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Process Relationships - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Terminal-Logins"><span class="toc-text">1. Terminal Logins</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-BSD-Terminal-Logins"><span class="toc-text">2. BSD Terminal Logins</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Network-Logins"><span class="toc-text">3. Network Logins</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-BSD-Network-Logins"><span class="toc-text">3.1 BSD Network Logins</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Process-Groups"><span class="toc-text">4. Process Groups</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Sessions"><span class="toc-text">5. Sessions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Controlling-Terminal"><span class="toc-text">6. Controlling Terminal</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-tcgetpgrp-tcsetpgrp-and-tcgetsid-Functions"><span class="toc-text">7. tcgetpgrp, tcsetpgrp and tcgetsid Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Job-Control"><span class="toc-text">8. Job Control</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Shell-Execution-of-Prgrams"><span class="toc-text">9. Shell Execution of Prgrams</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-The-shell-without-job-control-the-Bourne-shell-on-Solaris%C2%B6"><span class="toc-text">9.1 The shell without job control: the Bourne shell on Solaris¶</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-The-shell-with-job-control-Bourne-again-shell-on-Linux"><span class="toc-text">9.2 The shell with job control: Bourne-again shell on Linux</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Orphaned-Process-Groups"><span class="toc-text">10. Orphaned Process Groups</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-FreeBSD-Implementation"><span class="toc-text">11. FreeBSD Implementation</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Process Relationships
+        
+      </h1>
+      <time class="post-time">
+          09/11/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Terminal-Logins"><a href="#1-Terminal-Logins" class="headerlink" title="1. Terminal Logins"></a>1. Terminal Logins</h2><p>早期UNIX系统中, terminal要么是local(接线直连主机), 要么是remote(通过modem连接), 这些登录都要通过kernel内的terminal device driver.<br>随着bitmapped graphical terminal(位图图形终端)的出现, windowing system(窗口系统)提供了与主机交互的新方式. 应用程序可创建&quot;terminal windows&quot;(终端窗口)来模拟基于字符的terminal, 允许用户以熟悉的方式进行交互(如shell命令行).<br>有些系统允许用户登录后启动窗口系统, 其他系统会自动启动窗口系统. 我们现在讨论的是: 使用terminal登录UNIX系统, 无论使用何种terminal, 过程都是相似的:</p>
+<ul>
+<li>character-based terminal</li>
+<li>模仿character-based terminal的graphical terminal</li>
+<li>运行windowing system的graphical terminal</li>
+</ul>
+<h2 id="2-BSD-Terminal-Logins"><a href="#2-BSD-Terminal-Logins" class="headerlink" title="2. BSD Terminal Logins"></a>2. BSD Terminal Logins</h2><p><code>/etc/ttys</code>文件中每一行表示一个terminal device(一种特殊device file), 每一行包含terminal device的名字, 执行的命令(通常为<code>getty</code>), 和一些输入参数. 启动UNIX系统时, kernel会创建一个<code>init</code>进程(PID 1), 该进程会读取<code>/etc/ttys</code>并尝试启动每一个terminal device.<br><img src="/images/UNIX/APUE/9-2-process-when-login.jpg" alt="Processes invoked by init to allow terminal logins"></p>
+<p>上述所有进程的real user ID和effective user ID均为0(拥有superuser权限). 除了<code>init</code>进程, 其他进程的PPID均为1.</p>
+<ol>
+<li><code>init</code>进程调用<code>fork()</code>生成子进程, 子进程调用<code>exec</code>执行<code>getty</code>程序</li>
+<li><code>getty</code>调用<code>open()</code>打开terminal device, 并将file descriptor 0, 1, 2设置为该terminal device.</li>
+<li><code>getty</code>的输出与<code>login</code>类似: 等待用户输出用户名</li>
+<li>当用户输入用户名后, <code>getty</code>的任务结束, 并调用<code>login</code>程序, 等同于:  <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">execle(<span class="string">&quot;/bin/login&quot;</span>, <span class="string">&quot;login&quot;</span>, <span class="string">&quot;-p&quot;</span>, username, (<span class="type">char</span> *)<span class="number">0</span>, envp);</span><br></pre></td></tr></table></figure></li>
+<li>虽然<code>init</code>调用<code>getty</code>时没有任何环境, 但<code>getty</code>会为<code>login</code>创造一个环境(<code>envp</code>), 其中包括terminal的名字, 一些<code>gettytab</code>中的环境字符串. <code>-p</code>表示<code>login</code>需保留传入的环境.</li>
+<li><code>login</code>执行以下操作:<ol>
+<li>调用<code>getpwnam()</code>获取password file entry</li>
+<li>调用<code>getpass()</code>获取用户输入的password</li>
+<li>调用<code>crypt()</code>对password加密, 并与password file entry中的<code>pw_passwd</code>对比</li>
+<li>若多次登录失败(密码错误), 则调用<code>exit(1)</code>. <code>init</code>会收到进程结束的通知, 并继续调用<code>fork()</code>, <code>exec()</code>和<code>getty</code>程序.</li>
+</ol>
+</li>
+</ol>
+<p><img src="/images/UNIX/APUE/9-2-process-after-login.jpg" alt="State of processes after login has been invoked"></p>
+<p>若成功登陆后, <code>login</code>会执行以下操作:</p>
+<ul>
+<li>调用<code>chdir()</code>切换到用户的home directory</li>
+<li>调用<code>chown()</code>将terminal device的所有权交给用户</li>
+<li>将terminal device的读写权限交给login user</li>
+<li>调用<code>setgid()</code>和<code>initgroups()</code>设置group ID</li>
+<li>初始化environment, 如下:<ul>
+<li>home directory(<code>HOME</code>)</li>
+<li>shell(<code>SHELL</code>)</li>
+<li>user name(<code>USER</code>和<code>LOGNAME</code>)</li>
+<li>默认路径(<code>PATH</code>)</li>
+</ul>
+</li>
+<li>调用<code>setuid()</code>将进程的user ID改为当前用户, 并调用shell  <figure class="highlight c"><table><tr><td class="code"><pre><span class="line">execl(<span class="string">&quot;/bin/sh&quot;</span>, <span class="string">&quot;-sh&quot;</span>, (<span class="type">char</span> *)<span class="number">0</span>);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>由于<code>login</code>所在的进程拥有superuser权限, 因此<code>setuid()</code>可修改所有user ID(real user ID, effective user ID, saved set-user-ID). <code>setgid()</code>也是相同的效果. 此时<code>login</code> shell仍在运行, 其parent process为<code>init</code>, 因此当<code>login</code>结束时, <code>init</code>会收到<code>SIGCHLD</code> signal, 并重复执行上述流程.</p>
+<p><img src="/images/UNIX/APUE/9-2-process-of-login.jpg" alt="Arrangement of processes after everything is set for a terminal login"></p>
+<p>最后<code>login</code> shell会读取<strong>start-up file</strong>(Bourne shell中的<code>.profile</code>; GNU Bourne-again shell中的<code>.bash_profile</code>, <code>.bash_login</code>, 或<code>.profile</code>; C shell中的<code>.cshrc</code>和<code>.login</code>). 这些start-up file会修改或添加environment variables, 例如, 大部分用户会设置自己的<code>PATH</code>.</p>
+<h2 id="3-Network-Logins"><a href="#3-Network-Logins" class="headerlink" title="3. Network Logins"></a>3. Network Logins</h2><p>serial terminal login与network login的主要区别: terminal与主机之间的<strong>connection</strong>是否为点对点.<br>对于terminal login, <code>init</code>知道哪些terminal device可以登录, 并为每个terminal device生成各自<code>getty</code>进程; 但对于network login, 所有登录都通过kernel的network interface driver, 且无法得知何时发生. 网络中任何主机都可能登录当前主机, 因此与其为网络上每个主机创建<code>getty</code>进程, 不如等待网络请求.<br>为了给terminal login和network login一个统一入口, UNIX引入<strong>pseudo terminal</strong>(伪终端), 该driver用户模拟serial terminal的行为, 并将terminal操作映射为网络操作, 反之亦然.</p>
+<h3 id="3-1-BSD-Network-Logins"><a href="#3-1-BSD-Network-Logins" class="headerlink" title="3.1 BSD Network Logins"></a>3.1 BSD Network Logins</h3><p>BSD中存在一个<code>inetd</code>进程, 也称为<strong>internet superserver</strong>, 其会等待绝大多数网络连接. 作为系统启动的一部分, <code>init</code>调用一个shell执行<code>/etc/rc</code> shell script, 该script会启动<code>inted</code>和其他daemon. 一旦该script中止运行, <code>inetd</code>的parent process变为<code>init</code>; <code>inetd</code>等待TCP&#x2F;IP连接请求, 当连接达到主机时, <code>inetd</code>执行<code>fork()</code>, 并对合适的程序执行<code>exec</code>.<br>假设远程用户启动TELNET client开始登录, 向TELNET server发送TCP连接请求:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">telnet hostname</span><br></pre></td></tr></table></figure>
+<p>client向hostname开启一个TCP连接, 下图展示了TELNET server中的进程执行:<br><img src="/images/UNIX/APUE/9-3-telnet-login.jpg" alt="Sequence of processes involved in executing TELNET server"></p>
+<p><code>telnetd</code>开启一个pseudo terminal device, 并调用<code>fork()</code>拆分为两个进程:</p>
+<ul>
+<li>parent process(<code>telnetd</code>): 处理网络连接中的通信请求</li>
+<li>child process: 调用<code>exec</code>执行<code>login</code>程序. 调用<code>exec</code>前会将stdin, stdout, stderr指向该pseudo terminal device.</li>
+</ul>
+<p><img src="/images/UNIX/APUE/9-3-network-login.jpg" alt="Arrangement of processes after everything is set for a network login"></p>
+<p>无论通过terminal还是network登录, 都会创建一个<code>login</code> shell, 其stdin, stdout, stderr指向terminal device或pseudo terminal device.</p>
+<h2 id="4-Process-Groups"><a href="#4-Process-Groups" class="headerlink" title="4. Process Groups"></a>4. Process Groups</h2><p>每个进程都有一个process ID, 且属于一个<strong>process group</strong>.</p>
+<ul>
+<li>一个process group包含一个或多个进程, process group内的进程通常拥有相同任务.</li>
+<li>当process group收到signal时, process group内的所有process都会收到signal. </li>
+<li>每个process group拥有一个唯一process group ID. Process group ID与process ID类似: 都为正整数, 存放在<code>pid_t</code>数据类型中.</li>
+<li>每个process group可有零个或一个<strong>process group leader</strong>, 该进程的process ID与process group ID相同.</li>
+<li>若process group中没有进程, 该group的生存周期结束.</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief get the process group ID of the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">getpgrp</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief get the process group ID of the process whose </span></span><br><span class="line"><span class="comment"> *        process ID is equal to `pid`</span></span><br><span class="line"><span class="comment"> * @param pid if it is 0, return the process group ID of </span></span><br><span class="line"><span class="comment"> *        the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">getpgid</span><span class="params">(<span class="type">pid_t</span> pid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the PGID of the process specified by `pid` </span></span><br><span class="line"><span class="comment"> *        to pgid.</span></span><br><span class="line"><span class="comment"> * @param pid If it is 0, use the process ID of the </span></span><br><span class="line"><span class="comment"> *        calling process</span></span><br><span class="line"><span class="comment"> * @param pgid if it is 0, use `pid`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setpgid</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">pid_t</span> pgid)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>setpgid()</code>遵循以下规则:</p>
+<ul>
+<li>进程只能设置自身和其child process的process group ID</li>
+<li>当child process调用<code>exec</code>后, 进程无法修改其process group ID</li>
+</ul>
+<p>我们可向一个process, 或一个process group发送signal. 相同的, <code>waitpid</code>函数允许我们等待某个process, 或某个process group中的一个process.</p>
+<h2 id="5-Sessions"><a href="#5-Sessions" class="headerlink" title="5. Sessions"></a>5. Sessions</h2><p>Session包含一个或多个process group, session内的所有process group使用同一个terminal device. Session一般用于job control: session中某个process group作为<strong>foreground process group</strong>, 用于接收特殊字符产生的signal, 进程可设置当前session的foreground process group. 以下是terminal的访问控制:</p>
+<ul>
+<li>foreground process group中的进程允许读取terminal device; background process group中的进程尝试读取terminal device时会收到<code>SIGTTIN</code> signal.</li>
+<li>foreground process group中的进程允许写入terminal device; background process group中的进程尝试写入terminal device时会收到<code>SIGTTOU</code> signal.</li>
+</ul>
+<p>当session中没有与foreground process group ID匹配的process ID或process group ID, 则terminal没有foreground process group.</p>
+<p>以下就是一个session和三个process group:<br><img src="/images/UNIX/APUE/9-5-process-group-and-session.jpg" alt="Arrangement of processes into process groups and sessions"></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a new session if the calling process </span></span><br><span class="line"><span class="comment"> *        is not a process group leader.</span></span><br><span class="line"><span class="comment"> *        * The calling process becomes the session </span></span><br><span class="line"><span class="comment"> *          leader of the new session </span></span><br><span class="line"><span class="comment"> *        * The calling process becomes the process  </span></span><br><span class="line"><span class="comment"> *          group leader of a new process group</span></span><br><span class="line"><span class="comment"> *        * The calling process has no terminal device</span></span><br><span class="line"><span class="comment"> * @return error if the calling process is already </span></span><br><span class="line"><span class="comment"> *         a process group leader</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">setsid</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the session ID of the process with </span></span><br><span class="line"><span class="comment"> *        process ID `pid`</span></span><br><span class="line"><span class="comment"> * @param pid If it is 0, return the session ID of </span></span><br><span class="line"><span class="comment"> *        the calling process.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">getsid</span><span class="params">(<span class="type">pid_t</span> pid)</span>;</span><br></pre></td></tr></table></figure>
+<p>由于没有session ID的概念, 所以session由session leader决定. Session leader的PID也相当于session ID.</p>
+<h2 id="6-Controlling-Terminal"><a href="#6-Controlling-Terminal" class="headerlink" title="6. Controlling Terminal"></a>6. Controlling Terminal</h2><p>Session和process group有以下几个特点:</p>
+<ol>
+<li>一个session只有一个<strong>controlling terminal</strong>(通常为登录时的terminal device或pseudo terminal device)</li>
+<li>与controlling terminal建立连接的session leader称为<strong>controlling process</strong></li>
+<li>一个session内的process group分为一个<strong>foreground process group</strong>和多个<strong>background process group</strong></li>
+<li>当用户按下terminal的interrupt key(通常为Control-C)或quit key(通常为Control-backslash)时, foreground process group中的所有进程都会收到interrupt signal</li>
+<li>若controlling terminal检测到modem或network中断, controlling process会收到hang-up signal</li>
+</ol>
+<p><img src="/images/UNIX/APUE/9-6-term-and-session.jpg" alt="Process groups and sessions showing controlling terminal"></p>
+<h2 id="7-tcgetpgrp-tcsetpgrp-and-tcgetsid-Functions"><a href="#7-tcgetpgrp-tcsetpgrp-and-tcgetsid-Functions" class="headerlink" title="7. tcgetpgrp, tcsetpgrp and tcgetsid Functions"></a>7. tcgetpgrp, tcsetpgrp and tcgetsid Functions</h2><p>进程可通过以下函数指定哪个process group为foreground process group, 这样terminal device driver就知道该向谁发送terminal input和terminal-generated signal.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the process group ID of the foreground </span></span><br><span class="line"><span class="comment"> *        process group on the terminal associated to </span></span><br><span class="line"><span class="comment"> *        `fd`</span></span><br><span class="line"><span class="comment"> * @param fd must be the controlling terminal of the </span></span><br><span class="line"><span class="comment"> *        calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">tcgetpgrp</span><span class="params">(<span class="type">int</span> fd)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief make the process group with process group ID </span></span><br><span class="line"><span class="comment"> *        `pgrp` the foreground process group on the </span></span><br><span class="line"><span class="comment"> *        terminal associated to `fd`</span></span><br><span class="line"><span class="comment"> * @param fd must be the controlling terminal of the </span></span><br><span class="line"><span class="comment"> *        calling process, and still be associated </span></span><br><span class="line"><span class="comment"> *        with its session</span></span><br><span class="line"><span class="comment"> * @param pgrp must be a process group belonging to </span></span><br><span class="line"><span class="comment"> *        the same session as the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">tcsetpgrp</span><span class="params">(<span class="type">int</span> fd, <span class="type">pid_t</span> pgrp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the session ID(session leader&#x27;s PID) </span></span><br><span class="line"><span class="comment"> *        of the current session that has the terminal</span></span><br><span class="line"><span class="comment"> *        associated to `fd` as controlling terminal</span></span><br><span class="line"><span class="comment"> * @param fd must be the controlling terminal of the </span></span><br><span class="line"><span class="comment"> *        calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">tcgetsid</span><span class="params">(<span class="type">int</span> fd)</span>;</span><br></pre></td></tr></table></figure>
+<p>若background process group内的进程调用<code>tcsetpgrp()</code>, 且该进程没有阻塞或忽略<code>SIGTTOU</code> signal, 该process group内的所有进程都会收到<code>SIGTTOU</code> signal.</p>
+<h2 id="8-Job-Control"><a href="#8-Job-Control" class="headerlink" title="8. Job Control"></a>8. Job Control</h2><p>Job control允许我们在一个terminal内启动多个job(多个process group), 其中一个job可以访问terminal, 其他job在后台运行. Job control的实现需要以下几点:</p>
+<ul>
+<li>shell支持job control</li>
+<li>kernel中的terminal driver支持job control</li>
+<li>kernel支持job-control signals</li>
+</ul>
+<p>在shell中使用job control时, job要么是<strong>foreground job</strong>(等同于foreground process group), 要么是<strong>background job</strong>(等同于background process group). 一个job就是一组进程, 通常使用<strong>pipe</strong>(管道)串联进程. 我们可以在前台启动一个job, 其中包含一个进程:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">vi main.c</span><br></pre></td></tr></table></figure>
+<p>也可以在后台启动两个job:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">pr</span> *.c | lpr &amp;</span><br><span class="line">make all &amp;</span><br></pre></td></tr></table></figure>
+<p>当我们启动一个background job时, shell会为其分配一个job identifier, 并输出所有process ID:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ make all &gt; Make.out &amp;</span><br><span class="line">[1] 1475</span><br><span class="line">$ <span class="built_in">pr</span> *.c | lpr &amp;</span><br><span class="line">[2] 1490</span><br><span class="line">$   <span class="comment"># just press RETURN</span></span><br><span class="line">[2] + Done <span class="built_in">pr</span> *.c | lpr &amp;</span><br><span class="line">[1] + Done make all &gt; Make.out &amp;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第一行的<code>make</code>的job编号为1, PID为1475. 第三行的job编号为2, PID为1490</li>
+<li>当job结束且我们按下<code>RETURN</code>时, shell会告诉我们job已完成. 由于shell无法告知background job的状态改变, 因此需要我们输入<code>RETURN</code>.</li>
+<li>terminal driver可接收三种特殊字符并将其转换为特定signal:<ul>
+<li>interrupt character(Control-C): <code>SIGINT</code></li>
+<li>quit character(Control-Backslash): <code>SIGQUIT</code></li>
+<li>suspend character(Control-Z): <code>SIGTSTP</code></li>
+</ul>
+</li>
+</ul>
+<p>可以存在一个或多个foreground job, 但只有foreground job可以接收terminal input(我们在terminal输入的字符). Background job可以去获取terminal input, 但terminal driver会向该background job发送<code>SIGTTIN</code> signal, 该signal通常会停止background job.</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cat</span> &gt; temp.foo &amp;   <span class="comment"># background job, but will try to read from terminal</span></span><br><span class="line">[1] 1681</span><br><span class="line">$                  <span class="comment"># press RETURN</span></span><br><span class="line">[1] + Stopped (SIGTTIN) <span class="built_in">cat</span> &gt; temp.foo &amp;</span><br><span class="line">$ <span class="built_in">fg</span> %1            <span class="comment"># move the background job to the foreground</span></span><br><span class="line"><span class="built_in">cat</span> &gt; temp.foo     <span class="comment"># shell tells us which job is now in the foreground</span></span><br><span class="line">hello, world       <span class="comment"># enter one line</span></span><br><span class="line">ˆD                 <span class="comment"># type the end-of-file character</span></span><br><span class="line">$ <span class="built_in">cat</span> temp.foo     <span class="comment"># check the content of file</span></span><br><span class="line">hello, world</span><br></pre></td></tr></table></figure>
+<ul>
+<li>当后台的<code>cat</code>尝试从terminal读取字符时, terminal driver会向其发送<code>SIGTTIN</code> signal</li>
+<li>shell检测到child process的状态变化(通过<code>wait()</code>和<code>waitpid()</code>), 并通知用户该job已经停止</li>
+<li><code>fg</code>命令将已停止的job改为foreground job(<code>tcsetpgrp()</code>), 并向该job发送<code>SIGCONT</code> signal(让job继续运行)</li>
+<li>由于job已成为foreground job, 因此可以从terminal读取用户输入</li>
+</ul>
+<p><code>stty</code>可让background job无法向terminal输出数据:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> temp.foo &amp;   <span class="comment"># start background job</span></span></span><br><span class="line">[1] 1719</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">hello, world     <span class="comment"># the output from the background job</span></span></span><br><span class="line">we press RETURN    # stop background job</span><br><span class="line">[1] + Done cat temp.foo &amp; </span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">stty</span> tostop      <span class="comment"># prevent background job outputing to terminal</span></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">cat</span> temp.foo &amp;   <span class="comment"># start background again</span></span></span><br><span class="line">[1] 1721</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">                 <span class="comment"># press RETURN and the background job is stopped</span></span></span><br><span class="line">[1] + Stopped(SIGTTOU) cat temp.foo &amp;</span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash"><span class="built_in">fg</span> %1            <span class="comment"># move the stopped job to the foreground</span></span></span><br><span class="line">cat temp.foo       # shell tells us which job is now in the foreground</span><br><span class="line">hello, world       # output successfully</span><br></pre></td></tr></table></figure>
+<p>禁止background job输出到terminal后, 当<code>cat</code>尝试向terminal输出字符时, terminal driver会阻止background job的输出, 并向该job发送<code>SIGTTOU</code> signal. 使用<code>fg</code>命令后, job移至前台并顺利输出. 下图为job control的流程:<br><img src="/images/UNIX/APUE/9-8-job-ctrl-with-fg-and-bg-job.jpg" alt="Summary of job control features with foreground and background jobs, and terminal driver"></p>
+<h2 id="9-Shell-Execution-of-Prgrams"><a href="#9-Shell-Execution-of-Prgrams" class="headerlink" title="9. Shell Execution of Prgrams"></a>9. Shell Execution of Prgrams</h2><p>本节将讨论shell如何执行程序, 以及和process group, terminal, session的关系.</p>
+<h3 id="9-1-The-shell-without-job-control-the-Bourne-shell-on-Solaris¶"><a href="#9-1-The-shell-without-job-control-the-Bourne-shell-on-Solaris¶" class="headerlink" title="9.1 The shell without job control: the Bourne shell on Solaris¶"></a>9.1 The shell without job control: the Bourne shell on Solaris¶</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -o pid,ppid,pgid,sid,<span class="built_in">comm</span></span><br><span class="line">PID   PPID  PGID  SID  COMMAND</span><br><span class="line">949   947   949   949  sh</span><br><span class="line">1774  949   949   949  ps</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>ps</code>命令的parent process为shell</li>
+<li>由于shell不支持job control, 因此shell和<code>ps</code>程序处于同一session和同一foreground process group</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -o pid,ppid,pgid,sid,<span class="built_in">comm</span> &amp;</span><br><span class="line">PID   PPID  PGID  SID  COMMAND</span><br><span class="line">949   947   949   949  sh</span><br><span class="line">1812  949   949   949  ps</span><br></pre></td></tr></table></figure>
+<p>后台执行上述命令时, 唯一变动就是PID. 由于shell不支持job control, 因此不会为background job创建一个新的process group, background job也依然拥有terminal.</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -o pid,ppid,pgid,sid,<span class="built_in">comm</span> | cat1</span><br><span class="line">PID   PPID  PGID  SID  COMMAND</span><br><span class="line">949   947   949   949  sh</span><br><span class="line">1823  949   949   949  cat1</span><br><span class="line">1824  1823  949   949  ps</span><br></pre></td></tr></table></figure>
+<p>上述为shell处理pipeline的情况: <code>cat1</code>与<code>cat</code>程序相同, 只是名字不同. <code>cat1</code>为shell的child process, <code>ps</code>为<code>cat1</code>的child process. 看起来shell调用<code>fork()</code>生成自身副本, 该副本又调用<code>fork()</code>处理pipeline前面的部分.</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -o pid,ppid,pgid,sid,<span class="built_in">comm</span> | cat1 &amp;</span><br></pre></td></tr></table></figure>
+<p>后台执行上述命令时, 唯一变动就是PID.由于shell不支持job control, background process的process group ID仍为949, session的process group ID也不变.<br>若background process尝试从terminal读取输入, 如<code>cat &gt; temp.foo &amp;</code>, 由于shell不支持job control, 若background process没有重定向自己的stdin, shell会自动将其stdin重定向到<code>/dev/null</code>. 读取<code>/dev/null</code>会返回一个end-of-file, 因此background process会读取到end-of-file并立即中止.</p>
+<h3 id="9-2-The-shell-with-job-control-Bourne-again-shell-on-Linux"><a href="#9-2-The-shell-with-job-control-Bourne-again-shell-on-Linux" class="headerlink" title="9.2 The shell with job control: Bourne-again shell on Linux"></a>9.2 The shell with job control: Bourne-again shell on Linux</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -o pid,ppid,pgid,sid,tpgid,<span class="built_in">comm</span></span><br><span class="line">PID   PPID  PGID  SID   TPGID  COMMAND</span><br><span class="line">2837  2818  2837  2837  5796   bash</span><br><span class="line">5796  2837  5796  2837  5796   ps</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>ps</code>命令拥有自己的process group.</li>
+<li><code>ps</code>命令是所在process group的leader. 该process group为foreground process group, 因为其拥有controlling terminal.</li>
+<li><code>ps</code>命令执行期间, login shell为background process group.</li>
+<li>两个process group属于同一session.</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -o pid,ppid,pgid,sid,tpgid,<span class="built_in">comm</span> &amp;</span><br><span class="line">PID   PPID  PGID  SID   TPGID  COMMAND</span><br><span class="line">2837  2818  2837  2837  2837   bash</span><br><span class="line">5797  2837  5797  2837  2837   ps</span><br></pre></td></tr></table></figure>
+<p>后台执行上述命令时:</p>
+<ul>
+<li><code>ps</code>命令依然拥有自己的process group</li>
+<li>process group(5797)为background process group</li>
+<li>login shell为foreground process group</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ps -o pid,ppid,pgid,sid,tpgid,<span class="built_in">comm</span> | cat1</span><br><span class="line">PID   PPID  PGID  SID   TPGID  COMMAND</span><br><span class="line">2837  2818  2837  2837  5799   bash</span><br><span class="line">5799  2837  5799  2837  5799   ps</span><br><span class="line">5800  2837  5799  2837  5799   cat1</span><br></pre></td></tr></table></figure>
+<p>pipeline中执行两个进程:</p>
+<ul>
+<li><code>ps</code>和<code>cat1</code>属于一个新的process group, 作为foreground process group</li>
+<li>login shell为其他进程的parent process. 但与Bourne shell不同的是, 其先创建<code>ps</code>, 后创建<code>cat1</code></li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">ps -o pid,ppid,pgid,sid,tpgid,<span class="built_in">comm</span> | cat1 &amp;</span></span><br><span class="line">PID  PPID PGID SID  TPGID COMMAND</span><br><span class="line">2837 2818 2837 2837 2837  bash</span><br><span class="line">5801 2837 5801 2837 2837  ps</span><br><span class="line">5802 2837 5801 2837 2837  cat1</span><br></pre></td></tr></table></figure>
+<p>后台执行上述命令: 结果相同, 但<code>ps</code>和<code>cat1</code>所在的process group为background process group.</p>
+<h2 id="10-Orphaned-Process-Groups"><a href="#10-Orphaned-Process-Groups" class="headerlink" title="10. Orphaned Process Groups"></a>10. Orphaned Process Groups</h2><p>若child process仍在运行, 但其parent process中止, 则该child process称为<strong>orphaned</strong>, 其parent process改为init(PID 1).</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;apue.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">sig_hup</span><span class="params">(<span class="type">int</span> signo)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;SIGHUP received, pid = %ld\n&quot;</span>, (<span class="type">long</span>)getpid());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> <span class="title function_">pr_ids</span><span class="params">(<span class="type">char</span> *name)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;%s: pid = %ld, ppid = %ld, pgrp = %ld, tpgrp = %ld\n&quot;</span>,</span><br><span class="line">    name, (<span class="type">long</span>)getpid(), (<span class="type">long</span>)getppid(), (<span class="type">long</span>)getpgrp(),</span><br><span class="line">    (<span class="type">long</span>)tcgetpgrp(STDIN_FILENO));</span><br><span class="line">  fflush(<span class="built_in">stdout</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> c;</span><br><span class="line">  <span class="type">pid_t</span> pid;</span><br><span class="line">  pr_ids(<span class="string">&quot;parent&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((pid = fork()) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    err_sys(<span class="string">&quot;fork error&quot;</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (pid &gt; <span class="number">0</span>) &#123; <span class="comment">/* parent */</span></span><br><span class="line">    sleep(<span class="number">5</span>);           <span class="comment">/* sleep to let child stop itself */</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;              <span class="comment">/* child */</span></span><br><span class="line">    pr_ids(<span class="string">&quot;child&quot;</span>);</span><br><span class="line">    signal(SIGHUP, sig_hup); <span class="comment">/* establish signal handler */</span></span><br><span class="line">    kill(getpid(), SIGTSTP); <span class="comment">/* stop ourself */</span></span><br><span class="line">    pr_ids(<span class="string">&quot;child&quot;</span>);         <span class="comment">/* prints only if we’re continued */</span></span><br><span class="line">    <span class="keyword">if</span> (read(STDIN_FILENO, &amp;c, <span class="number">1</span>) != <span class="number">1</span>)</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;read error %d on controlling TTY\n&quot;</span>, errno);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是运行结果:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">parent: pid = 6099, ppid = 2837, pgrp = 6099, tpgrp = 6099</span><br><span class="line">child: pid = 6100, ppid = 6099, pgrp = 6099, tpgrp = 6099</span><br><span class="line">SIGHUP received, pid = 6100</span><br><span class="line">child: pid = 6100, ppid = 1, pgrp = 6099, tpgrp = 2837</span><br><span class="line"><span class="built_in">read</span> error 5 on controlling TTY</span><br></pre></td></tr></table></figure>
+<ul>
+<li>当前程序成为foreground process group, parent process和child process处于同一process group(6099), shell的process group为2837</li>
+<li>调用<code>fork()</code>后, parent process调用<code>sleep()</code>, 保证child process先执行</li>
+<li>child process建立<code>SIGHUP</code>的signal handler</li>
+<li>child process调用<code>kill()</code>, 向自身发送<code>SIGSTP</code>. 该signal会暂停child process, 等同于用户在terminal输入suspend character(Control-Z)</li>
+<li>当parent process中止时, child process成为orphaned, 因此其paraent process ID为1, 也就是<code>init</code>进程</li>
+<li>此时, child process成为<strong>orphaned process group</strong>的一员:<ul>
+<li>当controlling process中止时, 其他session就可以使用其terminal. 为防止之前session中其他进程使用terminal, 该session中的所有process group都被标记为<strong>orphaned process group</strong></li>
+<li>当process group成为orphan, 所有进程都会收到<code>SIGHUP</code>. 通常来说, 该signal会让进程终止, 但进程可选择忽略该signal, 或为该signal建立handler, 进程仍可在orphan process group中运行.</li>
+</ul>
+</li>
+<li>shell收到两条输出, 来自login shell和child process. child process的PPID为1</li>
+<li>child process调用<code>read()</code>尝试从terminal读取输入. <code>read()</code>返回error, 并将errno设置为<code>EIO</code>.<ul>
+<li>当background process group中的进程尝试读取terminal输入时, background process group会收到<code>SIGTTIN</code>; 但对于orphaned process group, 若kernel使用该signal停止进程, 则进程可能永远无法继续运行.</li>
+</ul>
+</li>
+<li>由于parent process以foreground job执行, 因此parent process中止后, child process会被放入background process group中.</li>
+</ul>
+<h2 id="11-FreeBSD-Implementation"><a href="#11-FreeBSD-Implementation" class="headerlink" title="11. FreeBSD Implementation"></a>11. FreeBSD Implementation</h2><p><img src="/images/UNIX/APUE/9-11-impl-of-session-and-proc-grp.jpg" alt="FreeBSD implementation of sessions and process groups"></p>
+<p><code>session</code>: 每个session都有该一个structure</p>
+<ul>
+<li>s_count: session内的process group数量. 若该field为0, 则释放<code>session</code></li>
+<li>s_leader: 指向session leader的<code>proc</code> structure</li>
+<li>s_ttyvp: 指向controlling terminal的<code>vnode</code> structure</li>
+<li>s_ttyp: 指向controlling terminal的<code>tty</code> structure</li>
+<li>s_sid: session ID(PID of session leader process)</li>
+</ul>
+<p>调用<code>setsid()</code>时, 会在kernel中分配一个<code>session</code>. <code>s_count</code>为1, <code>s_leader</code>指向当前进程的<code>proc</code>, <code>s_sid</code>为当前进程的PID, 由于新建session没有controlling terminal, 因此<code>s_ttyvp</code>和<code>s_ttyp</code>为NULL.</p>
+<p><code>tty</code>: 每个terminal device和pseudo terminal device都有该structure</p>
+<ul>
+<li>t_session: 指向controlling terminal的<code>session</code> structure</li>
+<li>t_pgrp: 指向foreground process group的<code>pgrp</code> structure. Terminal driver使用该field向foreground process group发送signal(interrupt, quit, suspend).</li>
+<li>t_termios: 包含special character和terminal相关信息的structure</li>
+<li>t_winsize: 包含当前terminal大小的<code>winsize</code> structure</li>
+</ul>
+<p><code>pgrp</code>: 包含一个process group相关信息的structure</p>
+<ul>
+<li>pg_id: process group ID</li>
+<li>pg_session: 指向当前process group所属的session的<code>session</code> structure</li>
+<li>pg_members: 指向一个<code>proc</code> structure列表, 包含当前process group的所有进程</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/277e.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Signals</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/c259.html">
+        <span class="next-text nav-default">Process Control</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/ba76.html';
+  var disqus_title = "Process Relationships";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

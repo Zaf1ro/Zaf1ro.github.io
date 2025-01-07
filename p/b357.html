@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Segment Tree"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/b357.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/b357.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/b357.html"/>
+
+
+<meta name="description" content="1. Introduction线段树(Segment Tree)是一种基于分治思想的二叉树, 用于维护区间信息. 线段树的每一个节点都对应一个区间$[left, right]$, left和right通常为整数:  非叶子节点表示任意一段区间 叶子节点表示一个单位区间(长度为1), 因此$left &#x3D; right$ 非叶子节点的左子节点表示$[left, (left + right) &amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Segment Tree">
+<meta property="og:url" content="https://zaf1ro.github.io/p/b357.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction线段树(Segment Tree)是一种基于分治思想的二叉树, 用于维护区间信息. 线段树的每一个节点都对应一个区间$[left, right]$, left和right通常为整数:  非叶子节点表示任意一段区间 叶子节点表示一个单位区间(长度为1), 因此$left &#x3D; right$ 非叶子节点的左子节点表示$[left, (left + right) &amp;">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/segment-tree/the-skyline-problem.jpg">
+<meta property="article:published_time" content="2023-09-14T13:43:37.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.028Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Algorithm/segment-tree/the-skyline-problem.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Segment Tree - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Implementation"><span class="toc-text">2. Implementation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Point-Update"><span class="toc-text">2.1 Point Update</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Range-Query"><span class="toc-text">2.2 Range Query</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Range-Update"><span class="toc-text">2.3 Range Update</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Applicable-Range"><span class="toc-text">3. Applicable Range</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Leetcode"><span class="toc-text">4. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#315-Count-of-Smaller-Numbers-After-Self"><span class="toc-text">315. Count of Smaller Numbers After Self</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#327-Count-of-Range-Sum"><span class="toc-text">327. Count of Range Sum</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-1"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-1"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#218-The-Skyline-Problem"><span class="toc-text">218. The Skyline Problem</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-2"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-2"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2569-Handling-Sum-Queries-After-Update"><span class="toc-text">2569. Handling Sum Queries After Update</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-3"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-3"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#732-My-Calendar-III"><span class="toc-text">732. My Calendar III</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-4"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-4"><span class="toc-text">Solution</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Segment Tree
+        
+      </h1>
+      <time class="post-time">
+          09/14/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>线段树(Segment Tree)是一种基于分治思想的二叉树, 用于维护<strong>区间信息</strong>. 线段树的每一个节点都对应一个区间$[left, right]$, <code>left</code>和<code>right</code>通常为整数:</p>
+<ul>
+<li>非叶子节点表示任意一段区间</li>
+<li>叶子节点表示一个<strong>单位区间</strong>(长度为1), 因此$left &#x3D; right$</li>
+<li>非叶子节点的<strong>左子节点</strong>表示$[left, (left + right) &#x2F; 2]$区间, <strong>右子节点</strong>表示$[(left+right)&#x2F;2+1, right]$区间</li>
+<li>根节点表示整个区间</li>
+</ul>
+<p>若整个区间内有$n$个元素, 则单点更新, 区间更新, 和区间查询的时间复杂度为$O(\log n)$, 空间复杂度为$O(2 \times 2^{\log_2 n})$, 约等于$4 \times n$</p>
+<h2 id="2-Implementation"><a href="#2-Implementation" class="headerlink" title="2. Implementation"></a>2. Implementation</h2><p>二叉树有两种存储结构:</p>
+<ul>
+<li>链式存储: 类与指针</li>
+<li>顺序存储: 数组</li>
+</ul>
+<p>由于线段树几乎是一种完全二叉树, 因此很适合采用<strong>顺序存储</strong>实现:</p>
+<ul>
+<li>根节点的下标为1</li>
+<li>若某个非叶子节点的下标为$i$, 则其左子节点坐标为$2 \times i$, 右子节点坐标为$2 \times i + 1$</li>
+<li>若某个非根节点的下标为$i$, 则其父节点的下标为$i &#x2F; 2$</li>
+</ul>
+<h3 id="2-1-Point-Update"><a href="#2-1-Point-Update" class="headerlink" title="2.1 Point Update"></a>2.1 Point Update</h3><p>单点更新: 更新某个单位区间(单个元素)的值, 例如, 将第i个元素的值更新为val, 可采用递归方式从根节点出发:</p>
+<ol>
+<li>若当前节点为非叶子节点, 则判断目标元素在左子树还是右子树</li>
+<li>若为当前节点为叶子节点, 则更新该节点值</li>
+<li>从非叶子节点返回时, 更新该节点的区间值(区间和, 区间最值)</li>
+</ol>
+<h3 id="2-2-Range-Query"><a href="#2-2-Range-Query" class="headerlink" title="2.2 Range Query"></a>2.2 Range Query</h3><p>区间查询: 查询一个区间的值, 例如, 查询$[left, right]$区间的值. 可采用递归方式从根节点出发:</p>
+<ol>
+<li>若目标区间完全覆盖当前节点所在区间($[l, r]$), 即$left \le l$且$right \ge r$, 则返回该节点的区间值</li>
+<li>若目标区间与当前节点所在区间($[l, r]$)无交集, 即$left &gt; r$或$right &lt; l$, 跳过该节点</li>
+<li>若目标区间与当前节点所在区间有交集, 即不符合上述所有情况:<ul>
+<li>若目标区间与其左子节点所在区间($[l, m]$)有交集, 即$left \le m$, 则在左子节点查询</li>
+<li>若目标区间与其右子节点所在区间($[m+1, r]$)有交集, 即$right &gt; m$, 则在右子节点查询</li>
+<li>返回左右子树聚合(sum, max, 或min)的结果</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-3-Range-Update"><a href="#2-3-Range-Update" class="headerlink" title="2.3 Range Update"></a>2.3 Range Update</h3><p>区间更新: 更新一个区间的值, 例如, 将$[left, right]$区间内的所有元素更新为val.<br>线段树中进行单点更新, 区间查询时的时间复杂度为$O(\log n)$, 而在区间更新中, 若某个节点所在区间被目标区间覆盖, 则该节点下的所有区间值都需要更新, 因此时间复杂度为$O(n)$.<br>为减少更新的次数和时间复杂度, 可在线段树的节点中添加一个<strong>延迟标记</strong>, 该标记表示<strong>该节点所在区间已更新, 但其子节点并未更新</strong>. 因此, 更新其子节点的操作被推迟到后续操作, 从而将区间更新的时间复杂度降到$O(\log n)$.<br>使用了延迟标记的区间更新的步骤如下:</p>
+<ol>
+<li>若目标区间完全覆盖当前节点所在区间($[l, r]$), 即$left \le l$且$right \ge r$, 则更新当前节点值, 并更新延迟标记</li>
+<li>若目标区间与当前节点所在区间($[l, r]$)无交集, 即$left &gt; r$或$right &lt; l$, 跳过该节点</li>
+<li>若目标区间与当前节点所在区间y有交集:<ul>
+<li>若当前节点的延迟标记不为空, 则更新其子节点(更新左右子节点的延迟标记, 并清空当前节点的延迟标记)</li>
+<li>若目标区间与其左子节点所在区间($[l, m]$)有交集, 即$left \le m$, 则更新其左子节点</li>
+<li>若目标区间与其右子节点所在区间($[m+1, r]$)有交集, 即$right &gt; m$, 则更新其右子节点</li>
+<li>更新子节点结束后, 更新当前节点的区间值(sum, max, min)</li>
+</ul>
+</li>
+</ol>
+<h3 id="3-Applicable-Range"><a href="#3-Applicable-Range" class="headerlink" title="3. Applicable Range"></a>3. Applicable Range</h3><p>线段树通常用于以下问题:</p>
+<ul>
+<li>RMQ(Range Maximum&#x2F;Minimum Query): 对于长度为$n$的数组<code>nums</code>, 求<code>nums</code>在区间$[l, r]$中的最值</li>
+<li>更新某个元素值后查询区间值</li>
+<li>更新一个区间的值后查询区间值</li>
+<li>更新某个元素值后查询满足条件的最长区间值: 需在更新节点值后合并区间</li>
+<li>Scan line(扫描线): 用于解决图形的面积, 周长问题. 例如, 求多个重叠矩形的总面积, 可从下向上扫描整个图形, 用线段树维护矩形的y值, 矩形的下边为1, 上边为-1.</li>
+</ul>
+<h2 id="4-Leetcode"><a href="#4-Leetcode" class="headerlink" title="4. Leetcode"></a>4. Leetcode</h2><h3 id="315-Count-of-Smaller-Numbers-After-Self"><a href="#315-Count-of-Smaller-Numbers-After-Self" class="headerlink" title="315. Count of Smaller Numbers After Self"></a>315. Count of Smaller Numbers After Self</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an integer array <code>nums</code>, return an integer array <code>counts</code> where <code>counts[i]</code> is the number of smaller elements to the right of <code>nums[i]</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [5,2,6,1]</span><br><span class="line">Output: [2,1,1,0]</span><br><span class="line">Explanation:</span><br><span class="line">To the right of 5 there are 2 smaller elements (2 and 1).</span><br><span class="line">To the right of 2 there is only 1 smaller element (1).</span><br><span class="line">To the right of 6 there is 1 smaller element (1).</span><br><span class="line">To the right of 1 there is 0 smaller element.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> s, e, cnt;</span><br><span class="line">        <span class="keyword">public</span> Node l, r;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.s = start;</span><br><span class="line">            <span class="built_in">this</span>.e = end;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">build</span><span class="params">(<span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Node</span>(start, end);</span><br><span class="line">        <span class="keyword">if</span> (start == end) <span class="keyword">return</span> node;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> start + ((end - start) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        node.l = build(start, mid);</span><br><span class="line">        node.r = build(mid+<span class="number">1</span>, end);</span><br><span class="line">        <span class="keyword">return</span> node;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">insert</span><span class="params">(Node node, <span class="type">int</span> num)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (node.s == node.e) &#123;</span><br><span class="line">            ++node.cnt;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> node.s + ((node.e - node.s) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (num &gt; mid) &#123;</span><br><span class="line">            insert(node.r, num);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            insert(node.l, num);</span><br><span class="line">        &#125;</span><br><span class="line">        node.cnt = node.l.cnt + node.r.cnt;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">count</span><span class="params">(Node node, <span class="type">int</span> start, <span class="type">int</span> end)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (start &lt;= node.s &amp;&amp; end &gt;= node.e) &#123;</span><br><span class="line">            <span class="keyword">return</span> node.cnt;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = <span class="number">0</span>, mid = node.s + ((node.e - node.s) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (start &lt;= mid) &#123;</span><br><span class="line">            l = count(node.l, start, end);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (end &gt; mid) &#123;</span><br><span class="line">            r = count(node.r, start, end);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> l + r;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;Integer&gt; <span class="title function_">countSmaller</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">min</span> <span class="operator">=</span> Integer.MAX_VALUE, max = Integer.MIN_VALUE;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> num: nums) &#123;</span><br><span class="line">            min = Math.min(min, num);</span><br><span class="line">            max = Math.max(max, num);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">root</span> <span class="operator">=</span> build(--min, max);</span><br><span class="line">        List&lt;Integer&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> nums.length - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">            res.add(<span class="number">0</span>, count(root, min, nums[i]-<span class="number">1</span>));</span><br><span class="line">            insert(root, nums[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="327-Count-of-Range-Sum"><a href="#327-Count-of-Range-Sum" class="headerlink" title="327. Count of Range Sum"></a>327. Count of Range Sum</h3><h4 id="Problem-Description-1"><a href="#Problem-Description-1" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given an integer array <code>nums</code> and two integers <code>lower</code> and <code>upper</code>, return the number of range sums that lie in <code>[lower, upper]</code> inclusive.<br>Range sum <code>S(i, j)</code> is defined as the sum of the elements in nums between indices <code>i</code> and <code>j</code> inclusive, where <code>i &lt;= j</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [-2,5,-1], lower = -2, upper = 2</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: The three ranges are: [0,0], [2,2], and [0,2] and their respective sums are: -2, -1, 2.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> l, r, cnt;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.l = l;</span><br><span class="line">            <span class="built_in">this</span>.r = r;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node[] tree;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">build</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        tree[i] = <span class="keyword">new</span> <span class="title class_">Node</span>(l, r);</span><br><span class="line">        <span class="keyword">if</span> (l == r) <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        build(i*<span class="number">2</span>, l, mid);</span><br><span class="line">        build(i*<span class="number">2</span>+<span class="number">1</span>, mid+<span class="number">1</span>, r);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">insert</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> num)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (tree[i].l == tree[i].r) &#123;</span><br><span class="line">            ++tree[i].cnt;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (tree[i].l + tree[i].r) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (num &gt; mid) insert(i*<span class="number">2</span>+<span class="number">1</span>, num);</span><br><span class="line">        <span class="keyword">if</span> (num &lt;= mid) insert(i*<span class="number">2</span>, num);</span><br><span class="line">        tree[i].cnt = tree[i*<span class="number">2</span>].cnt + tree[i*<span class="number">2</span>+<span class="number">1</span>].cnt;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">count</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l &lt;= tree[i].l &amp;&amp; r &gt;= tree[i].r) &#123;</span><br><span class="line">            <span class="keyword">return</span> tree[i].cnt;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> tree[i].l + ((tree[i].r - tree[i].l) &gt;&gt; <span class="number">1</span>), res = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (l &lt;= mid) res += count(i*<span class="number">2</span>, l, r);</span><br><span class="line">        <span class="keyword">if</span> (r &gt; mid) res += count(i*<span class="number">2</span>+<span class="number">1</span>, l, r);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">countRangeSum</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> lower, <span class="type">int</span> upper)</span> &#123;</span><br><span class="line">        <span class="type">long</span>[] presum = <span class="keyword">new</span> <span class="title class_">long</span>[nums.length+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">            presum[i+<span class="number">1</span>] = presum[i] + nums[i];</span><br><span class="line">        &#125;</span><br><span class="line">        Set&lt;Long&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">long</span> p: presum) &#123;</span><br><span class="line">            set.add(p);</span><br><span class="line">            set.add(p - lower);</span><br><span class="line">            set.add(p - upper);</span><br><span class="line">        &#125;</span><br><span class="line">        List&lt;Long&gt; arr = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(set);</span><br><span class="line">        Collections.sort(arr);</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> arr.size();</span><br><span class="line">        Map&lt;Long, Integer&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            map.put(arr.get(i), i+<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        tree = <span class="keyword">new</span> <span class="title class_">Node</span>[n * <span class="number">4</span>];</span><br><span class="line">        build(<span class="number">1</span>, <span class="number">1</span>, n);</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">long</span> p: presum) &#123;</span><br><span class="line">            res += count(<span class="number">1</span>, map.get(p-upper), map.get(p-lower));</span><br><span class="line">            insert(<span class="number">1</span>, map.get(p));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="218-The-Skyline-Problem"><a href="#218-The-Skyline-Problem" class="headerlink" title="218. The Skyline Problem"></a>218. The Skyline Problem</h3><h4 id="Problem-Description-2"><a href="#Problem-Description-2" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>A city&#39;s <strong>skyline</strong> is the outer contour of the silhouette formed by all the buildings in that city when viewed from a distance. Given the locations and heights of all the buildings, return the <strong>skyline</strong> formed by these buildings collectively.<br>The geometric information of each building is given in the array <code>buildings</code> where <code>$\text&#123;buildings&#125;[i] = [\text&#123;left&#125;_i, \text&#123;right&#125;_i, \text&#123;height&#125;_i]$</code>:</p>
+<ul>
+<li><code>$\text&#123;left&#125;_i$</code> is the x coordinate of the left edge of the <code>$i^&#123;th&#125;$</code> building.</li>
+<li><code>$\text&#123;right&#125;_i$</code> is the x coordinate of the right edge of the <code>$i^&#123;th&#125;$</code> building.</li>
+<li><code>$\text&#123;height&#125;_i$</code> is the height of the <code>i^&#123;th&#125;</code> building.</li>
+</ul>
+<p>You may assume all buildings are perfect rectangles grounded on an absolutely flat surface at height <code>0</code>.<br>The <strong>skyline</strong> should be represented as a list of &quot;key points&quot; <strong>sorted by their x-coordinate</strong> in the form <code>$[[x_1,y_1],[x_2,y_2],...]$</code>. Each key point is the left endpoint of some horizontal segment in the skyline except the last point in the list, which always has a y-coordinate <code>0</code> and is used to mark the skyline&#39;s termination where the rightmost building ends. Any ground between the leftmost and rightmost buildings should be part of the skyline&#39;s contour.</p>
+<p>Example 1:<br><img src="/images/Algorithm/segment-tree/the-skyline-problem.jpg" alt="The Skyline Problem Example 1"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: buildings = [[2,9,10],[3,7,15],[5,12,12],[15,20,10],[19,24,8]]</span><br><span class="line">Output: [[2,10],[3,15],[7,12],[12,0],[15,10],[20,8],[24,0]]</span><br><span class="line">Explanation:</span><br><span class="line">Figure A shows the buildings of the input.</span><br><span class="line">Figure B shows the skyline formed by those buildings. The red points in figure B represent the key points in the output list.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> l, r, h;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.l = l;</span><br><span class="line">            <span class="built_in">this</span>.r = r;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">build</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        tree[i] = <span class="keyword">new</span> <span class="title class_">Node</span>(l, r);</span><br><span class="line">        <span class="keyword">if</span> (l == r) <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        build(i*<span class="number">2</span>, l, mid);</span><br><span class="line">        build(i*<span class="number">2</span> + <span class="number">1</span>, mid+<span class="number">1</span>, r);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">pushdown</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> tree[i].h;</span><br><span class="line">        <span class="keyword">if</span> (h &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            tree[<span class="number">2</span>*i].h = Math.max(tree[<span class="number">2</span>*i].h, h);</span><br><span class="line">            tree[<span class="number">2</span>*i+<span class="number">1</span>].h = Math.max(tree[<span class="number">2</span>*i+<span class="number">1</span>].h, h);</span><br><span class="line">            tree[i].h = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> h)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l &lt;= tree[i].l &amp;&amp; r &gt;= tree[i].r) &#123;</span><br><span class="line">            tree[i].h = Math.max(tree[i].h, h);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        pushdown(i);</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> (tree[i].l + tree[i].r) &gt;&gt; <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (l &lt;= mid) update(i*<span class="number">2</span>, l, r, h);</span><br><span class="line">        <span class="keyword">if</span> (r &gt; mid) update(i*<span class="number">2</span>+<span class="number">1</span>, l, r, h);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">query</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> x)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (tree[i].l == tree[i].r) <span class="keyword">return</span> tree[i].h;</span><br><span class="line">        pushdown(i);</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> tree[i].l + ((tree[i].r - tree[i].l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> x &lt;= mid ? query(i*<span class="number">2</span>, x) : query(i*<span class="number">2</span>+<span class="number">1</span>, x);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node[] tree;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">getSkyline</span><span class="params">(<span class="type">int</span>[][] buildings)</span> &#123;</span><br><span class="line">        List&lt;Integer&gt; arr = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] b: buildings) &#123;</span><br><span class="line">            arr.add(b[<span class="number">0</span>]);</span><br><span class="line">            arr.add(b[<span class="number">1</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        arr = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(<span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;(arr));</span><br><span class="line">        Collections.sort(arr);</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> arr.size();</span><br><span class="line">        Map&lt;Integer, Integer&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            map.put(arr.get(i), i+<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        tree = <span class="keyword">new</span> <span class="title class_">Node</span>[n * <span class="number">4</span>];</span><br><span class="line">        build(<span class="number">1</span>, <span class="number">1</span>, n);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] b: buildings) &#123;</span><br><span class="line">            update(<span class="number">1</span>, map.get(b[<span class="number">0</span>]), map.get(b[<span class="number">1</span>])-<span class="number">1</span>, b[<span class="number">2</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, prev = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> query(<span class="number">1</span>, map.get(arr.get(i)));</span><br><span class="line">            <span class="keyword">if</span> (h != prev) &#123;</span><br><span class="line">                prev = h;</span><br><span class="line">                res.add(Arrays.asList(arr.get(i), h));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2569-Handling-Sum-Queries-After-Update"><a href="#2569-Handling-Sum-Queries-After-Update" class="headerlink" title="2569. Handling Sum Queries After Update"></a>2569. Handling Sum Queries After Update</h3><h4 id="Problem-Description-3"><a href="#Problem-Description-3" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You are given two <strong>0-indexed</strong> arrays <code>nums1</code> and <code>nums2</code> and a 2D array <code>queries</code> of queries. There are three types of queries:</p>
+<ol>
+<li>For a query of type 1, <code>queries[i] = [1, l, r]</code>. Flip the values from <code>0</code> to <code>1</code> and from <code>1</code> to <code>0</code> in <code>nums1</code> from index <code>l</code> to index <code>r</code>. Both <code>l</code> and <code>r</code> are <strong>0-indexed</strong>.</li>
+<li>For a query of type 2, <code>queries[i] = [2, p, 0]</code>. For every index <code>$0 \le i \lt n$</code>, set <code>nums2[i] = nums2[i] + nums1[i] * p</code>.</li>
+<li>For a query of type 3, <code>queries[i] = [3, 0, 0]</code>. Find the sum of the elements in <code>nums2</code>.</li>
+</ol>
+<p>Return an array containing all the answers to the third type queries.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums1 = [1,0,1], nums2 = [0,0,0], queries = [[1,1,1],[2,1,0],[3,0,0]]</span><br><span class="line">Output: [3]</span><br><span class="line">Explanation: After the first query nums1 becomes [1,1,1]. After the second query, nums2 becomes [1,1,1], so the answer to the third query is 3. Thus, [3] is returned.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> sum;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> l, r;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> lazy;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.l = l;</span><br><span class="line">        <span class="built_in">this</span>.r = r;</span><br><span class="line">        <span class="built_in">this</span>.lazy = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Node[] tree;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">build</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> i, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        tree[i] = <span class="keyword">new</span> <span class="title class_">Node</span>(l, r);</span><br><span class="line">        <span class="keyword">if</span> (l == r) &#123;</span><br><span class="line">            tree[i].sum = nums[l];</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        build(nums, <span class="number">2</span>*i, l, mid);</span><br><span class="line">        build(nums, i*<span class="number">2</span>+<span class="number">1</span>, mid+<span class="number">1</span>, r);</span><br><span class="line">        tree[i].sum = tree[<span class="number">2</span>*i].sum + tree[i*<span class="number">2</span>+<span class="number">1</span>].sum;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">pushdown</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (tree[i].lazy) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> i * <span class="number">2</span>, r = l + <span class="number">1</span>;</span><br><span class="line">            tree[l].lazy = !tree[l].lazy;</span><br><span class="line">            tree[l].sum = tree[l].r - tree[l].l + <span class="number">1</span> - tree[l].sum;</span><br><span class="line">            tree[r].lazy = !tree[r].lazy;</span><br><span class="line">            tree[r].sum = tree[r].r - tree[r].l + <span class="number">1</span> - tree[r].sum;</span><br><span class="line">            tree[i].lazy = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> s, <span class="type">int</span> e)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (s &lt;= l &amp;&amp; e &gt;= r) &#123;</span><br><span class="line">            tree[i].sum = r - l + <span class="number">1</span> - tree[i].sum;</span><br><span class="line">            tree[i].lazy = !tree[i].lazy;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        pushdown(i);</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (s &lt;= mid) update(i*<span class="number">2</span>, l, mid, s, e);</span><br><span class="line">        <span class="keyword">if</span> (e &gt; mid) update(i*<span class="number">2</span>+<span class="number">1</span>, mid+<span class="number">1</span>, r, s, e);</span><br><span class="line">        tree[i].sum = tree[i*<span class="number">2</span>].sum + tree[i*<span class="number">2</span>+<span class="number">1</span>].sum;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span>[] handleQuery(<span class="type">int</span>[] nums1, <span class="type">int</span>[] nums2, <span class="type">int</span>[][] queries) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums1.length;</span><br><span class="line">        tree = <span class="keyword">new</span> <span class="title class_">Node</span>[n * <span class="number">4</span>];</span><br><span class="line">        build(nums1, <span class="number">1</span>, <span class="number">0</span>, n-<span class="number">1</span>);</span><br><span class="line">        <span class="type">long</span> <span class="variable">sum</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> num: nums2) &#123;</span><br><span class="line">            sum += num;</span><br><span class="line">        &#125;</span><br><span class="line">        List&lt;Long&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] q: queries) &#123;</span><br><span class="line">            <span class="keyword">if</span> (q[<span class="number">0</span>] == <span class="number">1</span>) &#123;</span><br><span class="line">                update(<span class="number">1</span>, <span class="number">0</span>, n-<span class="number">1</span>, q[<span class="number">1</span>], q[<span class="number">2</span>]);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (q[<span class="number">0</span>] == <span class="number">2</span>) &#123;</span><br><span class="line">                sum += q[<span class="number">1</span>] * tree[<span class="number">1</span>].sum;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                res.add(sum);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res.stream().mapToLong(i-&gt;i).toArray();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="732-My-Calendar-III"><a href="#732-My-Calendar-III" class="headerlink" title="732. My Calendar III"></a>732. My Calendar III</h3><h4 id="Problem-Description-4"><a href="#Problem-Description-4" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>A <code>k</code>-booking happens when <code>k</code> events have some non-empty intersection (i.e., there is some time that is common to all k events.)<br>You are given some events <code>[startTime, endTime)</code>, after each given event, return an integer <code>k</code> representing the maximum <code>k</code>-booking between all the previous events.<br>Implement the <code>MyCalendarThree</code> class:</p>
+<ul>
+<li><code>MyCalendarThree()</code> Initializes the object.</li>
+<li><code>int book(int startTime, int endTime)</code> Returns an integer <code>k</code> representing the largest integer such that there exists a <code>k</code>-booking in the calendar.</li>
+</ul>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input:</span><br><span class="line">[&quot;MyCalendarThree&quot;, &quot;book&quot;, &quot;book&quot;, &quot;book&quot;, &quot;book&quot;, &quot;book&quot;, &quot;book&quot;]</span><br><span class="line">[[], [10, 20], [50, 60], [10, 40], [5, 15], [5, 10], [25, 55]]</span><br><span class="line"></span><br><span class="line">Output:</span><br><span class="line">[null, 1, 1, 2, 3, 3, 3]</span><br><span class="line"></span><br><span class="line">Explanation:</span><br><span class="line">MyCalendarThree myCalendarThree = new MyCalendarThree();</span><br><span class="line">myCalendarThree.book(10, 20); // return 1</span><br><span class="line">myCalendarThree.book(50, 60); // return 1</span><br><span class="line">myCalendarThree.book(10, 40); // return 2</span><br><span class="line">myCalendarThree.book(5, 15); // return 3</span><br><span class="line">myCalendarThree.book(5, 10); // return 3</span><br><span class="line">myCalendarThree.book(25, 55); // return 3</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-4"><a href="#Solution-4" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> l, r, add, max;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyCalendarThree</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">count</span> <span class="operator">=</span> <span class="number">1</span>, N = (<span class="type">int</span>)<span class="number">1e9</span>;</span><br><span class="line">    <span class="keyword">private</span> Node[] tree;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MyCalendarThree</span><span class="params">()</span> &#123;</span><br><span class="line">        tree = <span class="keyword">new</span> <span class="title class_">Node</span>[<span class="number">20</span> * <span class="number">400</span> * <span class="number">4</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">pushdown</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">        tree[tree[i].l].add += tree[i].add;</span><br><span class="line">        tree[tree[i].r].add += tree[i].add;</span><br><span class="line">        tree[tree[i].l].max += tree[i].add;</span><br><span class="line">        tree[tree[i].r].max += tree[i].add;</span><br><span class="line">        tree[i].add = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">lazyCreate</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (tree[i] == <span class="literal">null</span>) tree[i] = <span class="keyword">new</span> <span class="title class_">Node</span>();</span><br><span class="line">        <span class="keyword">if</span> (tree[i].l == <span class="number">0</span>) &#123;</span><br><span class="line">            tree[i].l = ++count;</span><br><span class="line">            tree[tree[i].l] = <span class="keyword">new</span> <span class="title class_">Node</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (tree[i].r == <span class="number">0</span>) &#123;</span><br><span class="line">            tree[i].r = ++count;</span><br><span class="line">            tree[tree[i].r] = <span class="keyword">new</span> <span class="title class_">Node</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">update</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> s, <span class="type">int</span> e)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (s &lt;= l &amp;&amp; e &gt;= r) &#123;</span><br><span class="line">            ++tree[i].add;</span><br><span class="line">            ++tree[i].max;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        lazyCreate(i);</span><br><span class="line">        pushdown(i);</span><br><span class="line">        <span class="type">int</span> <span class="variable">mid</span> <span class="operator">=</span> l + ((r - l)&gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (s &lt;= mid) update(tree[i].l, l, mid, s, e);</span><br><span class="line">        <span class="keyword">if</span> (e &gt; mid) update(tree[i].r, mid+<span class="number">1</span>, r, s, e);</span><br><span class="line">        tree[i].max = Math.max(tree[tree[i].l].max, tree[tree[i].r].max);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">book</span><span class="params">(<span class="type">int</span> startTime, <span class="type">int</span> endTime)</span> &#123;</span><br><span class="line">        update(<span class="number">1</span>, <span class="number">0</span>, N, startTime, endTime-<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> tree[<span class="number">1</span>].max;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/9478.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Maven</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/c984.html">
+        <span class="next-text nav-default">Binary Search Tree</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/b357.html';
+  var disqus_title = "Segment Tree";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

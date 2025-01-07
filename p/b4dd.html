@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="The Transport Layer"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/b4dd.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/b4dd.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/b4dd.html"/>
+
+
+<meta name="description" content="1. The Big Picture以下是TCP&#x2F;IP protocols的总览: 上图包含IPv4和IPv6, 左边的应用使用IPv4, 右边的应用使用IPv6. tcpdump使用BPF(BSD packet filter)或DLPI(datalink provider interface)与datalink直接通信. 图中dashed line以上的应用使用相对应的protocol">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Transport Layer">
+<meta property="og:url" content="https://zaf1ro.github.io/p/b4dd.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. The Big Picture以下是TCP&#x2F;IP protocols的总览: 上图包含IPv4和IPv6, 左边的应用使用IPv4, 右边的应用使用IPv6. tcpdump使用BPF(BSD packet filter)或DLPI(datalink provider interface)与datalink直接通信. 图中dashed line以上的应用使用相对应的protocol">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-1-overview-of-tcpip.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-5-tcp-handshake.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-5-pkt-exc-tcp-closed.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-5-tcp-state-transition.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-7-sctp-handshake.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-7-pkg-exc-sctp-closed.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-9-tcp-server-on-port-21.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-9-conn-req-from-cli-to-svr.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-9-child-handle-cli.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-9-cli-conn-with-same-svr.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-10-tcp-socket-write-buf.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-10-upd-socket-write-buf.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/2-10-sctp-socket-write-buf.gif">
+<meta property="article:published_time" content="2019-11-11T19:24:02.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.043Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/2-1-overview-of-tcpip.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+The Transport Layer - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-The-Big-Picture"><span class="toc-text">1. The Big Picture</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-User-Datagram-Protocol-UDP"><span class="toc-text">2. User Datagram Protocol (UDP)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Transmission-Control-Protocol-TCP"><span class="toc-text">3. Transmission Control Protocol (TCP)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Stream-Control-Transmission-Protocol-SCTP"><span class="toc-text">4. Stream Control Transmission Protocol (SCTP)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-TCP-Connection-Establishment-and-Termination"><span class="toc-text">5. TCP Connection Establishment and Termination</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Three-Way-Handshake"><span class="toc-text">5.1 Three-Way Handshake</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-TCP-Options"><span class="toc-text">5.2 TCP Options</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-TCP-Connection-Termination"><span class="toc-text">5.3 TCP Connection Termination</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-TCP-State-Transition-Diagram"><span class="toc-text">5.4 TCP State Transition Diagram</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-TIME-WAIT-State"><span class="toc-text">6. TIME_WAIT State</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-SCTP-Association-Establishment-and-Termination"><span class="toc-text">7. SCTP Association Establishment and Termination</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Four-Way-Handshake"><span class="toc-text">7.1 Four-Way Handshake</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-Association-Termination"><span class="toc-text">7.2 Association Termination</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Port-Numbers"><span class="toc-text">8. Port Numbers</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-TCP-Port-Numbers-and-Concurrent-Servers"><span class="toc-text">9. TCP Port Numbers and Concurrent Servers</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Buffer-Sizes-and-Limitations"><span class="toc-text">10. Buffer Sizes and Limitations</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-TCP-Output"><span class="toc-text">10.1 TCP Output</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-UDP-Output"><span class="toc-text">10.2 UDP Output</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-SCTP-Output"><span class="toc-text">10.3 SCTP Output</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Standard-Internet-Services"><span class="toc-text">11. Standard Internet Services</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-Protocol-Usage-by-Common-Internet-Applications"><span class="toc-text">12 Protocol Usage by Common Internet Applications</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          The Transport Layer
+        
+      </h1>
+      <time class="post-time">
+          11/11/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-The-Big-Picture"><a href="#1-The-Big-Picture" class="headerlink" title="1. The Big Picture"></a>1. The Big Picture</h2><p>以下是TCP&#x2F;IP protocols的总览:<br><img src="/images/Network/UNP/2-1-overview-of-tcpip.gif" alt="Overview of TCP/IP protocols"></p>
+<p>上图包含IPv4和IPv6, 左边的应用使用IPv4, 右边的应用使用IPv6. <strong>tcpdump</strong>使用BPF(BSD packet filter)或DLPI(datalink provider interface)与datalink直接通信. 图中<strong>dashed line</strong>以上的应用使用相对应的protocol通信, 以下是各个proctocol的详细描述:</p>
+<ul>
+<li>IPv4: Internet Protocol version 4. IPv4也称为IP, 80年代初被加入IP suite. 使用32-bit address, 为TCP, UDP, SCTP, ICMP, IGMP服务.</li>
+<li>IPv6: Internet Protocol version 6. IPv6在90年代中期被引入IP suite, 作为IPv4的替代品. 其拥有128-bit address, 用于解决IPv4地址不足的问题, 为TCP, UDP, SCTP, ICMPv6服务.</li>
+<li>TCP: Transmission Control Protocol. 作为connection-oriented protocol, 为用户提供一个可靠, 全双工的字节流. TCP socket是stream socket的典范. TCP负责处理acknowledge, timeout, retransmission和其他问题. 绝大多数应用使用TCP作为transport layer protocol. TCP可使用IPv4或IPv6.</li>
+<li>UDP: User Datagram Protocol. 作为connectionless protocol, 不保证数据能否达到目的地. UDP socket是datagram socket的典范.</li>
+<li>SCTP: Stream Control Transmission Protocol. 作为connection-oriented protocol, 和TCP一样提供可靠, 全双工association. <strong>association</strong>用于形容SCTP的单个连接(等同于TCP的connection), 因为SCTP支持mulitihomed(通信的双方使用多个接口进行传输信息). SCTP和UDP相同, 都会有message boundary(多次信息不会被合并). 虽然TCP, UDP和SCTP都支持IPv4和IPv6, 但SCTP支持一个association中同时使用IPv4和IPv6.</li>
+<li>ICMP: Internet Control Message Protocol. 用于处理router和host之间的error和control information. 一般由TCP&#x2F;IP networking自动产生, 而不是进程创建. 例如: 执行<strong>ping</strong>和<strong>traceroute</strong>时, 会使用到ICMP.</li>
+<li>IGMP: Internet Group Management Protocol. IGMP被用于组播.</li>
+<li>ARP: Address Resolution Protocol. ARP用于将IPv4 address映射为hardware address. 通常用于组播网络, 例如: Ethernet, token ring, FDDI.</li>
+<li>RARP: Reverse Address Resolution Protocol. RARP用于将hardware address映射为IPv4 address. </li>
+<li>ICMPv6: Internet Control Message Protocl version 6.</li>
+<li>BPF: BSD packet filter. 提供了一个datalink layer的接口. 通常出现在Berkeley-derived kernel中.</li>
+<li>DLPI: Datalink provider interface. 提供了一个datalink layer的接口. 通常出现在SVR4中.</li>
+</ul>
+<h2 id="2-User-Datagram-Protocol-UDP"><a href="#2-User-Datagram-Protocol-UDP" class="headerlink" title="2. User Datagram Protocol (UDP)"></a>2. User Datagram Protocol (UDP)</h2><p>RFC 768首次将UDP加入到transport-layer protocol. 应用会将要传输的数据写入UDP socket, 然后被封装到UPD datagram中. UDP datagram不保证数据会被传输到目的地, 数据包到达的顺序也不确定, 也不保证对端收到一次或多次数据.<br>网络编程使用UDP要面对的最大问题就是可靠性. 若datagram到达目的端, 但checksum检查到错误, 则该datagram直接被丢弃. 每个UDP datagram都有一个长度, 对端收到UDP datagram后也可得知该datagram的长度. 但TCP作为byte-stream protocol则不存在record boundary. UDP提供connectionless service, 意味着: UDP client和server之间不需要维持某种联系, client可以随时向不同的server发送datagram, server也会随时从不同的client端获取datagram.</p>
+<h2 id="3-Transmission-Control-Protocol-TCP"><a href="#3-Transmission-Control-Protocol-TCP" class="headerlink" title="3. Transmission Control Protocol (TCP)"></a>3. Transmission Control Protocol (TCP)</h2><p>RFC 793首次将TCP加入到transport-layer protocol, 之后经过了RFC 1323, RFC 2581, RFC 3390的更新. TCP为client和server建立一个可靠的connection, 当TCP发送数据给对端时, 对端必须回复一个acknowledgment, 否则TCP会自动重发; 若经过多次重传后, 对端依然不回复ACK, 则TCP放弃重传.<br>TCP并不能保证数据一定传到对端, 若数据无法被对端接收, 则会通知进程. TCP包含一套预估RTT(round-trip time)的算法, 这样就可以根据RTT决定等待ACK的时间. 不同网络环境下的RTT不同, 短则几十毫秒, 长则数秒.<br>TCP会为发出的每个segment添加一个sequence number, 确保数据被有序的接收. 例如: 应用通过TCP socket发送2048 bytes的数据, TCP会将其拆分为两个segment: 第一个segment包含前1024 bytes的数据, 第二个segment包含后1024 bytes数据. 当对端接收到乱序segment时, 可根据sequence number自行调序; 也可以通过sequence number判断是否收到重复segment, 并丢弃重复数据.<br>TCP提供flow control保证sender发送的数据不会溢出receiver的buffer. TCP sender会维护一个<strong>window</strong>, 表示对端buffer的可用空间. 当receiver接收到数据时, window缩小; 当receiver从buffer中读取数据后, window变大. window为0时, sender必须等到buffer腾出空间才可发送数据.<br>最后, TCP connection是全双工的, connection的双方既可以发送数据, 也可以接收数据. 这也意味着通信双方既是sender, 也是receiver, 都需要维护window size1和sequence number.</p>
+<h2 id="4-Stream-Control-Transmission-Protocol-SCTP"><a href="#4-Stream-Control-Transmission-Protocol-SCTP" class="headerlink" title="4. Stream Control Transmission Protocol (SCTP)"></a>4. Stream Control Transmission Protocol (SCTP)</h2><p>RFC 2960首次将SCTP加入到transport-layer protocol中, 为client和server提供association. SCTP和TCP相同, 提供了可靠, 有序, 流控, 全双工的数据传输. SCTP中的<strong>association</strong>与TCP的connection不同, association表示两个系统之间的通信, connection则表示两个IP之间的通信, 一个association中可涉及多个IP addresses. SCTP为message-oriented, 提供单个record的有序数据传输, 每个record都有长度, 这一点与UDP相同.<br>SCTP为association的两端提供多个stream, 每个stream都可分别传输不同的数据. 这样就保证单个stream中的数据丢失不会阻塞整个数据传输. SCTP还提供multihomed, 通过支持多IP addresses来增加robustness. 即使某个IP address不可用, 也不会影响整个数据传输. </p>
+<h2 id="5-TCP-Connection-Establishment-and-Termination"><a href="#5-TCP-Connection-Establishment-and-Termination" class="headerlink" title="5. TCP Connection Establishment and Termination"></a>5. TCP Connection Establishment and Termination</h2><p>TCP connection的创建和终止有以下几个阶段:</p>
+<h3 id="5-1-Three-Way-Handshake"><a href="#5-1-Three-Way-Handshake" class="headerlink" title="5.1 Three-Way Handshake"></a>5.1 Three-Way Handshake</h3><p>TCP connection的创建需要满足以下几个条件:</p>
+<ol>
+<li>server必须成功调用<code>socket()</code>, <code>bind()</code>, <code>listen()</code>并创建一个passive socket</li>
+<li>client调用<code>connect()</code>发送SYN segment, 其中包括initial sequence number, 用于标示数据开头的sequence number</li>
+<li>server回复ACK和自己的SYN, 其中包括server端的initial sequence number</li>
+<li>client回复ACK</li>
+</ol>
+<p>以下是TCP&#39;s three-way handshake的流程:<br><img src="/images/Network/UNP/2-5-tcp-handshake.gif" alt="TCP three-way handshake"></p>
+<p>client发送的SYN中initial sequence number和server回复的SYN+ACK中initial sequence number不必相同. 但server回复的SYN+ACK中, ACK必须等于client发出的SYN + 1, 因为默认SYN占一个byte数据. </p>
+<h3 id="5-2-TCP-Options"><a href="#5-2-TCP-Options" class="headerlink" title="5.2 TCP Options"></a>5.2 TCP Options</h3><p>每个SYN都可拥有TCP options, 常见的options如下:</p>
+<ul>
+<li>MSS: maximum segment size. 表示单个TCP segment所能接受的最大byte数, 接收到SYN的一端会以该数值作为以后发送segment的最大bytes.</li>
+<li>Window scale: 由于TCP header中只有16bits来表示window大小, 所以window最大为65536 bytes. 但随着网速的不断提高, window也必须随着提高, 于是在RFC 1323中添加window scale option. 该scale规定了window的缩放大小, 由于window scale option最大可使用14 bits, 所以window的缩放因子范围为$[2^0 - 2^{14}]$, window的最大值为$65535 \times 2^{14}$ bytes. 为保持向后兼容性, 该option只会在SYN中出现.</li>
+<li>Timestamp: 该option用于防止高速连接下可能出现的data corruption, 可能由延迟, 重复或老旧的segment导致.</li>
+</ul>
+<h3 id="5-3-TCP-Connection-Termination"><a href="#5-3-TCP-Connection-Termination" class="headerlink" title="5.3 TCP Connection Termination"></a>5.3 TCP Connection Termination</h3><p>想要终止一个TCP connection需要经过以下4步:</p>
+<ol>
+<li>进程调用<code>close()</code>, 导致socket端发送FIN segment, 进入<strong>active close</strong>阶段</li>
+<li>收到FIN的一端进入<strong>passive close</strong>阶段, 并回复ACK, 对socket调用的<code>read()</code>将收到EOF</li>
+<li>收到EOF的进程将会调用<code>close()</code>关闭socket, 并发送FIN</li>
+<li>对端回复ACK</li>
+</ol>
+<p>以下是TCP connection termination的流程:<br><img src="/images/Network/UNP/2-5-pkt-exc-tcp-closed.gif" alt="Packets exchanged when a TCP connection is closed"></p>
+<p>TCP之所以两端都需要发送FIN和ACK, 是为了保证两端都发送完毕数据. 假设host A向host B发送FIN后, host B并没有数据需要向host A发送, 则可将step 2和step 3合并成一步, 直接发送FIN+ACK.</p>
+<h3 id="5-4-TCP-State-Transition-Diagram"><a href="#5-4-TCP-State-Transition-Diagram" class="headerlink" title="5.4 TCP State Transition Diagram"></a>5.4 TCP State Transition Diagram</h3><p>以下是TCP状态转换的流程:</p>
+<ol>
+<li>CLOSED: 起始点, 超时或断开连接后进入此状态</li>
+<li>LISTEN: server调用<code>socket()</code>, <code>bind()</code>, <code>listen()</code>后进入此状态, 等待client端请求连接</li>
+<li>SYN_SENT: client调用<code>connect()</code>后发送SYN, 进入此状态并等待server回复. 若server无法连接, 进入CLOSED状态</li>
+<li>SYN_RCVD: server收到SYN后回复SYN+ACK, 并从LISTEN切换至此状态</li>
+<li>ESTABLISHED: client收到SYN+ACK后回复ACK, 并进入此状态; server收到ACK后也进入此状态</li>
+<li>client和server交换数据, 接收方必须回复ACK表示已收到segment</li>
+<li>一端请求关闭连接(可以是client或server, 这里假设为client), 向server发送FIN, 并进入FIN_WAIT_1状态</li>
+<li>server接收到FIN后回复ACK, 进入CLOSE_WAIT状态, 等待上层应用程序的指令</li>
+<li>client接收到ACK后进入FIN_WAIT_2状态</li>
+<li>server发起关闭请求, 发送FIN并进入LAST_ACK状态</li>
+<li>client收到FIN后发送ACK, 进入TIME_WAIT状态, 经过2个MSL后进入CLOSED状态</li>
+<li>server收到ACK后进入CLOSED状态</li>
+</ol>
+<p>若client和server同时请求关闭连接, 则步骤如下:</p>
+<ol>
+<li>client发送FIN并进入FIN_WAIT_1状态, 等待ACK; server同时也发送FIN, 进入FIN_WAIT_1状态</li>
+<li>client收到FIN后进入CLOSING状态, 回复ACK; server同理</li>
+<li>client收到ACK后进入TIME_WAIT状态, 经过2个MSL后进入CLOSED状态; server同理</li>
+</ol>
+<p>以下是TCP状态转换图:<br><img src="/images/Network/UNP/2-5-tcp-state-transition.gif" alt="TCP state transition diagram"></p>
+<h2 id="6-TIME-WAIT-State"><a href="#6-TIME-WAIT-State" class="headerlink" title="6. TIME_WAIT State"></a>6. TIME_WAIT State</h2><p>所有TCP状态中, 最让人不解的应为<strong>TIME_WAIT</strong>状态. 假设Host A向Host B主动发起断开连接的FIN, Host B回复FIN+ACK后, Host A回复ACK并进入TIME_WAIT状态, 等待2个MSL(maximum segment lifetime)后自我销毁. 其中MSL表示一个TCP segment在网络中存活的最长时间, 各系统实现的MSL不同, RFC 793出现于1981年, 当时segment从一端到另一端需要数分钟, 所以2MSL大约10分钟. 随着网络速度的提升, TIME_WAIT状态的持续时间也在不断减小.<br>之所以需要一个TIME_WAIT状态, 是处于以下2个方面的考量:</p>
+<ol>
+<li>防止上次连接中的segment重新出现: 经过2MSL后, 上次连接的所有segment都会在网络中消失</li>
+<li>可靠的关闭TCP连接: 若Host A发出的ACK丢失, 则Host B会重发FIN. 若Host A进入CLOSED状态, 则会回复RST而不是ACK</li>
+</ol>
+<h2 id="7-SCTP-Association-Establishment-and-Termination"><a href="#7-SCTP-Association-Establishment-and-Termination" class="headerlink" title="7. SCTP Association Establishment and Termination"></a>7. SCTP Association Establishment and Termination</h2><p>SCTP和TCP相同, 也是connection-oriented. 但SCTP的handshake与TCP不同:</p>
+<h3 id="7-1-Four-Way-Handshake"><a href="#7-1-Four-Way-Handshake" class="headerlink" title="7.1 Four-Way Handshake"></a>7.1 Four-Way Handshake</h3><ol>
+<li>server调用<code>socket()</code>, <code>bind()</code>, <code>listen()</code>来准备接受association</li>
+<li>client调用<code>connect()</code>发送INIT请求建立association, 其中包含client端的可用IP address列表, 出站和入站的stream数量 </li>
+<li>server回应INIT-ACK, 其中包含server端的IP address列表, initial sequence number, initiation tag, 出站和入站的stream数量, state cookie.</li>
+<li>client回应COOKIE-ECHO, 其中包含cookie</li>
+<li>server收到COOKIE-ECHO后通过对比MAC address验证, 验证通过后回应COOKIE-ACK</li>
+</ol>
+<p>以下是SCTP four-way handshake的流程图:<br><img src="/images/Network/UNP/2-7-sctp-handshake.gif" alt="SCTP four-way handshake"></p>
+<h3 id="7-2-Association-Termination"><a href="#7-2-Association-Termination" class="headerlink" title="7.2 Association Termination"></a>7.2 Association Termination</h3><p>与TCP不同, SCTP不需要four-way termination. 当一端主动请求关闭association, 另一端必须停止发送新数据, 只能将没有传完的数据传过去. 并且SCTP association termination没有TIME_WAIT状态.<br><img src="/images/Network/UNP/2-7-pkg-exc-sctp-closed.gif" alt="Packets exchanged when an SCTP association is closed"></p>
+<h2 id="8-Port-Numbers"><a href="#8-Port-Numbers" class="headerlink" title="8. Port Numbers"></a>8. Port Numbers</h2><p>进程可使用TCP, UDP, SCTP进行通信, 所有transport layer protocols都需要通过16-bit integer的port number来区分不同的进程. 由于client连接server时必须标明port number, 因此各application layer protocol使用固定port number, 例如: FTP使用TCP 21, TFTP使用UDP 69.<br>Client一端则使用临时端口, 一般由kernel随机挑选. Port number分为以下三类:</p>
+<ol>
+<li>The well-known ports: 范围为$[0, 1023]$, 由IANA分配, 用于一些常用的服务</li>
+<li>The registered ports: 范围为$[1024, 49151]$, IANA并不分配该区域的port number, 但会列出这些port的应用</li>
+<li>The dynamic or private ports: 范围为$[49152, 65535]$, IANA不对此做任何管理, 可由进程占用</li>
+</ol>
+<p>TCP connection需要四个要素: local IP address, local port, foreign IP address, foreign port. 对于SCTP来说, 需要一组local IP addresses, 一个local port, 一组foreign IP addresses, 一个foreign port. IP address和port number用于表示一个endpoint, 也称为socket. </p>
+<h2 id="9-TCP-Port-Numbers-and-Concurrent-Servers"><a href="#9-TCP-Port-Numbers-and-Concurrent-Servers" class="headerlink" title="9. TCP Port Numbers and Concurrent Servers"></a>9. TCP Port Numbers and Concurrent Servers</h2><p>并发server中, server主进程会一直产生子进程来处理新的连接. 假设我们现在有一个server, 其拥有<code>12.106.32.254</code>和<code>192.168.42.1</code> IP addresses, 并使用端口号<strong>21</strong>. server主进程进入LISTEN状态, 等待client的连接请求:<br><img src="/images/Network/UNP/2-9-tcp-server-on-port-21.gif" alt="TCP server with a passive open on port 21"></p>
+<p>其中, <code>&#123;*:21, *:*&#125;</code>表示server端的socket pair: server会持续监听任意local IP address上的21号port, 可以接收来自任意foreign IP address和foreign port number的连接请求.<br>假设有一个client尝试连接该server, 其IP address为<strong>206.168.112.219</strong>, port number为<strong>1500</strong>:<br><img src="/images/Network/UNP/2-9-conn-req-from-cli-to-svr.gif" alt="Connection request from client to server"></p>
+<p>当client和server完成TCP的三次握手后, server会调用<code>fork()</code>复制主进程, 并让子进程处理请求:<br><img src="/images/Network/UNP/2-9-child-handle-cli.gif" alt="Concurrent server has child handle client"></p>
+<p>其中, server的主进程被称为<strong>listening socket</strong>, server子进程被称为<strong>connected socket</strong>. 虽然两者都占用端口21, 但listening socket用于监听并接受新的连接请求, connected socket则用于与client交换数据. 若此时另一个client请求连接该server, 则结果如下:<br><img src="/images/Network/UNP/2-9-cli-conn-with-same-svr.gif" alt="Second client connection with same server"></p>
+<h2 id="10-Buffer-Sizes-and-Limitations"><a href="#10-Buffer-Sizes-and-Limitations" class="headerlink" title="10. Buffer Sizes and Limitations"></a>10. Buffer Sizes and Limitations</h2><p>IP datagram的大小受到以下条件限制:</p>
+<ul>
+<li>IPv4 datagram最大为65535 bytes, 其中包含IPv4的header</li>
+<li>IPv6 datagram最大为65575 bytes, 其中包含40bytes的IPv6 header. 虽然IPv6的长度依然受16 bits length field的限制, 但IPv6的header不包含在其中; IPv6的jumbo payload option可以将length field扩展为32 bits, 但只有在支持MTU(maximum transimission unit)超过65535 bytes的datalink layer protocol上才能使用该option.</li>
+<li>MTU的大小由硬件决定, Ethernet的MTU为1500 bytes, 而PPP(Point-to-Point)的MTU则可配置, SLIP link的MTU可以为1006或296 bytes. IPv4的最小MTU为68 bytes, 其中包括IPv4 header(20 bytes的固定header长度, 30 bytes的option fields)和最小fragment(8 bytes). 而IPv6的最小MTU为1280 bytes, 若IPv6的datalink layer protocol的MTU小于1280 bytes, 则需要将IPv6 datagram分片传输.</li>
+<li>两个host之间的最小MTU称为path MTU. 通常情况下, path MTU即为Ethernet MTU(1500 bytes). 由于Internet中路由是非对称的, 所以是两个host下的不同方向, MTU也可能不同. 当IP datagram的长度超出MTU时, 需要进行fragmentation(分片). 对于IPv4, host和IPv4 router都可进行分片处理; 对于IPv6, 只有host进行分片处理.</li>
+<li>IPv4 header中可设置<strong>DF</strong>(don&#39;t fragment) bit要求datagram不被分片, 设置该bit后, 无论host还是router都无法对该datagram进行分片, 若datagram的长度超过MTU, 则返回ICMPv4 &quot;destination unreachable, fragmentation needed but DF bit set&quot; error message. 由于IPv6不支持router分片, 若其datagram的长度超过MTU, 则router返回ICMPv6 &quot;packet too big&quot; error message.</li>
+<li>IPv4的DF bit和IPv6用于path MTU discovery. 当TCP使用IPv4传输datagram时, 会为所有datagram设置DF bit. 若之后收到ICMP &quot;destination unreachable&quot;, 则减少data长度. Path MTU discovery对于IPv4是可选的, 但对于IPv6是强制性的.</li>
+<li>IPv4和IPv6都定义了minimum reassembly buffer size, 表示最小datagram长度, 其中IPv4为576 bytes, IPv6为1500 bytes. 因此IPv4的很多应用(DNS, RIP, TFTP, SNMP等)为了避免超过这个576 bytes, 选择使用UDP作为transport layer protocol, 因为UDP的header更短, 可以腾出更多空间传输数据.</li>
+<li>TCP还定义了MSS(maximum segment size), 表示单个TCP segment中最大数据字节数, 用于避免分片. 在Ethernet的环境中使用IPv4, 则MSS为1460 bytes; 而对于IPv6, 其MSS则为1440 byte (IPv4 header长度为20 bytes, IPv6 header长度为40 bytes, TCP header长度为20 bytes)</li>
+<li>由于TCP中MSS option为16 bits option, 因此最大支持65535 bytes. 对于IPv4上的TCP segment没有问题, 但由于IPv6支持jumbo payload option, 因此16 bits MSS option远远不够. RFC 2675规定, 若IPv6上的TCP header将MSS设为65535, 则表示MSS为无限长, 该TCP segment的数据可以为任意长.</li>
+</ul>
+<h3 id="10-1-TCP-Output"><a href="#10-1-TCP-Output" class="headerlink" title="10.1 TCP Output"></a>10.1 TCP Output</h3><p>以下是TCP socket发送数据时的长度检查和处理过程:<br><img src="/images/Network/UNP/2-10-tcp-socket-write-buf.gif" alt="Steps and buffers involved when an application writes to a TCP socket"></p>
+<p>每个TCP都有一个send buffer, 并且可以通过<strong>SO_SNDBUF</strong> socket option来修改send buffer大小. 当进程调用<code>write()</code>时, kernel会复制application buffer中的数据到send buffer. 若socket buffer没有足够空间, 则进程进入sleep. 因此, <code>write()</code>调用成功只能说明数据被复制到send buffer, 不能确保数据已经被发送到对端.<br>当数据被发出后, TCP并不会立即删除send buffer中的数据, 需要等到对端传来ACK后才能删除数据. TCP层需要确保$len(data) \leq \text{MSS}$, 并为数据加上TCP header. 传给IP层后, IP层通过routing table找到目的IP address并转发给datalink. 每个datalink都有一个输出队列, 若队列已满, 则segment被丢弃; TCP检测到该错误后会重传, 并不会通知进程.</p>
+<h3 id="10-2-UDP-Output"><a href="#10-2-UDP-Output" class="headerlink" title="10.2 UDP Output"></a>10.2 UDP Output</h3><p>以下是UDP socket发送数据的流程:<br><img src="/images/Network/UNP/2-10-upd-socket-write-buf.gif" alt="Steps and buffers involved when an application writes to a UDP socket"></p>
+<p>UDP socket并不存在send buffer, 因为UDP是不可靠的, 发送后不需要保留数据. 但可通过<code>SO_SNDBUF</code> socket option设置UDP datagram中能承载的最大数据量, 若超出上限值, 则返回<code>EMSGSIZE</code>.<br>UDP会为segment加上8-bytes header, IPv4或IPv6为segment加上header后通过routing table决定出接口, 并传递给datalink的输出队列. 若datagram超过MSS, 则进行分片. <code>write()</code>的返回表示UDP socket已经将数据传递到datalink的输出队列. 若输出队列中没有足够空间, 则返回<code>ENOBUFS</code>.</p>
+<h3 id="10-3-SCTP-Output"><a href="#10-3-SCTP-Output" class="headerlink" title="10.3 SCTP Output"></a>10.3 SCTP Output</h3><p>以下是SCTP socket发送数据的流程:<br><img src="/images/Network/UNP/2-10-sctp-socket-write-buf.gif" alt="Steps and buffers involved when an application writes to an SCTP socket"></p>
+<p>SCTP和TCP同样是可靠传输, 因此也拥有send buffer, 并可通过<code>SO_SNDBUF</code> socket option修改buffer大小. 当进程调用<code>write()</code>后, kernel会将进程中的数据复制到send buffer中. 若没有足够空间, 则进入sleep状态. 因此SCTP socket的<code>write()</code>成功调用只表示数据被复制到send buffer中, 并不能保证数据被对端接收. 发送数据后, 数据仍会在send buffer中保留, 直到收到对端发来的SACK后再删除缓存的数据.</p>
+<h2 id="11-Standard-Internet-Services"><a href="#11-Standard-Internet-Services" class="headerlink" title="11. Standard Internet Services"></a>11. Standard Internet Services</h2><p>以下是Standard TCP&#x2F;IP services:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Name</th>
+<th align="center">TCP port</th>
+<th align="center">UDP port</th>
+<th align="center">RFC</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">echo</td>
+<td align="center">7</td>
+<td align="center">7</td>
+<td align="center">862</td>
+<td align="center">Server returns whatever the client sends</td>
+</tr>
+<tr>
+<td align="center">discard</td>
+<td align="center">9</td>
+<td align="center">9</td>
+<td align="center">863</td>
+<td align="center">Server discards whatever the client sends</td>
+</tr>
+<tr>
+<td align="center">daytime</td>
+<td align="center">13</td>
+<td align="center">13</td>
+<td align="center">867</td>
+<td align="center">Server returns the time and data in a human-readable format</td>
+</tr>
+<tr>
+<td align="center">chargen</td>
+<td align="center">19</td>
+<td align="center">19</td>
+<td align="center">864</td>
+<td align="center">TCP server sends a continual stream of characters, until the connection is terminated by the client. UDP server sends a datagram containing a random number of characters eac time the client sends a datagram</td>
+</tr>
+<tr>
+<td align="center">time</td>
+<td align="center">37</td>
+<td align="center">37</td>
+<td align="center">868</td>
+<td align="center">Server returns the time as a 32-bit binary number. This number represents the number of seconds since January 1, 1900, UTC</td>
+</tr>
+</tbody></table>
+<h3 id="12-Protocol-Usage-by-Common-Internet-Applications"><a href="#12-Protocol-Usage-by-Common-Internet-Applications" class="headerlink" title="12 Protocol Usage by Common Internet Applications"></a>12 Protocol Usage by Common Internet Applications</h3><p>以下是一些Internet application使用的protocol:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Application</th>
+<th align="center">IP</th>
+<th align="center">ICMP</th>
+<th align="center">UDP</th>
+<th align="center">TCP</th>
+<th align="center">SCTP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">ping</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">traceroute</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">OSPF</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">RIP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">BGP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">BOOTP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">DHCP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">NTP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">TFTP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">SNMP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">SMTP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Telnet</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">SSH</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">FTP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">HTTP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">NHTP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">LPR</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">DNS</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">NFS</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Sun RPC</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">DCE RPC</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">IUA</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+</tr>
+<tr>
+<td align="center">M2UA, M3UA</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+</tr>
+<tr>
+<td align="center">H.248</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+</tr>
+<tr>
+<td align="center">H.323</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+</tr>
+<tr>
+<td align="center">SIP</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/2e41.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Sockets Introduction</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/c933.html">
+        <span class="next-text nav-default">StatefulSet</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/b4dd.html';
+  var disqus_title = "The Transport Layer";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

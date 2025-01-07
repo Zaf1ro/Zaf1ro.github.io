@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="The Trouble with Distributed Systems"/>
+
+
+
+
+  <meta name="keywords" content="Distributed System," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/1a83.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/1a83.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/1a83.html"/>
+
+
+<meta name="description" content="前几章主要讨论的问题是, 系统如何处理出错. 例如, 故障切换, 复制延迟, 事务隔离. 当我们能考虑到系统中可能的边缘情况时, 就可更好地处理它们.然而, 即使已经讨论了很多问题, 之前几章仍过于乐观, 现实只会更加糟糕. 现在我们会假设任何东西都会出错. 使用分布式系统与在单个机器上编写软件有着根本上的不同: 分布式存在很多特殊的出错方式. 本章将讨论一些实践中出现的错误, 并理解什么可依赖,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Trouble with Distributed Systems">
+<meta property="og:url" content="https://zaf1ro.github.io/p/1a83.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="前几章主要讨论的问题是, 系统如何处理出错. 例如, 故障切换, 复制延迟, 事务隔离. 当我们能考虑到系统中可能的边缘情况时, 就可更好地处理它们.然而, 即使已经讨论了很多问题, 之前几章仍过于乐观, 现实只会更加糟糕. 现在我们会假设任何东西都会出错. 使用分布式系统与在单个机器上编写软件有着根本上的不同: 分布式存在很多特殊的出错方式. 本章将讨论一些实践中出现的错误, 并理解什么可依赖,">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-8-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-8-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-8-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-8-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-8-5.png">
+<meta property="article:published_time" content="2021-11-12T01:36:39.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.038Z">
+<meta property="article:tag" content="Distributed System">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-8-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+The Trouble with Distributed Systems - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Faults-and-Partial-Failures"><span class="toc-text">1. Faults and Partial Failures</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Cloud-Computing-and-Supercomputing"><span class="toc-text">1.1 Cloud Computing and Supercomputing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Unreliable-Networks"><span class="toc-text">2. Unreliable Networks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Network-Faults-in-Practice"><span class="toc-text">2.1 Network Faults in Practice</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Detecting-Faults"><span class="toc-text">2.2 Detecting Faults</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Timeouts-and-Unbounded-Delays"><span class="toc-text">2.3 Timeouts and Unbounded Delays</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-Network-congestion-and-queueing"><span class="toc-text">2.3.1 Network congestion and queueing</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Synchronous-Versus-Asynchronous-Networks"><span class="toc-text">2.4 Synchronous Versus Asynchronous Networks</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-Can-we-not-simply-make-network-delays-predictable"><span class="toc-text">2.4.1 Can we not simply make network delays predictable?</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Unreliable-Clocks"><span class="toc-text">3. Unreliable Clocks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Monotonic-Versus-Time-of-Day-Clocks"><span class="toc-text">3.1 Monotonic Versus Time-of-Day Clocks</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-Time-of-day-clocks"><span class="toc-text">3.1.1 Time-of-day clocks</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-Monotonic-clocks"><span class="toc-text">3.1.2 Monotonic clocks</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Clock-Synchronization-and-Accuracy"><span class="toc-text">3.2 Clock Synchronization and Accuracy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Relying-on-Synchronized-Clocks"><span class="toc-text">3.3 Relying on Synchronized Clocks</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-Timestamps-for-ordering-events"><span class="toc-text">3.3.1 Timestamps for ordering events</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-Clock-readings-have-a-confidence-interval"><span class="toc-text">3.3.2 Clock readings have a confidence interval</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-Synchronized-clocks-for-global-snapshots"><span class="toc-text">3.3.3 Synchronized clocks for global snapshots</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Process-Pauses"><span class="toc-text">3.4 Process Pauses</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-1-Response-time-guarantees"><span class="toc-text">3.4.1 Response time guarantees</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-2-Limiting-the-impact-of-garbage-collection"><span class="toc-text">3.4.2 Limiting the impact of garbage collection</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Knowledge-Truth-and-Lies"><span class="toc-text">4. Knowledge, Truth, and Lies</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-The-Truth-Is-Defined-by-the-Majority"><span class="toc-text">4.1 The Truth Is Defined by the Majority</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-The-leader-and-the-lock"><span class="toc-text">4.1.1 The leader and the lock</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-Fencing-tokens"><span class="toc-text">4.1.2 Fencing tokens</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Byzantine-Faults"><span class="toc-text">4.2 Byzantine Faults</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1-Weak-forms-of-lying"><span class="toc-text">4.2.1 Weak forms of lying</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-System-Model-and-Reality"><span class="toc-text">4.3 System Model and Reality</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-1-Correctness-of-an-algorithm"><span class="toc-text">4.3.1 Correctness of an algorithm</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-2-Safety-and-liveness"><span class="toc-text">4.3.2 Safety and liveness</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-3-Mapping-system-models-to-the-real-world"><span class="toc-text">4.3.3 Mapping system models to the real world</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          The Trouble with Distributed Systems
+        
+      </h1>
+      <time class="post-time">
+          11/11/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <p>前几章主要讨论的问题是, 系统如何处理出错. 例如, 故障切换, 复制延迟, 事务隔离. 当我们能考虑到系统中可能的边缘情况时, 就可更好地处理它们.<br>然而, 即使已经讨论了很多问题, 之前几章仍过于乐观, 现实只会更加糟糕. 现在我们会假设任何东西都会出错. 使用分布式系统与在单个机器上编写软件有着根本上的不同: 分布式存在很多特殊的出错方式. 本章将讨论一些实践中出现的错误, 并理解什么可依赖, 什么不可依赖.</p>
+<h2 id="1-Faults-and-Partial-Failures"><a href="#1-Faults-and-Partial-Failures" class="headerlink" title="1. Faults and Partial Failures"></a>1. Faults and Partial Failures</h2><p>单台计算机上编写的程序会以一个可预测的方式运行: 程序要么成功, 要么不成功. 软件的错误主要由于代码写的不好.<br>单个计算机上的软件没有根本性的不可靠原因: 当硬件正常运作, 相同的操作总会产生相同的结果. 若出现硬件错误(如内存损坏或连接器松动), 通常会导致整个系统故障(如kernel panic, 蓝屏, 无法启动). 软件在单机上要么正常运行, 要么完全失效, 不会介于两者之间.<br>这是一个有意为之的计算机设计: 若发生内部错误, 更偏向于让计算机完全崩溃, 而不是返回错误结果, 因为错误原因可能非常复杂, 很难让用户解决. 因此, 计算机隐藏其物理实现, 呈现一个理想化的系统模型. CPU指令也遵循相同的理念: 向内存或磁盘写入数据时, 数据将保持不变, 不会被随机破坏. 从第一台计算机开始, 计算机的设计目的就是<strong>always-correct computation</strong>(始终正确地计算).<br>当软件需要在多台机器上运行时, 情况变得完全不同: 分布式系统中没有理想化的系统模型, 必须要面对现实中的各种混乱. 真实世界中会出现各种各样的问题. 就像Coda Hale所说: 在我有限的经验中, 单个数据中心存在多个长期运行的网络分区, 配电单元故障, 交换机故障, 整个数据中心的主干网络故障, 甚至会有卡车撞在数据中心的温度调节系统.<br>分布式系统中, 尽管系统中的其他部分正常工作, 但也有某些部分会以意想不到的方式损坏, 被称为<strong>partial failure</strong>(部分失效). 难点在于, 部分失效是不确定的: 当执行一些涉及多个节点和网络的操作时, 有时成功, 有时失败. 我们甚至无法知道执行是否成功, 因为网络传输的时间也是不确定的.</p>
+<h3 id="1-1-Cloud-Computing-and-Supercomputing"><a href="#1-1-Cloud-Computing-and-Supercomputing" class="headerlink" title="1.1 Cloud Computing and Supercomputing"></a>1.1 Cloud Computing and Supercomputing</h3><p>关于如何构建大型计算系统, 存在以下设计哲学:</p>
+<ul>
+<li>一种极端是<strong>high performance computing</strong>(HPC, 高性能计算)领域. 超级计算机拥有上千个CPU, 用于计算密集型的科学计算任务, 如天气预报或分子动力学(模拟原子或分子运动)</li>
+<li>另一个极端是<strong>cloud computing</strong>(云计算)领域, 虽然其没有一个明确定义, 但与多租户数据中心, 连接IP网络的商用计算机, 弹性&#x2F;按需资源分配, 以及计量计费等相关</li>
+<li>传统企业数据中心处于上述两者之间</li>
+</ul>
+<p>不同的设计哲学会导致不同的故障处理方法. 对于超级计算机, 其会频繁地将计算的状态写入持久存储中. 若某个节点宕机, 通常会停止整个集群的工作负载. 待节点恢复后, 从最近的检查点重新开始. 因此, 超级计算机更像是一个单点计算机, 而不是分布式系统: 让部分失败升级为整体失败, 就像单机的内核恐慌.<br>互联网服务系统与超级计算机存在很多不同之处:</p>
+<ul>
+<li>大多数互联网相关的应用程序都是<strong>online</strong>(在线)的, 其需要随时服务用户. 让整个服务不可用(如停止集群以进行维护)是不可接受的. 相比之下, 离线工作(如天气模拟)可被随时暂停或重启</li>
+<li>超级计算机由专用硬件构成, 每个节点的可靠性都十分高, 节点通过共享内存或<strong>remote direct memory access</strong>(RDMA, 远程直接内存访问)通信; 云服务中的节点由商用机器构成, 处于成本考虑, 这些硬件以更低的成本提供相同的性能, 但故障率较高</li>
+<li>大型数据中心网络基于IP和以太网, 以CLOS拓扑排列, 以提供更高的<strong>bisection bandwidth</strong>(对分带宽); 超级计算机使用专用的网络拓扑, 例如多维网络和Torus网络, 为HPC负载提供更好的性能</li>
+<li>系统越大, 组件崩溃的概率越高. 随时间推移, 损坏的组件会被修复, 新组件也会损坏, 但在成千上万个节点的系统中, 几乎每时每刻都有组件损坏. 如果一旦遇到错误就停止提供服务, 则系统会花费大量时间修复错误, 而不是做有用的工作</li>
+<li>若系统可以容忍故障节点, 并继续保持工作状态, 将十分有利于运营和运维: 例如, 可以使用滚动更新, 每次重启单个节点, 同时保持服务不中断. 在云环境中, 若某台虚拟机出现异常, 可中止并重启一台新的虚拟机</li>
+<li>对于地理位置分散的部署(让数据与用户地理位置更近), 需要通过互联网进行通信. 与本地网络相比, 互联网速度较慢且不可靠. 超级计算机通常假设所有节点都紧密相连.</li>
+</ul>
+<p>若想让分布式系统工作, 必须接受随时出故障的可能性, 并建立一套故障容错机制. 换句话说, 需要在不稳定的组件上构建一个可靠的系统.<br>即使节点数量较少, 也需要考虑部分故障. 对于小型系统, 绝大多数组件都能正常工作. 然而, 系统中的某些部件迟早会出错, 软件必须以某种方式处理. 故障处理必须作为软件设计的一环, 运维人员需要了解发生故障时, 软件会表现出什么行为.</p>
+<p>用不可靠的组件构建可靠的系统, 这是计算机领域中的一个古老思想, 例如:</p>
+<ul>
+<li>纠错码允许数据在通信信道的传输中, 偶尔出现一些错误, 如无限网络上的无线电干扰</li>
+<li>IP(互联网协议)是不可靠的: 可能丢弃, 延迟, 重复, 或重排数据包. TCP(Transmission Control Protocol)在IP的基础上提供了更可靠的传输层: 其会重传丢失的数据包, 移除重复的数据包, 并确保数据包的传输顺序.</li>
+</ul>
+<p>虽然上述的系统比其底层系统更可靠, 但也有局限性. 例如, 纠错码只能处理少量的单比特错误; TCP不能消除网络中的延迟. 虽然不完美, 但已经非常有用, 可帮忙处理很多低级错误.</p>
+<h2 id="2-Unreliable-Networks"><a href="#2-Unreliable-Networks" class="headerlink" title="2. Unreliable Networks"></a>2. Unreliable Networks</h2><p>分布式系统也称为<strong>shared-nothing systems</strong>(无共享系统), 即通过网络连接的大量机器. 网络是机器间通信的唯一方式, 每个机器都有自己的内存和磁盘, 且不能直接访问其他机器的内存或磁盘.<br>无共享并不是构建系统的唯一方式, 但却是构建互联网服务的主要方式, 原因如下:</p>
+<ul>
+<li>成本较低, 无需特殊硬件</li>
+<li>可利用商用的云计算服务</li>
+<li>跨地理分布的数据中心提供冗余, 以实现高可靠性</li>
+</ul>
+<p>互联网和数据中心(通常是以太网)中的大多数内部网络是<strong>asynchronous packet networks</strong>(异步分组网络). 该网络下一个节点向另一个节点发送信息, 网络无法保证该消息何时到达, 或是否到达. 如果节点发送请求并等待回应, 可能会遇到以下问题:</p>
+<ol>
+<li>请求丢失(网线被拔掉)</li>
+<li>请求正在排队, 稍后才能被处理(网络或接收方过载)</li>
+<li>接收方宕机(崩溃或关机)</li>
+<li>接收方暂时停止响应(长时间的垃圾收集暂停), 稍后再次响应</li>
+<li>接收方处理了请求, 但响应在网络上丢失</li>
+<li>接收方处理了请求, 但响应因网络问题而被延迟</li>
+</ol>
+<p><img src="/images/System-Design/DDIA/ch-8-1.png" alt="If you send a request and don&#39;t get a response, it&#39;s not possible to distinguish whether (a) the request was lost, (b) the remote node is down, or (c) the response was lost."></p>
+<p>发送者甚至无法判断数据包是否被发送: 唯一选择是等待接收方传回响应, 但响应可能丢失或延迟. 这些问题在异步网络中难以区分: 唯一确定的是尚未收到响应. 如果向其他节点发送请求且没有收到响应, 不可能知道是什么原因导致的.<br>处理该问题的通用方法是<strong>timeout</strong>(超时): 一段时间后放弃等待, 并判定该响应不会传达. 即便发生超时, 仍无法知道对方是否收到了请求.</p>
+<h3 id="2-1-Network-Faults-in-Practice"><a href="#2-1-Network-Faults-in-Practice" class="headerlink" title="2.1 Network Faults in Practice"></a>2.1 Network Faults in Practice</h3><p>计算机网络已经发展了几十年, 有人可能认为我们已经实现了可靠的网络. 然而, 可靠的网络从未实现.<br>有研究表明, 即使是公司运营的数据中心, 在这种受控环境下也会频繁发生网络问题. 某中型数据中心的研究表明, 平均每月会发生12起网络故障, 其中一半断开一台机器, 一半断开整个机架. 另一项研究评估了<strong>top-of-rack switch</strong>(架顶式交换机, 每个机柜上部署1~2台交换机), <strong>aggregation switch</strong>(汇聚交换机, 将多个ToR交换机连接到一个core交换机上), 和<strong>load balancer</strong>(负载均衡器)的故障率, 添加冗余网络设备并不能像预期那样减少故障率, 因为大部分故障由人为错误导致(如, 错误配置交换机).<br>公有云服务因频繁的暂态网络(网络由节点构成, 但节点随时离开或加入网络)故障而饱受诟病, 私有数据中心可提供更稳定的网络. 然而, 没有人可不受网络问题的影响: 例如, 交换机软件升级期间的一个问题会导致整个网络拓扑重构, 数据包的延迟可能超过一分钟. 海底电缆也可能被鲨鱼咬坏. 网络接口也可能出问题: 网络链接在某个方向上工作, 而另一方向不工作, 致使所有进站数据包被丢弃, 出站数据包正常发送.<br>无论何时通过网络进行通信, 都可能失败. 若没有定义或测试处理网络故障的错误处理, 则可能发生各种错误: 例如, 集群死锁, 永久性停止服务, 甚至删除所有数据.<br>处理网络故障并不意味着容忍错误: 若大部分时间网络都是可靠的, 可在网络故障时向用户显示一条错误信息. 需要明确自己的软件如何处理网络问题, 并确保系统能从网络故障中恢复, 有意识地制造网络故障来测试系统响应.</p>
+<h3 id="2-2-Detecting-Faults"><a href="#2-2-Detecting-Faults" class="headerlink" title="2.2 Detecting Faults"></a>2.2 Detecting Faults</h3><p>很多系统都需要自动检测故障节点, 例如:</p>
+<ul>
+<li>Load balancer需停止向已死节点发送请求(如, 移除轮询列表)</li>
+<li>对于单leader复制的分布式数据库, 若leader宕机, 会将其中一个follower提升为leader</li>
+</ul>
+<p>然而, 网络的不确定性让我们很难确定节点是否存活. 某些特定条件下, 可能会收到一些反馈信息, 明确表示某些事情没有成功:</p>
+<ul>
+<li>如果可以连接到运行节点的机器, 但没有进程监听目标端口(如, 进程崩溃), 系统会发送RST或FIN数据包来关闭并重用TCP连接; 若节点处理请求时崩溃, 则无法知道其实际处理了多少数据</li>
+<li>若节点的进程崩溃(被管理员kill掉), 但节点的操作系统仍在运行, 可让脚本提醒其他节点, 其他节点就不用等待超时. HBase就是这么做的.</li>
+<li>若可以访问数据中心中网络交换机的管理界面, 则可以查询硬件级别的链路故障(例如, 远程机器是否关闭电源). 若通过互联网连接, 或处于共享数据中心而无法访问路由器, 或由于网络问题而无法访问管理界面, 则无法使用此方法</li>
+<li>若路由器发现你尝试连接的IP地址不可用, 则会返回<strong>ICMP Destination Unreachable</strong>数据包. 然而, 路由器不具备故障检测能力, 其同样受到限制</li>
+</ul>
+<p>远程节点关闭的快速响应很有用, 但不能完全依赖. 即使发送了TCP acknowledge, 应用程序也可能在处理前崩溃. 若想确定请求成功, 还需应用程序的响应.<br>相反, 若出现任何问题, 可能会在堆栈的某个层面上收到一个错误响应, 但必须假设不会收到任何响应. 我们可多次重试(TCP重试是透明的, 但还可以在应用层面重试), 等待超时, 若没有收到响应, 则认为该节点已死.</p>
+<h3 id="2-3-Timeouts-and-Unbounded-Delays"><a href="#2-3-Timeouts-and-Unbounded-Delays" class="headerlink" title="2.3 Timeouts and Unbounded Delays"></a>2.3 Timeouts and Unbounded Delays</h3><p>如果超时是检测故障的唯一方法, 那么应等待多久? 长时间的超时意味着长时间的等待(在此期间, 用户可能需要等待, 或收到错误信息). 短时间的超时可快速检测到故障, 但会误判节点失效(例如, 由于节点或网络上的负载峰值而响应变慢).<br>过早声明节点失效存在很大问题: 若节点存活且正在执行一些操作(如发送邮件), 其他节点接管后会重新执行一遍, 导致操作被执行两次.<br>当节点被宣告死亡, 需将任务分配给其他节点, 这会给其他节点和网络带来额外负载. 若系统已经处于高负荷状态, 过早宣布节点死亡只会让情况更糟糕. 若节点没有死亡, 只是由于过载而响应缓慢, 将负载转移到其他节点可能导致<strong>cascading failure</strong>(级联失效, 某些极端情况下, 所有节点都认为对方死亡, 所有节点都停止工作).<br>假设系统中的数据包存在最大延迟: 数据包要么在时间$d$内传达, 要么丢失, 传输时间不会超过$d$. 此外, 假设一个节点可在时间$r$内处理完请求, 因此, 从发送请求到接收响应, 可在$2d+r$时间内完成. 若未收到响应, 则可认为网络或节点失效. 因此, $2d+r$是一个合理的超时设置.<br>然而, 大多数系统都无法提供上述保证: 异步网络拥有<strong>unbounded delays</strong>(无上限的延迟, 只能保证尽快发送数据包), 并且绝大多数服务器都无法保证在一定时间内处理请求. 如果超时时间设置的很短, 即使系统中大部分时间都能快速运行, 往返时间只需出现一个瞬间峰值就可以让系统失衡.</p>
+<h4 id="2-3-1-Network-congestion-and-queueing"><a href="#2-3-1-Network-congestion-and-queueing" class="headerlink" title="2.3.1 Network congestion and queueing"></a>2.3.1 Network congestion and queueing</h4><p>当驾驶车辆时, 通行时间受到交通拥堵的影响. 同理, 数据包延迟受到排队的影响:</p>
+<ul>
+<li>若多个节点同时向同一目的地发送数据包, 则交换机需将它们排队并依次发往目的地. 若网络链路繁忙, 则数据包需等待一段时间(称为网络拥塞); 若交换机的队列已满, 数据包将被丢弃, 需要重传.</li>
+<li>当数据包抵达目标机器时, 若所有CPU核心都处于繁忙状态, 操作系统会让请求排队, 直到应用程序准备好处理. 根据机器的负载, 等待时间或长或短.</li>
+<li>对于虚拟化环境, 由于共享CPU内核, 当其他虚拟机使用CPU时, 操作系统需要暂停几十毫秒. 这时虚拟机无法从网络中获得任何数据, 数据会被虚拟机监视器排队, 进一步增大了网络延迟波动.</li>
+<li>TCP执行<strong>flow control</strong>(流量控制), 也称为<strong>congestion avoidance</strong>(拥塞避免): 节点会限制自身的数据发送速率以防止网络链路或接收方过载. 因此, 数据包在进入网络前还要排队.</li>
+</ul>
+<p><img src="/images/System-Design/DDIA/ch-8-2.png" alt="If several machines send network traffic to the same destination, its switch queue can fill up. Here, ports 1, 2, and 4 are all trying to send packets to port 3"></p>
+<p>而且, 当TCP发现数据包在一定时间内(根据观察的往返时间计算)未被确认, 会认为数据包丢失, 并自动重传. 尽管应用程序不会觉察到数据包的丢失和重传, 但能感受到延迟(等待数据包超时, 并等待重传的数据包得到确认).<br>上述因素导致网络延迟波动很大. 当系统接近最大负荷时, 排队延迟的波动范围非常大: 拥有足够备用容量的系统可以轻松清空队列, 然而高负载的系统很容易形成很长的队列.<br>对于公有云和多租户数据中心, 资源被多个用户共享: 网络链路, 交换机, 甚至机器的网卡和CPU. 批处理工作负载(如MapReduce)很容易让网络链路饱和. 由于无法控制或了解其他用户对共享资源的使用情况, 若附近某个人占用大量资源, 则网络延迟可能发生剧烈波动.<br>这种环境下, 可通过实验方式选择超时时间: 在一段较长的时间内, 在多台机器上测量网络往返时间的分布, 以确定延迟的预期波动. 然而根据应用程序的特性, 权衡<strong>故障检测延迟</strong>与<strong>过早超时风险</strong>之间的利弊.<br>还可以让系统测量响应时间及其波动, 并根据响应时间分布自动调整超时时间. Akka和Cassandra使用Phi Accrual故障检测器实现. TCP的超时重传机制也是类似的方法.</p>
+<h3 id="2-4-Synchronous-Versus-Asynchronous-Networks"><a href="#2-4-Synchronous-Versus-Asynchronous-Networks" class="headerlink" title="2.4 Synchronous Versus Asynchronous Networks"></a>2.4 Synchronous Versus Asynchronous Networks</h3><p>若分布式系统运行在固定最大延迟且从不丢包的网络上, 问题会简单很多. 为何不从硬件层面出发, 让网络更加可靠?<br>为回答这个问题, 需要对比数据中心网络和传统固定电话网络(非蜂窝, 非VoIP): 固定电话网络十分可靠, 延迟的音频帧和掉线都十分罕见. 通话需要很低的端对端延迟, 以及足够的带宽来传输音频采样数据. 为何不在计算机网络中实现类似的可靠性和可预测性?<br>拨打电话时, 会建立一个电路: 在两个通话者之间的整个路线上, 分配固定且足够的带宽. 整个电路会一直保持到通话结束. 例如, ISDN网络以每秒4000帧的固定速率运行. 当建立某个通话时, 每个帧内分配16位空间(双向). 因此, 通话期间双方都能保证每250微秒发送一个16位的音频数据.<br>这种网络是<strong>synchronous</strong>(同步的): 即使数据经过多个跳, 也不会受到排队的影响, 因为网络中的每一跳都为该连接保留了16位空间. 由于没有排队, 网络的最大端对端延迟也是固定的, 被称为<strong>bounded delay</strong>(有限延迟).</p>
+<h4 id="2-4-1-Can-we-not-simply-make-network-delays-predictable"><a href="#2-4-1-Can-we-not-simply-make-network-delays-predictable" class="headerlink" title="2.4.1 Can we not simply make network delays predictable?"></a>2.4.1 Can we not simply make network delays predictable?</h4><p>电话网络中的电路与TCP连接完全不同: 电路是一个固定大小的保留带宽, 在电路建立期间, 其他人无法使用该电路; 而TCP连接的数据包会选择任何可用的网络带宽. TCP中的数据包大小不固定(可以是一封邮件或一个网页), 且会尽量以最短时间传送. TCP连接在闲置期间不占用任何带宽.<br>若数据中心和互联网是<strong>circuit-switched network</strong>(电路交换网络), 则建立电路时可保证最大往返时间. 然而, 以太网和IP是<strong>packet-switched protocol</strong>(分组交换协议), 由于排队会带来无限网络延迟, 这些协议没有电路概念.<br>那么数据中心网络和互联网为什么使用分组交换? 因为它们的设计目标是为了解决<strong>突发流量</strong>. 电路适用于音频或视频通话, 通话期间需要每秒传输一定数量的比特; 而请求网页, 发送邮件, 或传输文件没有固定的带宽要求, 只希望尽快完成.<br>若想通过电路传输文件, 需要决定分配的带宽大小: 若分配的太少, 传输会很慢, 导致网络闲置; 若分配的太多, 可能无法建立电路(其他电路占用大量带宽). 因此, 对于突发数据, 电路只会浪费网络带宽并让传输变慢. 相比之下, TCP会根据当前网络带宽来动态调整数据传输速率.<br>也有一些方法尝试建立混合网络, 同时支持电路交换和分组交换, 例如ATM. InfiniBand也有一些相似之处: 其在链路层实现了端对端的流量控制, 尽管会因链路拥塞而导致延迟, 但可以减少排队需求. 通过使用<strong>quality of service</strong>(QoS, 服务质量, 数据包的有限集和调度)和<strong>admission control</strong>(准入控制, 发送端限速), 可在分组网络上模拟电路交换, 或提供统计上的<strong>有限延迟</strong>.<br>但多租户数据中心与公用云目前不提供QoS, 无法提供网络延迟或可靠性的任何保证: 我们只能假设网络拥塞, 排队, 和无限延迟随时发生. 结论就是, 超时时间没有统一答案, 只能通过实验确定.</p>
+<h2 id="3-Unreliable-Clocks"><a href="#3-Unreliable-Clocks" class="headerlink" title="3. Unreliable Clocks"></a>3. Unreliable Clocks</h2><p>时钟和时间很重要. 应用程序会依赖时钟解决以下问题:</p>
+<ol>
+<li>请求是否超时</li>
+<li>这项服务的第99百分位响应时间是多少</li>
+<li>在过去5分钟内, 这项服务平均每秒处理多少个请求</li>
+<li>用户在网站上花了多少时间</li>
+<li>文章何时发布</li>
+<li>何时发送提醒邮件</li>
+<li>缓存何时过期</li>
+<li>日志文件中, 错误信息的时间戳是什么</li>
+</ol>
+<p>分布式系统中, 由于通信不是即时的, 时间成为一件很棘手的事情: 消息通过网络从一个节点传输到另一个节点需要一定时间. 消息的接收时间总是晚于消息的发送时间, 由于网络的可变延迟, 无法确定具体晚了多久, 因此很难确定多个节点中某个事情的发生顺序.<br>而且, 网络上每个机器都有自己的时钟, 这是一个硬件设备: 通常是石英晶体振荡器. 这些设计不是完全准确的, 因此每个机器都有自己的时间, 可能比其他机器稍快或稍慢. 同步时间最常用的方法为<strong>Network Time Protocol</strong>(NTP, 网络时间协议), 其允许计算机通过一组服务器提供的时间来调整自身时钟. 服务器则从更精确的时间源(如GPS接收机)获取时间.</p>
+<h3 id="3-1-Monotonic-Versus-Time-of-Day-Clocks"><a href="#3-1-Monotonic-Versus-Time-of-Day-Clocks" class="headerlink" title="3.1 Monotonic Versus Time-of-Day Clocks"></a>3.1 Monotonic Versus Time-of-Day Clocks</h3><p>现代计算机至少有两种时钟: <strong>time-of-day clock</strong>(日历时钟)和<strong>monotonic clock</strong>(单调时钟). 虽然它们都用于衡量时间, 但目的不同.</p>
+<h4 id="3-1-1-Time-of-day-clocks"><a href="#3-1-1-Time-of-day-clocks" class="headerlink" title="3.1.1 Time-of-day clocks"></a>3.1.1 Time-of-day clocks</h4><p>日历时钟是人们对于时钟的直观印象: 其根据日历(也称为<strong>wall-clock time</strong>, 挂钟时间)返回当前日期和时间. 例如, Linux的<code>clock_gettime(CLOCK_REALTIME)</code>, Java的<code>System.currentTimeMillis()</code>, 它们都返回自epoch(UTC时间1970年1月1号零点)以来的秒数(或毫秒), 不包含闰秒. 有些系统使用其他日期作为参考点.<br>日历时钟通常与NTP同步, 意味着不同机器的时间戳保持相同. 然而, 日历时钟有很多问题. 若本地时钟比NTP服务器快太多, 可能会被强制重置, 就像穿越到过去. 由于存在时间跳跃以及忽略闰秒, 因此日历时钟不能用于测量<strong>elapsed time</strong>(经过时间).<br>日历时钟具有相当粗的颗粒度. 例如, 早期Windows系统上以10毫秒为一个单位.</p>
+<h4 id="3-1-2-Monotonic-clocks"><a href="#3-1-2-Monotonic-clocks" class="headerlink" title="3.1.2 Monotonic clocks"></a>3.1.2 Monotonic clocks</h4><p>单调时钟很适合测量持续时间(时间间隔), 例如, 超时或服务的响应时间: Linux的<code>clock_gettime(CLOCK_MONOTONIC)</code>, Java的<code>System.nanoTime()</code>都是单调时钟. 该时钟可保证时间总是往前走(日历时钟可以往回跳).<br>我们可在某个时间点查看单调时钟的值, 之后再次查看, 两个值的差值表示经过了多长时间. 然而, 单调时钟的绝对值没有任何意义: 它可能是计算机启动以来的纳秒数, 或类似的任意值. 比较两台计算机的单调时钟也没有意义.<br>对于具有多个CPU的服务器, 每个CPU有一个单独的计时器, 但不一定与其他CPU同步. 操作系统会补偿所有的差异, 并尝试表现出单调时钟的样子, 即使这些线程被调度到不同的CPU上. 因此, 不要太依赖于这种单调性保证.<br>若NTP协议检测到计算机的本地石英钟更快或更慢, 可调整单调时钟前进的频率(也称为<strong>skewing clock</strong>, 偏移时钟). 默认情况下, NTP允许时钟速率增加或减少最多0.05%, 但NTP不能让单调时钟向前或向后跳跃. 单调时钟的分辨率很好: 大多数系统可测量几微妙或更短的时间间隔.<br>分布式系统中, 可使用单调时钟测量经过的时间, 因为不需要与其他时钟同步, 并且对测量的准确度没有过高要求.</p>
+<h3 id="3-2-Clock-Synchronization-and-Accuracy"><a href="#3-2-Clock-Synchronization-and-Accuracy" class="headerlink" title="3.2 Clock Synchronization and Accuracy"></a>3.2 Clock Synchronization and Accuracy</h3><p>单调时钟无需同步, 而日历时钟依赖于NTP服务器或其他外部时间源. 然而, 获得时钟的方法并没有那么简单, 硬件时钟和NTP都存在很多问题:</p>
+<ul>
+<li>计算机中的石英时钟不够精确: 其会<strong>drift</strong>(漂移, 即运行速度过快或过慢). 时钟漂移取决于机器的温度. Google认为时钟漂移为200ppm(百万分之一), 即每30秒同步一次的时钟漂移为6毫秒, 每天同步一次的时钟漂移为17秒. 即使一切工作正常, 这种漂移也会限制我们可以达到最佳精确度.</li>
+<li>若计算机的时钟与NTP服务器的时钟差距过大, 可能会拒绝同步, 或强制重置本地时钟. 应用会看到时间后退或跳跃.</li>
+<li>若某个节点被NTP服务器的防火墙阻塞, 可能很长一段时间都不会被人觉察. 有证据标明, 这的确在实践中发生过.</li>
+<li>数据包的延迟会限制NTP同步的准确度. 实验表明, 当通过互联网同步时, 35毫秒的最小误差是可实现的, 偶尔的网络延迟峰值会导致大约一秒的误差. 根据配置, NTP客户端会因网络延迟较大而直接放弃.</li>
+<li>一些错误配置的NTP服务器, 其报告的时间可能相差几个小时. 由于NTP客户端会查询多个服务器并忽略异常值, 因此具有一定的鲁棒性. 无论如何, 依赖其他人来决定自己系统的正确性, 这比较令人担忧.</li>
+<li>闰秒会导致一分钟有59秒或61秒, 对于未考虑到闰秒的系统, 这会打破时序的假设. 闰秒已经让很多大型系统崩溃过, 证明了系统会容易出现时钟的错误假设. 处理闰秒的最好方法是让NTP服务器撒谎, 并在一天内逐渐调整闰秒(称为<strong>smearing</strong>, 托尾).</li>
+<li>在虚拟机中, 硬件时钟被虚拟化, 这对于需要精确计时的应用提出了额外挑战. 当单个CPU核心被多个虚拟机共享时, 每个虚拟机都会暂停几十毫秒, 与此同时有一个虚拟机正在运行. 从应用程序的角度来看, 这种停顿就像时间突然向前跳跃.</li>
+<li>如果软件对设备没有控制权(如移动或嵌入式设备), 则无法相信该设备的硬件时钟. 一些用户会将时钟设置为错误的时间. 例如, 为规避时间限制, 用户会将时间设置为过去或未来.</li>
+</ul>
+<p>只要投入大量资源, 就可以达到非常好的时钟精度. 例如, 欧洲法规草案MiFID II针对金融机构提出要求: 所有高频交易基金必须在UTC时间100微妙内同步时钟, 以便调试<strong>flash crash</strong>(闪崩)等市场异常情况, 并帮助检测市场操纵.<br>通过GPS接收器, <strong>Precision Time Protocol</strong>(PTP, 精确时间协议), 和仔细部署监控, 就可实现这种精确度. 然而这需大量努力和专业知识, 且很容易导致时钟同步错误: NTP守护进程配置错误, 防火墙阻止NTP通信, 时钟漂移导致时钟误差越来越大.</p>
+<h3 id="3-3-Relying-on-Synchronized-Clocks"><a href="#3-3-Relying-on-Synchronized-Clocks" class="headerlink" title="3.3 Relying on Synchronized Clocks"></a>3.3 Relying on Synchronized Clocks</h3><p>时钟虽然简单易用, 但存在一些问题: 一天并非准确的86,400秒, 日历时钟可能前后跳跃, 不同节点的时间可能不同.<br>就像网络一样: 大多数情况下<em>网络</em>&#x2F;<em>时钟</em>都能正常工作, 但偶尔会出现<em>网络丢包</em>&#x2F;<em>时钟错误</em>, 软件必须处理这些故障.<br>不正确的时钟很容易被忽略. 若CPU出错或网络配置错误, 节点很可能无法工作, 很快就能被注意到; 但石英时钟出错, 或NTP客户端配置错误, 尽管时钟偏差越来越大, 但大部分情况仍可以正常工作. 若某些软件依赖于精确同步的时钟, 其后果可能是悄无声息的, 或少量数据丢失, 而不是软件崩溃.<br>因此, 若软件需要同步时钟, 最好监控各个机器间的时钟偏差. 时钟偏差过大的节点应被宣布死亡, 并从集群中移除. 这样可确保在发生损失前发现出错的时钟.</p>
+<h4 id="3-3-1-Timestamps-for-ordering-events"><a href="#3-3-1-Timestamps-for-ordering-events" class="headerlink" title="3.3.1 Timestamps for ordering events"></a>3.3.1 Timestamps for ordering events</h4><p>现在考虑一个特殊情况: 依赖时钟对多个节点上的事件进行排序. 例如, 两个客户端写入分布式数据库, 哪个先写入?<br><img src="/images/System-Design/DDIA/ch-8-3.png" alt="The write by client B is causally later than the write by client A, but B’s write has an earlier timestamp"> </p>
+<p>上图为多leader复制的数据库中时钟的危险使用: 客户端A在节点1上写入<code>x = 1</code>, 该写入被复制到节点3; 客户端B在节点3上增加$x$(此时<code>x = 2</code>); 最后, 两个写入被复制到节点2.<br>当一个写入被复制到其他节点时, 会根据发生写入的节点上的日历时钟生成一个时间戳. 本例中时钟同步的非常好: 节点1和节点3之间的时钟偏差只有3ms.<br>尽管如此, 时间戳还是无法正确排序事件: 写入请求<code>x = 1</code>的时间戳为42.004秒, 但写入请求<code>x = 2</code>的时间戳为42.003秒, 即使<code>x = 2</code>在<code>x = 1</code>之后出现. 当节点2收到这两个写入, 会错误地认为<code>x = 1</code>才是最新发生的请求, 从而抛弃<code>x = 2</code>, 导致客户端B的写入丢失.<br>这种冲突解决策略称为<strong>last write wins</strong>(LWW, 最后写入胜利), 其被广泛用于多leader复制和leaderless数据库, 如Cassandra和Riak. 有些实现会在客户端上生成时间戳, 但这并不能改变LWW的根本问题:</p>
+<ul>
+<li>数据库写入可能神秘消失: 滞后的节点无法覆盖更快的节点的写入值</li>
+<li>LWW无法区分高频顺序写入(客户端B的写入发生在客户端A的写入之后)和真正并发写入(写入A完全不知道写入B的存在). 需要一些额外的因果关系追踪机制(如版本向量), 以防止违背因果关系.</li>
+<li>很可能出现两个节点生成相同时间戳的写入, 尤其是时钟只有毫秒分辨率的情况. 这时需要一个额外的<strong>tiebreaker</strong>(决胜点, 例如随机数)来解决冲突, 但也可能违背因果关系.</li>
+</ul>
+<p>因此, 尽管可以通过放弃旧值来解决冲突, 但日历时钟决定了什么是&quot;最近&quot;, 这有可能是不正确的. 即使使用严格同步的NTP时钟, 数据包可能在100ms时发送(根据发送者的时钟), 并在99ms时抵达(根据接受者的时钟), 看起来就像数据包还未发送就已抵达.<br>如果NTP同步精确到一定地步, 能否让排序始终正确? 也许不能, 因为NTP的同步精度不仅与石英漂移有关, 还受到网络往返时间的限制. 为正确排序, 需要一个更精确的时钟.<br>对于排序事件来说, <strong>logical clock</strong>(逻辑时钟)是一种更安全的选择, 其基于递增计数器而不是振荡石英晶体. 逻辑时钟不用于测量经过的时间, 日历时钟和单调时钟才用于测量实际经过的时间, 也称为<strong>physical clock</strong>(物理时钟).</p>
+<h4 id="3-3-2-Clock-readings-have-a-confidence-interval"><a href="#3-3-2-Clock-readings-have-a-confidence-interval" class="headerlink" title="3.3.2 Clock readings have a confidence interval"></a>3.3.2 Clock readings have a confidence interval</h4><p>虽然我们读取微妙甚至纳秒级别的时间, 但这不意味着该事件是准确的. 实际上, 读取的时间大概率是不准确的: 即使每分钟都与本地网络上的NTP服务器同步, 石英时钟的偏差也会达到几毫秒. 公共互联网上NTP服务器, 准确度可能只有几十毫秒, 而且网络拥塞时误差可能超过100毫秒.<br>因此, 时钟读数不能视作一个时间点, 而是一个时间段: 例如, 系统有95%把握认为当前时间处于第10.3秒到10.5秒. 若时间波动为100ms, 那么时间戳中的毫秒位是没有意义的.<br>我们可以根据时间源来计算不确定性边界. 若GPS接收器或原子时钟直连到计算机上, 预期的错误范围应由制造商告知; 若从服务器获得时间, 则不确定性取决于三个方面: 上次与服务器同步以来的石英时钟偏差的期望值, NTP服务器的不确定性, 和网络往返时间(假设NTP服务器是可信的).<br>不幸的是, 大多数系统不会公开这种不确定性: 例如, 调用<code>clock_gettime()</code>时, 返回值不会告诉时间戳的预期错误, 因此无法知道置信区间是5毫秒还是5年.<br>Spanner中Google TrueTime API是一个例外, 它会告知本地时钟的置信区间. 当查询当前时间时, 会返回两个值: [earliest, latest], 表示可能的最早时间戳和最晚时间戳. 区间的长度取决于本地石英时钟最后一次与时钟源同步后度过了多久时间.</p>
+<h4 id="3-3-3-Synchronized-clocks-for-global-snapshots"><a href="#3-3-3-Synchronized-clocks-for-global-snapshots" class="headerlink" title="3.3.3 Synchronized clocks for global snapshots"></a>3.3.3 Synchronized clocks for global snapshots</h4><p>快照隔离是数据库中非常有用的特性, 用于短小快速的读写事务, 或长时间运行的只读事务(如备份或分析). 该隔离级别可在不锁定的情况下同时处理读写事务, 且允许只读事务看到某个时间点的一致性数据.<br>实现快照隔离的最常见方法为单调递增的事务ID. 若写入发生在快照之后(写入操作拥有更大的事务ID), 则快照事务无法看到该写入. 在单节点数据库中, 一个计数器就可以生成事务ID.<br>然而, 对于分布在多个机器的数据库, 很难生成一个全局单调递增的事务ID, 因为这需要多节点协作. 事务ID必须反映因果关系: 若事务B读取了事务A写入的数据, 则B必须拥有更大的事务ID, 否则快照无法保持一致. 当存在大量短小快速的事务时, 分布式系统中生成事务ID将成为一个瓶颈.<br>那么能否使用日历时钟的时间戳作为事务ID? 若时钟具有足够的同步性, 那么更晚的事务会拥有更大的时间戳. 但问题在于时钟精度的不确定性.<br>Spanner使用以下方法来实现跨数据中心的快照隔离: 其使用TrueTime API返回的时钟置信区间, 并基于以下观察结果: 若存在两个置信区间, 每个置信区间都有一个最早时间戳和一个最晚时间戳($A &#x3D; [A_{earliest}, A_{latest}]$, $B&#x3D;[B_{earliest}, B_{latest}]$), 且两者没有重叠(即$A_{earliest} &lt; A_{latest} &lt; B_{earliest} &lt; B_{latest}$), 那么B肯定发生在A之后. 只有两个区间重叠时才无法确定先后顺序.<br>为了确保时间戳能正确反映因果关系, 提交读写事务前, Spanner会故意等待置信区间长度的时间. 这么做可以确保任何读取事务都处于足够晚的时间点, 保证它们的置信区间不会重叠. 为了保证等待时间足够短, Spanner需要保证时钟的不确定性尽可能的小. 为此, Google会为每个数据中心部署一个GPS接收器或原子时钟, 让时钟同步保持在7ms之内.</p>
+<h3 id="3-4-Process-Pauses"><a href="#3-4-Process-Pauses" class="headerlink" title="3.4 Process Pauses"></a>3.4 Process Pauses</h3><p>接下来考虑分布式系统中一个危险时钟的例子. 假设某个数据库中, 每个分区只有一个leader, 且只有leader才能处理写入. 那么节点如何知道leader仍存活(leader可能被其他人宣告死亡), 并确保其能安全地接收写入?<br>其中一个方法为, 让leader从其他节点获取一个<strong>lease</strong>(租约), 类似一个带有超时的锁. 同一时间只有一个节点可以持有lease, 因此, 若节点持有lease, 则该节点在这段时间内可认为自己是leader, 直到租约到期. 为了保持leader地位, 节点必须在lease过期前续约. 若节点崩溃则不会续约, 超时后会由其他节点接管. 请求处理循环如下图:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">  request = getIncomingRequest();</span><br><span class="line">  <span class="comment">// 确保lease至少还剩10秒</span></span><br><span class="line">  <span class="keyword">if</span> (lease.expiryTimeMillis - System.currentTimeMillis() &lt; <span class="number">10000</span>)&#123;</span><br><span class="line">    lease = lease.renew();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (lease.isValid()) &#123;</span><br><span class="line">      process(request);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码存在两个问题:</p>
+<ol>
+<li>首先, 其依赖于同步时钟, lease到期时间由另一个机器配置(例如, 到期时间 &#x3D; 当前时间 + 30秒), 并将其与本地时钟比较. 若时钟的同步偏差超过数秒, 代码很容易出错.</li>
+<li>其次, 即使我们将协议改为本地单调时钟, 也存在一个问题: 代码会假设<code>System.currentTimeMillis()</code>与<code>process(request)</code>之间的时间间隔很短. 通常代码运行的很快, 因此10秒的间隔足够保证处理请求时lease不会失效. 然而, 如果程序执行中出现意外停顿, 如线程在<code>lease.isValid()</code>周围停止了15秒. 这时lease已经失效, 其他节点已经成为新的leader. 然而线程无法意识到暂停, 因此不会注意到lease已过期, 直到下次循环才会意识到, 这期间可能错误地处理了请求.</li>
+</ol>
+<p>然而线程可能暂停这么久么? 以下是几种可能性:</p>
+<ul>
+<li>很多编程语言运行时(例如Java Virtual Machine)的<strong>garbage collector</strong>(GC, 垃圾收集)会暂停所有运行中的线程. 这种&quot;stop-the-world&quot;GC暂停有时会持续数分钟. 即使是HotSpot JVM这样的并发垃圾收集也不能完全让应用程序代码并发执行, 虽然可通过调整GC设置来减少暂停时长, 但也要假设最坏情况的发生.</li>
+<li>在虚拟化环境中, 虚拟机会被挂起(暂停执行所有进程并将内存保存到磁盘)并恢复(恢复内存内容并继续执行). 这种暂停会在任何时间发生, 并持续任意长时间. 这种特性可让虚拟机在不重启的情况下从一台机器迁移到另一台机器, 暂停的时长取决于进程写入内存的速率.</li>
+<li>对于终端用户设备(如笔记本电脑), 执行可能随时被暂停, 也可能随时被恢复. 例如, 用户盖上笔记本.</li>
+<li>当操作系统上下文切换到另一个线程时, 或管理程序切换到其他虚拟机时, 当前运行的线程随时会被暂停. 花费在其他虚拟机的CPU时间称为<strong>steal time</strong>(窃取时间). 若机器处于高负荷下, 被暂停的线程需要很长时间才会被恢复(即大量线程在队列中排队)</li>
+<li>若应用程序执行同步磁盘访问, 则线程会因等待磁盘I&#x2F;O操作而被暂停. 即使代码中没有访问磁盘, 也可能随时磁盘访问, 例如, Java类加载器会在第一次使用时加载class文件. I&#x2F;O暂停和GC暂停也可能同时发生. 若磁盘是一个网络文件系统或网络块设备, I&#x2F;O延迟会进一步受到网络延迟的影响.</li>
+<li>若操作系统允许<strong>paging</strong>(页面交换), 每次内存访问都可能导致<strong>page fault</strong>(页面错误), 并将磁盘中页面加载到内存中. 执行I&#x2F;O操作时会暂停线程. 若内存压力过大, 则需将其他页面放回磁盘中. 极端情况下, 操作系统的绝大多数时间都在磁盘和内存之间来回搬运数据, 只有少部分时间用于工作(称为<strong>thrashing</strong>, 抖动). 为避免上述情况, 服务器会关闭页面调度(宁愿kill一个进程来释放内存, 也不愿看到抖动).</li>
+<li>向UNIX进程发送<strong>SIGSTOP</strong>信号可暂停进程. 例如, 在shell中按Ctrl-Z. 收到信号的进程将无法执行更多CPU周期, 直到收到SIGCONT信号才能恢复. 即使其他进程不发送SIGSTOP, 运维工程师也可能意外发送该信号.</li>
+</ul>
+<p>上述所有事件都随时可能<strong>prermpt</strong>(抢占)运行中的线程, 并在稍后恢复, 而线程无法注意到暂停. 该问题类似于多线程的线程安全: 无法对时序做出任何保证, 因为随时发生上下文切换或并发执行.<br>在单机上编写多线程代码时, 我们有很多保证线程安全的工具: mutexes, semaphores, atomic, counters, lock-free, blocking queue等数据结构. 然而这些工具不能直接用于分布式系统, 因为分布式系统没有共享内存, 消息只能通过网络传输.</p>
+<h3 id="3-4-1-Response-time-guarantees"><a href="#3-4-1-Response-time-guarantees" class="headerlink" title="3.4.1 Response time guarantees"></a>3.4.1 Response time guarantees</h3><p>在很多编程语言和操作系统中, 线程和进程可能被暂停任意时间. 只要投入足够精力, 这些暂停是可以被消除的. 某些软件的运行环境要求很高, 如果不能在特定时间内做出响应, 可能导致严重后果, 例如: 控制飞机, 火箭, 机器人, 汽车等, 系统必须对这些对象传感器的输入做出快速且可预测的响应. 这些系统的软件必须有一个特定的<strong>deadline</strong>(截止时间); 若无法在截止日期前完成, 可能导致整个系统的崩溃, 称为<strong>hard real-time system</strong>(硬实时系统).<br>例如, 当车辆传感器检测到碰撞时, 必须保证安全气囊及时弹出, 而不是因GC暂停而延迟弹出.<br>这种实时保证需要每一级软件栈的支持: 一个<strong>real-time operating system</strong>(RTOS, 实时操作系统)能保证在一定时间内CPU时间的分配; 库函数必须标注最坏情况下的执行时间; 动态内存分配会受到限制或禁止(实时垃圾收集依然存在, 但应用必须确保其不会给GC太大压力); 还需大量测试和测量以确保达成保证.<br>所有这些都需大量工作, 严重限制了可用的编程语言, 库, 和工具(因为绝大多数语言和工具都不提供实时保证). 出于上述原因, 开发一个实时系统代价昂贵, 因此主要用于安全要求较高的嵌入式设备. 而且&quot;实时&quot;并不等于&quot;高性能&quot;, 由于实时系统需保证及时响应, 其吞吐量往往更低.<br>对于大多数服务器端的数据处理系统, 实时保证既不划算也不合适. 系统必须能忍受非实时环境中的暂停和时钟不稳定性.</p>
+<h3 id="3-4-2-Limiting-the-impact-of-garbage-collection"><a href="#3-4-2-Limiting-the-impact-of-garbage-collection" class="headerlink" title="3.4.2 Limiting the impact of garbage collection"></a>3.4.2 Limiting the impact of garbage collection</h3><p>即使不借助实时调度保证, 也可以缓解进程暂停的影响. 语言运行时在计划垃圾收集时拥有一定灵活性, 因为它可以跟踪对象分配的速率, 还有剩余的空闲内存.<br>其实可将GC暂停视为一个短暂且计划内的节点中断, 并让其他节点在该节点进行垃圾收集时接管工作. 若runtime能提醒应用即将有一个GC暂停, 应用可停止向该节点发送新的请求, 等待其处理未完成的请求, 然后在没有请求时进行GC. 这种方法可向客户端隐藏GC暂停, 并降低响应时间的高百分比. 对于延迟敏感的金融交易系统会使用这种方法.<br>该方法还有一个变体: 只对存活时间较短的对象使用垃圾收集(可快速回收), 并定期重启进程(避免garbage collector花费大量时间回收长期存在的对象). 每次重启一个节点, 并在重启前将流量转移到其他节点, 就像滚动升级.<br>这些方法都不能完全避免垃圾收集暂停, 但可减少其对应用的影响.</p>
+<h2 id="4-Knowledge-Truth-and-Lies"><a href="#4-Knowledge-Truth-and-Lies" class="headerlink" title="4. Knowledge, Truth, and Lies"></a>4. Knowledge, Truth, and Lies</h2><p>迄今为止, 我们已经讨论了分布式系统与单机程序的不同: 没有共享内存, 只能通过可变延迟的不可靠网络传输消息, 系统会遭遇部分失效, 不可靠的时钟, 和处理暂停.<br>如果不习惯分布式系统, 上述问题的影响会让人十分困惑. 网络上的节点无法明确任何事, 只能通过网络传回的消息猜测. 节点间只能通过交换消息来推断对方的状态(存储了什么数据, 是否正确运行等). 若没有响应, 则无法知道其状态, 因为无法辨别是网络问题还是节点问题.<br>对这类系统的讨论类似于哲学: 系统中什么是真, 什么是假? 如果感知和测量都是不可靠的, 我们又如何相信所得的知识? 软件系统是否应该遵循我们对物理世界的期望, 如因果关系.<br>在分布式系统中, 我们可以对于行为(系统模型)做出假设, 并以符合假设为目的来设计系统. 特定系统模型中, 算法是可被证明在某个系统模型中正确工作. 这意味着, 即使底层系统模型提供了较少的保证, 也可实现可靠的行为.</p>
+<h3 id="4-1-The-Truth-Is-Defined-by-the-Majority"><a href="#4-1-The-Truth-Is-Defined-by-the-Majority" class="headerlink" title="4.1 The Truth Is Defined by the Majority"></a>4.1 The Truth Is Defined by the Majority</h3><p>假设存在一个非对称故障的网络: 节点可接受到所有其他节点传来的消息, 但该节点发出的消息会被丢弃或延迟. 即使该节点运行正常, 且一直接收其他节点的请求, 其他节点也无法收到响应. 一段时间后, 其他节点会宣判该节点死亡.<br>半断开的节点可能注意到, 其所发送的消息没有被其他节点确认, 并意识到存在网络故障. 然而该节点已被其他节点宣判死亡, 该节点对此也无能为力.<br>假设某个节点经历了一个长时间的垃圾收集暂停, 节点内的所有线程都因GC而暂停一分钟, 没有任何请求被处理, 也未发送任何消息. 其他节点等待并重试后, 最终宣判该节点死亡. 当GC完成时, 节点内的线程恢复运行, 好似什么都未发生. 然而其他节点会感到惊讶, 因为被宣判死亡的节点传回了消息. GC后的节点甚至没有意识到已经度过了一分钟, 从自身的角度来看, 几乎没有经过任何时间.<br>上述情况表明, 节点无法完全相信自己的判断. 分布式系统也不能完全依赖单个节点, 因为节点随时可能失效, 并让整个系统卡住. 因此, 许多分布式算法依赖于<strong>quorum</strong>(法定人数), 即节点间进行投票: 为减少特定节点的依赖, 决策需多个节点的最少投票数.<br>决策可以做很多事, 其中包括宣判某个节点死亡. 若法定数量的节点认为某个节点死亡, 即使该节点自认为存活, 也会被认为已死, 节点必须服从投票决策.<br>最常见的法定人数为超过一半的绝对多数. 即使单个节点发生故障, 多数法定人数也可保证系统继续工作(3个节点时, 可容许1个节点失效; 5个节点时, 可容许2个节点失效).</p>
+<h4 id="4-1-1-The-leader-and-the-lock"><a href="#4-1-1-The-leader-and-the-lock" class="headerlink" title="4.1.1 The leader and the lock"></a>4.1.1 The leader and the lock</h4><p>系统中某些事物只能同时存在一个, 例如:</p>
+<ul>
+<li>一个数据库分区的leader只能有一个节点, 以避免<strong>split brain</strong>(脑裂)</li>
+<li>特定资源的锁或对象只允许一个事务或客户端拥有, 以避免同时写入和数据损坏</li>
+<li>一个用户名只能由一个用户注册, 因为用户名用于唯一标识某个用户</li>
+</ul>
+<p>实现分布式系统时需要注意: 节点认为自己是被选中的人(分区的leader, 锁的拥有者, 请求的处理者), 然而这并不意味着法定人数的节点同意. 节点可能曾经是leader, 但被其他节点宣判死亡(因网络中断或GC暂停), 则其可能已经被降级, 并由另一个leader替代.<br>若大多数节点宣判其死亡, 但该节点仍表现依旧, 则会导致很多问题. 该节点会向其他节点发送消息, 若其他节点相信了, 整个系统都会出错.<br><img src="/images/System-Design/DDIA/ch-8-4.png" alt="Incorrect implementation of a distributed lock: client 1 believes that it still has a valid lease, even though it has expired, and thus corrupts a file in storage"></p>
+<p>上图中, 不正确的锁实现会导致数据损坏(该bug曾出现在HBase中). 假设我们希望存储设备中的文件在同一时间只能被一个客户端访问, 客户端需要在访问文件前从lock service获得一个lease(租约).<br>若持有lease的客户端被暂停很久, 暂停期间lease已经过期, 而另一个客户端已经获得该文件的lease并开始访问文件. 当第一个客户端恢复运行时, 会认为自己的lease依然生效, 写入文件将导致数据损坏.</p>
+<h4 id="4-1-2-Fencing-tokens"><a href="#4-1-2-Fencing-tokens" class="headerlink" title="4.1.2 Fencing tokens"></a>4.1.2 Fencing tokens</h4><p>当使用lock或lease来保护资源的访问时, 需防止误认为自己lease依然生效的节点继续访问资源. 实现这一目标的技术称为<strong>fencing</strong>(防护), 如下图:<br><img src="/images/System-Design/DDIA/ch-8-5.png" alt="Making access to storage safe by allowing writes only in the order of increasing fencing tokens"></p>
+<p>Lock service不仅授予lock或lease, 还会返回一个<strong>fencing token</strong>(防护令牌), 该token是一个单调递增的数值, 每次授予时会自增. 当客户端访问存储设备时, 必须携带这个token.<br>上图中, 客户端1持有的lease的token为33, 但在暂停期间而过期. 客户端2持有的lease的token为34, 并向存储设备发送写请求. 之后客户端1恢复运行并向存储设备发送写请求. 然而, 存储设备已经记录了一个更高的token(34), 因此会拒绝token为33的请求.<br>若将ZooKeeper作为lock service, 可将事务ID <strong>zxid</strong>或节点版本号<strong>cversion</strong>作为token, 因为这些值都保证单调递增.<br>该机制需要资源本身去检查token, 并拒绝较小token的请求, 不能只依赖客户端自身检查lease是否过期. 对于不支持token的资源, 也可通过其他方法解决(例如, 对于文件存储服务, 可将token放在文件名中).<br>服务器端检查token看起来像是个缺点, 但其实是件好事: 服务不应假设客户端做出行为总是正确的, 因为使用客户端的人与运维服务的人的目的不同, 需防止个别客户端的滥用服务.</p>
+<h3 id="4-2-Byzantine-Faults"><a href="#4-2-Byzantine-Faults" class="headerlink" title="4.2 Byzantine Faults"></a>4.2 Byzantine Faults</h3><p>Fencing token可检测和阻止错误节点(节点未发现lease已过期). 然而, 若节点有意破坏, 可使用假token来发送消息.<br>目前为止, 我们假设节点不可靠, 但一定是诚实的: 节点可能响应缓慢或不回复(由于发生错误), 状态可能是过时的(由于GC暂停或网络延迟), 但节点的所有回应一定不是谎话: 节点按照协定规定扮演着自己的角色.<br>如果节点可能撒谎, 分布式系统的问题会更加复杂. 例如, 节点谎称没有收到消息. 这种行为称为<strong>Byzantine fault</strong>(拜占庭故障), 在不信任的环境下达成共识的问题被称为<strong>Byzantine Generals Problem</strong>(拜占庭将军问题).<br>即使某些节点发生故障, 不遵守协议, 或恶意攻击, 干扰网络, 系统仍能正确工作, 则该系统称为<strong>Byzantine fault-tolerant</strong>(拜占庭容错)的. 特定情况下, 这种担忧是有意义的:</p>
+<ul>
+<li>在航空航天环境中, 内存或CPU寄存器中的数据可能因辐射而被损坏, 导致以不可预料的方式响应其他节点: 由于这种故障代价很大(例如, 飞机坠毁导致人员伤亡, 火箭与国际空间站相撞), 飞行控制系统必须容忍拜占庭故障.</li>
+<li>对于多个机构参与的系统, 某些参与者可能会欺骗他人. 因此节点无法完全相信其他节点, 因为消息可能出于恶意目的而发送的. P2P网络(对等网络)可在不依赖中心机构的基础上(如Bitcoin)让互不信任的双方同意交易是否发生.</li>
+</ul>
+<p>本书假设系统中没有拜占庭故障. 数据中心内所有节点都由自己控制, 辐射水平很低, 且内存故障不是大问题. 让系统实现拜占庭容错的协议十分复杂, 而且可以容错的嵌入式系统依赖于硬件支持. 对于大多数数据系统, 部署拜占庭式容错的成本过高.<br>Web应用程序需防止来自客户端的恶意行为, 因为终端由用户控制(如浏览器). 这就是为什么网页需要输入验证, 数据清洗, 和输出转义: 为防止SQL注入和跨站点脚本. 通常我们不会使用拜占庭容错协议, 而是让服务器来决定是否允许客户端的行为. 对于P2P网络, 由于没有一个权威中心, 因此拜占庭容错更重要.<br>软件中的bug也会被视为拜占庭式错误, 但若将软件部署到所有节点上, 拜占庭容错算法也无法防止这类问题. 绝大多数拜占庭容错算法要求超过$2&#x2F;3$的节点正常运行(假设有四个节点, 最多只能有一个节点失效). 为防止软件bug, 至少需要四个独立实现的相同软件, 并期望bug只出现在其中一个实现中.<br>能够免受漏洞, 安全渗透和恶意攻击的协议并不存在: 在绝大多数系统中, 若攻击者可渗透一个节点, 那么就可以渗透所有节点, 因为它们可能运行着相同的软件. 因此, 传统机制(认证, 访问控制, 加密, 防火墙等)仍是抵御攻击者的主要保护措施.</p>
+<h4 id="4-2-1-Weak-forms-of-lying"><a href="#4-2-1-Weak-forms-of-lying" class="headerlink" title="4.2.1 Weak forms of lying"></a>4.2.1 Weak forms of lying</h4><p>虽然我们假设节点都说实话, 但仍可为系统添加一些机制来防止一些撒谎(如硬件问题, 软件bug, 和错误配置). 这种保护机制并不是完全的拜占庭容错, 但实现简单, 且能提高可靠性. 例如:</p>
+<ul>
+<li>网络, 操作系统, 驱动或路由器内的问题会导致数据包损坏. 通常来说, TCP和UDP的内置checksum会检测到数据损坏, 但也有小概率逃脱检查. 对于这种数据损坏, 检测方法很简单, 在应用层面协议添加一个checksum.</li>
+<li>可公开访问的应用程序必须仔细检查用户输入, 例如, 输入值是否在合理范围内, 检查字符串大小以防止超出内存. 防火墙后的内部服务不用严格检查输入, 但可以采取一些合理性检查.</li>
+<li>NTP客户端可配置多个服务器地址. 同步时钟时, 客户端会联系所有服务器, 估算偏差, 并检查大多数服务器是否对某个时间范围达成一致. 只要大多数服务器没问题, 就可排除配置错误的NTP服务器. 使用多个NTP服务器比单个服务器更健壮.</li>
+</ul>
+<h3 id="4-3-System-Model-and-Reality"><a href="#4-3-System-Model-and-Reality" class="headerlink" title="4.3 System Model and Reality"></a>4.3 System Model and Reality</h3><p>分布式系统内的算法不应过度依赖硬件或软件配置. 这要求我们将系统中可能出现的错误形式化. 通过定义一个<strong>system model</strong>(系统模型)可做到这一点, 用于描述算法可以假设的事情.<br>关于时序假设, 以下三种系统模型最常用:</p>
+<ul>
+<li>Synchronous model(同步模型): 假设网络延迟, 进程暂停, 和时钟误差都是<strong>bounded</strong>(有界的). 这并不意味着完全同步的时钟或零网络延迟, 只表示网络延迟, 暂停, 和时钟漂移不会超过某个固定上限. 对于大多数系统, 由于总会发生无上限的延迟和暂停, 这种模型很难实现.</li>
+<li>Partially synchronous model(部分同步模型): 大部分情况下和同步模型一样, 但有时网络延迟, 进程暂停, 时钟漂移会超出界限. 这就是大多数系统的模型: 大多数时间中网络和进程都表现正常, 但任何时候都会打破时序假设, 这时网络延迟, 暂停, 时钟错误会非常大.</li>
+<li>Asynchronous model(异步模型): 不对时序做任何假设, 甚至没有任何时钟(因此不能使用超时). 异步模型的算法非常受限.</li>
+</ul>
+<p>除了时序问题, 还要考虑节点失效. 以下是三种最常用的节点系统模型:</p>
+<ul>
+<li>Crash-stop faults(崩溃-停止故障): 该模型中, 节点只有一种失效方式, 就是<strong>crushing</strong>(崩溃). 这意味着, 节点会突然停止回应, 且永远不会上线.</li>
+<li>Crash-recovery faults(崩溃-恢复故障): 该模型中, 节点会随时崩溃, 且会在之后恢复运行. 这里假设节点具有稳定的存储(非易失性磁盘存储)且会在崩溃时保存数据, 而内存中的状态会丢失.</li>
+<li>Byzantine faults(拜占庭故障): 节点可做任何事情, 包括欺骗其他节点.</li>
+</ul>
+<p>对于真实系统的建模, 具有<strong>crash-recovery</strong>的部分同步模型是最合适的模型. 但分布式算法如何应对这种模型?</p>
+<h4 id="4-3-1-Correctness-of-an-algorithm"><a href="#4-3-1-Correctness-of-an-algorithm" class="headerlink" title="4.3.1 Correctness of an algorithm"></a>4.3.1 Correctness of an algorithm</h4><p>为了定义算法的<strong>正确性</strong>, 需先描述算法的<strong>properties</strong>(属性). 例如, 排序算法的输出具有的属性: 任意两个元素, 左侧的元素小于右侧的元素. 这只是定义排序列表的一种形式.<br>因此, 我们也可以定义分布式算法的属性, 以此定义正确性. 例如, 当为lock生成fencing token时, 所需的算法应具有以下属性:</p>
+<ul>
+<li>Uniqueness(唯一性): 任意两个token必须是不同值</li>
+<li>Monotonic sequence(单调序列): 若请求x返回token $t_{x}$, 请求y返回token $t_{y}$, 且x在y开始之前已经完成, 则$t_{x} &lt; t_{y}$</li>
+<li>Availability(可用性): 若请求token的节点没有崩溃, 则最终会收到响应</li>
+</ul>
+<p>如果一个算法在任何情况下总能满足属性, 那么这个算法就是正确的. 但这又有何意义? 若所有节点崩溃, 或所有网络延迟都无限长, 那么没有算法能完成任何事情.</p>
+<h4 id="4-3-2-Safety-and-liveness"><a href="#4-3-2-Safety-and-liveness" class="headerlink" title="4.3.2 Safety and liveness"></a>4.3.2 Safety and liveness</h4><p>为了澄清这种情况, 需区分两种不同的属性: <strong>safety</strong>(安全)和<strong>liveness</strong>(活性). 其中, <strong>uniqueness</strong>(单一性)和<strong>monotonic sequence</strong>(单调序列)是安全属性, 而<strong>availability</strong>(可用性)则是活性属性.<br>如何区分这两种属性? 活性属性通常在定义中包含<strong>eventually</strong>(最终)一词, 最终一致性就是活性属性.<br>安全的非正式定义为: 没有坏事发生. 而活性定义为: 好事终将发生. 但好和坏是主观的, 安全和活性的实际定义为:</p>
+<ul>
+<li>若违反了安全属性, 则我们可找到一个破坏安全属性的时间点. 例如, 若违背了唯一性属性, 则可以确定重复的fencing token被返回的特定操作. 违法安全属性后, 违规操作无法撤销, 因为损失已经发生.</li>
+<li>活性属性则反过来: 某个时间点可能不成立(例如, 节点发送请求后一直收不到响应), 但总是希望之后能成立(接收到响应).</li>
+</ul>
+<p>之所以区分安全属性和活性属性, 是为了处理困难的系统模型. 对于分布式算法, 在系统模型的所有情况下, 通常要求其一直保证安全属性. 也就是说, 即使所有节点崩溃, 或整个网络瘫痪, 算法仍必须确保其不会返回错误结果.<br>然而, 对于活性属性, 我们可提出一些注意事项: 例如, 只有大多数节点未崩溃时, 或只有当网络恢复时, 我们才能说请求需要接收响应. 部分同步模型的定义要求系统最终必须回到同步状态, 即任何网络中断只会持续一段时间, 最终都会恢复.</p>
+<h4 id="4-3-3-Mapping-system-models-to-the-real-world"><a href="#4-3-3-Mapping-system-models-to-the-real-world" class="headerlink" title="4.3.3 Mapping system models to the real world"></a>4.3.3 Mapping system models to the real world</h4><p>安全属性, 活性属性, 以及系统模型对于验证分布式算法的正确性非常有用. 然而实践算法时, 现实中会出现更加复杂的情况, 系统模型只是对现实的简化抽象.<br>例如, 在crash-recovery模型中, 算法通常假设存储设备中的数据在崩溃时依然保留. 但若磁盘中的数据损坏, 或由于硬件错误导致数据被抹除, 又会发生什么? 若服务器存在固件错误且在重启后无法识别硬盘驱动器, 又会发生什么?<br>法定人数算法需要节点记住其声称保存过的数据. 若某个节点忘记了之前存储的数据, 则会破坏法定人数的前提条件, 并因此破坏算法的正确性. 或许需要一个新的系统模型, 该模型假设大部分情况下存储设备在崩溃后仍保留数据, 但有时会丢失数据, 但这种模型更难推理.<br>算法的理论描述会假设某些事情不会发生, 在非拜占庭系统中, 我们需要对可能发生和不可能发生的故障做出假设. 然而在真实世界中, 仍会出现一些&quot;不可能发生&quot;的故障.<br>但抽象的系统模型并非毫无用处, 恰恰相反, 这些模型可将实际系统的复杂性提取成一个个可推理, 可处理的错误类型, 以便我们理解这个问题.<br>证明一个算法正确并不意味着它在现实系统中的实现就能如愿以偿. 但这迈出了很好的第一步, 因为理论分析可将隐藏在系统中的问题暴露出来, 这些问题通常会在异常环境中打破假设并暴露出来.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Distributed-System/">Distributed System</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/da42.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Consistency and Consensus</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/4e8.html">
+        <span class="next-text nav-default">Transactions</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/1a83.html';
+  var disqus_title = "The Trouble with Distributed Systems";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

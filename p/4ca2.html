@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="VLSM (Variable-Length Subnet Mask)"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/4ca2.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/4ca2.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/4ca2.html"/>
+
+
+<meta name="description" content="1. 特定网络需求的满足每个IPv4可拆分为网络部分(network part)和主机部分(host part), 分为了A, B, C, D, E五类:    Class Network Part Octet Private Address    A 0xxxxxxx 0.x.x.x - 127.x.x.x 10.0.0.0 – 10.255.255.255  127.0.0.0 - 127.2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VLSM (Variable-Length Subnet Mask)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/4ca2.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 特定网络需求的满足每个IPv4可拆分为网络部分(network part)和主机部分(host part), 分为了A, B, C, D, E五类:    Class Network Part Octet Private Address    A 0xxxxxxx 0.x.x.x - 127.x.x.x 10.0.0.0 – 10.255.255.255  127.0.0.0 - 127.2">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/VLSM/3.1_1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/VLSM/3.2_1.png">
+<meta property="article:published_time" content="2017-06-13T23:54:27.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.045Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/VLSM/3.1_1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+VLSM (Variable-Length Subnet Mask) - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%89%B9%E5%AE%9A%E7%BD%91%E7%BB%9C%E9%9C%80%E6%B1%82%E7%9A%84%E6%BB%A1%E8%B6%B3"><span class="toc-text">1. 特定网络需求的满足</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Subnetting-%E5%AD%90%E7%BD%91%E5%88%92%E5%88%86"><span class="toc-text">2. Subnetting(子网划分)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Subnet-Mask-%E5%AD%90%E7%BD%91%E6%8E%A9%E7%A0%81"><span class="toc-text">2.1 Subnet Mask(子网掩码)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Example"><span class="toc-text">2.2 Example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-VLSM"><span class="toc-text">3. VLSM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Example"><span class="toc-text">3.1 Example</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Steps-to-determine-subnet-address"><span class="toc-text">3.2 Steps to determine subnet address</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Route-Summarization-%E8%B7%AF%E7%94%B1%E6%B1%87%E6%80%BB"><span class="toc-text">4. Route Summarization(路由汇总)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E8%B7%AF%E7%94%B1%E5%8C%B9%E9%85%8D%E8%A7%84%E5%88%99"><span class="toc-text">4.1 路由匹配规则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%B1%87%E6%80%BB"><span class="toc-text">4.2 汇总</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%B1%87%E6%80%BB%E7%9A%84%E7%BC%BA%E9%99%B7"><span class="toc-text">4.3 汇总的缺陷</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          VLSM (Variable-Length Subnet Mask)
+        
+      </h1>
+      <time class="post-time">
+          06/13/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-特定网络需求的满足"><a href="#1-特定网络需求的满足" class="headerlink" title="1. 特定网络需求的满足"></a>1. 特定网络需求的满足</h2><p>每个IPv4可拆分为网络部分(network part)和主机部分(host part), 分为了A, B, C, D, E五类:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Network Part</th>
+<th>Octet</th>
+<th>Private Address</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>0xxxxxxx</td>
+<td>0.x.x.x - 127.x.x.x</td>
+<td>10.0.0.0 – 10.255.255.255  127.0.0.0 - 127.255.255.255</td>
+</tr>
+<tr>
+<td>B</td>
+<td>10xxxxxx xxxxxxxx</td>
+<td>128.x.x.x - 191.x.x.x</td>
+<td>172.16.0.0 – 172.31.255.255  169.254.0.0 - 169.254.255.255</td>
+</tr>
+<tr>
+<td>C</td>
+<td>110xxxxx xxxxxxxx xxxxxxxx</td>
+<td>192.x.x.x - 223.x.x.x</td>
+<td>192.168.0.0 – 192.168.255.255</td>
+</tr>
+<tr>
+<td>D</td>
+<td>N&#x2F;A</td>
+<td>224.x.x.x to 239.x.x.x</td>
+<td>N&#x2F;A</td>
+</tr>
+<tr>
+<td>E</td>
+<td>N&#x2F;A</td>
+<td>240.x.x.x to 255.x.x.x</td>
+<td>N&#x2F;A</td>
+</tr>
+</tbody></table>
+<p>由于D类IP用于组播地址, E类IP用于未来和实验使用, 所以并不能用于公网(public network)中.<br>以一个B类地址为例: <code>172.16.0.0</code>, 需要将这个网段分给200台主机, 其中100台给A部门, 100台给B部门. 由于B类地址的host part有16位, 所以可用的IP地址有6万多个, 如果只把这个网段的IP地址分给这200台主机就过于浪费IP地址.</p>
+<h2 id="2-Subnetting-子网划分"><a href="#2-Subnetting-子网划分" class="headerlink" title="2. Subnetting(子网划分)"></a>2. Subnetting(子网划分)</h2><p>子网划分的意义在于从host part中借某些IP address作为subnet. 以上述为例, 可将<code>172.16.0.0</code>拆分为多个subnet已达到节约IP address的目的. 并且, subnet可再拆分为多个subnet</p>
+<h3 id="2-1-Subnet-Mask-子网掩码"><a href="#2-1-Subnet-Mask-子网掩码" class="headerlink" title="2.1 Subnet Mask(子网掩码)"></a>2.1 Subnet Mask(子网掩码)</h3><p>由于subnet的存在, 某IP address中的host part并不能表示出该IP address所处在的subnet, 这时就需要subnet mask来表示全新的network part和host part</p>
+<table>
+<thead>
+<tr>
+<th>128</th>
+<th>64</th>
+<th>32</th>
+<th>16</th>
+<th>8</th>
+<th>4</th>
+<th>2</th>
+<th>1</th>
+<th>Subnet Mask</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>128</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>192</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>224</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>240</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>248</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>252</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>254</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>255</td>
+</tr>
+</tbody></table>
+<p>上面为8位bits所表示的subnet mask, 以下是部分subnet mask</p>
+<table>
+<thead>
+<tr>
+<th>Prefix size</th>
+<th>Subnet mask</th>
+<th>Available subnets</th>
+<th>Usable hosts per subnet</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#x2F;24</td>
+<td>255.255.255.0</td>
+<td>1</td>
+<td>$2^8 - 2$</td>
+</tr>
+<tr>
+<td>&#x2F;25</td>
+<td>255.255.255.128</td>
+<td>2</td>
+<td>$2^7 - 2$</td>
+</tr>
+<tr>
+<td>&#x2F;26</td>
+<td>255.255.255.192</td>
+<td>4</td>
+<td>$2^6 - 2$</td>
+</tr>
+<tr>
+<td>&#x2F;27</td>
+<td>255.255.255.224</td>
+<td>8</td>
+<td>$2^5 - 2$</td>
+</tr>
+<tr>
+<td>&#x2F;28</td>
+<td>255.255.255.240</td>
+<td>16</td>
+<td>$2^4 - 2$</td>
+</tr>
+<tr>
+<td>&#x2F;29</td>
+<td>255.255.255.248</td>
+<td>32</td>
+<td>$2^3 - 2$</td>
+</tr>
+<tr>
+<td>&#x2F;30</td>
+<td>255.255.255.252</td>
+<td>64</td>
+<td>$2^2 - 2$</td>
+</tr>
+<tr>
+<td>&#x2F;31</td>
+<td>255.255.255.254</td>
+<td>128</td>
+<td>$2^1 - 2$</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-Example"><a href="#2-2-Example" class="headerlink" title="2.2 Example"></a>2.2 Example</h3><ul>
+<li>假如我们需要将<code>172.16.0.0/16</code>划分为100个subnet, 那么host part需要最大能有多少位?</li>
+<li>由于需要100个subnet, 那么起码需要7位network part($2^7 &#x3D; 128 &gt; 100$), 由于该private network已经有16位network part, 再加上需要的7位, network part总共需要23位, 所以剩下的host part最多能有9位.</li>
+</ul>
+<h2 id="3-VLSM"><a href="#3-VLSM" class="headerlink" title="3. VLSM"></a>3. VLSM</h2><p>可变长子网掩码可以通过不同掩码长度来满足subnet的不同IP address数量</p>
+<h3 id="3-1-Example"><a href="#3-1-Example" class="headerlink" title="3.1 Example"></a>3.1 Example</h3><p><img src="/images/Network/VLSM/3.1_1.png" alt="VLSM示例"></p>
+<p>上图中A, B, C三个subnet的host part有5位, 所以可容纳32个IP address. D, E两个subnet的host part有8位, 所以可容纳256个IP address. 两个网段的subnet mask不同可满足不同的IP address数量</p>
+<h3 id="3-2-Steps-to-determine-subnet-address"><a href="#3-2-Steps-to-determine-subnet-address" class="headerlink" title="3.2 Steps to determine subnet address"></a>3.2 Steps to determine subnet address</h3><ul>
+<li>假设IP Address: <code>192.168.221.37</code>, Subnet Mask: <code>/29</code>, 求Subnet的相关信息</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>将IP Address拆为二进制</td>
+<td>最后八位: 0010 0101</td>
+</tr>
+<tr>
+<td>2</td>
+<td>将Subnet Mask拆为二进制</td>
+<td>最后八位: 1111 1000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>将IP Address和Subnet Mask对齐</td>
+<td>0010 0101  1111 1000</td>
+</tr>
+<tr>
+<td>4</td>
+<td>将IP Address和Subnet Mask取与操作</td>
+<td>最后八位: 0010 0000</td>
+</tr>
+<tr>
+<td>5</td>
+<td>通过上述操作后得到的IP Address可得到如下信息</td>
+<td>Network Address: 192.168.221.32  Subnet Mask: 255.255.255.248  First host address: 192.168.221.33  Last host address: 192.168.221.38  Boardcast address: 192.168.221.39  Next Subnet: 192.168.221.40</td>
+</tr>
+</tbody></table>
+<ul>
+<li>假设IP Address: <code>172.16.139.46</code>, Subnet Mask: <code>/20</code>, 求Subnet的相关信息</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>将IP Address拆为二进制</td>
+<td>最后十六位: 1000 1011 0010 1110</td>
+</tr>
+<tr>
+<td>2</td>
+<td>将Subnet Mask拆为二进制</td>
+<td>最后十六位: 1111 0000 0000 0000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>将IP Address和Subnet Mask对齐</td>
+<td>1000 1011 0010 1110  1111 0000 0000 0000</td>
+</tr>
+<tr>
+<td>4</td>
+<td>将IP Address和Subnet Mask取与操作</td>
+<td>最后十六位: 1000 0000 0000 0000</td>
+</tr>
+<tr>
+<td>5</td>
+<td>通过上述操作后得到的IP Address可得到如下信息</td>
+<td>Network Address: 172.16.128.0  Subnet Mask: 255.255.240.0  First host address: 172.16.128.1  Last host address: 172.16.143.254  Boardcast address: 172.16.143.255  Next Subnet: 172.168.144.0</td>
+</tr>
+</tbody></table>
+<ul>
+<li>假设某Subnet为: <code>172.16.32.0/20</code>, 需要将该Subnet分出四个Subnet, 其中每个Subnet都有50个Host, 求Subnet的相关信息</li>
+</ul>
+<p><img src="/images/Network/VLSM/3.2_1.png" alt="VLSM示例2"></p>
+<p>可以看出, 这个网络中需要规划8个subnet, 其中1号到4号subnet分别需要两个IP Address, 分别对应两个路由器的一端, 而5号到8号subnet则分别需要50个IP Address.<br>划分子网时需先满足需要IP Address最多数量的子网, 该例中需要的最多IP Address为50个, 所以host part需要有6位($2^6 &#x3D; 64 &gt; 50$), 而<code>172.16.32.0</code>这个子网的mask为20位, 所以剩下可分配的host part为12位, 所以划分子网后剩下的network part为6位($32 - 20 - 6$)</p>
+<figure class="highlight tex"><table><tr><td class="code"><pre><span class="line">Subnetted Address: 172.16.32.0/20</span><br><span class="line">1010 1100 0001 0000 0010 0000 0000 0000</span><br><span class="line"></span><br><span class="line">VLSM Address: 172.16.32.0/26</span><br><span class="line"></span><br><span class="line">5st subnet: 最后16位: 0010 0000 0000 0000 172.16.32.0/26</span><br><span class="line">6st subnet: 最后16位: 0010 0001 0000 0000 172.16.32.64/26</span><br><span class="line">7st subnet: 最后16位: 0010 0010 0000 0000 172.16.32.128/26</span><br><span class="line">8st subnet: 最后16位: 0010 0011 0000 0000 172.16.32.192/26</span><br></pre></td></tr></table></figure>
+<p>剩下的4个subnet分别需要2个IP Address, 所以需要2位($2^2 &#x3D; 4 &gt; 2$)host part即可满足, 其他位都可以设为network part. 我们把<code>172.16.33.0/26</code>切分给<code>/30</code>.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Subnetted Address: 172.16.32.0/20</span><br><span class="line">1010 1100 0001 0000 0010 0000 0000 0000</span><br><span class="line"></span><br><span class="line">VLSM Address: 172.16.32.0/30</span><br><span class="line"></span><br><span class="line">1st subnet: 最后8位: 0011 0000 0000 0000 172.16.33.0/30</span><br><span class="line">2st subnet: 最后16位: 0011 0000 0000 0100 172.16.33.4/30</span><br><span class="line">3st subnet: 最后8位: 0011 0000 0000 1000 172.16.33.8/30</span><br><span class="line">4st subnet: 最后8位: 0011 0000 0000 1100 172.16.33.12/30</span><br></pre></td></tr></table></figure>
+<p>最后还剩下59个<code>/29</code>的subnet和12个<code>/30</code>的subnet</p>
+<h2 id="4-Route-Summarization-路由汇总"><a href="#4-Route-Summarization-路由汇总" class="headerlink" title="4. Route Summarization(路由汇总)"></a>4. Route Summarization(路由汇总)</h2><p>由于Router中的routing table需要记录所有路由信息来转发信息, 但是由于VLSM的mask, 导致routing table变得十分大, 转发的效率也变得很低, 这时就需要Route Summarization. 路由汇总有两个好处:</p>
+<ul>
+<li>减少向上游路由汇报的路由条目</li>
+<li>隐藏下游拓扑变动</li>
+</ul>
+<h3 id="4-1-路由匹配规则"><a href="#4-1-路由匹配规则" class="headerlink" title="4.1 路由匹配规则"></a>4.1 路由匹配规则</h3><ol>
+<li>Router在匹配IP Address时只比对subnet mask规定的位数<br>例如: <code>172.16.0.0/20</code>和<code>172.16.3.1/20</code>, 由于这两个IP Address的前20位一样, 所以Router认为是同一网段.</li>
+<li>Router按照最长匹配(long prefix match)的原则</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>IP Address</th>
+<th>Subnet Mask</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>192.16.5.33</td>
+<td>&#x2F;32</td>
+<td>Host</td>
+</tr>
+<tr>
+<td>192.16.5.32</td>
+<td>&#x2F;27</td>
+<td>Subnet</td>
+</tr>
+<tr>
+<td>192.16.5.0</td>
+<td>&#x2F;24</td>
+<td>Network</td>
+</tr>
+<tr>
+<td>102.16.0.0</td>
+<td>&#x2F;16</td>
+<td>Block of Networks</td>
+</tr>
+<tr>
+<td>0.0.0.0</td>
+<td>&#x2F;0</td>
+<td>Default</td>
+</tr>
+</tbody></table>
+<p><code>192.16.5.33</code>与下面的四组IP Address都匹配, 但是依照最长匹配原则, 还是会转发到<code>192.16.5.32</code>的subnet中</p>
+<h3 id="4-2-汇总"><a href="#4-2-汇总" class="headerlink" title="4.2 汇总"></a>4.2 汇总</h3><p>多个subnet中可能只有个别位有变化, 例如:</p>
+<table>
+<thead>
+<tr>
+<th>IP Address</th>
+<th>最后16位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>172.16.168.0&#x2F;24</td>
+<td>1010 1000 0000 0000</td>
+</tr>
+<tr>
+<td>172.16.169.0&#x2F;24</td>
+<td>1010 1001 0000 0000</td>
+</tr>
+<tr>
+<td>172.16.170.0&#x2F;24</td>
+<td>1010 1010 0000 0000</td>
+</tr>
+<tr>
+<td>172.16.171.0&#x2F;24</td>
+<td>1010 1011 0000 0000</td>
+</tr>
+<tr>
+<td>172.16.172.0&#x2F;24</td>
+<td>1010 1100 0000 0000</td>
+</tr>
+<tr>
+<td>172.16.173.0&#x2F;24</td>
+<td>1010 1101 0000 0000</td>
+</tr>
+<tr>
+<td>172.16.174.0&#x2F;24</td>
+<td>1010 1110 0000 0000</td>
+</tr>
+<tr>
+<td>172.16.175.0&#x2F;24</td>
+<td>1010 1111 0000 0000</td>
+</tr>
+</tbody></table>
+<p>上述几个subnet中只有22, 23, 24位在变化,其他的位数都没有改变, 所以可将这几个subnet的路由信息汇总为一条: <code>172.16.168.0/21</code></p>
+<h3 id="4-3-汇总的缺陷"><a href="#4-3-汇总的缺陷" class="headerlink" title="4.3 汇总的缺陷"></a>4.3 汇总的缺陷</h3><p>不连续的网络中汇总会导致上游路由对下游路由不够了解, 导致数据包走向不正确的subnet</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/3b60.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">VLAN</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/4513.html">
+        <span class="next-text nav-default">Markdown</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/4ca2.html';
+  var disqus_title = "VLSM (Variable-Length Subnet Mask)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

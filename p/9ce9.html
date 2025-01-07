@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="TCP handshake and Termination"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/9ce9.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/9ce9.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/9ce9.html"/>
+
+
+<meta name="description" content="1. Status of TCP connection1.1 TCP Handshake LISTEN: 等待connection request SYN-SENT: 发送connection request后等待ack SYN-RECEIVED: 收到connection request后已发出ack, 等待final ack来确认对面收到了发出的ack ESTABLISHED: 已建立conn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP handshake and Termination">
+<meta property="og:url" content="https://zaf1ro.github.io/p/9ce9.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Status of TCP connection1.1 TCP Handshake LISTEN: 等待connection request SYN-SENT: 发送connection request后等待ack SYN-RECEIVED: 收到connection request后已发出ack, 等待final ack来确认对面收到了发出的ack ESTABLISHED: 已建立conn">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-01-24T23:02:37.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.041Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+TCP handshake and Termination - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Status-of-TCP-connection"><span class="toc-text">1. Status of TCP connection</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-TCP-Handshake"><span class="toc-text">1.1 TCP Handshake</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-TCP-Termination"><span class="toc-text">1.2 TCP Termination</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Reaction-to-RST"><span class="toc-text">1.3 Reaction to RST</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-TCP-Handshake"><span class="toc-text">2. TCP Handshake</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Basic-3-Way-Handshake"><span class="toc-text">2.1 Basic 3-Way Handshake</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Simultaneous-Connection-Synchronization"><span class="toc-text">2.2 Simultaneous Connection Synchronization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Recovery-from-Old-Duplicate-SYN"><span class="toc-text">2.3 Recovery from Old Duplicate SYN</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Half-Open-Connection-Discovery"><span class="toc-text">2.4 Half-Open Connection Discovery</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Old-Duplicate-SYN-Initiate-a-Reset-on-two-Passive-Sockets"><span class="toc-text">2.5 Old Duplicate SYN Initiate a Reset on two Passive Sockets</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-TCP-Close"><span class="toc-text">3. TCP Close</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Normal-Close"><span class="toc-text">3.1 Normal Close</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Simultaneous-Close-Sequence"><span class="toc-text">3.2 Simultaneous Close Sequence</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          TCP handshake and Termination
+        
+      </h1>
+      <time class="post-time">
+          01/24/18
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Status-of-TCP-connection"><a href="#1-Status-of-TCP-connection" class="headerlink" title="1. Status of TCP connection"></a>1. Status of TCP connection</h2><h3 id="1-1-TCP-Handshake"><a href="#1-1-TCP-Handshake" class="headerlink" title="1.1 TCP Handshake"></a>1.1 TCP Handshake</h3><ol>
+<li>LISTEN: 等待connection request</li>
+<li>SYN-SENT: 发送connection request后等待ack</li>
+<li>SYN-RECEIVED: 收到connection request后已发出ack, 等待final ack来确认对面收到了发出的ack</li>
+<li>ESTABLISHED: 已建立connection, 可接收或发送数据</li>
+</ol>
+<h3 id="1-2-TCP-Termination"><a href="#1-2-TCP-Termination" class="headerlink" title="1.2 TCP Termination"></a>1.2 TCP Termination</h3><ol>
+<li>FIN-WAIT-1: 未收到过对方的FIN, 自己发出FIN后等待ACK</li>
+<li>FIN-WAIT-2: 此端发送完FIN并收到ACK, 等待对方发出FIN</li>
+<li>CLOSE-WAIT: 收到对方的FIN, 等待application的发送FIN请求</li>
+<li>CLOSING: 发出FIN后, 在收到ACK前收到对方的FIN</li>
+<li>LAST-ACK: 收到过对方的FIN, 发出FIN后等待ACK</li>
+<li>TIME-WAIT: 等待一段时间以确保对方收到了ACK</li>
+<li>CLOSED: 连接断开</li>
+</ol>
+<h3 id="1-3-Reaction-to-RST"><a href="#1-3-Reaction-to-RST" class="headerlink" title="1.3 Reaction to RST"></a>1.3 Reaction to RST</h3><p>TCP端的全部状态可分为两种:</p>
+<ol>
+<li>Non-synchronized state: SYN-SENT, SYN-RECEIVED</li>
+<li>Synchronized state: ESTABLISHED, FIN-WAIT-1, FIN-WAIT-2, CLOSE-WAIT, CLOSING, LAST-ACK, TIME-WAIT</li>
+</ol>
+<p>根据这两种情况, TCP端遇到RST时的处理方法分为两种:</p>
+<ol>
+<li>当 non-synchronized state 的TCP端收到RST时, 将切换到LISTEN状态</li>
+<li>当 synchronized state 的TCP端收到RST时, 将丢弃所有收到的数据, 并断开连接</li>
+</ol>
+<h2 id="2-TCP-Handshake"><a href="#2-TCP-Handshake" class="headerlink" title="2. TCP Handshake"></a>2. TCP Handshake</h2><h3 id="2-1-Basic-3-Way-Handshake"><a href="#2-1-Basic-3-Way-Handshake" class="headerlink" title="2.1 Basic 3-Way Handshake"></a>2.1 Basic 3-Way Handshake</h3><ol>
+<li>A和B都处于closed状态</li>
+<li>A向B发送 SYN<sub>A</sub></li>
+<li>B收到 SYN<sub>A</sub> 后向A回复 ACK<sub>A</sub> + SYN<sub>B</sub> (ACK<sub>A</sub> &#x3D; SYN<sub>A</sub> + 1)</li>
+<li>A收到 ACK<sub>A</sub> 后向A回复 ACK<sub>B</sub> (ACK<sub>B</sub> &#x3D; SYN<sub>B</sub> + 1)</li>
+<li>A发送 ACK<sub>B</sub>+Data 到B (ACK<sub>B</sub>不变)</li>
+</ol>
+<p>整个过程连接共发送了4个packet</p>
+<table>
+<thead>
+<tr>
+<th align="center">Step</th>
+<th align="center">TCP A status</th>
+<th align="center">Direction</th>
+<th align="center">Data</th>
+<th align="center">TCP B status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">CLOSED</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">CLOSED</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">SYN-SENT</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">ESTABLISHED</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=101&gt;&lt;CTL=SYN,ACK&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">ESTABLISHED</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=101&gt;&lt;ACK=301&gt;&lt;CTL=ACK&gt;</code></td>
+<td align="center">ESTABLISHED</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">ESTABLISHED</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=101&gt;&lt;ACK=301&gt;&lt;CTL=ACK&gt;&lt;DATA&gt;</code></td>
+<td align="center">ESTABLISHED</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-Simultaneous-Connection-Synchronization"><a href="#2-2-Simultaneous-Connection-Synchronization" class="headerlink" title="2.2 Simultaneous Connection Synchronization"></a>2.2 Simultaneous Connection Synchronization</h3><ol>
+<li>A和B都处于CLOSED状态</li>
+<li>A向B发送 SYN<sub>A</sub></li>
+<li>B在收到 SYN<sub>A</sub> 之前向A发送 SYN<sub>B</sub></li>
+<li>A收到 SYN<sub>B</sub> 后认为自己发送的 SYN<sub>A</sub> 未被收到, 因此发送向B SYN<sub>A</sub> + ACK<sub>B</sub></li>
+<li>B收到 SYN<sub>A</sub> 后认为自己发送的 SYN<sub>B</sub> 未被收到, 因此发送向A SYN<sub>B</sub> + ACK<sub>A</sub></li>
+<li>A收到B的 ACK<sub>A</sub> 后将状态调为ESTABLISHED</li>
+<li>B收到A的 ACK<sub>B</sub> 后将状态调为ESTABLISHED</li>
+</ol>
+<p>连接建立完成, 整个过程共发送了4个packet</p>
+<table>
+<thead>
+<tr>
+<th align="center">Step</th>
+<th align="center">TCP A status</th>
+<th align="center">Direction</th>
+<th align="center">Data</th>
+<th align="center">TCP B status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">CLOSED</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">CLOSED</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">SYN-SENT</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">....</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">SYN-RECEIVED</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">SYN_SENT</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">....</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">SYN-RECEIVED</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;ACK=301&gt;&lt;CTL=SYN,ACK&gt;</code></td>
+<td align="center">....</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">ESTABLISHED</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=101&gt;&lt;CTL=SYN,ACK&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td align="center">....</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=101&gt;&lt;ACK=301&gt;&lt;CTL=SYN,ACK&gt;</code></td>
+<td align="center">ESTABLISHED</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-Recovery-from-Old-Duplicate-SYN"><a href="#2-3-Recovery-from-Old-Duplicate-SYN" class="headerlink" title="2.3 Recovery from Old Duplicate SYN"></a>2.3 Recovery from Old Duplicate SYN</h3><ol>
+<li>A向B发送 SYN<sub>A</sub> </li>
+<li>B在收到 SYN<sub>A</sub>之前收到了SYN<sub>pre_A</sub></li>
+<li>B向A发送 ACK<sub>pre_A</sub></li>
+<li>A收到 ACK<sub>pre_A</sub> 后发现错误, 向B发送 RST<sub>pre_A</sub></li>
+<li>B收到 RST<sub>pre_A</sub> 后切换状态到 LISTEN, 并在收到 SYN<sub>A</sub>后向A发送ACK<sub>A</sub></li>
+<li>A收到 ACK<sub>A</sub> 后发送 SYN<sub>A</sub> + ACK<sub>B</sub>, 并切换到ESTABLISHED</li>
+<li>B收到 ACK<sub>B</sub> 后切换到ESTABLISHED</li>
+</ol>
+<p>整个过程共发送6个packet (其中包括old duplicate SYN)</p>
+<table>
+<thead>
+<tr>
+<th align="center">Step</th>
+<th align="center">TCP A status</th>
+<th align="center">Direction</th>
+<th align="center">Data</th>
+<th align="center">TCP B status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">CLOSED</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">CLOSED</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">SYN-SENT</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">....</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">....</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=90&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">????</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=91&gt;&lt;CTL=SYN,ACK&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">SYN-SENT</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=91&gt;&lt;CTL=RST&gt;</code></td>
+<td align="center">LISTEN</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">....</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td align="center">SYN-SENT</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=400&gt;&lt;ACK=101&gt;&lt;CTL=SYN,ACK&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">8</td>
+<td align="center">ESTABLISHED</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=101&gt;&lt;ACK=401&gt;&lt;CTL=ACK&gt;</code></td>
+<td align="center">ESTABLISHED</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-Half-Open-Connection-Discovery"><a href="#2-4-Half-Open-Connection-Discovery" class="headerlink" title="2.4 Half-Open Connection Discovery"></a>2.4 Half-Open Connection Discovery</h3><p>假设A和B之前已经建立了连接, 并且A已经向B发送了300字节, 还剩余100字节没有发送, 此时A断开.</p>
+<ol>
+<li>A在crash后重启socket并向B发送 SYN<sub>A</sub></li>
+<li>B由于并不知道A重启过, 所以回复 ACK<sub>300</sub> 希望获得剩余的100字节</li>
+<li>A收到B的 ACK 后发现连接错误, 向B发送 RST </li>
+<li>B收到A的 RST 后中断连接</li>
+<li>A重新向B发送 SYN<sub>A</sub>, 请求重新建立connection</li>
+</ol>
+<p>整个过程共发送4个packet</p>
+<table>
+<thead>
+<tr>
+<th align="center">Step</th>
+<th align="center">TCP A status</th>
+<th align="center">Direction</th>
+<th align="center">Data</th>
+<th align="center">TCP B status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">CRASH</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">SEND 300, RECEIVE 100</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">CLOSED</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">ESTABLISHED</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">SYN-SENT</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">???</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">!!!</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=100&gt;&lt;CTL=ACK&gt;</code></td>
+<td align="center">ESTABLISHED</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">SYN-SENT</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=RST&gt;</code></td>
+<td align="center">(ABORT!!!)</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">SYN-SENT</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">CLOSED</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">SYN-SENT</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">....</td>
+</tr>
+</tbody></table>
+<h3 id="2-5-Old-Duplicate-SYN-Initiate-a-Reset-on-two-Passive-Sockets"><a href="#2-5-Old-Duplicate-SYN-Initiate-a-Reset-on-two-Passive-Sockets" class="headerlink" title="2.5 Old Duplicate SYN Initiate a Reset on two Passive Sockets"></a>2.5 Old Duplicate SYN Initiate a Reset on two Passive Sockets</h3><ol>
+<li>A和B都处于LISTEN状态</li>
+<li>A之前发送的 SYN<sub>A</sub> 被B收到, B变为SYN-RECEIVED状态</li>
+<li>B向A发送 SYN<sub>B</sub> + ACK<sub>A</sub></li>
+<li>A收到B的 SYN+ACK 后发现连接出错, 向B发送 RST</li>
+<li>B收到RST后中断了连接, 并返回到LISTEN状态</li>
+</ol>
+<p>整个过程共发送3个packet (其中包括A之前发送的SYN)</p>
+<table>
+<thead>
+<tr>
+<th align="center">Step</th>
+<th align="center">TCP A status</th>
+<th align="center">Direction</th>
+<th align="center">Data</th>
+<th align="center">TCP B status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">LISTEN</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">LISTEN</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">....</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;CTL=SYN&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">????</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=101&gt;&lt;CTL=SYN,ACK&gt;</code></td>
+<td align="center">SYN-RECEIVED</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">????</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=101&gt;&lt;CTL=RST&gt;</code></td>
+<td align="center">(ABORT!!)</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">LISTEN</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">LISTEN</td>
+</tr>
+</tbody></table>
+<h2 id="3-TCP-Close"><a href="#3-TCP-Close" class="headerlink" title="3. TCP Close"></a>3. TCP Close</h2><h3 id="3-1-Normal-Close"><a href="#3-1-Normal-Close" class="headerlink" title="3.1 Normal Close"></a>3.1 Normal Close</h3><ol>
+<li>A传输完其所有数据后向B发送 FIN<sub>A</sub></li>
+<li>B收到 FIN<sub>A</sub> 后回复 ACK<sub>A</sub>, 表示已经知道A发送完毕</li>
+<li>B在发送完其数据后向A发送 FIN<sub>B</sub></li>
+<li>A收到 FIN<sub>B</sub> 后回复 ACK<sub>B</sub>, 并等待两个MSL后切换到CLOSED状态</li>
+<li>B收到 ACK<sub>B</sub> 后切换到CLOSED状态</li>
+</ol>
+<p>整个过程共发送4个packet. A之所以需要等待2个MSL, 因为B可能没有收到A的ACK, 此时B会重新发送FIN给A</p>
+<table>
+<thead>
+<tr>
+<th align="center">Step</th>
+<th align="center">TCP A status</th>
+<th align="center">Direction</th>
+<th align="center">Data</th>
+<th align="center">TCP B status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">ESTABLISED</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">ESTABLISHED</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">FIN-WAIT-1</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;ACK=300&gt;&lt;CTL=FIN,ACK&gt;</code></td>
+<td align="center">CLOSE-WAIT</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">FIN-WAIT-2</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=101&gt;&lt;CTL=FIN,ACK&gt;</code></td>
+<td align="center">CLOSE-WAIT</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">TIME-WAIT</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=101&gt;&lt;CTL=FIN,ACK&gt;</code></td>
+<td align="center">LAST-ACK</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">TIME-WAIT</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=101&gt;&lt;ACK=301&gt;&lt;CTL=FIN,ACK&gt;</code></td>
+<td align="center">CLOSED</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">CLOSED(AFTER 2 MSL)</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">CLOSED</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-Simultaneous-Close-Sequence"><a href="#3-2-Simultaneous-Close-Sequence" class="headerlink" title="3.2 Simultaneous Close Sequence"></a>3.2 Simultaneous Close Sequence</h3><ol>
+<li>A向B发送 FIN<sub>A</sub> + ACK</li>
+<li>B向A发送 FIN<sub>B</sub> + ACK</li>
+<li>B收到A的 FIN + ACK 后回复 ACK<sub>A</sub></li>
+<li>A收到B的 FIN + ACK 后回复 ACK<sub>B</sub></li>
+<li>A和B各自收到ACK后等待2个MSL, 直接切换到CLOSED状态</li>
+</ol>
+<p>整个过程共发送4个packet</p>
+<table>
+<thead>
+<tr>
+<th align="center">Step</th>
+<th align="center">TCP A status</th>
+<th align="center">Direction</th>
+<th align="center">Data</th>
+<th align="center">TCP B status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">FIN-WAIT-1</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;ACK=300&gt;&lt;CTL=FIN,ACK&gt;</code></td>
+<td align="center">....</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">....</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=100&gt;&lt;CTL=FIN,ACK&gt;</code></td>
+<td align="center">FIN-WAIT-1</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">....</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=100&gt;&lt;ACK=300&gt;&lt;CTL=FIN,ACK&gt;</code></td>
+<td align="center">CLOSING</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">CLOSING</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=300&gt;&lt;ACK=100&gt;&lt;CTL=FIN,ACK&gt;</code></td>
+<td align="center">....</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">CLOSING</td>
+<td align="center">---&gt;</td>
+<td align="center"><code>&lt;SEQ=101&gt;&lt;ACK=301&gt;&lt;CTL=ACK&gt;</code></td>
+<td align="center">CLOSING</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">CLOSING</td>
+<td align="center">&lt;---</td>
+<td align="center"><code>&lt;SEQ=301&gt;&lt;ACK=101&gt;&lt;CTL=ACK&gt;</code></td>
+<td align="center">CLOSING</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td align="center">CLOSED(After 2 MSL)</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">CLOSED(After 2 MSL)</td>
+</tr>
+</tbody></table>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/4865.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">LaTeX</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/ca38.html">
+        <span class="next-text nav-default">Hashtable</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/9ce9.html';
+  var disqus_title = "TCP handshake and Termination";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

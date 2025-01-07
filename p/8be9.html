@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="DP - Longest Common Subsequence"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/8be9.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/8be9.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/8be9.html"/>
+
+
+<meta name="description" content="1. Introduction该问题属于Longest common subsequence(最长公共子序列, 简称LCS)的问题描述为: 给定两个字符串$s1$和$s2$, $s1$的长度为$m$, $s2$的长度为$n$, 求他们的最长公共子序列.这里牵扯到subsequence的定义, 通常字符串有关的算法会涉及两种子集定义:  subsequence: 子序列, 从字符串$S$中将若干字符">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DP - Longest Common Subsequence">
+<meta property="og:url" content="https://zaf1ro.github.io/p/8be9.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction该问题属于Longest common subsequence(最长公共子序列, 简称LCS)的问题描述为: 给定两个字符串$s1$和$s2$, $s1$的长度为$m$, $s2$的长度为$n$, 求他们的最长公共子序列.这里牵扯到subsequence的定义, 通常字符串有关的算法会涉及两种子集定义:  subsequence: 子序列, 从字符串$S$中将若干字符">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-06-02T17:24:59.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.025Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+DP - Longest Common Subsequence - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Brute-Force"><span class="toc-text">2. Brute Force</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Dynamic-Programming"><span class="toc-text">Dynamic Programming</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Leetcode"><span class="toc-text">4. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1143-Longest-Common-Subsequence"><span class="toc-text">1143. Longest Common Subsequence</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#583-Delete-Operation-for-Two-Strings"><span class="toc-text">583. Delete Operation for Two Strings</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-1"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-1"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#97-Interleaving-String"><span class="toc-text">97. Interleaving String</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-2"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-2"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#72-Edit-Distance"><span class="toc-text">72. Edit Distance</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-3"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-3"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1458-Max-Dot-Product-of-Two-Subsequences"><span class="toc-text">1458. Max Dot Product of Two Subsequences</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-4"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-4"><span class="toc-text">Solution</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1092-Shortest-Common-Supersequence"><span class="toc-text">1092. Shortest Common Supersequence</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description-5"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution-5"><span class="toc-text">Solution</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          DP - Longest Common Subsequence
+        
+      </h1>
+      <time class="post-time">
+          06/02/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>该问题属于<br>Longest common subsequence(最长公共子序列, 简称<strong>LCS</strong>)的问题描述为: 给定两个字符串$s1$和$s2$, $s1$的长度为$m$, $s2$的长度为$n$, 求他们的最长公共子序列.<br>这里牵扯到<strong>subsequence</strong>的定义, 通常字符串有关的算法会涉及两种子集定义:</p>
+<ul>
+<li>subsequence: 子序列, 从字符串$S$中将若干字符提取出来, 且不改变字符相对位置的序列, 因此字符不连续但顺序不变</li>
+<li>substring: 字串, 表示字符串$S$中从$i$到$j$的一段子字符串, 字符连续且顺序不变</li>
+</ul>
+<p>例如, $s1 &#x3D; zabcde$, $s2 &#x3D; acez$, 则s1和s2的公共子序列为<code>$ace$</code>.</p>
+<h2 id="2-Brute-Force"><a href="#2-Brute-Force" class="headerlink" title="2. Brute Force"></a>2. Brute Force</h2><p>暴力算法的思路为: 穷举$s1$和$s2$的所有子序列, 并找到最长的相同序列.</p>
+<h2 id="Dynamic-Programming"><a href="#Dynamic-Programming" class="headerlink" title="Dynamic Programming"></a>Dynamic Programming</h2><p>子序列的本质在于选或不选当前字符对. 假设从后向前遍历$s1$和$s2$, 对于$s1$的第$i$个字符和$s2$的第$j$个字符, 有以下四种选择:</p>
+<ul>
+<li>选$s1[i]$, 也选$s2[j]$: 子问题变为求$s1$的前$i-1$个字符和$s2$的前$j-1$个字符的最长公共子序列</li>
+<li>不选$s1[i]$, 也不选$s2[j]$: 子问题变为求$s1$的前$i-1$个字符和$s2$的前$j-1$个字符的最长公共子序列</li>
+<li>选$s1[i]$, 不选$s2[j]$: 子问题变为求$s1$的前$i$个字符和s2的前$j-1$个字符的最长公共子序列</li>
+<li>选$s2[j]$, 不选$s1[i]$: 子问题变为求$s1$的前$i-1$个字符和s2的前$j$个字符的最长公共子序列</li>
+</ul>
+<p>可以发现, 无论哪种情况都会缩短$s1$或$s2$的长度, 因此用动态规划解决该问题时步骤如下:</p>
+<ol>
+<li><p>划分阶段: 按照$s1$和$s2$的坐标进行阶段划分</p>
+</li>
+<li><p>定义状态: $s1$的坐标$i$和$s2$的坐标$j$, 定义一个二维数组$dp[i][j]$, 第一维表示$s1$的前$i$个字符, 第二维表示$s2$的前$j$个字符, 二维数组的值表示$s1$的前$i$个字符和$s2$的前$j$个字符组成的的最长公共子序列.</p>
+</li>
+<li><p>状态转移方程: 根据上述不同选择情况, 该算法的状态转移方程可写为:<br> $$<br> dp[i][j] &#x3D;<br> \begin{cases}<br> max(dp[i-1][j], dp[i][j-1], dp[i-1][j-1] + 1), &amp; s1[i] &#x3D; s2[j] \\[2ex]<br> max(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]), &amp; s1[i] \ne s2[j]<br> \end{cases}<br> $$</p>
+<p> 上述状态转移方程存在两点可以优化:</p>
+<ul>
+<li>当$s1[i] &#x3D; s2[j]$时, 不需要跳过$s1[i]$或$s2[j]$, 因为<code>跳过字符</code>并不能获得比<code>不跳过</code>更长的公共子序列</li>
+<li>当$s1[i] &#x3D; s2[j]$时, 不需要跳过$s1[i]$和$s2[j]$, 因为$dp[i-1][j]$和$dp[i][j-1]$已包含$dp[i-1][j-1]$的情况</li>
+</ul>
+<p> 简化后的状态转移方程如下:<br> $$<br> dp[i][j] &#x3D;<br> \begin{cases}<br>     dp[i-1][j-1] + 1,            &amp; s1[i] &#x3D; s2[j] \\[2ex]<br>     max(dp[i-1][j], dp[i][j-1]), &amp; s1[i] \ne s2[j]<br> \end{cases}<br> $$</p>
+</li>
+<li><p>初始条件: 若$i &#x3D; 0$或$j &#x3D; 0$, 则$s1$或$s2$的长度为0, 则最长公共子序列的长度为0.</p>
+</li>
+<li><p>最终结果: 根据状态定义, $dp[m][n]$表示$s1$的前$m$个字符和$s2$的前$n$个字符的最长公共子序列长度</p>
+</li>
+</ol>
+<p>算法的时间复杂度为$O(m \times n)$, 空间复杂度为$O(m+n)$, $m$为$s1$的长度, $n$为$s2$的长度.</p>
+<h2 id="4-Leetcode"><a href="#4-Leetcode" class="headerlink" title="4. Leetcode"></a>4. Leetcode</h2><h3 id="1143-Longest-Common-Subsequence"><a href="#1143-Longest-Common-Subsequence" class="headerlink" title="1143. Longest Common Subsequence"></a>1143. Longest Common Subsequence</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given two strings <code>text1</code> and <code>text2</code>, return the length of their longest <strong>common subsequence</strong>. If there is no common subsequence, return <code>0</code>.<br>A <strong>subsequence</strong> of a string is a new string generated from the original string with some characters (can be none) deleted without changing the relative order of the remaining characters.</p>
+<ul>
+<li>For example, <code>&quot;ace&quot;</code> is a subsequence of <code>&quot;abcde&quot;</code>.</li>
+</ul>
+<p>A <strong>common subsequence</strong> of two strings is a subsequence that is common to both strings.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: text1 = &quot;abcde&quot;, text2 = &quot;ace&quot; </span><br><span class="line">Output: 3  </span><br><span class="line">Explanation: The longest common subsequence is &quot;ace&quot; and its length is 3.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">longestCommonSubsequence</span><span class="params">(String text1, String text2)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> text1.length(), n = text2.length();</span><br><span class="line">        <span class="type">int</span>[] dp = <span class="keyword">new</span> <span class="title class_">int</span>[n+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">prev</span> <span class="operator">=</span> dp[<span class="number">0</span>];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> dp[j+<span class="number">1</span>];</span><br><span class="line">                dp[j+<span class="number">1</span>] = text1.charAt(i) == text2.charAt(j) ? prev + <span class="number">1</span> : Math.max(dp[j+<span class="number">1</span>], dp[j]);</span><br><span class="line">                prev = t;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="583-Delete-Operation-for-Two-Strings"><a href="#583-Delete-Operation-for-Two-Strings" class="headerlink" title="583. Delete Operation for Two Strings"></a>583. Delete Operation for Two Strings</h3><h4 id="Problem-Description-1"><a href="#Problem-Description-1" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given two strings <code>word1</code> and <code>word2</code>, return the <strong>minimum number of steps</strong> required to make <code>word1</code> and <code>word2</code> the same.<br>In one step, you can delete exactly one character in either string.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: word1 = &quot;sea&quot;, word2 = &quot;eat&quot;</span><br><span class="line">Output: 2</span><br><span class="line">Explanation: You need one step to make &quot;sea&quot; to &quot;ea&quot; and another step to make &quot;eat&quot; to &quot;ea&quot;.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">minDistance</span><span class="params">(String word1, String word2)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> word1.length(), n = word2.length(); </span><br><span class="line">        <span class="type">int</span>[][] dp = <span class="keyword">new</span> <span class="title class_">int</span>[m+<span class="number">1</span>][n+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= m; i++) &#123;</span><br><span class="line">            dp[i][<span class="number">0</span>] = i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">1</span>; j &lt;= n; j++) &#123;</span><br><span class="line">            dp[<span class="number">0</span>][j] = j;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                dp[i+<span class="number">1</span>][j+<span class="number">1</span>] = word1.charAt(i) == word2.charAt(j) ? dp[i][j] : Math.min(dp[i+<span class="number">1</span>][j], dp[i][j+<span class="number">1</span>]) + <span class="number">1</span>; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[m][n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="97-Interleaving-String"><a href="#97-Interleaving-String" class="headerlink" title="97. Interleaving String"></a>97. Interleaving String</h3><h4 id="Problem-Description-2"><a href="#Problem-Description-2" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given strings <code>s1</code>, <code>s2</code>, and <code>s3</code>, find whether <code>s3</code> is formed by an <strong>interleaving</strong> of <code>s1</code> and <code>s2</code>.<br>An <strong>interleaving</strong> of two strings <code>s</code> and t is <code>a</code> configuration where <code>s</code> and <code>t</code> are divided into <code>n</code> and <code>m</code> substrings respectively, such that:</p>
+<ul>
+<li>$s &#x3D; s_1 + s_2 + \cdots + s_n$</li>
+<li>$t &#x3D; t_1 + t_2 + \cdots + t_m$</li>
+<li>$|n - m| \le 1$</li>
+<li>The interleaving is $s_1 + t_1 + s_2 + t_2 + s_3 + t_3 + \cdots$ or $t_1 + s_1 + t_2 + s_2 + t_3 + s_3 + \cdots$</li>
+</ul>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s1 = &quot;aabcc&quot;, s2 = &quot;dbbca&quot;, s3 = &quot;aadbbcbcac&quot;</span><br><span class="line">Output: true</span><br><span class="line">Explanation: One way to obtain s3 is:</span><br><span class="line">Split s1 into s1 = &quot;aa&quot; + &quot;bc&quot; + &quot;c&quot;, and s2 into s2 = &quot;dbbc&quot; + &quot;a&quot;.</span><br><span class="line">Interleaving the two splits, we get &quot;aa&quot; + &quot;dbbc&quot; + &quot;bc&quot; + &quot;a&quot; + &quot;c&quot; = &quot;aadbbcbcac&quot;.</span><br><span class="line">Since s3 can be obtained by interleaving s1 and s2, we return true.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isInterleave</span><span class="params">(String s1, String s2, String s3)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> s1.length(), n = s2.length(), k = s3.length();</span><br><span class="line">        <span class="keyword">if</span> (m + n != k) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="type">boolean</span>[][] dp = <span class="keyword">new</span> <span class="title class_">boolean</span>[m+<span class="number">1</span>][n+<span class="number">1</span>];</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m &amp;&amp; i &lt; k &amp;&amp; s1.charAt(i) == s3.charAt(i); i++) &#123;</span><br><span class="line">            dp[i+<span class="number">1</span>][<span class="number">0</span>] = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n &amp;&amp; j &lt; k &amp;&amp; s2.charAt(j) == s3.charAt(j); j++) &#123;</span><br><span class="line">            dp[<span class="number">0</span>][j+<span class="number">1</span>] = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (s1.charAt(i) == s3.charAt(i+j+<span class="number">1</span>)) &#123;</span><br><span class="line">                    dp[i+<span class="number">1</span>][j+<span class="number">1</span>] |= dp[i][j+<span class="number">1</span>];</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (s2.charAt(j) == s3.charAt(i+j+<span class="number">1</span>)) &#123;</span><br><span class="line">                    dp[i+<span class="number">1</span>][j+<span class="number">1</span>] |= dp[i+<span class="number">1</span>][j];</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[m][n];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="72-Edit-Distance"><a href="#72-Edit-Distance" class="headerlink" title="72. Edit Distance"></a>72. Edit Distance</h3><h4 id="Problem-Description-3"><a href="#Problem-Description-3" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given two strings <code>word1</code> and <code>word2</code>, return <strong>the minimum number of operations</strong> required to convert <code>word1</code> to <code>word2</code>.<br>You have the following three operations permitted on a word:</p>
+<ul>
+<li>Insert a character</li>
+<li>Delete a character</li>
+<li>Replace a character</li>
+</ul>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: word1 = &quot;horse&quot;, word2 = &quot;ros&quot;</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: </span><br><span class="line">horse -&gt; rorse (replace &#x27;h&#x27; with &#x27;r&#x27;)</span><br><span class="line">rorse -&gt; rose (remove &#x27;r&#x27;)</span><br><span class="line">rose -&gt; ros (remove &#x27;e&#x27;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">minDistance</span><span class="params">(String word1, String word2)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> word1.length(), n = word2.length();</span><br><span class="line">    <span class="type">int</span>[][] dp = <span class="keyword">new</span> <span class="title class_">int</span>[m+<span class="number">1</span>][n+<span class="number">1</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= m; i++) &#123;</span><br><span class="line">      dp[i][<span class="number">0</span>] = i;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">      dp[<span class="number">0</span>][i] = i;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (word1.charAt(i) == word2.charAt(j)) &#123;</span><br><span class="line">          dp[i+<span class="number">1</span>][j+<span class="number">1</span>] = dp[i][j];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          dp[i+<span class="number">1</span>][j+<span class="number">1</span>] = Math.min(dp[i][j], Math.min(dp[i+<span class="number">1</span>][j], dp[i][j+<span class="number">1</span>])) + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> dp[m][n];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1458-Max-Dot-Product-of-Two-Subsequences"><a href="#1458-Max-Dot-Product-of-Two-Subsequences" class="headerlink" title="1458. Max Dot Product of Two Subsequences"></a>1458. Max Dot Product of Two Subsequences</h3><h4 id="Problem-Description-4"><a href="#Problem-Description-4" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given two arrays <code>nums1</code> and <code>nums2</code>.<br>Return the maximum dot product between <strong>non-empty</strong> subsequences of <code>nums1</code> and <code>nums2</code> with the same length.<br>A subsequence of a array is a new array which is formed from the original array by deleting some (can be none) of the characters without disturbing the relative positions of the remaining characters. (ie, <code>[2,3,5]</code> is a subsequence of <code>[1,2,3,4,5]</code> while <code>[1,5,3]</code> is not).</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums1 = [2,1,-2,5], nums2 = [3,0,-6]</span><br><span class="line">Output: 18</span><br><span class="line">Explanation: Take subsequence [2,-2] from nums1 and subsequence [3,-6] from nums2.</span><br><span class="line">Their dot product is (2*3 + (-2)*(-6)) = 18.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-4"><a href="#Solution-4" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">maxDotProduct</span><span class="params">(<span class="type">int</span>[] nums1, <span class="type">int</span>[] nums2)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> nums1.length, n = nums2.length, max = Integer.MIN_VALUE;</span><br><span class="line">        <span class="type">int</span>[][] dp = <span class="keyword">new</span> <span class="title class_">int</span>[m+<span class="number">1</span>][n+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> nums1[i] * nums2[j];</span><br><span class="line">                max = Math.max(max, k);</span><br><span class="line">                dp[i+<span class="number">1</span>][j+<span class="number">1</span>] = Math.max(k+dp[i][j], Math.max(dp[i][j+<span class="number">1</span>], dp[i+<span class="number">1</span>][j]));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[m][n] &gt; <span class="number">0</span> ? dp[m][n] : max; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1092-Shortest-Common-Supersequence"><a href="#1092-Shortest-Common-Supersequence" class="headerlink" title="1092. Shortest Common Supersequence"></a>1092. Shortest Common Supersequence</h3><h4 id="Problem-Description-5"><a href="#Problem-Description-5" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>Given two strings <code>str1</code> and <code>str2</code>, return the shortest string that has both <code>str1</code> and <code>str2</code> as <strong>subsequences</strong>. If there are multiple valid strings, return any of them.<br>A string <code>s</code> is a subsequence of string <code>t</code> if deleting some number of characters from <code>t</code> (possibly <code>0</code>) results in the string <code>s</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: str1 = &quot;abac&quot;, str2 = &quot;cab&quot;</span><br><span class="line">Output: &quot;cabac&quot;</span><br><span class="line">Explanation: </span><br><span class="line">str1 = &quot;abac&quot; is a subsequence of &quot;cabac&quot; because we can delete the first &quot;c&quot;.</span><br><span class="line">str2 = &quot;cab&quot; is a subsequence of &quot;cabac&quot; because we can delete the last &quot;ac&quot;.</span><br><span class="line">The answer provided is the shortest such string that satisfies these properties.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution-5"><a href="#Solution-5" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">shortestCommonSupersequence</span><span class="params">(String str1, String str2)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> str1.length(), n = str2.length();</span><br><span class="line">        <span class="type">int</span>[][] dp = <span class="keyword">new</span> <span class="title class_">int</span>[m+<span class="number">1</span>][n+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= m; i++) dp[i][<span class="number">0</span>] = i;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= n; i++) dp[<span class="number">0</span>][i] = i;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (str1.charAt(i) == str2.charAt(j)) &#123;</span><br><span class="line">                    dp[i+<span class="number">1</span>][j+<span class="number">1</span>] = dp[i][j] + <span class="number">1</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    dp[i+<span class="number">1</span>][j+<span class="number">1</span>] = Math.min(dp[i+<span class="number">1</span>][j], dp[i][j+<span class="number">1</span>]) + <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> m-<span class="number">1</span>, j = n-<span class="number">1</span>;</span><br><span class="line">        <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line">        <span class="keyword">while</span> (i &gt;= <span class="number">0</span> || j &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                sb.insert(<span class="number">0</span>, str2.substring(<span class="number">0</span>, j+<span class="number">1</span>));</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (j &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                sb.insert(<span class="number">0</span>, str1.substring(<span class="number">0</span>, i+<span class="number">1</span>));</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (str1.charAt(i) == str2.charAt(j)) &#123;</span><br><span class="line">                sb.insert(<span class="number">0</span>, str1.charAt(i--));</span><br><span class="line">                --j;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dp[i][j+<span class="number">1</span>] &lt; dp[i+<span class="number">1</span>][j]) &#123;</span><br><span class="line">                sb.insert(<span class="number">0</span>, str1.charAt(i--));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                sb.insert(<span class="number">0</span>, str2.charAt(j--));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sb.toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/2a4c.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">DP - Interval</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/46eb.html">
+        <span class="next-text nav-default">Spring Transaction</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/8be9.html';
+  var disqus_title = "DP - Longest Common Subsequence";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Java Basic (3)"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/2092.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/2092.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/2092.html"/>
+
+
+<meta name="description" content="1. character encoding Java一律采用UTF-16(2字节)编码方式保存字符, 无论什么语言的字符都占用两个字节 任何字符串都可以其自身编码方式分解String newUTF8Str &#x3D; new String(oldGBKStr.getBytes(&quot;GBK&quot;), &quot;UTF8&quot;);  2. substring()substring()函数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java Basic (3)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/2092.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. character encoding Java一律采用UTF-16(2字节)编码方式保存字符, 无论什么语言的字符都占用两个字节 任何字符串都可以其自身编码方式分解String newUTF8Str &#x3D; new String(oldGBKStr.getBytes(&quot;GBK&quot;), &quot;UTF8&quot;);  2. substring()substring()函数">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-11-02T19:48:55.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.049Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Java Basic (3) - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-character-encoding"><span class="toc-text">1. character encoding</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-substring"><span class="toc-text">2. substring()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-wait"><span class="toc-text">3. wait()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Collection-and-Collections"><span class="toc-text">4. Collection and Collections</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-override"><span class="toc-text">5. override</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-super-and-this"><span class="toc-text">6. super() and this()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-classloader"><span class="toc-text">7. classloader</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-String-and-char"><span class="toc-text">8. String and char[]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-LinkedBlockingQueue-and-PriorityQueue"><span class="toc-text">9. LinkedBlockingQueue and PriorityQueue</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-singleton"><span class="toc-text">10. singleton</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%96%B9%E6%B3%95%E5%88%86%E9%85%8D"><span class="toc-text">11. 方法分配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-Throwable"><span class="toc-text">12. Throwable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-reflection"><span class="toc-text">13. reflection</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-JVM-memory-options"><span class="toc-text">14. JVM memory options</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-Rule-for-naming-variable"><span class="toc-text">15. Rule for naming variable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-TLS-Thread-Local-Storage"><span class="toc-text">16. TLS (Thread Local Storage)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-Extend-interface"><span class="toc-text">17. Extend interface</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#18-Constant-Expression"><span class="toc-text">18. Constant Expression</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Java Basic (3)
+        
+      </h1>
+      <time class="post-time">
+          11/02/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-character-encoding"><a href="#1-character-encoding" class="headerlink" title="1. character encoding"></a>1. character encoding</h2><ol>
+<li>Java一律采用UTF-16(2字节)编码方式保存字符, 无论什么语言的字符都占用两个字节</li>
+<li>任何字符串都可以其自身编码方式分解<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">newUTF8Str</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(oldGBKStr.getBytes(<span class="string">&quot;GBK&quot;</span>), <span class="string">&quot;UTF8&quot;</span>);</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="2-substring"><a href="#2-substring" class="headerlink" title="2. substring()"></a>2. substring()</h2><p>substring()函数返回的是一个new的String, 分配在堆上. 并且substring(start, end)返回从start开始到最后(不包括end)的子字符串</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">String</span> <span class="variable">str1</span> <span class="operator">=</span> <span class="string">&quot;0123456789&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">str2</span> <span class="operator">=</span> str1.substring(<span class="number">5</span>);  <span class="comment">// str2是一个对象引用, 指向堆上的String对象</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-wait"><a href="#3-wait" class="headerlink" title="3. wait()"></a>3. wait()</h2><p><code>Object.wait()</code>要以try&#x2F;catch包裹, 或抛出<code>InterruptedException</code>. <code>Thread.sleep()</code>也会抛出<code>InterruptedException</code>, 也必须用try&#x2F;catch包裹</p>
+<h2 id="4-Collection-and-Collections"><a href="#4-Collection-and-Collections" class="headerlink" title="4. Collection and Collections"></a>4. Collection and Collections</h2><ol>
+<li>java.util.Collection是一个集合接口. 它提供了对集合对象进行基本操作的通用接口方法. Collection接口在Java类库中有很多具体的实现, Collection接口的意义是为各种具体的集合提供了最大化的统一操作方式</li>
+<li>java.util.Collections是一个包装类. 它包含有各种有关集合操作的静态多态方法,  n此类不能实例化, 就像一个工具类, 服务于Java的Collection框架</li>
+</ol>
+<h2 id="5-override"><a href="#5-override" class="headerlink" title="5. override"></a>5. override</h2><p>方法重写应遵循<strong>三同一小一大</strong>原则:</p>
+<ol>
+<li>三同: 即方法名相同, 形参列表相同, 返回值类型相同或小于(double和int并没有比较关系, 必须是父类和子类)</li>
+<li>一小: 子类方法声明抛出的异常比父类方法声明抛出的异常更小或者相等</li>
+<li>一大: 子类方法的访问修饰符应比父类方法更大或相等<br>变量不能重写, 重写只针对方法. 重写父类变量会报错.</li>
+</ol>
+<h2 id="6-super-and-this"><a href="#6-super-and-this" class="headerlink" title="6. super() and this()"></a>6. super() and this()</h2><ol>
+<li><code>super()</code>或者<code>this()</code>必须放在构造函数的第一行</li>
+<li>由于this函数指向的构造函数默认有<code>super()</code>方法, 所以<code>this()</code>和<code>super()</code>不能同时出现在一个构造函数中</li>
+<li>由于staic方法或者语句块可脱离实例使用, 因此不能使用<code>this()</code>和<code>super()</code></li>
+</ol>
+<h2 id="7-classloader"><a href="#7-classloader" class="headerlink" title="7. classloader"></a>7. classloader</h2><p>一个jvm中默认的三个classloader</p>
+<ol>
+<li>Bootstrap ClassLoader: 负责加载java基础类，主要是<code>%JRE_HOME/lib/</code>目录下的rt.jar, resources.jar, charsets.jar和class等</li>
+<li>Extension ClassLoader: 负责加载java扩展类, 主要是<code>%JRE_HOME/lib/ext</code>目录下的jar和class</li>
+<li>App ClassLoader: 负责加载当前java应用的classpath中的所有类</li>
+</ol>
+<p>类加载器的双亲委派模型: 应用程序由以上三种类加载器互相配合进行加载的, 还可以加入自己定义的类加载器</p>
+<h2 id="8-String-and-char"><a href="#8-String-and-char" class="headerlink" title="8. String and char[]"></a>8. String and char[]</h2><p>无法使用equals()对比String和char[], 因为<code>equals()</code>会先使用<code>instanceof</code>判断char[]和String的包含关系, 并回到false</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> <span class="string">&quot;123&quot;</span>;</span><br><span class="line"><span class="type">char</span>[] s2 = &#123;<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;2&#x27;</span>,<span class="string">&#x27;3&#x27;</span>&#125;;</span><br><span class="line">System.out.println(s1.equals(s2));  <span class="comment">// false</span></span><br><span class="line">System.out.println(s1.equals(<span class="keyword">new</span> <span class="title class_">String</span>(s2)));  <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>以下是String, char, 和char[]之间的转换:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">string</span> <span class="operator">=</span> <span class="string">&quot;123&quot;</span>;</span><br><span class="line"><span class="type">char</span>[] char_array = &#123;<span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;2&#x27;</span>,<span class="string">&#x27;3&#x27;</span>&#125;;</span><br><span class="line"><span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> <span class="string">&#x27;1&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* convert char to String*/</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> Character.toString(c);</span><br><span class="line"><span class="type">String</span> <span class="variable">s2</span> <span class="operator">=</span> String.valueOf(c);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* convert char[] to String */</span></span><br><span class="line"><span class="type">String</span> <span class="variable">s3</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(char_array);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* convert String to char */</span></span><br><span class="line"><span class="type">char</span> <span class="variable">c1</span> <span class="operator">=</span> string.charAt(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* convert String to char[] */</span></span><br><span class="line"><span class="type">char</span>[] char_array1 = string.toCharArray();</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="9-LinkedBlockingQueue-and-PriorityQueue"><a href="#9-LinkedBlockingQueue-and-PriorityQueue" class="headerlink" title="9. LinkedBlockingQueue and PriorityQueue"></a>9. LinkedBlockingQueue and PriorityQueue</h2><ol>
+<li>LinkedBlockingQueue<ol>
+<li>基于链接节点的可选限定的blocking queue</li>
+<li>排列元素FIFO(先进先出), 队列的头部是队列中最长的元素, 队列的尾部是队列中最短时间的元素</li>
+<li>新元素插入队列的尾部, 队列检索操作获取队列头部的元素</li>
+<li>不接受null元素, 线程安全但效率低</li>
+</ol>
+</li>
+<li>PriorityQueue<ol>
+<li>基于优先级堆的无限优先级queue, 优先级队列的元素根据它们的有序natural ordering, 或由一个Comparator在队列构造的时候提供</li>
+<li>优先队列不允许null元素, 依靠自然排序的优先级队列也不允许插入不可比较的对象(这样做可能导致ClassCastException)</li>
+<li>该队列的头部是相对于指定顺序的最小元素. 如果多个元素被绑定到最小值, 那么头就是这些元素之一</li>
+<li>无限长度. 但是有队列上存储元素的数组的大小的内部容量. 它始终至少与队列大小一样大, 当元素被添加到优先级队列中时其容量会自动增加</li>
+<li>该类及其迭代器实现Collection和Iterator接口的所有可选方法. 方法iterator()中提供的迭代器不能保证以任何特定顺序遍历优先级队列的元素. 如果需要有序遍历, 请考虑使用Arrays.sort</li>
+<li>此实现不同步. 如果任何线程修改队列, 多线程不应同时访问PriorityQueue实例, 而是使用线程安全的PriorityBlockingQueue</li>
+</ol>
+</li>
+</ol>
+<h2 id="10-singleton"><a href="#10-singleton" class="headerlink" title="10. singleton"></a>10. singleton</h2><p>有两种实现单例模式的方法:</p>
+<ol>
+<li>懒汉式<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line">  <span class="keyword">private</span> <span class="title function_">Singleton</span> <span class="params">()</span>&#123;&#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title function_">getInstance</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (instance == <span class="literal">null</span>) &#123;</span><br><span class="line">      instance = <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>饿汉式<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Singleton</span>&#123;</span><br><span class="line">  <span class="comment">// 类加载时就初始化</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Singleton</span> <span class="variable">instance</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Singleton</span>();</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">private</span> <span class="title function_">Singleton</span><span class="params">()</span>&#123;&#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title function_">getInstance</span><span class="params">()</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="11-方法分配"><a href="#11-方法分配" class="headerlink" title="11. 方法分配"></a>11. 方法分配</h2><ol>
+<li><p>静态分配<br>根据参数的静态类型来决定重载版本. 重载是依赖于静态分派的</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StaticDispatch</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Human</span>&#123; &#125;  </span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Man</span> <span class="keyword">extends</span> <span class="title class_">Human</span>&#123; &#125;  </span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Woman</span> <span class="keyword">extends</span> <span class="title class_">Human</span>&#123; &#125;  </span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">(Human human)</span>&#123;  </span><br><span class="line">    System.out.println(<span class="string">&quot;human say hello&quot;</span>);</span><br><span class="line">  &#125;  </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">(Man man)</span>&#123;  </span><br><span class="line">    System.out.println(<span class="string">&quot;man say hello&quot;</span>);  </span><br><span class="line">  &#125;  </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">(Woman woman)</span>&#123;  </span><br><span class="line">    System.out.println(<span class="string">&quot;woman say hello&quot;</span>);</span><br><span class="line">  &#125; </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">    <span class="type">Human</span> <span class="variable">man</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Man</span>();  </span><br><span class="line">    <span class="type">Human</span> <span class="variable">woman</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Woman</span>();  </span><br><span class="line">    <span class="type">StaticDispatch</span> <span class="variable">sd</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StaticDispatch</span>();  </span><br><span class="line">    sd.sayHello(man);   <span class="comment">// human say hello </span></span><br><span class="line">    sd.sayHello(woman); <span class="comment">// human say hello   </span></span><br><span class="line">  &#125;  </span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>动态分派<br>在运行期，根据方法接收者的实际类型. 重写就依赖动态分派</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DynamicDispatch</span> &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">Human</span>&#123;  </span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">()</span>;  </span><br><span class="line">  &#125;  </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Man</span> <span class="keyword">extends</span> <span class="title class_">Human</span>&#123;  </span><br><span class="line">    <span class="meta">@Override</span>  </span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">()</span> &#123;  </span><br><span class="line">      System.out.println(<span class="string">&quot;man say hello&quot;</span>);  </span><br><span class="line">    &#125;   </span><br><span class="line">  &#125;  </span><br><span class="line">    </span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Woman</span> <span class="keyword">extends</span> <span class="title class_">Human</span>&#123;  </span><br><span class="line">    <span class="meta">@Override</span>  </span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">sayHello</span><span class="params">()</span> &#123;  </span><br><span class="line">      System.out.println(<span class="string">&quot;woman say hello&quot;</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">  &#125;  </span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">    <span class="type">Human</span> <span class="variable">man</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Man</span>();  </span><br><span class="line">    <span class="type">Human</span> <span class="variable">woman</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Woman</span>();  </span><br><span class="line">    man.sayHello();   <span class="comment">// man say hello </span></span><br><span class="line">    woman.sayHello();   <span class="comment">// woman say hello </span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>动态分配与虚函数的关系</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Super</span> &#123;  </span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">interestingMethod</span><span class="params">()</span> &#123;  </span><br><span class="line">    System.out.println(<span class="string">&quot;Super&#x27;s interestingMethod&quot;</span>);  </span><br><span class="line">  &#125;  </span><br><span class="line">  </span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">exampleMethod</span><span class="params">()</span> &#123;  </span><br><span class="line">    interestingMethod();  </span><br><span class="line">  &#125;  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Sub</span> <span class="keyword">extends</span> <span class="title class_">Super</span> &#123;  </span><br><span class="line">  <span class="keyword">void</span> <span class="title function_">interestingMethod</span><span class="params">()</span> &#123;  </span><br><span class="line">    System.out.println(<span class="string">&quot;Sub&#x27;s interestingMethod&quot;</span>);  </span><br><span class="line">  &#125;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SuperTest</span> &#123;  </span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;  </span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">Sub</span>().exampleMethod();  <span class="comment">// Super&#x27;s interestingMethod</span></span><br><span class="line">  &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<p>上述代码并没有显示出动态分派, 因为Super的interestingMethod是私有的. 只有非虚函数才能展现出动态分派, 而虚函数是static方法+final方法+private方法. 所以interestingMethod为虚函数, 不能呈现出动态分派</p>
+</li>
+<li><p>字节码指令对于方法分派的作用</p>
+</li>
+<li><p>如果为private方法导致的静态分派, 使用的是invokespecial指令</p>
+</li>
+<li><p>如果为重载导致的静态分派, 使用的是invokevirtual</p>
+</li>
+<li><p>如果为重写导致的动态分派, 使用的是invokevirtual<br>因此可见, invokespecial导致的必然是静态分派, 而invokevirtual则不确定, 可能是静态, 也可能是动态</p>
+</li>
+</ol>
+<h2 id="12-Throwable"><a href="#12-Throwable" class="headerlink" title="12. Throwable"></a>12. Throwable</h2><ul>
+<li>Throwable<ul>
+<li>Error<ul>
+<li>VirtualMachineError<ul>
+<li>StackOverFlowError</li>
+<li>OutOfMemoryError</li>
+</ul>
+</li>
+<li>AWTError</li>
+</ul>
+</li>
+<li>Exception<ul>
+<li>IOException<ul>
+<li>EOFException</li>
+<li>FileNotFoundException</li>
+</ul>
+</li>
+<li>RuntimeException<ul>
+<li>ArithmeticException</li>
+<li>MissingResourceException</li>
+<li>ClassNotFoundException</li>
+<li>NullPointException</li>
+<li>IllegalArgumentException</li>
+<li>ArrayIndexOutOfBoundsException</li>
+<li>UnknownTypeException</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li>Exception(异常): 程序本身可以处理的异常 </li>
+<li>Error(错误): 是程序无法处理的错误这些错误表示故障发生于虚拟机自身, 或者发生在虚拟机试图执行应用时, 一般不需要程序处理</li>
+<li>检查异常(编译器要求必须处置的异常): 除了Error, RuntimeException及其子类以外, 其他的Exception类及其子类都属于可查异常这种异常的特点是Java编译器会检查它. 当程序中可能出现这类异常, 要么用try-catch语句捕获它, 要么用throws子句声明抛出它, 否则编译不会通过</li>
+<li>非检查异常(编译器不要求处置的异常): 包括运行时异常(RuntimeException与其子类)和错误(Error)</li>
+</ol>
+<h2 id="13-reflection"><a href="#13-reflection" class="headerlink" title="13. reflection"></a>13. reflection</h2><ol>
+<li><code>getDeclaredMethods()</code>返回类或接口声明的所有方法, 但不包括继承的方法</li>
+<li><code>getMethods()</code>返回类的所有public方法, 包括父类和接口的公用方法</li>
+</ol>
+<h2 id="14-JVM-memory-options"><a href="#14-JVM-memory-options" class="headerlink" title="14. JVM memory options"></a>14. JVM memory options</h2><ul>
+<li>-XX:+HeapDumpOnOutOfMemoryError: 设置堆溢出异常的条件</li>
+<li>-Xmx: Java heap的最大值</li>
+<li>-Xms: Java heap的初始值</li>
+<li>-XX:MinHeapFreeRatio: heap中空闲空间与已占用空间的最小比</li>
+<li>-XX:MaxHeapFreeRatio: heap中空闲空间与已占用空间的最大比</li>
+<li>-Xss: Java stack的最大值</li>
+<li>-Xmn: young generation的heap大小</li>
+<li>-XX:PermSize: 方法区最小值(只应用于JDK 1.6及之前版本, 可用于调整方法区)</li>
+<li>-XX:MaxPermSize: 方法区最大值(只应用于JDK 1.6及之前版本, 可用于调整方法区)</li>
+<li>-XX:SurvivorRatio: survivor space与eden的大小比例</li>
+<li>-XX:MaxDirectMemorySize: 直接内存的最大值</li>
+</ul>
+<h2 id="15-Rule-for-naming-variable"><a href="#15-Rule-for-naming-variable" class="headerlink" title="15. Rule for naming variable"></a>15. Rule for naming variable</h2><ol>
+<li>标识符是以<code>0~9</code>, <code>a-z</code>, <code>A-Z</code>, <code>_</code>, 和<code>$</code>, 也可以是Unicode字符集中的字符(例如: 汉字), 不能包含<code>+</code>, <code>-</code>, <code>*</code>等字符, 不可以数字开头.</li>
+</ol>
+<h2 id="16-TLS-Thread-Local-Storage"><a href="#16-TLS-Thread-Local-Storage" class="headerlink" title="16. TLS (Thread Local Storage)"></a>16. TLS (Thread Local Storage)</h2><p>同一全局变量或者静态变量每个线程访问的是同一变量, 多个线程同时访存同一全局变量或者静态变量时会导致冲突, 尤其是多个线程同时需要修改这一变量时, 通过TLS机制(ThreadLocal是其中一个实现方式), 为每一个使用该全局变量的线程都提供一个变量值的副本, 每一个线程均可以独立地改变自己的副本, 而不会和其他线程的副本冲突</p>
+<h2 id="17-Extend-interface"><a href="#17-Extend-interface" class="headerlink" title="17. Extend interface"></a>17. Extend interface</h2><p>interface可以有通过extends关键值继承一个或多个interface</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">inter1</span>&#123;&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">inter2</span> <span class="keyword">extends</span> <span class="title class_">inter1</span>&#123;&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">inter3</span> <span class="keyword">extends</span> <span class="title class_">inter1</span>, inter2&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="18-Constant-Expression"><a href="#18-Constant-Expression" class="headerlink" title="18. Constant Expression"></a>18. Constant Expression</h2><p>常量表达式是一种表达式, 但会在代码编译期间计算包含的常量和特定运算符, 常量表达式只能由以下运算符和表达式组成:</p>
+<ul>
+<li>一元操作符: <code>+</code>, <code>-</code>, <code>~</code>, <code>!</code></li>
+<li>乘法操作符: <code>*</code>, <code>/</code>, <code>%</code></li>
+<li>加法操作符: <code>+</code>, <code>–</code></li>
+<li>移位操作符: <code>&lt;&lt;</code>, <code>&gt;&gt;</code>, <code>&gt;&gt;&gt;</code></li>
+<li>关系操作符: <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code></li>
+<li>相等操作符: <code>==</code>, <code>!=</code></li>
+<li>位和逻辑操作符: <code>&amp;</code>, <code>^</code>, <code>|</code></li>
+<li>条件或和条件与操作符: <code>&amp;&amp;</code>, <code>||</code></li>
+<li>三元操作符: <code>?:</code></li>
+<li>带括号的表达式, 其中包含常量表达式</li>
+<li>常量名</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/412a.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">C++ Concurrency</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/b093.html">
+        <span class="next-text nav-default">Java Basic (2)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/2092.html';
+  var disqus_title = "Java Basic (3)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

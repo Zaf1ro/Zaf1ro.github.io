@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="errno.h"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/6437.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/6437.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/6437.html"/>
+
+
+<meta name="description" content="1. 简介1.1 历史UNIX对错误的系统调用采用一种简单的指示方式, 用汇编语言实现, 使用条件编码的进位标志来测试.   如果进位标志被清零, 则说明系统调用成功 如果进位标志不为零, 则说明系统调用错误  一个机器寄存器记录了一个很小的整数, 用来说明错误的性质 1.2 C中的错误处理C采用一个具有外部连接的数据对象, 任何失败的系统调用都从内核中存储一个叫做errno的整型变量作为错误编码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="errno.h">
+<meta property="og:url" content="https://zaf1ro.github.io/p/6437.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 简介1.1 历史UNIX对错误的系统调用采用一种简单的指示方式, 用汇编语言实现, 使用条件编码的进位标志来测试.   如果进位标志被清零, 则说明系统调用成功 如果进位标志不为零, 则说明系统调用错误  一个机器寄存器记录了一个很小的整数, 用来说明错误的性质 1.2 C中的错误处理C采用一个具有外部连接的数据对象, 任何失败的系统调用都从内核中存储一个叫做errno的整型变量作为错误编码">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-07-05T20:20:20.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.047Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+errno.h - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="toc-text">1. 简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%8E%86%E5%8F%B2"><span class="toc-text">1.1 历史</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-C%E4%B8%AD%E7%9A%84%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86"><span class="toc-text">1.2 C中的错误处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%95%B0%E5%AD%A6%E9%94%99%E8%AF%AF"><span class="toc-text">1.3 数学错误</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">2. &lt;errno.h&gt;的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">3. &lt;errno.h&gt;的实现</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          errno.h
+        
+      </h1>
+      <time class="post-time">
+          07/05/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><h3 id="1-1-历史"><a href="#1-1-历史" class="headerlink" title="1.1 历史"></a>1.1 历史</h3><p>UNIX对错误的系统调用采用一种简单的指示方式, 用汇编语言实现, 使用条件编码的进位标志来测试. </p>
+<ul>
+<li>如果进位标志被清零, 则说明系统调用成功</li>
+<li>如果进位标志不为零, 则说明系统调用错误</li>
+</ul>
+<p>一个机器寄存器记录了一个很小的整数, 用来说明错误的性质</p>
+<h3 id="1-2-C中的错误处理"><a href="#1-2-C中的错误处理" class="headerlink" title="1.2 C中的错误处理"></a>1.2 C中的错误处理</h3><p>C采用一个具有外部连接的数据对象, 任何失败的系统调用都从内核中存储一个叫做errno的整型变量作为错误编码. 所以必须早点访问errno, 如果另一个系统调用也失败了, 原来的错误编码将会被后来的错误编码覆盖. 但一个成功的系统调用不会覆盖errno的错误编码.<br><code>&lt;errno.h&gt;</code>头文件定义了整数变量errno, 它是通过系统调用设置的，在错误事件中表明了什么发生了错误. </p>
+<h3 id="1-3-数学错误"><a href="#1-3-数学错误" class="headerlink" title="1.3 数学错误"></a>1.3 数学错误</h3><p>除了系统调用的错误, 数学错误也算入errno中, 可分为几类:</p>
+<ul>
+<li>向上溢出: 数值太大导致结果不能作为指定类型的浮点值表示</li>
+<li>向下溢出: 数值太小导致结果不能作为指定类型的浮点值表示</li>
+<li>有效值丢失: 没有位置容纳结果类型指示的有效位</li>
+<li>域错误: 接受一个指定的参数而结果没有被定义</li>
+</ul>
+<p>但&quot;有效位丢失&quot;是一个不确定是否要报告的错误. 不同的程序员对于这个问题有不同的看法, 有些情况下有效位丢失并不是一个严重问题.</p>
+<h2 id="2-的使用"><a href="#2-的使用" class="headerlink" title="2. &lt;errno.h&gt;的使用"></a>2. &lt;errno.h&gt;的使用</h2><p>不同的系统对于错误编码的值设置不同, 如果需要为某个系统写代码, 那不得不去学习他的错误代码文档. 如果编写可移植代码, 则要避免任何附加的错误代码假设, 如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;math.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> a = <span class="built_in">sqrt</span>(<span class="number">-1</span>);</span><br><span class="line">  <span class="keyword">if</span> (errno)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;invalid!errno=%d&quot;</span>, errno);  <span class="comment">// invalid!errno=33</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-的实现"><a href="#3-的实现" class="headerlink" title="3. &lt;errno.h&gt;的实现"></a>3. &lt;errno.h&gt;的实现</h2><p><code>&lt;errno.h&gt;</code>的主要目的在于建立errno这个宏, 当调用其他库函数时, 如果出现错误则对这个宏进行修改, 覆盖为相应的错误编码. errno在程序启动时为0, 但不能被任何库函数设置为0.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* errno.h standard header */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> _ERRNO</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _ERRNO</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> _YVALS</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;yvals.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// _YVALS</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* error codes */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EDOM   _EDOM</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ERANGE _ERANGE</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EFPOS  _EFPOS</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* add your codes */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _NERR _ERRMAX   <span class="comment">/* 最后一个code+1 */</span></span></span><br><span class="line"><span class="keyword">extern</span> <span class="type">int</span> errno;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// _ERRNO</span></span></span><br></pre></td></tr></table></figure>
+<p>这里errno面临一个问题: 有时errno对于错误的说明过于模糊, 有时又过于清楚. 由于任何库函数都能对errno进行不同的修改, 所以唯一能依赖的只有C标准中明确规定的错误行为, 例如: 调用<code>sqrt(-1)</code>就可以知道errno包含了EDOM值.<br>由于不同系统的错误编码不同, 所以部分库函数需要知道错误编码的有效范围, 或者一些特定的错误编码, 这时就需要<code>&lt;yvals.h&gt;</code>来规范</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> MY_YVALS_H <span class="comment">/* 宏保护 */</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* errno属性 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _EDOM   33 <span class="comment">/* 用来确定宏EDOM的值 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _ERANGE 34 <span class="comment">/* 用来确定宏ERANGE的值 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _EFPOS  35 <span class="comment">/* 用来确定宏EFPOS的值 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _ERRMAX 36 <span class="comment">/* 用来确定错误编码的范围 **/</span></span></span><br></pre></td></tr></table></figure>
+<p>errno.c确保errno初始化为0, 并#undef预处理指令来保证&lt;errno.h&gt;的安全性</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* errno storage */</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">undef</span> errno</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> errno = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/97cc.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">SQLite Lock Management</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/e9d2.html">
+        <span class="next-text nav-default">ctype.h</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/6437.html';
+  var disqus_title = "errno.h";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

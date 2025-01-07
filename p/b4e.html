@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="IPv4 and IPv6 Interoperability"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/b4e.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/b4e.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/b4e.html"/>
+
+
+<meta name="description" content="1. Introduction随着Internet的发展, IPv4逐渐被IPv6取代. 在此期间, 使用IPv4的应用会和使用IPv6的应用并行发展, 并共享网络设备. 因此, 一个client application必须同时支持IPv4和IPv6 server; Server application也必须支持IPv4和IPv6 client. 本章假设所有host和router都支持dual-">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPv4 and IPv6 Interoperability">
+<meta property="og:url" content="https://zaf1ro.github.io/p/b4e.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction随着Internet的发展, IPv4逐渐被IPv6取代. 在此期间, 使用IPv4的应用会和使用IPv6的应用并行发展, 并共享网络设备. 因此, 一个client application必须同时支持IPv4和IPv6 server; Server application也必须支持IPv4和IPv6 client. 本章假设所有host和router都支持dual-">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/12-2-ipv6-svr.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/12-2-proc-of-ipv4-ipv6-datagram.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/12-3-proc-of-cli-req.gif">
+<meta property="article:published_time" content="2019-12-31T14:02:04.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.042Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/12-2-ipv6-svr.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+IPv4 and IPv6 Interoperability - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-IPv4-Client-IPv6-Server"><span class="toc-text">2. IPv4 Client, IPv6 Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-IPv6-Client-IPv4-Server"><span class="toc-text">3. IPv6 Client, IPv4 Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-IPv6-Address-Testing-Macros"><span class="toc-text">4. IPv6 Address-Testing Macros</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Source-Code-Portability"><span class="toc-text">5. Source Code Portability</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          IPv4 and IPv6 Interoperability
+        
+      </h1>
+      <time class="post-time">
+          12/31/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>随着Internet的发展, IPv4逐渐被IPv6取代. 在此期间, 使用IPv4的应用会和使用IPv6的应用并行发展, 并共享网络设备. 因此, 一个client application必须同时支持IPv4和IPv6 server; Server application也必须支持IPv4和IPv6 client. 本章假设所有host和router都支持<strong>dual-stack</strong>, 也就是说, host和router拥有完整的IPv4 protocol stack和IPv6 protocol stack. </p>
+<h2 id="2-IPv4-Client-IPv6-Server"><a href="#2-IPv4-Client-IPv6-Server" class="headerlink" title="2. IPv4 Client, IPv6 Server"></a>2. IPv4 Client, IPv6 Server</h2><p>得益于IPv4-mapped IPv6 address, dual-stacks的IPv6 server可处理IPv4和IPv6的client, 如下图:<br><img src="/images/Network/UNP/12-2-ipv6-svr.gif" alt="IPv6 server on dual-stack host serving IPv4 and IPv6 clients"></p>
+<p>上图中的IPv4 client和IPv6 client所发出的datagram信息如下:</p>
+<ul>
+<li>IPv4: 发送IPv4 datagram, Ethernet header中<strong>type</strong>为<code>0x8000</code>, TCP header的<strong>destination port</strong>为<code>9999</code>, IPv4 header中<strong>destination IP address</strong>为<code>206.62.226.42</code></li>
+<li>IPv6: 发送IPv6 datagram, Ethernet header中<strong>type</strong>为<code>0x86dd</code>, TCP header中<strong>destination port</strong>为<code>9999</code>, IPv6 header中<strong>destination IP address</strong>为<code>5f1b:df00:ce3e:e200:20:800:2b37:6426</code></li>
+</ul>
+<p>当server host收到datagram后, 检测到destination socket为IPv6 socket, 会自动将IPv4 source address转换为IPv4-mapped IPv6 address, 因此对于socket来说, 两个datagram的source IP address都为IPv6. 以下是IPv4 TCP client与IPv6 server通讯的步骤:</p>
+<ol>
+<li>启动IPv6 server, 创建IPv6 listening socket, 并绑定wildcard address</li>
+<li>虽然server拥有A record和AAAA record, 但IPv4 client只会调用<code>gethostbyname()</code>获取server的A record</li>
+<li>client调用<code>connect()</code>发送IPv4 STN, 尝试与server建立连接</li>
+<li>server host收到IPv4 SYN后会传给IPv6 listening socket, 并设置flag通知socket该connection使用IPv4-mapped IPv6 address, 并回复IPv4 SYN&#x2F;ACK. 当three-way handshake完成后, <code>accept()</code>返回IPv4-mapped IPv6 address. </li>
+<li>当server通过IPv4-mapped IPv6 address向client发送数据时, 其IP stack会将destination address转换为IPv4 address. 因此IPv4 client与server之间的传输都是通过IPv4 datagram</li>
+<li>除非server检查IPv6 address, 否则server不会察觉到与IPv4 client通信; 同理, IPv4 client也不会察觉到与IPv6 server通信.,</li>
+</ol>
+<p><img src="/images/Network/UNP/12-2-proc-of-ipv4-ipv6-datagram.gif" alt="Processing of received IPv4 or IPv6 datagrams, depending on type of receiving socket"></p>
+<ul>
+<li>当IPv4 socket接收或发送IPv4 datagram时, kernel不会做任何处理</li>
+<li>当IPv6 socket接收或发送IPv6 datagram时, kernel不会做任何处理</li>
+<li>当IPv6 socket接收IPv4 datagram时, kernel会将source IPv4 address转换为IPv4-mapped IPv6 address; 向IPv4 client发送数据时, kernel会将IPv4-mapped IPv6 address转换为IPv4 address</li>
+<li>IPv6 address无法转换为IPv4 address, 因此IPv4 socket无法接收IPv6 datagram</li>
+</ul>
+<p>dual-stack host中的listenin socket应遵循以下规则:</p>
+<ol>
+<li>listening IPv4 socket只接收IPv4 client的connection</li>
+<li>如果server host有listening IPv6 socket, 且socket没有设置<code>IPV6_V6ONLY</code> socket option, 则socket可接受IPv4 client或IPv6 client. 对于IPv4 client, server host会自动转换为IPv4-mapped IPv6 address</li>
+<li>若server的listening IPv6 socket只绑定了IPv6 address, 或设置了IPV6_V6ONLY socket option, 则socket只能接收IPv6 client connection</li>
+</ol>
+<h2 id="3-IPv6-Client-IPv4-Server"><a href="#3-IPv6-Client-IPv4-Server" class="headerlink" title="3. IPv6 Client, IPv4 Server"></a>3. IPv6 Client, IPv4 Server</h2><p>以下是IPv6 TCP client与IPv4 server通信的过程:</p>
+<ol>
+<li>IPv4 server所在的host只支持IPv4 address, 且运行一个IPv4 listening socket</li>
+<li>IPv6 client调用<code>getaddrinfo()</code>获取server IP address, 其中<code>hints.ai_family</code>为<strong>AF_INET6</strong>, <code>hints.ai_flags</code>中设置<strong>AI_V4MAPPED</strong>. 由于server只有A record, 因此返回IPv4-mapped IPv6 address</li>
+<li>IPv6 client调用<code>connect()</code>向IPv4-mapped IPv6 address发起连接, kernel会自动将destination address转换为IPv4 address, 因此server接收到IPv4 SYN</li>
+<li>server回复IPv4 SYN&#x2F;ACK, 成功建立连接</li>
+</ol>
+<p><img src="/images/Network/UNP/12-3-proc-of-cli-req.gif" alt="Processing of client requests, depending on address type and socket type"></p>
+<ul>
+<li>IPv4 TCP&#x2F;UDP socket在<code>connect()</code>&#x2F;<code>snedto()</code>中指定IPv4 address时, 不做任何处理</li>
+<li>IPv6 TCP&#x2F;UDP socket在<code>connect()</code>&#x2F;<code>sendto()</code>中指定IPv6 address时, 不做任何处理</li>
+<li>IPv6 TCP&#x2F;UDP socket在<code>connect()</code>&#x2F;<code>sendto()</code>中指定IPv4-mapped IPv6时, kernel会将source IPv6 address转换为IPv4 address</li>
+<li>IPv4 socket无法在<code>connect()</code>&#x2F;<code>sendto()</code>中指定IPv6 address</li>
+</ul>
+<p>以下是IPv4&#x2F;IPv6 client与server通信的各种情况:</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">IPv4 server (IPv4-only host, A only)</th>
+<th align="center">IPv6 server (IPv6-only host, AAAA only)</th>
+<th align="center">IPv4 server (dual-stack host, A and AAAA)</th>
+<th align="center">IPv6 server (dual-stack host, A and AAAA)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">IPv4 client, IPv4-only host</td>
+<td align="center">IPv4</td>
+<td align="center">(no)</td>
+<td align="center">IPv4</td>
+<td align="center">IPv4</td>
+</tr>
+<tr>
+<td align="center">IPv6 client, IPv6-only host</td>
+<td align="center">(no)</td>
+<td align="center">IPv6</td>
+<td align="center">(no)</td>
+<td align="center">IPv6</td>
+</tr>
+<tr>
+<td align="center">IPv4 client, dual-stack host</td>
+<td align="center">IPv4</td>
+<td align="center">(no)</td>
+<td align="center">IPv4</td>
+<td align="center">IPv4</td>
+</tr>
+<tr>
+<td align="center">IPv6 client, dual-stack host</td>
+<td align="center">IPv4</td>
+<td align="center">IPv6</td>
+<td align="center">(no*)</td>
+<td align="center">IPv6</td>
+</tr>
+</tbody></table>
+<p>实际上, 没有设备只支持IPv6, 因此所有<code>(no)</code>的情况是不存在的. 但存在一个特例, 就是<code>(no*)</code>: 当client选择使用AAAA record并发送IPv6 datagram时, 无法建立连接; 当client选择使用A record并发送IPv4-mapped IPv6 address时, 会顺利建立连接.</p>
+<h2 id="4-IPv6-Address-Testing-Macros"><a href="#4-IPv6-Address-Testing-Macros" class="headerlink" title="4. IPv6 Address-Testing Macros"></a>4. IPv6 Address-Testing Macros</h2><p>UNIX提供了一些函数, 可以帮助IPv6 application分辨对端为IPv6 address或IPv4-mapped IPv6 address, 和IPv6 address的其他属性.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* :: */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_UNSPECIFIED</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ::1 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_LOOPBACK</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ff00::/8 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_MULTICAST</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* fe80::/10 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_LINKLOCAL</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* fec0::/10 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_SITELOCAL</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ::ffff/96 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_V4MAPPED</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ::ffff/96 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_V4COMPAT</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ff01::/16 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_MC_NODELOCAL</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ff02::/16 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_MC_LINKLOCAL</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ff05::/16 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_MC_SITELOCAL</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ff08::/16 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_MC_ORGLOCAL</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* ff0e::/16 */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">IN6_IS_ADDR_MC_GLOBAL</span><span class="params">(<span class="type">const</span> <span class="keyword">struct</span> in6_addr *aptr)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-Source-Code-Portability"><a href="#5-Source-Code-Portability" class="headerlink" title="5. Source Code Portability"></a>5. Source Code Portability</h2><p>绝大多数application都是用IPv4. 若需要将application切换为IPv6, 则需要考虑对端能否接收IPv6 datagram. 最直接方法即使用**#ifdefs**判断是够可用IPv6, 问题在于后续维护代码时需要很小心.<br>把程序改为protocl-independent是一种更好的方法. 首先移除<code>gethostbyname()</code>和<code>gethostbyaddr()</code>, 使用<code>getaddrinfo()</code>和<code>getnameinfo()</code>代替, 这样就可以获取socket address structure, 并使用<code>bind()</code>, <code>connect()</code>, <code>recvfrom()</code>等函数操作. socket的任何接收发送操作对于上层程序来说, 是透明的.<br>当编译程序时, 有些host支持IPv4和IPv6时, 而有些host只支持IPv4, 这时就需要对host网络兼容性做一些判断: 可通过name server获取所有AAAA records并尝试建立连接, 若全部失败, 再尝试连接A record.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/2505.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Daemon Processes and the inetd Superserver</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2b71.html">
+        <span class="next-text nav-default">Name and Address Conversions</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/b4e.html';
+  var disqus_title = "IPv4 and IPv6 Interoperability";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

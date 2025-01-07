@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="BitTorrent Protocol Specification"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/7f56.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/7f56.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/7f56.html"/>
+
+
+<meta name="description" content="1. IntroductionBT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者.  2. BitTorent文件的分布包括以下实体 普通的web server 静态的metainfo(元信息)文件 BitTorrent Trac">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BitTorrent Protocol Specification">
+<meta property="og:url" content="https://zaf1ro.github.io/p/7f56.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionBT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者.  2. BitTorent文件的分布包括以下实体 普通的web server 静态的metainfo(元信息)文件 BitTorrent Trac">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-01-29T01:00:42.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.044Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+BitTorrent Protocol Specification - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-BitTorent%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%86%E5%B8%83%E5%8C%85%E6%8B%AC%E4%BB%A5%E4%B8%8B%E5%AE%9E%E4%BD%93"><span class="toc-text">2. BitTorent文件的分布包括以下实体</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Host%E9%9C%80%E8%A6%81%E5%81%9A%E4%BB%A5%E4%B8%8B%E6%AD%A5%E9%AA%A4%E6%89%8D%E8%83%BD%E5%BC%80%E5%90%AF%E6%9C%8D%E5%8A%A1"><span class="toc-text">3. Host需要做以下步骤才能开启服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E7%94%A8%E6%88%B7%E9%9C%80%E8%A6%81%E5%81%9A%E4%BB%A5%E4%B8%8B%E6%93%8D%E4%BD%9C%E6%89%8D%E8%83%BD%E5%BC%80%E5%90%AF%E4%B8%8B%E8%BD%BD"><span class="toc-text">4. 用户需要做以下操作才能开启下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Bencoding"><span class="toc-text">5. Bencoding</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-metainfo%E6%96%87%E4%BB%B6-metainfo-file"><span class="toc-text">6. metainfo文件(metainfo file)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-info%E5%AD%97%E5%85%B8-info-dictionary"><span class="toc-text">7. info字典(info dictionary)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-trackers"><span class="toc-text">8. trackers</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Peer%E5%8D%8F%E8%AE%AE-Peer-protocol"><span class="toc-text">9. Peer协议(Peer protocol)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-BitTorrent-tracker"><span class="toc-text">10. BitTorrent tracker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E5%B7%B2%E7%9F%A5client%E6%A0%BC%E5%BC%8F"><span class="toc-text">11. 已知client格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-%E6%9C%AA%E7%9F%A5%E7%9A%84client"><span class="toc-text">13. 未知的client</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E5%85%B6%E4%BB%96"><span class="toc-text">14. 其他</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          BitTorrent Protocol Specification
+        
+      </h1>
+      <time class="post-time">
+          01/28/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>BT是一个分布式文件协议, 它通过URL来识别内容并通过web来无缝整合. 它的优势在于能通过单纯的HTTP来实现对同一文件的同时多个下载, 下载者再上传给其他人, 这使得能在适度增加负载的同时使得文件源能支持大量下载者. </p>
+<h2 id="2-BitTorent文件的分布包括以下实体"><a href="#2-BitTorent文件的分布包括以下实体" class="headerlink" title="2. BitTorent文件的分布包括以下实体"></a>2. BitTorent文件的分布包括以下实体</h2><ul>
+<li>普通的web server</li>
+<li>静态的metainfo(元信息)文件</li>
+<li>BitTorrent Tracker</li>
+<li>原始的下载者</li>
+<li>终端用户浏览器</li>
+<li>终端用户下载器</li>
+</ul>
+<p>理论上对于单个文件来说有许多终端用户</p>
+<h2 id="3-Host需要做以下步骤才能开启服务"><a href="#3-Host需要做以下步骤才能开启服务" class="headerlink" title="3. Host需要做以下步骤才能开启服务"></a>3. Host需要做以下步骤才能开启服务</h2><ol>
+<li>开启一个tracker(大部分情况下已经有运行的了)</li>
+<li>开启一个普通的web server, 例如apache</li>
+<li>在web server上关联MIME类型为application&#x2F;x-bittorrent的.torrent拓展</li>
+<li>使用一个被服务的完整文件和tracker的URL来生成一个metainfo(.torrent)文件</li>
+<li>将metainfo(.torrent)文件放在web server上</li>
+<li>在其他web页面上链接上该metainfo文件</li>
+<li>开启一个已经拥有完整文件的下载器</li>
+</ol>
+<h2 id="4-用户需要做以下操作才能开启下载"><a href="#4-用户需要做以下操作才能开启下载" class="headerlink" title="4. 用户需要做以下操作才能开启下载"></a>4. 用户需要做以下操作才能开启下载</h2><ol>
+<li>安装BitTorrent</li>
+<li>上网</li>
+<li>点击.torrent文件的链接</li>
+<li>选择文件的存放位置, 或重新开始一个局部下载</li>
+<li>等待下载完成</li>
+<li>退出下载器(退出后会保持上传)</li>
+</ol>
+<h2 id="5-Bencoding"><a href="#5-Bencoding" class="headerlink" title="5. Bencoding"></a>5. Bencoding</h2><ul>
+<li>字符串(String): 长度作为前缀, 基于十进制, 中间用&quot;:&quot;将长度和字符串间隔开. 例如: <code>4:spam</code>表示<code>spam</code>.</li>
+<li>整数(Integer): 以<code>i</code>开始, 以<code>e</code>作为结束字符, 中间为十进制的整数信息. 举个例子: <code>i3e</code>表示<code>3</code> , <code>i-3e</code>表示<code>-3</code>. 整数没有大小限制, 但<code>i-0e</code>是不合法的, 所有以<code>0</code>开始的编码都是不合法的, 例如<code>i03e</code>, 除了<code>i0e</code>, 因为它表示<code>0</code>. </li>
+<li>列表(List): 以<code>l</code>开始, 以<code>e</code>结束, 中间为<strong>Bencoding编码</strong>. 例如: <code>l4:spam4:eggse</code>表示<code>[&#39;spam&#39;, &#39;eggs&#39;]</code>.</li>
+<li>字典(Dictionary): 以<code>d</code>开始, 以<code>e</code>结束, 中间为key和value. 例如: <code>d3:cow3:moo4:spam4:eggse</code>表示<code>&#123;&#39;cow&#39;: &#39;moo&#39;, &#39;spam&#39;: &#39;eggs&#39;&#125;</code>, <code>d4:spaml1:a1:bee</code>表示<code>&#123;&#39;spam&#39;: [&#39;a&#39;, &#39;b&#39;]&#125;</code>. key必须为字符串(String), 且必须采用原始字符串方式排序, 不是字母数字的排序方式.</li>
+</ul>
+<h2 id="6-metainfo文件-metainfo-file"><a href="#6-metainfo文件-metainfo-file" class="headerlink" title="6. metainfo文件(metainfo file)"></a>6. metainfo文件(metainfo file)</h2><p>元信息文件是以Bencoding编码的字典, 其中的字符串均为UTF-8编码, key有以下内容: </p>
+<ul>
+<li>announce: tracker的URL</li>
+<li>info: 对应的值是一个torrent文件的字典, key在下面有描述.torrent文件中的所有字符串包含的文本内容都必须为UTF-8编码</li>
+</ul>
+<h3 id="7-info字典-info-dictionary"><a href="#7-info字典-info-dictionary" class="headerlink" title="7. info字典(info dictionary)"></a>7. info字典(info dictionary)</h3><p>info字典的key都是UTF-8编码的字符串</p>
+<ul>
+<li>piece length: 文件分隔后每一片的字节数量. 为了传输文件, 文件会被分隔成固定的片, 除了最后一片可能被截断. 片长度会一直保持2的次方大小, 大多数情况下为$2^{18}$, 也就是256KB</li>
+<li>pieces: 20或20的倍数长度的字符串, 可以分割成一个个20字节的字符串, 每一个字符串都是SHA1散列值计算出来的. </li>
+<li>key长度 &#x2F; key文件: 两者必有其一, 但不能一起存在. 如果key length存在那么只用下载单个文件; 如果是key file, 那么就是一个目录结构, 包含一系列文件. 在单个文件中, length指的就是文件的字节数. </li>
+<li>files: 多文件情况的都将多个文件按照顺序连接成一个文件, 显示在文件列表中. files对应的就是文件列表, 是一个包含多个字典的list, 字典中的key包含以下内容: <ul>
+<li>length: 文件的长度, 字节个数</li>
+<li>path: 对应子目录名的UTF-8编码字符串, 最后一个是真正的文件名</li>
+<li>name: 对于单个文件, name就是文件名; 对于多文件的情况, name为文件夹的名字</li>
+</ul>
+</li>
+</ul>
+<h3 id="8-trackers"><a href="#8-trackers" class="headerlink" title="8. trackers"></a>8. trackers</h3><p>tracker的GET请求有以下keys: </p>
+<ul>
+<li>info_hash: metainfo文件中info键对应的值的20字节SHA1散列值, 将被移除</li>
+<li>peer_id: 20字节长度的字符串, 是用户下载器的唯一标识, 每一个下载器都会在开始一个新的下载开始时生成一个随机的id, 将被移除. </li>
+<li>ip: 可选选项, 代表客户端主机的IP地址. 只有当请求中的IP地址不是客户端的IP地址时才会使用该参数, 比如客户端开启代理. </li>
+<li>port: 客户端正在监听的端口号, 下载器一般使用6881-6880, 如果不是该范围, 则客户端可能拒绝连接. </li>
+<li>uploaded: 上传的字节数, 十进制. </li>
+<li>downloaded: 下载的字节数, 十进制. </li>
+<li>left: 客户端还需要下载的字节数, 十进制. 注意, 该值不能通过file length减去downloaded来计算获得, 因为可能用户进行的是一次继续下载, 并且已下载的数据有可能缺失完整性检查, 所以还需要重新下载. </li>
+<li>event: 可选选项. 对应着started, completed或stopped(empty代表不存在). 当一个下载刚开始时, announcement使用started; 当下载完成时, 发送completed; 当停止下载时, 发送stopped. Tracker的response是bencoded编码的字典. 如果tracker的response中包含failure reason的键, 那么对应的值表示一个可读的字符串, 这段字符串解释了为什么查询失败. 否则必须还有两个key: <ul>
+<li>interval: 下载器在两次查询之间需要等待的时间</li>
+<li>peers: 包含多个字典的列表, 每个字典包含peer id, ip, 和port, 这对应着客户端的自选ID, IP地址, DNS名称, 和端口号. 如果下载器有event发生或需要更多的客户端, 那么需要向tracker重新发起不定期请求</li>
+</ul>
+</li>
+</ul>
+<h2 id="9-Peer协议-Peer-protocol"><a href="#9-Peer协议-Peer-protocol" class="headerlink" title="9. Peer协议(Peer protocol)"></a>9. Peer协议(Peer protocol)</h2><p>BitTorrent的peer协议通过TCP或uTP操作.<br>Peer连接是对称的. 双向传输的信息是相同的, 数据库可以走任意方向.<br>Peer协议适用于metainfo文件描述的由索引连接的多片文件, 以0为开始. 当一个peer下载了一片, 并且进行了hash匹配, 那么就可以将该片分享给其他peer.<br>连接以两个bit的状态码结束: 是否choke, 是否interested. Choking意味着只有切换为unchoked状态才能传输数据. Choking背后的推导和原理将会在后面提到.<br>当一端为interested, 另一端为not choking时进行数据传输. 每当下载器不对peer进行请求下载时, Interested状态必须随时保持更新, 尽管peer可能对本端choked, 也必须传递not interested. 尽管使用起来很困难, 但这能使得下载器只是哪些peer将开始下载, 如果是peer对本端是unchoked.<br>连接开始的初始状态为choke和not interested<br>数据传输时, 下载器应保持片查询, 并按队列进行查询, 这样可以提升TCP性能. 另一方面, 不能写入TCP缓存的请求将会在内存中排队等候, 而不是存储在应用层的网络缓存中, 这样当发生choke时可以全部抛弃.<br>Peer wire协议会包含一次握手, 随后就是以长度为前缀的信息组成的流传输. 握手以字符串19开始, 后面跟着&quot;BitTorrent protocol&quot;. 开始的字符串为长度前缀, 把这个字符串放这里是希望其他新的协议也这么做, 并且可以通过这个来区分协议.<br>协议中的后续传输的整数都以大端字节4bytes编码<br>固定头部后紧跟着8个保留bytes, 现在是用零填充. 如果你想拓展协议可以使用这些bytes.<br>紧接着下的20bytes是metainfo文件的info value的bencode编码的sha1散列值(与tracker的GET中的info_hash相同), 如果两端传输的该值不相同, 将断开连接. 以下是一个例外: 如果下载器想通过一个端口进行多个下载, 将会在即将到来的连接中接受下载的hash, 如果hash在列表中, 将回复相同的hash.<br>下载hash后为20bytes的peer id, 如果接收端的peer id和开始端不匹配也会中断连接.<br>以上就是握手, 接下来是交互的以长度为前缀的流和信息. 长度为0的信息为keepalives和ignored. keepalives每隔两分钟发一次, 但当期望数据时超市可能会更快的完成. </p>
+<h2 id="10-BitTorrent-tracker"><a href="#10-BitTorrent-tracker" class="headerlink" title="10. BitTorrent tracker"></a>10. BitTorrent tracker</h2><p>tracker的request和peer握手中的20字节的Peer ID不仅用于标记每个peer, 还用来标记client的实现和版本.<br>传统client会将peer id中的第一个字母设置为&quot;m&quot;, 紧接着主版本号, 副版本号和阶段版本号, 使用&quot;-&quot;隔开, 例如&quot;M4-3-6-&quot;或&quot;M4-20-8-&quot;, 对应着4.3.6和4.20.8版本号. Peer id中剩下的字节都是随机分配的.<br>许多client使用两个字符作为开端, 这样可以识别client的实现, 后面的四个ascii数字用来表示版本号. 和传统的client一样, 其他字节随机分配. 例如:&quot;-AZ2060-&quot;. </p>
+<h2 id="11-已知client格式"><a href="#11-已知client格式" class="headerlink" title="11. 已知client格式"></a>11. 已知client格式</h2><ul>
+<li>&#39;AG&#39;: Ares</li>
+<li>&#39;A~&#39;: Ares</li>
+<li>&#39;AR&#39;: Arctic</li>
+<li>&#39;AV&#39;: Avicora</li>
+<li>&#39;AX&#39;: BitPump</li>
+<li>&#39;AZ&#39;: Azureus</li>
+<li>&#39;BB&#39;: BitBuddy</li>
+<li>&#39;BC&#39;: BitComet</li>
+<li>&#39;BF&#39;: Bitflu</li>
+<li>&#39;BG&#39;: BTG (uses Rasterbar libtorrent)</li>
+<li>&#39;BR&#39;: BitRocket</li>
+<li>&#39;BS&#39;: BTSlave</li>
+<li>&#39;BX&#39;: ~Bittorrent X</li>
+<li>&#39;CD&#39;: Enhanced CTorrent</li>
+<li>&#39;CT&#39;: CTorrent</li>
+<li>&#39;DE&#39;: DelugeTorrent</li>
+<li>&#39;DP&#39;: Propagate Data Client</li>
+<li>&#39;EB&#39;: EBit</li>
+<li>&#39;ES&#39;: electric sheep</li>
+<li>&#39;FT&#39;: FoxTorrent</li>
+<li>&#39;GS&#39;: GSTorrent</li>
+<li>&#39;HL&#39;: Halite</li>
+<li>&#39;HN&#39;: Hydranode</li>
+<li>&#39;KG&#39;: KGet</li>
+<li>&#39;KT&#39;: KTorrent</li>
+<li>&#39;LH&#39;: LH-ABC</li>
+<li>&#39;LP&#39;: Lphant</li>
+<li>&#39;LT&#39;: libtorrent</li>
+<li>&#39;lt&#39;: libTorrent</li>
+<li>&#39;LW&#39;: LimeWire</li>
+<li>&#39;MO&#39;: MonoTorrent</li>
+<li>&#39;MP&#39;: MooPolice</li>
+<li>&#39;MR&#39;: Miro</li>
+<li>&#39;MT&#39;: MoonlightTorrent</li>
+<li>&#39;NX&#39;: Net Transport</li>
+<li>&#39;PD&#39;: Pando</li>
+<li>&#39;qB&#39;: qBittorrent</li>
+<li>&#39;QD&#39;: QQDownload</li>
+<li>&#39;QT&#39;: Qt 4 Torrent example</li>
+<li>&#39;RT&#39;: Retriever</li>
+<li>&#39;S~&#39;: Shareaza alpha&#x2F;beta</li>
+<li>&#39;SB&#39;: ~Swiftbit</li>
+<li>&#39;SS&#39;: SwarmScope</li>
+<li>&#39;ST&#39;: SymTorrent</li>
+<li>&#39;st&#39;: sharktorrent</li>
+<li>&#39;SZ&#39;: Shareaza</li>
+<li>&#39;TN&#39;: TorrentDotNET</li>
+<li>&#39;TR&#39;: Transmission</li>
+<li>&#39;TS&#39;: Torrentstorm</li>
+<li>&#39;TT&#39;: TuoTu</li>
+<li>&#39;UL&#39;: uLeecher!</li>
+<li>&#39;UT&#39;: µTorrent</li>
+<li>&#39;VG&#39;: Vagaa</li>
+<li>&#39;WT&#39;: BitLet</li>
+<li>&#39;WY&#39;: FireTorrent</li>
+<li>&#39;XL&#39;: Xunlei</li>
+<li>&#39;XT&#39;: XanTorrent</li>
+<li>&#39;XX&#39;: Xtorrent</li>
+<li>&#39;ZT&#39;: ZipTorrent</li>
+</ul>
+<h2 id="13-未知的client"><a href="#13-未知的client" class="headerlink" title="13. 未知的client"></a>13. 未知的client</h2><p>以下client还没被标记, 需要确认:</p>
+<ul>
+<li>&#39;BD&#39; (例如: -BD0300-)</li>
+<li>&#39;NP&#39; (例如: -NP0201-)</li>
+<li>&#39;wF&#39; (例如: -wF2200-)</li>
+</ul>
+<h2 id="14-其他"><a href="#14-其他" class="headerlink" title="14. 其他"></a>14. 其他</h2><p>Shad0w的实验性BitTorrent实现和BitTornado都将peer id的开头设为&quot;T&quot;, BitTornado会紧接着5个ascii字符的版本号, 如果没有5个字节长, 则用&quot;-&quot;填充. 表示版本号的ascii字符只能使用以下字符:<br>0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-<br>例如:&quot;S58B-----&quot;表示5.8.11版本. 和其他的peer id格式一样, 其他的字符都是随机分配. </p>
+<p>已知的client使用以下编码格式:</p>
+<ul>
+<li>&#39;A&#39;: ABC</li>
+<li>&#39;O&#39;: Osprey Permaseed</li>
+<li>&#39;Q&#39;: BTQueue</li>
+<li>&#39;R&#39;: Tribler</li>
+<li>&#39;S&#39;: Shadow&#39;s client</li>
+<li>&#39;T&#39;: BitTornado</li>
+<li>&#39;U&#39;: UPnP NAT Bit Torrent</li>
+</ul>
+<ol>
+<li>BitComet的peer id包含四个ASCII字符&quot;exbc&quot;, 后面跟着两个字节x和y, 最后跟着随机字符. x为十进制的小数点前版本号, y为十进制的小数点后版本号. BitLord使用相同的格式, 但会在版本号后面添加LORD. BitComet的一个非官方补丁将&quot;exbc&quot;替换为&quot;FUTB&quot;. 自BitComet版本更新为0.59后, Peer IDs的编码更改为Azureus风格</li>
+<li>XBT客户端有自己的格式. 它的peer id包含三个大写字符:XBT, 之后是三个ASCII整数来表示版本号. 如果客户端是debug build, 那么第七位为小写字符d, 否则为&quot;-&quot;. 之后就是随机的整数, 大小写字符. 例如:XBT054d-, 这说明是debug build 0.5.4版本</li>
+<li>Opera 8预览版和Opera9.x发行版都使用以下peer_id格式:前两个字节是&quot;OP&quot;, 后面四个字节为版本号. 剩下的是随机小写十六进制数</li>
+<li>MLdonkey使用以下peer_id格式:首字符为&quot;-ML&quot;, 紧接带点版本号, 然后是&quot;-&quot;, 最后为随机字符, 例如: -ML2.7.2-kgjjfkd</li>
+<li>Bits on Wheels使用&quot;-BOWxxx-yyyyyyyyyyyy&quot;, y为随机大小字符, x为版本号, 例如:1.0.6等价于A0C</li>
+<li>Queen Bee使用Bram的新风格: Q1-0-0--或Q1-10-0-后跟着随机字节</li>
+<li>BitTyrant是Azureus的分支, 1.1版本中使用AZ2500BT + 随机字节作为peer ID</li>
+<li>TorrenTopia的1.90版本是3.4.6版本主线的分支, 其peer ID以346------开头</li>
+<li>BitSpirit对于其peer ID有不同的格式. 它的ID使用&quot;\\0\\&#39;3BS&quot;作为前四个字节, 表示3.x版本号, &quot;\0\2BS&quot;表示2.x版本. 所有格式都以&quot;UDP0&quot;作为结尾</li>
+<li>Rufus使用2字节的十进制ASCII数值作为版本号, 第三四字节是&quot;RS&quot;, 以后跟着用户的昵称和一些随机字节</li>
+<li>G3 Torrent以&quot;G3&quot;开头, 紧跟着9个字符的用户昵称</li>
+<li>FlashGet使用Azureus风格, 以&quot;FG&quot;开头, 没有&quot;-&quot;, 版本1.82.1002仍然使用数字&quot;0180&quot;</li>
+<li>AllPeers使用用户相关字符的sha1哈希值, 并用&quot;AP + 版本号 + -&quot;替代了前几个字节</li>
+</ol>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/485.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">assert.h</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/d55a.html">
+        <span class="next-text nav-default">SQLite Write-ahead Logging</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/7f56.html';
+  var disqus_title = "BitTorrent Protocol Specification";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

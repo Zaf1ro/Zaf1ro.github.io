@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="SACK"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/5730.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/5730.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/5730.html"/>
+
+
+<meta name="description" content="1. TCP Selective Acknowledgment Options一个会话中的多个丢包会对TCP吞吐量造成灾难性打击, TCP使用累计ACK机制来接收未被确认的segment. 这会强制要求sender等待一个RTT来查看是否丢包, 并且避免了重传那些这些的segment. 正是由于累计ACK机制, TCP会因多个segment丢失导致吞吐量下降.SACK(The Selective">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SACK">
+<meta property="og:url" content="https://zaf1ro.github.io/p/5730.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. TCP Selective Acknowledgment Options一个会话中的多个丢包会对TCP吞吐量造成灾难性打击, TCP使用累计ACK机制来接收未被确认的segment. 这会强制要求sender等待一个RTT来查看是否丢包, 并且避免了重传那些这些的segment. 正是由于累计ACK机制, TCP会因多个segment丢失导致吞吐量下降.SACK(The Selective">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-06-15T00:28:20.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.041Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+SACK - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-TCP-Selective-Acknowledgment-Options"><span class="toc-text">1. TCP Selective Acknowledgment Options</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-SACK-Permitted-Option"><span class="toc-text">2. SACK-Permitted Option</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Sack-Option%E6%A0%BC%E5%BC%8F"><span class="toc-text">3. Sack Option格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%BE%8B%E5%AD%90"><span class="toc-text">4. 例子</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-SACK-permitted"><span class="toc-text">4.1 SACK-permitted</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E4%B8%A2%E5%8C%85%E6%B5%81%E7%A8%8B"><span class="toc-text">4.2 丢包流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E9%87%8D%E4%BC%A0"><span class="toc-text">4.3 重传</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-SACK%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-text">5. SACK优缺点</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          SACK
+        
+      </h1>
+      <time class="post-time">
+          06/14/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-TCP-Selective-Acknowledgment-Options"><a href="#1-TCP-Selective-Acknowledgment-Options" class="headerlink" title="1. TCP Selective Acknowledgment Options"></a>1. TCP Selective Acknowledgment Options</h2><p>一个会话中的多个丢包会对TCP吞吐量造成灾难性打击, TCP使用累计ACK机制来接收未被确认的segment. 这会强制要求sender等待一个RTT来查看是否丢包, 并且避免了重传那些这些的segment. 正是由于累计ACK机制, TCP会因多个segment丢失导致吞吐量下降.<br>SACK(The Selective Acknowledgement)正是为了解决多个segment丢失问题. receiver可以通知sender所有已经发送成功的segment, 所以sender只需要重传那些已经丢失的segment.<br>SACK拓展使用了两个TCP option:</p>
+<ul>
+<li>SACK-permitted. 用于启动SACK.</li>
+<li>SACK option本身. 在SACK-permitted之后就可以传输SACK本体.</li>
+</ul>
+<h2 id="2-SACK-Permitted-Option"><a href="#2-SACK-Permitted-Option" class="headerlink" title="2. SACK-Permitted Option"></a>2. SACK-Permitted Option</h2><p>一般都在TCP的SYN和SYN-ACK中, 占2字节, 不能传送在非SYN的segment中.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">+----------+------------+</span><br><span class="line">|  Kind=4  |  Length=2  |</span><br><span class="line">+----------+------------+</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-Sack-Option格式"><a href="#3-Sack-Option格式" class="headerlink" title="3. Sack Option格式"></a>3. Sack Option格式</h2><p>SACK option用于同一会话中receiver传输给sender发送的ACK信息.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">                  +--------+--------+</span><br><span class="line">                  | Kind=5 | Length |</span><br><span class="line">+--------+--------+--------+--------+</span><br><span class="line">|      Left Edge of 1st Block       |</span><br><span class="line">+--------+--------+--------+--------+</span><br><span class="line">|      Right Edge of 1st Block      |</span><br><span class="line">+--------+--------+--------+--------+</span><br><span class="line">|                                   |</span><br><span class="line">/               . . .               /</span><br><span class="line">|                                   |</span><br><span class="line">+--------+--------+--------+--------+</span><br><span class="line">|      Left Edge of nth Block       |</span><br><span class="line">+--------+--------+--------+--------+</span><br><span class="line">|      Right Edge of nth Block      |</span><br><span class="line">+--------+--------+--------+--------+</span><br></pre></td></tr></table></figure>
+<p>SACK option中的每一个block都有同一个会话中receiver传输给sender的连续SEQ, 但同一个option中的两个block是不连续的. 一个block有两个32位的unsigned整数:</p>
+<ol>
+<li>Left Edge of Block: 连续Seq中的第一个sequence number</li>
+<li>Right Edge of Block: 该block中最后一个sequence number</li>
+</ol>
+<h2 id="4-例子"><a href="#4-例子" class="headerlink" title="4. 例子"></a>4. 例子</h2><p>下面用一个实例来说明整个SACK流程, 下面提到的sequence number都是相对值(relative), 并不是真实的sequence number.</p>
+<h3 id="4-1-SACK-permitted"><a href="#4-1-SACK-permitted" class="headerlink" title="4.1 SACK-permitted"></a>4.1 SACK-permitted</h3><p>首个SYN报文中的Options选项中会有SACK Permitted Option: Kind:4, Length:2<br>然后在SYN-ACK的报文中会有SACK Permitted Option: Kind:4, Length:2<br>这样双方都表明支持SACK.</p>
+<h3 id="4-2-丢包流程"><a href="#4-2-丢包流程" class="headerlink" title="4.2 丢包流程"></a>4.2 丢包流程</h3><ol>
+<li>sender给receiver发送的segment的seq number为72933, 长度为1448</li>
+<li>receiver回复ACK, ack number为74381, 表明上一个segment已接收</li>
+<li>sender给receiver发送的segment的seq number为77029, 长度为1448 - 发生了丢包</li>
+<li>receiver发现segment丢失, 回复ack number为74381, 并且在Options中设置SACK:<ul>
+<li>Kind: 5</li>
+<li>Length: 10</li>
+<li>Left Edge of Block: 77029</li>
+<li>Right Edge of Block: 78477</li>
+</ul>
+</li>
+<li>sender给receiver发送的segment的seq number为78477, 长度为1200</li>
+<li>receiver发现丢失的segment还没重传, 继续回复ack number为74381, 并继续设置SACK:<ul>
+<li>Kind: 5</li>
+<li>Length: 10</li>
+<li>Left Edge of Block: 77029</li>
+<li>Right Edge of Block: 79677</li>
+</ul>
+</li>
+<li>后续的sender一直没有重传seq number为74381的segment, 所以receiver将ACK segment中的ack number设置为74381, 并不断扩大SACK中的block:<ul>
+<li>Kind: 5</li>
+<li>Length: 10</li>
+<li>Left Edge of Block: 77029</li>
+<li>Right Edge of Block: 109517</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-3-重传"><a href="#4-3-重传" class="headerlink" title="4.3 重传"></a>4.3 重传</h3><ol>
+<li>sender给receiver发送的segment的seq number为74381, 长度为1448</li>
+<li>receiver发现sender重传了需要的segment, 但是还没有连上option中的Left Edge of Block(77029), 所以回复的ack number为75829, 并设置SACK:<ul>
+<li>Kind: 5</li>
+<li>Length: 10</li>
+<li>Left Edge of Block: 77029</li>
+<li>Right Edge of Block: 109517</li>
+</ul>
+</li>
+<li>sender给receiver发送的segment的seq number为75829, 长度为1200</li>
+<li>receiver发现重传的segment使得整个ack number连贯起来, 所以回复的ack number为109517, 并不再添加SACK option.</li>
+</ol>
+<h2 id="5-SACK优缺点"><a href="#5-SACK优缺点" class="headerlink" title="5. SACK优缺点"></a>5. SACK优缺点</h2><p>在高延迟的连接中, SACK对于有效利用所有可用带宽尤其重要, 使得出现丢包后只需重传所需数据即可, 这样能在不降低传输速率的基础上适应高丢包率.<br>缺点也很明显, 处理SACK需要消耗CPU资源, 尤其是处理无效和恶意的SACK时, 会占用大量资源.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/bd06.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">CRC (Cyclic Redundancy Check)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/9637.html">
+        <span class="next-text nav-default">TCP Congestion Control</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/5730.html';
+  var disqus_title = "SACK";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

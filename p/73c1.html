@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Overview of Compilation"/>
+
+
+
+
+  <meta name="keywords" content="Compiler," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/73c1.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/73c1.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/73c1.html"/>
+
+
+<meta name="description" content="1. Introduction1.1 Conceptual Roadmap编译器作为一种计算机程序, 负责将一种语言转换为另一种语言. 为了实现这个目的, 编译器必须理解源语言和目标语言的形式, 内容, 语法和语义, 并需要一种策略将源语言映射到目标语言. 典型的编译器结构为: front-end负责处理源语言, back-end负责处理目标语言, front-end和back-end之间用一种形">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Overview of Compilation">
+<meta property="og:url" content="https://zaf1ro.github.io/p/73c1.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction1.1 Conceptual Roadmap编译器作为一种计算机程序, 负责将一种语言转换为另一种语言. 为了实现这个目的, 编译器必须理解源语言和目标语言的形式, 内容, 语法和语义, 并需要一种策略将源语言映射到目标语言. 典型的编译器结构为: front-end负责处理源语言, back-end负责处理目标语言, front-end和back-end之间用一种形">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/1-5.png">
+<meta property="article:published_time" content="2020-01-27T13:24:06.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.031Z">
+<meta property="article:tag" content="Compiler">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Compiler/1-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Overview of Compilation - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Conceptual-Roadmap"><span class="toc-text">1.1 Conceptual Roadmap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Overview"><span class="toc-text">1.2 Overview</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-The-Fundamental-Principles-of-Compilation"><span class="toc-text">1.3 The Fundamental Principles of Compilation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Compiler-Structure"><span class="toc-text">2. Compiler Structure</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Overview-of-Translation"><span class="toc-text">3. Overview of Translation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-The-Front-End"><span class="toc-text">3.1 The Front End</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-Check-Syntax"><span class="toc-text">3.1.1 Check Syntax</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-Intermediate-Representations"><span class="toc-text">3.1.2 Intermediate Representations</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-The-Optimizer"><span class="toc-text">3.2 The Optimizer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-The-Back-End"><span class="toc-text">3.3 The Back End</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-Instruction-Selection"><span class="toc-text">3.3.1 Instruction Selection</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-Register-Allocation"><span class="toc-text">3.3.2 Register Allocation</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-Instruction-Scheduling"><span class="toc-text">3.3.3 Instruction Scheduling</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Overview of Compilation
+        
+      </h1>
+      <time class="post-time">
+          01/27/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><h3 id="1-1-Conceptual-Roadmap"><a href="#1-1-Conceptual-Roadmap" class="headerlink" title="1.1 Conceptual Roadmap"></a>1.1 Conceptual Roadmap</h3><p>编译器作为一种计算机程序, 负责将一种语言转换为另一种语言. 为了实现这个目的, 编译器必须理解源语言和目标语言的形式, 内容, 语法和语义, 并需要一种策略将源语言映射到目标语言. 典型的编译器结构为: front-end负责处理源语言, back-end负责处理目标语言, front-end和back-end之间用一种形式化结构来表示程序, 该结构独立于源语言和目标语言. 为提高翻译效率, 编译器还会包含optimizer(优化器), 用于分析和重写形式化结构体. </p>
+<h3 id="1-2-Overview"><a href="#1-2-Overview" class="headerlink" title="1.2 Overview"></a>1.2 Overview</h3><p>计算机程序使用programming language(编程语言)实现一系列抽象行为. 相对于自然语言的模糊性, programming language十分简洁和明确, 并极力避免二义性. 用户可使用programming language来表示一系列计算行为, 并交由computer processor运行并得到结果. 一般来说, 程序员提交的source language(源语言)相对于编译器输出的target language(目标语言)来说, 会更加抽象, 简洁. 一行programming language可能会被翻译为几百行machine operation. 以下是编译器的功能示意图:<br><img src="/images/Compiler/1-1.png" alt="Compiler"></p>
+<p>源语言可以为C, C++, FORTRAN, Java或其他编程语言, 目标语言一般为processor的instruction set(指令集), 但也可能为其他编程语言. 很多research compiler的目标语言为C, 因为C可在绝大多数计算机上运行; 这些不以instruction set为目标语言的compiler也被称为<strong>source-to-source translator</strong>.<br>除了compiler, 还有一种程序称为interpreter(解释器), interpreter会直接执行源程序并输出结果, 如下图:<br><img src="/images/Compiler/1-2.png" alt="Interpreter"></p>
+<p>还有一些编程语言需要compiler和interpreter的协同合作, Java先由compiler编译为bytecode, 然后由JVM(Java Virtual Machine)运行bytecode. Compiler和interpreter有很多共同之处, 它们都需要分析源代码并分析, 也需要在运行时保存程序信息. </p>
+<h3 id="1-3-The-Fundamental-Principles-of-Compilation"><a href="#1-3-The-Fundamental-Principles-of-Compilation" class="headerlink" title="1.3 The Fundamental Principles of Compilation"></a>1.3 The Fundamental Principles of Compilation</h3><p>Compiler作为一个复杂且缜密的工程项目, 依赖于很多方案的实现. 以下是compiler必须遵守的两条准则:</p>
+<ol>
+<li>compiler需保留源程序的所有涵义</li>
+<li>compiler需以某些明确的方式提升程序性能</li>
+</ol>
+<h2 id="2-Compiler-Structure"><a href="#2-Compiler-Structure" class="headerlink" title="2. Compiler Structure"></a>2. Compiler Structure</h2><p>简单来说, compiler可分为两个部分: front-end和back-end.<br><img src="/images/Compiler/1-3.png" alt="single-box model of compiler"></p>
+<p>Front-end负责理解源语言并转换为intermediate representation(IR), 而back-end负责将IR映射为目标语言. 在得到目标语言之前, compiler需要对IR进行多次迭代, 用于提升编译质量. 这种two-phase structure的设计也简化了compiler的<strong>重定目标</strong>过程: 针对不同机器, 可使用不同的back-end生成相应的指令集; front-end则可以保持不变, 因为front-end不直接服务于目标语言, 只需要产生IR即可.<br>IR的引入使得编译阶段可添加其他阶段, 例如: optimizer. Optimizer以IR作为输入, 输出优化后的IR. 这种compiler结构被称为<strong>three-phase compiler</strong>:<br><img src="/images/Compiler/1-4.png" alt="Three-phase Compiler"></p>
+<p>Three-phase structure中的每个阶段也可分为多个小阶段:</p>
+<ul>
+<li>front-end: 识别源语言, 验证合法性, 并输出IR</li>
+<li>optimizer: 多次迭代IR, 每次迭代都采取不同的优化策略</li>
+<li>back-end: 多次迭代IR, 每次迭代输出更准确的目标语言</li>
+</ul>
+<p>以下是Compiler的结构图:<br><img src="/images/Compiler/1-5.png" alt="Structure of a Typical Compiler"></p>
+<p>Compiler的三个阶段中, optimizer的描述最模糊. <strong>优化</strong>意味着需要为某些问题找到更优方案, 但优化也可能导致更多问题. 编译后的代码性能取决于optimizer和back-end的共同协作, 即使optimizer选择了最优方案, 也可能因为和back-end产生冲突而导致性能下降. 因此, 相对于源代码, optimizer的确提升了代码质量, 但通常无法产生最优代码.<br>优化部分可以是一个单次迭代的处理过程, 也可以为多次迭代处理. 单词迭代虽然更为高效, 但设计更为复杂; 多次迭代虽然耗时较长, 但设计更加简单灵活. 这两种设计的选择取决于compiler的各种约束条件.</p>
+<h2 id="3-Overview-of-Translation"><a href="#3-Overview-of-Translation" class="headerlink" title="3. Overview of Translation"></a>3. Overview of Translation</h2><p>以 $a \leftarrow a \times 2 \times b \times c \times d$ 为例, a, b, c, d表示变量, $\leftarrow$表示赋值, $\times$表示相乘操作符. 接下来会显示compiler对于该表达式的处理全过程.</p>
+<h3 id="3-1-The-Front-End"><a href="#3-1-The-Front-End" class="headerlink" title="3.1 The Front End"></a>3.1 The Front End</h3><p>Front-end会根据语法或语义判断输入的代码是否正确. 若语法和语义都没问题, 则生成IR; 若出错, 则直接报错.</p>
+<h4 id="3-1-1-Check-Syntax"><a href="#3-1-1-Check-Syntax" class="headerlink" title="3.1.1 Check Syntax"></a>3.1.1 Check Syntax</h4><p>Source language(源语言)是一个无限集, 而由grammer(语法)规定的字符串集合为有限集. Front-end中有两个部分来判断输入的代码是否正确: scanner和parser. Programming language中每个词都属于一个词类(part of speech), 例如: 英语中, 每句话都有以下结构:<br>$$<br>\textit{Sentence} \rightarrow \textit{Subject} \ \text{verb} \ \textit{Object} \ \text{endmark}<br>$$</p>
+<p>其中, verb和endmark为词类, Sentence, Subject和Object属于语法变量(syntactic variables), $\rightarrow$表示箭头右边的实例可抽象为左边的语法变量. 以&quot;“Compilers are engineered objects.&quot;这句话为例, compiler会将这句话交给scanner来获取每个单词对应的词类. Scanner会根据输入生成一个个pair, 以$(p, s)$的形式存在, 其中<strong>p</strong>为该单词的词类, <strong>s</strong>为单词的拼写, 最后得到的结果如下:<br>$$<br>\text{(noun,“Compilers”), (verb,“are”), (adjective,“engineered”),} \\<br>\text{(noun,“objects”), (endmark,“.”)}<br>$$</p>
+<p>下一步, compiler根据input language的语法规则, 和上一步scanner获得的每个代码的词类, 来判断是否符合语法语意. 假设语法规则如下:</p>
+<ol>
+<li>$\textit{Sentence} \rightarrow \textit{Subject} \ \text{verb} \ \textit{Object} \ \text{endmark}$</li>
+<li>$\textit{Subject} \rightarrow \text{noun}$</li>
+<li>$\textit{Subject} \rightarrow \textit{Modifier} \ \text{noun}$</li>
+<li>$\textit{Object} \rightarrow \text{noun}$</li>
+<li>$\textit{Object} \rightarrow \textit{Modifier} \ \text{noun}$</li>
+<li>$\textit{Modifer} \rightarrow \text{adjective}$</li>
+</ol>
+<p>根据上述规则, 可为上述例句进行逐步推导(derivation):</p>
+<ol>
+<li>根据rule 1推导出: $\text{Subject verb Object endmark}$</li>
+<li>根据rule 2推导出: $\text{noun verb Object endmark}$</li>
+<li>根据rule 5推导出: $\text{noun verb Modifier noun endmark}$</li>
+<li>根据rule 6推导出: $\text{noun verb adjective noun endmark}$</li>
+</ol>
+<p>到此为止, &quot;Compilers are engineered objects.&quot;完全符合语法规则. 但一个语法上没错的句子是没有意义的, 例如: &quot;Rocks are green vegetables&quot;同样没有语法错误, 但句子没有任何合理性. 因此为了判断句子是否合理, compiler还需要理解句子的语义.<br>programming language中的语义模型比自然语言简单的多, compiler可为其建立数学模型并检测代码中的不一致性. 以 $a \leftarrow a \times 2 \times b \times c \times d$ 为例, 若b为字符类型, 则句子不合法; 当数组的维数和数组声明的维数不相等时, 也存在不一致性问题.</p>
+<h4 id="3-1-2-Intermediate-Representations"><a href="#3-1-2-Intermediate-Representations" class="headerlink" title="3.1.2 Intermediate Representations"></a>3.1.2 Intermediate Representations</h4><p>Front-end最后的任务是生成代码对应的IR. 根据输入语言和输出语言的不同, 使用的IR类型也会有所不同. 一些IR将代码表示为一个图, 另一些IR表示为有序的汇编代码, 以下是IR可能的表达方式:<br>$$<br>t_0 \leftarrow a \times 2 \\<br>t_1 \leftarrow t_0 \times b \\<br>t_2 \leftarrow t_1 \times c \\<br>t_3 \leftarrow t_2 \times d \\<br>a \leftarrow t_3<br>$$</p>
+<h3 id="3-2-The-Optimizer"><a href="#3-2-The-Optimizer" class="headerlink" title="3.2 The Optimizer"></a>3.2 The Optimizer</h3><p>当front-end为源代码产生IR时, 会遵循源代码中的执行顺序, 因此产生的IR虽然在代码逻辑上没有问题, 但在性能上可能存在缺陷. Optimizer负责减少代码运行时间, 减小编译后的代码长度, 并降低CPU执行代码时的耗能. 假设原始代码如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">b ← ···</span><br><span class="line">c ← ···</span><br><span class="line">a ← <span class="number">1</span></span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span> to n</span><br><span class="line">  read d</span><br><span class="line">  a ← a × <span class="number">2</span> × b × c × d</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p>由于b, c的值在上述循环中不变, 只有a和d在循环内部改变, 所以可以重写为以下代码:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">b ← ···</span><br><span class="line">c ← ···</span><br><span class="line">a ← <span class="number">1</span></span><br><span class="line">t ← <span class="number">2</span> × b × c</span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span> to n</span><br><span class="line">  read d</span><br><span class="line">  a ← a × d × t</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p>优化后的版本, 乘法操作的次数从<strong>4n</strong>降低为<strong>2n+2</strong>. Compiler中的优化分为两个部分:</p>
+<ol>
+<li>Analysis: 判断代码何处可进行优化, 一般有以下几种分析技术:</li>
+<li>数据流分析(Dataflow analysis): 编译时推断运行时值的流动</li>
+<li>相关性分析(Dependence analysis): 利用number-theoretic(数论)推断下标表达式的合理性</li>
+<li>Transformation: 分析代码后还需要一种重写代码的方式, 从而让代码可高效运行. 例如: 找到循环中不变的计算并将其移至不那么频繁执行的位置. 代码转换的方式十分丰富, 每种代码转换的运行范围和所需技术都不同.</li>
+</ol>
+<h3 id="3-3-The-Back-End"><a href="#3-3-The-Back-End" class="headerlink" title="3.3 The Back End"></a>3.3 The Back End</h3><p>Back-end负责将IR转换为目标语言的代码. Back-end会决定操作执行的顺序, 并选择哪些数值存放在register(寄存器), 哪些数值存在内存中. 本章使用ILOC指令集, 可以看做RISC(reduced instruction set computer, 精简指令集)的简化版. </p>
+<h4 id="3-3-1-Instruction-Selection"><a href="#3-3-1-Instruction-Selection" class="headerlink" title="3.3.1 Instruction Selection"></a>3.3.1 Instruction Selection</h4><p>将IR转换为目标语言的第一步为instruction selection(指令选择). 以 $a \leftarrow a \times 2 \times b \times c \times d$ 为例, 经过front-end的处理后可得到以下IR:<br>$$<br>t_0 \leftarrow a \times 2 \\<br>t_1 \leftarrow t_0 \times b \\<br>t_2 \leftarrow t_1 \times c \\<br>t_3 \leftarrow t_2 \times d \\<br>a \leftarrow t_3<br>$$</p>
+<p>假设a, b, c, d分别从寄存器$r_{arp}$指定的地址开始, 偏移量分别为@a, @b, @c, @d, 以下是生成的ILOC代码:</p>
+<table>
+<thead>
+<tr>
+<th align="center">ILOC instructions</th>
+<th align="center">Comment</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$\text{loadAI} \quad r_{\textrm{arp}}, @a \Rightarrow r_{\textrm{a}}$</td>
+<td align="center">load a</td>
+</tr>
+<tr>
+<td align="center">$\text{loadI} \quad 2 \Rightarrow r_2$</td>
+<td align="center">constant 2 into $r_2$</td>
+</tr>
+<tr>
+<td align="center">$\text{loadAI} \quad r_{\textrm{arp}}, @b \Rightarrow r_{\textrm{b}}$</td>
+<td align="center">load b</td>
+</tr>
+<tr>
+<td align="center">$\text{loadAI} \quad r_{\textrm{arp}}, @c \Rightarrow r_{\textrm{c}}$</td>
+<td align="center">load c</td>
+</tr>
+<tr>
+<td align="center">$\text{loadAI} \quad r_{\textrm{arp}}, @d \Rightarrow r_{\textrm{d}}$</td>
+<td align="center">load d</td>
+</tr>
+<tr>
+<td align="center">$\text{mult} \quad r_{\textrm{a}}, r_2 \Rightarrow r_{\textrm{a}}$</td>
+<td align="center">$r_{\textrm{a}} \leftarrow a \times 2$</td>
+</tr>
+<tr>
+<td align="center">$\text{mult} \quad r_{\textrm{a}}, r_{\textrm{b}} \Rightarrow r_{\textrm{a}}$</td>
+<td align="center">$r_{\textrm{a}} \leftarrow (a \times 2) \times b$</td>
+</tr>
+<tr>
+<td align="center">$\text{mult} \quad r_{\textrm{a}}, r_{\textrm{c}} \Rightarrow r_{\textrm{a}}$</td>
+<td align="center">$r_{\textrm{a}} \leftarrow (a \times 2 \times b) \times c$</td>
+</tr>
+<tr>
+<td align="center">$\text{mult} \quad r_{\textrm{a}}, r_{\textrm{d}} \Rightarrow r_{\textrm{a}}$</td>
+<td align="center">$r_{\textrm{a}} \leftarrow (a \times 2 \times b \times c) \times d$</td>
+</tr>
+<tr>
+<td align="center">$\text{storeAI} \quad r_{\textrm{a}} \Rightarrow r_{\textrm{arp}}, @a$</td>
+<td align="center">write $r_a$ back to a</td>
+</tr>
+</tbody></table>
+<p>可以看到, compiler将所有相关值都加载到register中, 并按照IR执行乘法, 最后将结果存放在a所对应的内存地址. 这里假设register数量不受限, 并用符号名来命名register, 也称为<strong>virtual register</strong>. 这时instruction selector就可发挥作用, 例如: 用<strong>multI</strong>替换<strong>mult</strong>, 将 $\text{mult} \ r_a, r_2 \Rightarrow r_a$ 替换为 $\text{multI} \ r_a, 2 \Rightarrow r_a$, 这样就减少了一次 $\text{LoadI} \ 2 \Leftarrow r_2$ 的操作; 也可以进一步优化: 将 $\text{multI} \ r_a, 2 \Rightarrow r_a$ 替换为 $\text{add} \ r_a, r_a \Rightarrow r_a$, 这样避免了$r_2$的加载和乘法操作. </p>
+<h4 id="3-3-2-Register-Allocation"><a href="#3-3-2-Register-Allocation" class="headerlink" title="3.3.2 Register Allocation"></a>3.3.2 Register Allocation</h4><p>Instruction selection阶段假设register数量没有上限要求, 使用virtual register而忽略了register数量有限的事实. 实际中, virtual register的数量很可能高于硬件支持的数量, 必须将每个virtual register映射到实际register上. Register allocator负责决定哪些数值留在register中, 哪些数值留在内存, 从而减少register使用数量.</p>
+<table>
+<thead>
+<tr>
+<th align="center">Instruction</th>
+<th align="center">Comment</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$\text{loadAI} \quad r_{\textrm{arp}}, @a \Rightarrow r_1$</td>
+<td align="center">load a</td>
+</tr>
+<tr>
+<td align="center">$\text{add} \quad r_1, r_1 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow a \times 2$</td>
+</tr>
+<tr>
+<td align="center">$\text{loadAI} \quad r_{\textrm{arp}}, @b \Rightarrow r_2$</td>
+<td align="center">load b</td>
+</tr>
+<tr>
+<td align="center">$\text{mult} \quad r_1, r_2 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2) \times b$</td>
+</tr>
+<tr>
+<td align="center">$\text{loadAI} \quad r_{\textrm{arp}}, @c \Rightarrow r_2$</td>
+<td align="center">load c</td>
+</tr>
+<tr>
+<td align="center">$\text{mult} \quad r_1, r_2 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2 \times b) \times c$</td>
+</tr>
+<tr>
+<td align="center">$\text{loadAI} \quad r_{\textrm{arp}}, @d \Rightarrow r_2$</td>
+<td align="center">load d</td>
+</tr>
+<tr>
+<td align="center">$\text{mult} \quad r_1, r_2 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2 \times b \times c) \times d$</td>
+</tr>
+<tr>
+<td align="center">$\text{storeAI} \quad r_1 \Rightarrow r_{\textrm{arp}}, @a$</td>
+<td align="center">write $r_a$ back to a</td>
+</tr>
+</tbody></table>
+<p>上述重写后的指令序列只使用了三个register, 而不是之前的六个. 但指令序列的优化也可能导致相反作用, 例如: 重复计算已经计算过的表达式. </p>
+<h4 id="3-3-3-Instruction-Scheduling"><a href="#3-3-3-Instruction-Scheduling" class="headerlink" title="3.3.3 Instruction Scheduling"></a>3.3.3 Instruction Scheduling</h4><p>由于不同的指令执行时间不同, 适当调整指令顺序可提高执行效率. 一般来说, 内存访问操作会消耗几十甚至上百个CPU周期, 算术操作则只需要几个CPU周期. 假设指令的耗时如下:</p>
+<ul>
+<li>loadAI, storeAI: 3个CPU周期</li>
+<li>mult: 2个CPU周期</li>
+<li>other instruction: 1个CPU周期</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th align="center">Instruction</th>
+<th align="center">comment</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">$\text{loadAI} \quad r_{arp}, @a \Rightarrow r_1$</td>
+<td align="center">load a</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">$\text{add} \quad r_1, r_1 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow a \times 2$</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">7</td>
+<td align="center">$\text{loadAI} \quad r_{arp}, @b \Rightarrow r_2$</td>
+<td align="center">load b</td>
+</tr>
+<tr>
+<td align="center">8</td>
+<td align="center">9</td>
+<td align="center">$\text{mult} \quad r_1, r_2 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2) \times b$</td>
+</tr>
+<tr>
+<td align="center">10</td>
+<td align="center">12</td>
+<td align="center">$\text{loadAI} \quad r_{arp}, @c \Rightarrow r_2$</td>
+<td align="center">load c</td>
+</tr>
+<tr>
+<td align="center">13</td>
+<td align="center">14</td>
+<td align="center">$\text{mult} \quad r_1, r_2 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2 \times b) \times c$</td>
+</tr>
+<tr>
+<td align="center">15</td>
+<td align="center">17</td>
+<td align="center">$\text{loadAI} \quad r_{arp}, @d \Rightarrow r_2$</td>
+<td align="center">load d</td>
+</tr>
+<tr>
+<td align="center">18</td>
+<td align="center">19</td>
+<td align="center">$\text{mult} \quad r_1, r_2 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2 \times b \times c) \times d$</td>
+</tr>
+<tr>
+<td align="center">20</td>
+<td align="center">22</td>
+<td align="center">$\text{storeAI} \quad r_1 \Rightarrow r_{arp}, @a$</td>
+<td align="center">write $r_a$ back to a</td>
+</tr>
+</tbody></table>
+<p>上述9个指令共需22个CPU时间. 许多CPU都有一个特性: 等待指令执行期间可发起新的操作, 只要新指令不引用之前未完成的执行结果, 就可正常执行; 但若当前指令需要使用之前未完成的指令结果, 则CPU会阻塞并等待长延迟指令. Instruction scheduler会重新排序各个指令, 并试图最小化所需的CPU时间, 以下是优化后的指令序列:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Start</th>
+<th align="center">End</th>
+<th align="center">Instruction</th>
+<th align="center">comment</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">3</td>
+<td align="center">$\text{loadAI} \quad r_{arp}, @a \Rightarrow r_1$</td>
+<td align="center">load a</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">4</td>
+<td align="center">$\text{loadAI} \quad r_{arp}, @b \Rightarrow r_2$</td>
+<td align="center">load b</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">5</td>
+<td align="center">$\text{loadAI} \quad r_{arp}, @c \Rightarrow r_3$</td>
+<td align="center">load c</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">4</td>
+<td align="center">$\text{add} \quad r_1, r_1 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow a \times 2$</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">6</td>
+<td align="center">$\text{mult} \quad r_1, r_2 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2) \times b$</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">8</td>
+<td align="center">$\text{loadAI} \quad r_{arp}, @d \Rightarrow r_2$</td>
+<td align="center">load d</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td align="center">8</td>
+<td align="center">$\text{mult} \quad r_1, r_3 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2 \times b) \times c$</td>
+</tr>
+<tr>
+<td align="center">9</td>
+<td align="center">10</td>
+<td align="center">$\text{mult} \quad r_1, r_2 \Rightarrow r_1$</td>
+<td align="center">$r_1 \leftarrow (a \times 2 \times b \times c) \times d$</td>
+</tr>
+<tr>
+<td align="center">11</td>
+<td align="center">13</td>
+<td align="center">$\text{storeAI} \quad r_1 \Rightarrow r_{arp}, @a$</td>
+<td align="center">write $r_a$ back to a</td>
+</tr>
+</tbody></table>
+<p>可以看到, 重新排序后的指令序列只需13个CPU周期, 虽然多用了一个register, 但耗时减少了近一半. </p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Compiler/">Compiler</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/dc20.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Scanner (1)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/96d1.html">
+        <span class="next-text nav-default">Nonblocking I/O</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/73c1.html';
+  var disqus_title = "Overview of Compilation";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

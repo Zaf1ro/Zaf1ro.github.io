@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Rate Limiter"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/a3f6.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/a3f6.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/a3f6.html"/>
+
+
+<meta name="description" content="1. IntroductionRate limiter is used to control the rate of traffic sent by a client or a service. A rate limiter limits the number of client requests allowed to be sent over a specified period. If the">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Rate Limiter">
+<meta property="og:url" content="https://zaf1ro.github.io/p/a3f6.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionRate limiter is used to control the rate of traffic sent by a client or a service. A rate limiter limits the number of client requests allowed to be sent over a specified period. If the">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-rate-limiter-at-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-rate-limiter-as-middleware.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-token-bucket-algorithm.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-leaking-bucket-algorithm.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-fixed-window-counter-algorithm-problem.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-sliding-window-log-algorithm-example.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-sliding-window-counter.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-redis-as-rate-limiter-data-store.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-rate-limiter-detailed-design.jpg">
+<meta property="article:published_time" content="2024-04-10T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.054Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/4-rate-limiter-at-server.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Rate Limiter - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Understand-the-problem-and-establish-design-scope"><span class="toc-text">2. Understand the problem and establish design scope</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Propose-high-level-design-and-get-buy-in"><span class="toc-text">3. Propose high-level design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Where-to-put-the-rate-limiter"><span class="toc-text">3.1 Where to put the rate limiter?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Algorithms-for-Rate-Limiting"><span class="toc-text">3.2 Algorithms for Rate Limiting</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-Token-Bucket-Algorithm"><span class="toc-text">3.2.1 Token Bucket Algorithm</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-Leaking-Bucket-Algorithm"><span class="toc-text">3.2.2 Leaking Bucket Algorithm</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-Fixed-Window-Counter-Algorithm"><span class="toc-text">3.2.3 Fixed Window Counter Algorithm</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-4-Sliding-Window-Log-Algorithm"><span class="toc-text">3.2.4 Sliding Window Log Algorithm</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-5-Sliding-window-counter-algorithm"><span class="toc-text">3.2.5 Sliding window counter algorithm</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-6-High-level-architecture"><span class="toc-text">3.2.6 High-level architecture</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Design-Deep-Dive"><span class="toc-text">4. Design Deep Dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Rate-Limiting-Rules"><span class="toc-text">4.1 Rate Limiting Rules</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Exceeding-the-Rate-Limit"><span class="toc-text">4.2 Exceeding the Rate Limit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Detailed-Design"><span class="toc-text">4.3 Detailed Design</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Rate-limiter-in-a-distributed-environment"><span class="toc-text">4.4 Rate limiter in a distributed environment</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Performance-Optimization"><span class="toc-text">4.5 Performance Optimization</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Rate Limiter
+        
+      </h1>
+      <time class="post-time">
+          04/10/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Rate limiter is used to control the rate of traffic sent by a client or a service. A rate limiter limits the number of client requests allowed to be sent over a specified period. If the API request count exceeds the threshold defined by the rate limiter, all the excess calls are blocked.</p>
+<p>Benefits of using a rate limiter:</p>
+<ul>
+<li>Prevent resource starvation caused by Denial of Service (DoS) attack</li>
+<li>Reduce cost. Limiting excess requests means fewer servers and allocating more resources to high priority APIs.</li>
+<li>Prevent servers from being overloaded.</li>
+</ul>
+<h2 id="2-Understand-the-problem-and-establish-design-scope"><a href="#2-Understand-the-problem-and-establish-design-scope" class="headerlink" title="2. Understand the problem and establish design scope"></a>2. Understand the problem and establish design scope</h2><p>Rate limiting can be implemented using different algorithms, each with its pros and cons.</p>
+<ul>
+<li>What kind of rate limiter are we going to design? Is it a client-side rate limiter or server-side API rate limiter? -&gt; focus on the server-side API rate limiter</li>
+<li>Does the rate limiter throttle API requests based on IP, the user ID, or other properties? -&gt; The rate limiter should be flexible enough to support different sets of throttle rules.</li>
+<li>What is the scale of the system? Is it built for a startup or a big company with a large user base? -&gt; The system must be able to handle a large number of requests.</li>
+<li>Will the system work in a distributed environment? -&gt; Yes</li>
+<li>Is the rate limiter a separate service or should it be implemented in application code? -&gt; It is a design decision up to you.</li>
+<li>Do we need to inform users who are throttled? -&gt; Yes</li>
+</ul>
+<h2 id="3-Propose-high-level-design-and-get-buy-in"><a href="#3-Propose-high-level-design-and-get-buy-in" class="headerlink" title="3. Propose high-level design and get buy-in"></a>3. Propose high-level design and get buy-in</h2><h3 id="3-1-Where-to-put-the-rate-limiter"><a href="#3-1-Where-to-put-the-rate-limiter" class="headerlink" title="3.1 Where to put the rate limiter?"></a>3.1 Where to put the rate limiter?</h3><ul>
+<li>Client-side: client is an unreliable place to enforce rate limiting because client requests can easily be forged by malicious actors.</li>
+<li>Server-side: place rate limiter at the API servers<br>  <img src="/images/System-Design/Interview/4-rate-limiter-at-server.jpg" alt="Rate Limiter at API Server"></li>
+<li>middleware: create a rate limiter middleware, which throttles requests to the API servers<br>  <img src="/images/System-Design/Interview/4-rate-limiter-as-middleware.jpg" alt="Rate Limiter as Middleware"></li>
+</ul>
+<p>Rate limiting is usually implemented within a component called API gateway. API gateway is a fully managed service that supports rate limiting, SSL termination, authentication, IP whitelisting, servicing static content, etc.</p>
+<h3 id="3-2-Algorithms-for-Rate-Limiting"><a href="#3-2-Algorithms-for-Rate-Limiting" class="headerlink" title="3.2 Algorithms for Rate Limiting"></a>3.2 Algorithms for Rate Limiting</h3><p>List of popular algorithms:</p>
+<ul>
+<li>Token bucket</li>
+<li>Leaking bucket</li>
+<li>Fixed window counter</li>
+<li>Sliding window log</li>
+<li>Sliding window counter</li>
+</ul>
+<h4 id="3-2-1-Token-Bucket-Algorithm"><a href="#3-2-1-Token-Bucket-Algorithm" class="headerlink" title="3.2.1 Token Bucket Algorithm"></a>3.2.1 Token Bucket Algorithm</h4><p>A token bucket is a container that has pre-defined capacity. Tokens are put in the bucket at preset rates periodically. Once the bucket is full, no more tokens are added. Each request consumes one token. When a request arrives, we check if there are enough tokens in the bucket.<br><img src="/images/System-Design/Interview/4-token-bucket-algorithm.jpg" alt="Token Bucket Algorithm"></p>
+<p>Three components of this algorithm:</p>
+<ul>
+<li>bucket: contains tokens with certain capacity</li>
+<li>refiller: put token into the bucket if bucket is not full</li>
+<li>request: take one token and goes through if bucket is not empty, or dropped</li>
+</ul>
+<p>Two important parameters:</p>
+<ul>
+<li>Bucket size: the maximum number of tokens allowed in the bucket</li>
+<li>Refill rate: number of tokens put into the bucket every second</li>
+</ul>
+<p>How many buckets do we need:</p>
+<ul>
+<li>different API endpoints have different buckets</li>
+<li>If we need to throttle requests based on IP addresses, each IP address requires a bucket.</li>
+<li>have a global bucket shared by all requests if neccessary</li>
+</ul>
+<p>Summary:</p>
+<ul>
+<li>Pros:<ul>
+<li>easy to implement</li>
+<li>memory efficient</li>
+<li>allows a burst of traffic for short periods</li>
+</ul>
+</li>
+<li>Cons: <ul>
+<li>two parameter may be challenging to tune them properly</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-2-2-Leaking-Bucket-Algorithm"><a href="#3-2-2-Leaking-Bucket-Algorithm" class="headerlink" title="3.2.2 Leaking Bucket Algorithm"></a>3.2.2 Leaking Bucket Algorithm</h4><p>The algorithm is similar to the token bucket except that requests are processed at a fixed rate. The algorithm works as follows:</p>
+<ul>
+<li>When a request arrives, the system checks if the queue is full. If it is not full, the request is added to the queue.</li>
+<li>Otherwise, the request is dropped.</li>
+<li>Requests are pulled from the queue and processed at regular intervals.</li>
+</ul>
+<p><img src="/images/System-Design/Interview/4-leaking-bucket-algorithm.jpg" alt="Leaking Bucket Algorithm"></p>
+<p>Two important parameters:</p>
+<ul>
+<li>Bucket size: it is equal to the queue size. The queue holds the requests to be processed at a fixed rate.</li>
+<li>Outflow rate: it defines how many requests can be processed at a fixed rate, usually in seconds.</li>
+</ul>
+<p>Summary:</p>
+<ul>
+<li>Pros:<ul>
+<li>Memory efficient given the limited queue size.</li>
+<li>Requests are processed at a fixed rate therefore it is suitable for use cases that a stable outflow rate is needed.</li>
+</ul>
+</li>
+<li>Cons:<ul>
+<li>A burst of traffic fills up the queue with old requests, and if they are not processed in time, recent requests will be rate limited.</li>
+<li>two parameter may be challenging to tune them properly</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-2-3-Fixed-Window-Counter-Algorithm"><a href="#3-2-3-Fixed-Window-Counter-Algorithm" class="headerlink" title="3.2.3 Fixed Window Counter Algorithm"></a>3.2.3 Fixed Window Counter Algorithm</h4><p>The algorithm works as follows:</p>
+<ul>
+<li>The algorithm divides the timeline into fix-sized time windows and assign a counter for each window.</li>
+<li>Each request increments the counter by one.</li>
+<li>Once the counter reaches the pre-defined threshold, new requests are dropped until a new time window starts.</li>
+</ul>
+<p>Summary:</p>
+<ul>
+<li>Pros:<ul>
+<li>Memory efficient</li>
+<li>Resetting available quota at the end of a unit time window fits certain use cases</li>
+</ul>
+</li>
+<li>Cons:<ul>
+<li>Spike in traffic at the edges of a window could cause more requests than the allowed quota to go through.<br>  <img src="/images/System-Design/Interview/4-fixed-window-counter-algorithm-problem.jpg" alt="Fixed Window Counter Algorithm Issue"></li>
+</ul>
+</li>
+</ul>
+<h4 id="3-2-4-Sliding-Window-Log-Algorithm"><a href="#3-2-4-Sliding-Window-Log-Algorithm" class="headerlink" title="3.2.4 Sliding Window Log Algorithm"></a>3.2.4 Sliding Window Log Algorithm</h4><p>The algorithm works as follows:</p>
+<ul>
+<li>keeps track of request timestamps. Timestamp data is usually kept in cache, such as sorted sets of Redis</li>
+<li>When a new request comes in, remove all the outdated timestamps. Outdated timestamps are defined as those older than the start of the current time window.</li>
+<li>Add timestamp of the new request to the log.</li>
+<li>If the log size is the same or lower than the allowed count, a request is accepted. Otherwise, it is rejected.</li>
+</ul>
+<p><img src="/images/System-Design/Interview/4-sliding-window-log-algorithm-example.jpg" alt="Sliding Window Log Algorithm Example"></p>
+<p>In this example, the rate limiter allows 2 requests per minute:</p>
+<ul>
+<li>The log is empty when a new request arrives at <code>1:00:01</code>. Thus, the request is allowed.</li>
+<li>A new request arrives at <code>1:00:30</code>, the timestamp <code>1:00:30</code> is inserted into the log. After the insertion, the log size is 2, not larger than the allowed count. Thus, the request is allowed.</li>
+<li>A new request arrives at <code>1:00:50</code>, and the timestamp is inserted into the log. After the insertion, the log size is 3, larger than the allowed size 2. Therefore, this request is rejected even though the timestamp remains in the log.</li>
+<li>A new request arrives at <code>1:01:40</code>. Requests in the range <code>[1:00:40,1:01:40)</code> are within the latest time frame, but requests sent before <code>1:00:40</code> are outdated. Two outdated timestamps, <code>1:00:01</code> and <code>1:00:30</code>, are removed from the log. After the remove operation, the log size becomes 2; therefore, the request is accepted.</li>
+</ul>
+<p>Summary:</p>
+<ul>
+<li>Pros: <ul>
+<li>Rate limiting implemented by this algorithm is more accurate than fixed window counter algorithm</li>
+</ul>
+</li>
+<li>Cons:<ul>
+<li>The algorithm consumes a lot of memory because even if a request is rejected, its timestamp might still be stored in memory</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-2-5-Sliding-window-counter-algorithm"><a href="#3-2-5-Sliding-window-counter-algorithm" class="headerlink" title="3.2.5 Sliding window counter algorithm"></a>3.2.5 Sliding window counter algorithm</h4><p>a hybrid approach that combines the fixed window counter and sliding window log. Assume the rate limiter allows a maximum of <strong>7 requests per minute</strong>, and there are <strong>5 requests</strong> in the <strong>previous minute</strong> and <strong>3</strong> in the <strong>current minute</strong>. For a new request that arrives at a 30% position in the current minute, the number of requests in the rolling window is calculated using the following formula:<br>Requests in current window + requests in the previous window * overlap percentage of the rolling window and previous window -&gt; 3 + 5 * 0.7 &#x3D; 6.5 requests. </p>
+<p><img src="/images/System-Design/Interview/4-sliding-window-counter.jpg" alt="Sliding Window Counter Algorithm"></p>
+<p>Summary:</p>
+<ul>
+<li>Pros:<ul>
+<li>It smooths out spikes in traffic because the rate is based on the average rate of the  previous window</li>
+<li>Memory efficient</li>
+</ul>
+</li>
+<li>Cons:<ul>
+<li>It only works for not-so-strict look back window, but only 0.003% of requests are wrongly allowed or rate limited</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-2-6-High-level-architecture"><a href="#3-2-6-High-level-architecture" class="headerlink" title="3.2.6 High-level architecture"></a>3.2.6 High-level architecture</h4><p>Where to store counters: Using the database is not a good idea due to slowness of disk access. In-memory cache(Redis) is chosen because it is fast and supports time-based expiration strategy.<br>For instance, Redis is a popular option to implement rate limiting. It is an in-memory store that offers two commands: <code>INCR</code> and <code>EXPIRE</code>.</p>
+<ul>
+<li>INCR: It increases the stored counter by 1.</li>
+<li>EXPIRE: It sets a timeout for the counter. If the timeout expires, the counter is automatically deleted.</li>
+</ul>
+<p><img src="/images/System-Design/Interview/4-redis-as-rate-limiter-data-store.jpg" alt="Redis as Rate Limiter Data Store"></p>
+<ul>
+<li>The client sends a request to rate limiting middleware</li>
+<li>Rate limiting middleware fetches the counter from the corresponding bucket in Redis and checks if the limit is reached or not.<ul>
+<li>If the limit is reached, the request is rejected.</li>
+<li>If the limit is not reached, the request is sent to API servers. Meanwhile, the system increments the counter and saves it back to Redis.</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-Design-Deep-Dive"><a href="#4-Design-Deep-Dive" class="headerlink" title="4. Design Deep Dive"></a>4. Design Deep Dive</h2><h3 id="4-1-Rate-Limiting-Rules"><a href="#4-1-Rate-Limiting-Rules" class="headerlink" title="4.1 Rate Limiting Rules"></a>4.1 Rate Limiting Rules</h3><p>Rules are written in configuration files and saved on disk.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">domain: auth</span><br><span class="line">descriptors:</span><br><span class="line">  - key: auth_type</span><br><span class="line">    Value: login</span><br><span class="line">    rate_limit:</span><br><span class="line">        unit: minute</span><br><span class="line">        requests_per_unit: 5</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-Exceeding-the-Rate-Limit"><a href="#4-2-Exceeding-the-Rate-Limit" class="headerlink" title="4.2 Exceeding the Rate Limit"></a>4.2 Exceeding the Rate Limit</h3><p>APIs return a HTTP response code 429 (too many requests) to the client. Depending on the use cases, we may enqueue the rate-limited requests to be processed later.</p>
+<p>Rate limiter should return the following information:</p>
+<ul>
+<li>how many calls the client can make per time window</li>
+<li>The number of seconds to wait until you can send the next request</li>
+</ul>
+<h3 id="4-3-Detailed-Design"><a href="#4-3-Detailed-Design" class="headerlink" title="4.3 Detailed Design"></a>4.3 Detailed Design</h3><p><img src="/images/System-Design/Interview/4-rate-limiter-detailed-design.jpg" alt="Rate Limiter Detailed Design"></p>
+<ul>
+<li>Workers frequently pull rules from the disk and store them in the cache.</li>
+<li>When a client sends a request to the server, the request is sent to the rate limiter middleware first</li>
+<li>Rate limiter loads the rule from the cache, fetches counter and last request timestamp from Redis. Based on the response, the rate limiter decides:<ul>
+<li>the request is not rate limited, it is forwarded to API servers</li>
+<li>the request is rate limited, returns 429 error to the client</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-4-Rate-limiter-in-a-distributed-environment"><a href="#4-4-Rate-limiter-in-a-distributed-environment" class="headerlink" title="4.4 Rate limiter in a distributed environment"></a>4.4 Rate limiter in a distributed environment</h3><p>Building multiple rate limiters in multiple server has two challenges:</p>
+<ul>
+<li>Race condition<ul>
+<li>Example: read and increment the counter in Redis</li>
+<li>Solution: sorted sets data structure</li>
+</ul>
+</li>
+<li>Synchronization issue: <ul>
+<li>Example:<ol>
+<li>To support millions of users, one rate limiter server is not enough to handle the traffic, different rate limiter has their own Redis cache</li>
+<li>client can send requests to any rate limiter</li>
+<li>If client 1 sends request to rate limiter 1, then sends request to rate limiter 2. Since rate limiter 2 does not contain any data about client 1. Thus, the rate limiter cannot work properly</li>
+</ol>
+</li>
+<li>Solutions:<ul>
+<li>sticky session: one client can only send request to the certain rate limiter</li>
+<li>centralized data store: all rate limiter only use one Redis</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-5-Performance-Optimization"><a href="#4-5-Performance-Optimization" class="headerlink" title="4.5 Performance Optimization"></a>4.5 Performance Optimization</h3><ul>
+<li>Multi-data center setup. Most cloud service providers build many edge server locations around the world</li>
+<li>Synchronize data with an eventual consistency model.</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/10a4.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - Consistent Hashing</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/830d.html">
+        <span class="next-text nav-default">System Design - Interview</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/a3f6.html';
+  var disqus_title = "System Design - Rate Limiter";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Priority Queue"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/c23.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/c23.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/c23.html"/>
+
+
+<meta name="description" content="1. Introduction开发程序时经常需要对数据进行排序, 但有时无需排序所有数据, 例如: 先排序一部分数据, 处理第一位的元素后, 接收更多数据, 再处理当前数据的第一位元素. 对于移除最大(小)值并插入数据的操作, 可使用名为Priority Queue的数据结构. Priority Queue(优先队列, 缩写为pq)需实现以下操作:  add(DataType item, int">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Priority Queue">
+<meta property="og:url" content="https://zaf1ro.github.io/p/c23.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction开发程序时经常需要对数据进行排序, 但有时无需排序所有数据, 例如: 先排序一部分数据, 处理第一位的元素后, 接收更多数据, 再处理当前数据的第一位元素. 对于移除最大(小)值并插入数据的操作, 可使用名为Priority Queue的数据结构. Priority Queue(优先队列, 缩写为pq)需实现以下操作:  add(DataType item, int">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/binary-heap-sample.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/bottom-up-heapify.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/top-down-heapify.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/heap-operations.png">
+<meta property="article:published_time" content="2023-03-30T02:15:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.029Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Algorithm/binary-heap-sample.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Priority Queue - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Binary-Heap"><span class="toc-text">2. Binary Heap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#862-Shortest-Subarray-with-Sum-at-Least-K"><span class="toc-text">862. Shortest Subarray with Sum at Least K</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Greedy-Priority-Queue"><span class="toc-text">Greedy + Priority Queue</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#295-Find-Median-from-Data-Stream"><span class="toc-text">295. Find Median from Data Stream</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Priority-Qyeye"><span class="toc-text">Priority Qyeye</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#480-Sliding-Window-Median"><span class="toc-text">480. Sliding Window Median</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Slide-Window-Priority-Queue"><span class="toc-text">Slide Window + Priority Queue</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#218-The-Skyline-Problem"><span class="toc-text">218. The Skyline Problem</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Line-Sweep-Priority-Queue"><span class="toc-text">Line Sweep + Priority Queue</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Priority Queue
+        
+      </h1>
+      <time class="post-time">
+          03/29/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>开发程序时经常需要对数据进行排序, 但有时无需排序所有数据, 例如: 先排序一部分数据, 处理第一位的元素后, 接收更多数据, 再处理当前数据的第一位元素. 对于<strong>移除最大(小)值</strong>并<strong>插入数据</strong>的操作, 可使用名为<strong>Priority Queue</strong>的数据结构. Priority Queue(优先队列, 缩写为<code>pq</code>)需实现以下操作:</p>
+<ul>
+<li><code>add(DataType item, int pri)</code>: 向pq添加元素, <code>item</code>为元素本身, <code>pri</code>为元素的优先级</li>
+<li><code>DataType peek()</code>: 查看最高(低)优先级的元素</li>
+<li><code>DataType remove()</code>: 移除并返回最高(低)优先级的元素</li>
+</ul>
+<p>以下是几种实现Priority Queue的方式:</p>
+<ol>
+<li>基于Ordered Array的PQ:</li>
+</ol>
+<ul>
+<li><code>add()</code>: 使用binary search找到新元素插入的位置, 并将其后的元素向后移动一格, $O(\log(N)) + O(N) &#x3D; O(N)$</li>
+<li><code>peek()</code>: 返回array的最后一个元素, $O(1)$</li>
+<li><code>remove()</code>: 移除array的最后一个元素, $O(1)$</li>
+</ul>
+<ol start="2">
+<li>基于Unordered Array的PQ:</li>
+</ol>
+<ul>
+<li><code>add()</code>: 将元素放在数组尾部, $O(1)$</li>
+<li><code>peek()</code>: 扫描整个数组, 并返回最大(小)优先级的元素, $O(N)$</li>
+<li><code>remove()</code>: 扫描整个数组, 找到最大(小)优先级的元素, 并将之后元素向前移动一格, $O(N)$</li>
+</ul>
+<ol start="3">
+<li>基于Ordered LinkedList的PQ:</li>
+</ol>
+<ul>
+<li><code>add()</code>: 扫描整个链表并将其放入合适的位置, $O(N)$</li>
+<li><code>peek()</code>: 返回链表首位, $O(1)$</li>
+<li><code>remove()</code>: 返回链表首位, $O(1)$</li>
+</ul>
+<ol start="4">
+<li>基于Unordered LinkedList的PQ:</li>
+</ol>
+<ul>
+<li><code>add()</code>: 将元素加入链表头部, $O(1)$</li>
+<li><code>peek()</code>: 需扫描整个链表, $O(N)$</li>
+<li><code>remove()</code>: 需扫描整个链表, $O(N)$</li>
+</ul>
+<ol start="5">
+<li>基于Binary Search Tree的PQ: 假设tree保持平衡</li>
+</ol>
+<ul>
+<li><code>add()</code>: $O(log(N))$</li>
+<li><code>peek()</code>: $O(log(N))$</li>
+<li><code>remove()</code>: $O(log(N))$</li>
+</ul>
+<p>以下是各种实现的对比:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Sorted Array</th>
+<th>Unordered Array</th>
+<th>Ordered Linked List</th>
+<th>Unordered Linked List</th>
+<th>Binary Search Tree</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>add()</code></td>
+<td>$O(N)$</td>
+<td>$O(1)$</td>
+<td>$O(N)$</td>
+<td>$O(1)$</td>
+<td>$O(log(n))$</td>
+</tr>
+<tr>
+<td><code>peek()</code></td>
+<td>$O(1)$</td>
+<td>$O(N)$</td>
+<td>$O(1)$</td>
+<td>$O(N)$</td>
+<td>$O(log(n))$</td>
+</tr>
+<tr>
+<td><code>remove()</code></td>
+<td>$O(1)$</td>
+<td>$O(N)$</td>
+<td>$O(1)$</td>
+<td>$O(N)$</td>
+<td>$O(log(n))$</td>
+</tr>
+</tbody></table>
+<h2 id="2-Binary-Heap"><a href="#2-Binary-Heap" class="headerlink" title="2. Binary Heap"></a>2. Binary Heap</h2><p>Binary Heap是一种binary tree, 且拥有以下属性:</p>
+<ul>
+<li>是一个complete tree(只有最下面两层节点的child数小于2，且最下面一层的节点都集中在最左边的连续位置上)</li>
+<li>Parent node的优先级大于等于(或小于等于)其两个child node</li>
+</ul>
+<p>以下是一个binary heap:<br><img src="/images/Algorithm/binary-heap-sample.png" alt="Binary Heap"></p>
+<p>可以发现, binary heap可用一个数组表示: 假设root node从1开始, root的child node分别在2和3坐标, 可推断出: 若节点的坐标为<code>i</code>, 则其parent node的坐标为<code>k/2</code>, left child的坐标为<code>2k</code>, right child的坐标为<code>2k+1</code>. 但数组中任意数据的修改都会破坏binary heap的属性, 因此需要一些方法来维护binary heap的属性(假设heap遵循$\text{priority of parent node} \ge \text{priority of child node}$):</p>
+<ul>
+<li>Bottom-up heapify: 若当前节点的优先级大于其父节点的优先级, 则其违背了binary heap的特性, 因此可让当前节点与父节点交换; 若交换后, 父节点的优先级大于与其父节点的优先级, 则继续交换, 直到满足优先级规则, 或节点变为root.<br><img src="/images/Algorithm/bottom-up-heapify.png" alt="Bottom-up heapify"></li>
+<li>Top-down heapify: 若当前节点的优先级小于其中一个或两个子节点, 则与优先级最大的子节点交换, 并以此类推, 直到其满足优先级规则, 或没有任何子节点.<br><img src="/images/Algorithm/top-down-heapify.png" alt="Top-down heapify"></li>
+</ul>
+<p>因此, 可使用binary heap实现priority queue:</p>
+<ul>
+<li><code>add()</code>: 数组尾部追加元素, 并对该元素使用bottom-up heapify以保持binary heap属性</li>
+<li><code>peek()</code>: 取出数组头部的元素</li>
+<li><code>remove()</code>: 将数组头部元素与尾部交换, 并对头部元素使用top-down heapify以保持binary heap属性</li>
+</ul>
+<p><img src="/images/Algorithm/heap-operations.png" alt="Heap Operations"></p>
+<p>基于binary heap的priority queue的时间复杂度如下:</p>
+<ul>
+<li><code>add()</code>: $O(\log(N))$</li>
+<li><code>peek()</code>: $O(1)$</li>
+<li><code>remove()</code>: $O(\log(N))$</li>
+</ul>
+<h2 id="862-Shortest-Subarray-with-Sum-at-Least-K"><a href="#862-Shortest-Subarray-with-Sum-at-Least-K" class="headerlink" title="862. Shortest Subarray with Sum at Least K"></a>862. Shortest Subarray with Sum at Least K</h2><p>Given an integer array <code>nums</code> and an integer <code>k</code>, return the length of the shortest non-empty <strong>subarray</strong> of <code>nums</code> with a sum of at least k. If there is no such <strong>subarray</strong>, return <code>-1</code>.</p>
+<p>A <strong>subarray</strong> is a <strong>contiguous</strong> part of an array.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [2,-1,2], k = 3</span><br><span class="line">Output: 3</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,2], k = 4</span><br><span class="line">Output: -1</span><br></pre></td></tr></table></figure>
+
+<h3 id="Greedy-Priority-Queue"><a href="#Greedy-Priority-Queue" class="headerlink" title="Greedy + Priority Queue"></a>Greedy + Priority Queue</h3><p>若计算数组的前缀和<code>presum</code>, 则问题转变为: 如何在<code>presum</code>中找到两个坐标i, j, 满足<code>presum[j] - presum[i] &gt;= k</code>. 因此可使用priority queue和贪心算法, 将前缀和和坐标保存在<code>pq</code>中, 若<code>presum[i]</code>与<code>pq</code>头部元素(最小前缀和)的差值大于<code>k</code>, 则弹出<code>pq</code>头部元素, 当前坐标与该元素构成一个subarray:</p>
+<ul>
+<li>若<code>pq</code>的下一个头部元素满足条件, 则继续弹出; 若头部不满足条件, 则<code>pq</code>剩下元素必定不满足</li>
+<li>即使之后坐标与<code>pq</code>头部元素也满足条件, 但会长于当前坐标组成的subarray, 因此无需考虑</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">shortestSubarray</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length, res = Integer.MAX_VALUE;</span><br><span class="line">        <span class="type">long</span>[] presum = <span class="keyword">new</span> <span class="title class_">long</span>[n+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            presum[i+<span class="number">1</span>] = presum[i] + nums[i];</span><br><span class="line">        &#125;</span><br><span class="line">        PriorityQueue&lt;Integer&gt; pq = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;((a,b) -&gt; Long.compare(presum[a], presum[b]));</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (presum[i] &gt;= k) &#123;</span><br><span class="line">                res = Math.min(res, i);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (!pq.isEmpty() &amp;&amp; presum[i] - presum[pq.peek()] &gt;= k) &#123;</span><br><span class="line">                res = Math.min(res, i - pq.poll());</span><br><span class="line">            &#125;</span><br><span class="line">            pq.offer(i);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res == Integer.MAX_VALUE ? -<span class="number">1</span> : res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="295-Find-Median-from-Data-Stream"><a href="#295-Find-Median-from-Data-Stream" class="headerlink" title="295. Find Median from Data Stream"></a>295. Find Median from Data Stream</h2><p>The <strong>median</strong> is the middle value in an ordered integer list. If the size of the list is even, there is no middle value, and the median is the mean of the two middle values.</p>
+<ul>
+<li>For example, for <code>arr = [2,3,4]</code>, the median is <code>3</code>.</li>
+<li>For example, for <code>arr = [2,3]</code>, the median is <code>(2 + 3) / 2 = 2.5</code>.</li>
+</ul>
+<p>Implement the MedianFinder class:</p>
+<ul>
+<li><code>MedianFinder()</code> initializes the <code>MedianFinder</code> object.</li>
+<li><code>void addNum(int num)</code> adds the integer <code>num</code> from the data stream to the data structure.</li>
+<li><code>double findMedian()</code> returns the median of all elements so far. Answers within <code>$10^&#123;-5&#125;$</code> of the actual answer will be accepted.</li>
+</ul>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input</span><br><span class="line">[&quot;MedianFinder&quot;, &quot;addNum&quot;, &quot;addNum&quot;, &quot;findMedian&quot;, &quot;addNum&quot;, &quot;findMedian&quot;]</span><br><span class="line">[[], [1], [2], [], [3], []]</span><br><span class="line">Output</span><br><span class="line">[null, null, null, 1.5, null, 2.0]</span><br><span class="line"></span><br><span class="line">Explanation</span><br><span class="line">MedianFinder medianFinder = new MedianFinder();</span><br><span class="line">medianFinder.addNum(1);    // arr = [1]</span><br><span class="line">medianFinder.addNum(2);    // arr = [1, 2]</span><br><span class="line">medianFinder.findMedian(); // return 1.5 (i.e., (1 + 2) / 2)</span><br><span class="line">medianFinder.addNum(3);    // arr[1, 2, 3]</span><br><span class="line">medianFinder.findMedian(); // return 2.0</span><br></pre></td></tr></table></figure>
+
+<h3 id="Priority-Qyeye"><a href="#Priority-Qyeye" class="headerlink" title="Priority Qyeye"></a>Priority Qyeye</h3><p>假设一个排序好的数组为<code>$[&#123;num&#125;_1, &#123;num&#125;_2, \cdots, &#123;num&#125;_&#123;2n-1&#125;, &#123;num&#125;_&#123;2n&#125;]$</code>, 其中<code>$&#123;num&#125;_i \le &#123;num&#125;_&#123;i+1&#125;$</code>, 该数组可拆分为两个数组: <code>$[&#123;num&#125;_1, &#123;num&#125;_2, \cdots, &#123;num&#125;_&#123;n-1&#125;, &#123;num&#125;_n]$</code>和<code>$[&#123;num&#125;_&#123;n+1&#125;, &#123;num&#125;_&#123;n+2&#125;, \cdots, &#123;num&#125;_&#123;2n-1&#125;, &#123;num&#125;_&#123;2n&#125;]$</code>, 可以看做一个max heap, 一个min heap, 因此中位数为<code>$(max-heap.peek() + min_heap.peek()) / 2</code>; 若数组中元素数为奇数, 则max heap或min heap的头部元素为中位数.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MedianFinder</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> PriorityQueue&lt;Integer&gt; minPQ;</span><br><span class="line">    <span class="keyword">private</span> PriorityQueue&lt;Integer&gt; maxPQ;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">MedianFinder</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.minPQ = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;((a,b) -&gt; a-b);</span><br><span class="line">        <span class="built_in">this</span>.maxPQ = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;((a,b) -&gt; b-a);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addNum</span><span class="params">(<span class="type">int</span> num)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (maxPQ.isEmpty() || num &lt;= maxPQ.peek()) &#123;</span><br><span class="line">            maxPQ.offer(num);</span><br><span class="line">            <span class="keyword">if</span> (maxPQ.size() &gt; minPQ.size() + <span class="number">1</span>) &#123;</span><br><span class="line">                minPQ.offer(maxPQ.poll());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            minPQ.offer(num);</span><br><span class="line">            <span class="keyword">if</span> (minPQ.size() &gt; maxPQ.size()) &#123;</span><br><span class="line">                maxPQ.offer(minPQ.poll());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="type">double</span> <span class="title function_">findMedian</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> maxPQ.size() &gt; minPQ.size() ? maxPQ.peek() : (minPQ.peek() + maxPQ.peek()) / <span class="number">2.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="480-Sliding-Window-Median"><a href="#480-Sliding-Window-Median" class="headerlink" title="480. Sliding Window Median"></a>480. Sliding Window Median</h2><p>The median is the middle value in an ordered integer list. If the size of the list is even, there is no middle value. So the median is the mean of the two middle values.</p>
+<ul>
+<li>For examples, if <code>arr = [2,3,4]</code>, the median is <code>3</code>.</li>
+<li>For examples, if <code>arr = [1,2,3,4]</code>, the median is <code>(2 + 3) / 2 = 2.5</code>.</li>
+</ul>
+<p>You are given an integer array <code>nums</code> and an integer <code>k</code>. There is a sliding window of size <code>k</code> which is moving from the very left of the array to the very right. You can only see the <code>k</code> numbers in the window. Each time the sliding window moves right by one position.</p>
+<p>Return the median array for each window in the original array. Answers within <code>$10^&#123;-5&#125;$</code> of the actual value will be accepted.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,3,-1,-3,5,3,6,7], k = 3</span><br><span class="line">Output: [1.00000,-1.00000,-1.00000,3.00000,5.00000,6.00000]</span><br><span class="line">Explanation: </span><br><span class="line">Window position                Median</span><br><span class="line">---------------                -----</span><br><span class="line">[1  3  -1] -3  5  3  6  7        1</span><br><span class="line"> 1 [3  -1  -3] 5  3  6  7       -1</span><br><span class="line"> 1  3 [-1  -3  5] 3  6  7       -1</span><br><span class="line"> 1  3  -1 [-3  5  3] 6  7        3</span><br><span class="line"> 1  3  -1  -3 [5  3  6] 7        5</span><br><span class="line"> 1  3  -1  -3  5 [3  6  7]       6</span><br></pre></td></tr></table></figure>
+
+<h3 id="Slide-Window-Priority-Queue"><a href="#Slide-Window-Priority-Queue" class="headerlink" title="Slide Window + Priority Queue"></a>Slide Window + Priority Queue</h3><p>乍看之下该题目与上一题相同, 都是求一段连续序列的中位数, 但由于是滑动窗口, 因此必须将最左端的元素弹出priority queue, 且无法判断该元素存在于max heap还是min heap, 因此需要priority queue具有删除特定元素的功能. 由于Java的PriorityQueue不支持, 因此可以自己实现: IndexPriorityQueue添加元素时需提供两个参数: key和value, key表示元素的唯一标识(数组坐标), value表示元素的优先级(元素数值). 按照以下步骤删除元素:</p>
+<ol>
+<li>通过key找到对应元素在binary heap中的位置</li>
+<li>将该元素与binary heap的数组尾部元素调换</li>
+<li>对当前位置的元素调用bottom-up heapify和top-down heapify</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">IndexPriorityQueue</span>&lt;T&gt; &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span> capacity;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span> n;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span>[] keys;</span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span>[] pq;</span><br><span class="line">        <span class="keyword">private</span> Object[] values;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> Comparator&lt;? <span class="built_in">super</span> T&gt; comparator;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">IndexPriorityQueue</span><span class="params">(<span class="type">int</span> capacity, Comparator&lt;? <span class="built_in">super</span> T&gt; comparator)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.capacity = capacity;</span><br><span class="line">            <span class="built_in">this</span>.comparator = comparator;</span><br><span class="line">            <span class="built_in">this</span>.keys = <span class="keyword">new</span> <span class="title class_">int</span>[capacity];</span><br><span class="line">            <span class="built_in">this</span>.values = <span class="keyword">new</span> <span class="title class_">Object</span>[capacity];</span><br><span class="line">            <span class="built_in">this</span>.pq = <span class="keyword">new</span> <span class="title class_">int</span>[capacity];</span><br><span class="line">            Arrays.fill(keys, -<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">contains</span><span class="params">(<span class="type">int</span> k)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> k &gt;= <span class="number">0</span> &amp;&amp; k &lt; capacity &amp;&amp; keys[k] != -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">swap</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> j)</span> &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> pq[i];</span><br><span class="line">            pq[i] = pq[j];</span><br><span class="line">            pq[j] = t;</span><br><span class="line">            keys[pq[i]] = i;</span><br><span class="line">            keys[pq[j]] = j;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">compare</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> j)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">this</span>.comparator.compare((T)values[pq[i]], (T)values[pq[j]]) &lt;= <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">topDown</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">            <span class="keyword">while</span> ((i &lt;&lt; <span class="number">1</span>) + <span class="number">1</span> &lt; n) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> (i &lt;&lt; <span class="number">1</span>) + <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span> (j + <span class="number">1</span> &lt; n &amp;&amp; compare(j+<span class="number">1</span>, j)) ++j;</span><br><span class="line">                <span class="keyword">if</span> (compare(i, j)) <span class="keyword">break</span>;</span><br><span class="line">                swap(i, j);</span><br><span class="line">                i = j;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">bottomUp</span><span class="params">(<span class="type">int</span> i)</span> &#123;</span><br><span class="line">            <span class="keyword">while</span> (i &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> (i - <span class="number">1</span>) / <span class="number">2</span>;</span><br><span class="line">                <span class="keyword">if</span> (compare(j, i)) <span class="keyword">break</span>;</span><br><span class="line">                swap(i, j);</span><br><span class="line">                i = j; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">offer</span><span class="params">(<span class="type">int</span> k, <span class="type">int</span> v)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (contains(k)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            pq[n] = k;</span><br><span class="line">            keys[k] = n;</span><br><span class="line">            values[k] = v;</span><br><span class="line">            bottomUp(n++);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> T <span class="title function_">peek</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">return</span> (T)values[pq[<span class="number">0</span>]];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">poll</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">            <span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> pq[<span class="number">0</span>];</span><br><span class="line">            swap(<span class="number">0</span>, --n);</span><br><span class="line">            topDown(<span class="number">0</span>);</span><br><span class="line">            keys[k] = -<span class="number">1</span>;</span><br><span class="line">            values[k] = <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">return</span> k;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">remove</span><span class="params">(<span class="type">int</span> k)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!contains(k)) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> keys[k];</span><br><span class="line">            swap(i, --n);</span><br><span class="line">            topDown(i);</span><br><span class="line">            bottomUp(i);</span><br><span class="line">            keys[k] = -<span class="number">1</span>;</span><br><span class="line">            values[k] = <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isEmpty</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> n == <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">size</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> n;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">double</span>[] medianSlidingWindow(<span class="type">int</span>[] nums, <span class="type">int</span> k) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length;</span><br><span class="line">        IndexPriorityQueue&lt;Integer&gt; maxPQ = <span class="keyword">new</span> <span class="title class_">IndexPriorityQueue</span>&lt;&gt;(n, (a, b) -&gt; b.compareTo(a));</span><br><span class="line">        IndexPriorityQueue&lt;Integer&gt; minPQ = <span class="keyword">new</span> <span class="title class_">IndexPriorityQueue</span>&lt;&gt;(n, (a, b) -&gt; a.compareTo(b));</span><br><span class="line">        <span class="type">double</span>[] res = <span class="keyword">new</span> <span class="title class_">double</span>[nums.length - k + <span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (maxPQ.isEmpty() || nums[i] &lt;= maxPQ.peek()) &#123;</span><br><span class="line">                maxPQ.offer(i, nums[i]);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                minPQ.offer(i, nums[i]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (i &lt; k - <span class="number">1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (i &gt;= k) &#123;</span><br><span class="line">                maxPQ.remove(i - k);</span><br><span class="line">                minPQ.remove(i - k);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (minPQ.size() &gt; maxPQ.size()) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> minPQ.poll();</span><br><span class="line">                maxPQ.offer(t, nums[t]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (maxPQ.size() &gt; minPQ.size() + <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> maxPQ.poll();</span><br><span class="line">                minPQ.offer(t, nums[t]);</span><br><span class="line">            &#125;</span><br><span class="line">            res[i-k+<span class="number">1</span>] = maxPQ.size() == minPQ.size() ? minPQ.peek() / <span class="number">2.0</span> + maxPQ.peek() / <span class="number">2.0</span> : maxPQ.peek() * <span class="number">1.0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="218-The-Skyline-Problem"><a href="#218-The-Skyline-Problem" class="headerlink" title="218. The Skyline Problem"></a>218. The Skyline Problem</h2><p>A city&#39;s <strong>skyline</strong> is the outer contour of the silhouette formed by all the buildings in that city when viewed from a distance. Given the locations and heights of all the buildings, return the <strong>skyline</strong> formed by these buildings collectively.</p>
+<p>The geometric information of each building is given in the array buildings where <code>$\text&#123;buildings&#125;[i] = [\text&#123;left&#125;_i, \text&#123;right&#125;_i, \text&#123;height&#125;_i]$</code>:</p>
+<ul>
+<li><code>$\text&#123;left&#125;_i$</code> is the x coordinate of the left edge of the <code>$i^&#123;th&#125;$</code> building.</li>
+<li><code>$\text&#123;right&#125;_i$</code> is the x coordinate of the right edge of the <code>$i^&#123;th&#125;$</code> building.</li>
+<li><code>$\text&#123;height&#125;_i$</code> is the height of the <code>$i^&#123;th&#125;$</code> building.</li>
+</ul>
+<p>You may assume all buildings are perfect rectangles grounded on an absolutely flat surface at height <code>0</code>.</p>
+<p>The <strong>skyline</strong> should be represented as a list of &quot;key points&quot; <strong>sorted by their x-coordinate</strong> in the form <code>$[[x_1,y_1],[x_2,y_2],...]$</code>. Each key point is the left endpoint of some horizontal segment in the skyline except the last point in the list, which always has a y-coordinate <code>0</code> and is used to mark the skyline&#39;s termination where the rightmost building ends. Any ground between the leftmost and rightmost buildings should be part of the skyline&#39;s contour.</p>
+<p><strong>Note</strong>: There must be no consecutive horizontal lines of equal height in the output skyline. For instance, <code>[...,[2 3],[4 5],[7 5],[11 5],[12 7],...]</code> is not acceptable; the three lines of height 5 should be merged into one in the final output as such: <code>[...,[2 3],[4 5],[12 7],...]</code></p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: buildings = [[2,9,10],[3,7,15],[5,12,12],[15,20,10],[19,24,8]]</span><br><span class="line">Output: [[2,10],[3,15],[7,12],[12,0],[15,10],[20,8],[24,0]]</span><br><span class="line">Explanation:</span><br><span class="line">Figure A shows the buildings of the input.</span><br><span class="line">Figure B shows the skyline formed by those buildings. The red points in figure B represent the key points in the output list.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Line-Sweep-Priority-Queue"><a href="#Line-Sweep-Priority-Queue" class="headerlink" title="Line Sweep + Priority Queue"></a>Line Sweep + Priority Queue</h3><p>由于key point只会出现在建筑的left edge或right edge上, 因此可从左向右扫描所有edge. 将所有建筑的left edge和right edge按照x坐标从小到大排序, 对于任意x坐标(与y轴平行的线), 存在两种可能:</p>
+<ul>
+<li>不存在重叠建筑: 该edge一定存在key point</li>
+<li>存在重叠建筑: 该edge不一定存在key point, 因此edge对应的建筑可能被更高的建筑遮盖</li>
+</ul>
+<p>为判断x坐标上的建筑是否存在重叠, 可对每个横坐标检查一遍所有建筑, 并找出最高的建筑, 判断该建筑之前是否已添加到结果中; 但这么时间复杂度变为$O(N^2)$, 可使用priority queue优化寻找最大高度的问题, 对于任意x坐标$x_i$:</p>
+<ul>
+<li>若存在建筑的$\text{left edge} \le x_i$, 则将建筑的right edge放入<code>pq</code></li>
+<li>若<code>pq</code>头部元素的$\text{right edge} \ge x_i$, 则将<code>pq</code>的头部元素弹出</li>
+<li><code>pq</code>的头部元素一定为$x_i$之前的最高建筑, 存在两种可能:<ul>
+<li>该建筑在$x_i$上存在left edge或right edge: 存在key point</li>
+<li>该建筑在$x_i$上不存在left edge或right edge: 不存在key point</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">getSkyline</span><span class="params">(<span class="type">int</span>[][] buildings)</span> &#123;</span><br><span class="line">        List&lt;Integer&gt; arr = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(); <span class="comment">// left and right</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] b: buildings) &#123;</span><br><span class="line">            arr.add(b[<span class="number">0</span>]);</span><br><span class="line">            arr.add(b[<span class="number">1</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        Collections.sort(arr, (a, b) -&gt; a - b);</span><br><span class="line">        PriorityQueue&lt;<span class="type">int</span>[]&gt; pq = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;((a,b) -&gt; b[<span class="number">1</span>] - a[<span class="number">1</span>]); <span class="comment">// right, height</span></span><br><span class="line">        List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, n = buildings.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> j: arr) &#123;</span><br><span class="line">            <span class="comment">// add all buildings which the left edge is to the left of current position</span></span><br><span class="line">            <span class="keyword">while</span> (i &lt; n &amp;&amp; buildings[i][<span class="number">0</span>] &lt;= j) &#123; </span><br><span class="line">                pq.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;buildings[i][<span class="number">1</span>], buildings[i][<span class="number">2</span>]&#125;);</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// remove all buildings which the right edge is to the left of current position</span></span><br><span class="line">            <span class="keyword">while</span> (!pq.isEmpty() &amp;&amp; pq.peek()[<span class="number">0</span>] &lt;= j) &#123;</span><br><span class="line">                pq.poll();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// add to result if result is empty, </span></span><br><span class="line">            <span class="comment">// or height of current index is not same as the last added height</span></span><br><span class="line">            <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> pq.isEmpty() ? <span class="number">0</span> : pq.peek()[<span class="number">1</span>];</span><br><span class="line">            <span class="keyword">if</span> (res.isEmpty() || res.get(res.size()-<span class="number">1</span>).get(<span class="number">1</span>) != h) &#123;</span><br><span class="line">                res.add(Arrays.asList(j, h));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/f015.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Binary Search</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/ab19.html">
+        <span class="next-text nav-default">Merge Sort</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/c23.html';
+  var disqus_title = "Priority Queue";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

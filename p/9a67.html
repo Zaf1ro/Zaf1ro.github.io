@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Memory Management"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/9a67.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/9a67.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/9a67.html"/>
+
+
+<meta name="description" content="1. 内存管理架构Python有两套内存管理机制, 一套负责debug, 一套负责正常的内存管理, 由PYMALLOC_DEBUG控制. 当PYMALLOC_DEBUG未定义时, 则使用正常的内存管理.Python中的内存管理机制可抽象为四层: 1.1 第0层由操作系统提供的内存管理接口, 例如C运行时所提供的malloc和free. 除这一层之外往上三层都是Python维护的, Python无权">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Memory Management">
+<meta property="og:url" content="https://zaf1ro.github.io/p/9a67.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 内存管理架构Python有两套内存管理机制, 一套负责debug, 一套负责正常的内存管理, 由PYMALLOC_DEBUG控制. 当PYMALLOC_DEBUG未定义时, 则使用正常的内存管理.Python中的内存管理机制可抽象为四层: 1.1 第0层由操作系统提供的内存管理接口, 例如C运行时所提供的malloc和free. 除这一层之外往上三层都是Python维护的, Python无权">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/memory-management-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/memory-management-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/memory-management-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/memory-management-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/memory-management-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/memory-management-6.png">
+<meta property="article:published_time" content="2017-04-02T16:03:47.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.050Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Python/memory-management-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Memory Management - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E6%9E%B6%E6%9E%84"><span class="toc-text">1. 内存管理架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E7%AC%AC0%E5%B1%82"><span class="toc-text">1.1 第0层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E7%AC%AC1%E5%B1%82"><span class="toc-text">1.2 第1层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E7%AC%AC2%E5%B1%82%E5%8F%8A%E5%BE%80%E4%B8%8A"><span class="toc-text">1.3 第2层及往上</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E5%B0%8F%E5%9D%97%E7%A9%BA%E9%97%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B1%A0"><span class="toc-text">2. 小块空间的内存池</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Block"><span class="toc-text">2.1 Block</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Pool"><span class="toc-text">2.2 Pool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Arena"><span class="toc-text">2.3 Arena</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E6%9C%AA%E4%BD%BF%E7%94%A8-%E7%9A%84arena%E5%92%8C-%E5%8F%AF%E7%94%A8-%E7%9A%84arena"><span class="toc-text">2.3.1 &quot;未使用&quot;的arena和&quot;可用&quot;的arena</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-%E7%94%B3%E8%AF%B7arena"><span class="toc-text">2.3.2 申请arena</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%86%85%E5%AD%98%E6%B1%A0"><span class="toc-text">2.4 内存池</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-userpools"><span class="toc-text">2.4.1 userpools</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-2-Pool%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">2.4.2 Pool的初始化</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Memory Management
+        
+      </h1>
+      <time class="post-time">
+          04/02/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-内存管理架构"><a href="#1-内存管理架构" class="headerlink" title="1. 内存管理架构"></a>1. 内存管理架构</h2><p>Python有两套内存管理机制, 一套负责debug, 一套负责正常的内存管理, 由<code>PYMALLOC_DEBUG</code>控制. 当<code>PYMALLOC_DEBUG</code>未定义时, 则使用正常的内存管理.<br>Python中的内存管理机制可抽象为四层:<br><img src="/images/Python/memory-management-1.png" alt="Python内存管理机制的层次结构"></p>
+<h3 id="1-1-第0层"><a href="#1-1-第0层" class="headerlink" title="1.1 第0层"></a>1.1 第0层</h3><p>由操作系统提供的内存管理接口, 例如C运行时所提供的malloc和free. 除这一层之外往上三层都是Python维护的, Python无权干涉该层.</p>
+<h3 id="1-2-第1层"><a href="#1-2-第1层" class="headerlink" title="1.2 第1层"></a>1.2 第1层</h3><p>基于第0层包装而成的内存接口. 由于不同操作系统的内存特殊操作有不同解释, 例如<code>malloc(0)</code>, 有的会返回NULL, 有的会提示内存申请失败, 有的会返回一个正常指针. 为了可移植性, Python必须保证相同的语义表达相同的行为.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">PyAPI_FUNC(<span class="type">void</span> *) PyMem_Malloc(<span class="type">size_t</span>);</span><br><span class="line">PyAPI_FUNC(<span class="type">void</span> *) PyMem_Realloc(<span class="type">void</span> *, <span class="type">size_t</span>);</span><br><span class="line">PyAPI_FUNC(<span class="type">void</span>) PyMem_Free(<span class="type">void</span> *);</span><br><span class="line"></span><br><span class="line"><span class="type">void</span>* <span class="title function_">PyMem_Malloc</span><span class="params">(<span class="type">size_t</span> nbytes)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> PyMem_MALLOC(nbytes);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span>* <span class="title function_">PyMem_Realloc</span><span class="params">(<span class="type">void</span> *p, <span class="type">size_t</span> nbytes)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> PyMem_REALLOC(p, nbytes);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">PyMem_Free</span><span class="params">(<span class="type">void</span> *p)</span></span><br><span class="line">&#123;</span><br><span class="line">  PyMem_FREE(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Python提供了函数和宏两套接口, 因为宏可以提高执行效率. 但使用C来编写Python拓展模式时, 由于Python的内存管理不断改变, 宏的代码也在不断改变, 所以使用宏生成的二进制可能不兼容.<br>除了malloc, realloc, free的相同语义接口, 还有面向Python中类型的内存分配器:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PyMem_New(type, n) \</span></span><br><span class="line"><span class="meta">  ( (type *) PyMem_Malloc((n) * sizeof(type)) ) )</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PyMem_NEW(type, n) \</span></span><br><span class="line"><span class="meta">  ( (type *) PyMem_MALLOC((n) * sizeof(type)) ) )</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PyMem_Resize(p, type, n) \</span></span><br><span class="line"><span class="meta">  (type *) PyMem_Realloc((p), (n) * sizeof(type)) )</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PyMem_RESIZE(p, type, n) \</span></span><br><span class="line"><span class="meta">  (type *) PyMem_REALLOC((p), (n) * sizeof(type)) )</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PyMem_Del  PyMem_Free</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PyMem_DEL  PyMem_FREE</span></span><br></pre></td></tr></table></figure>
+<p>PyMem_MALLOC中需要提供申请空间的大小, PyMem_New已经不需要提供空间大小, 只需要类型</p>
+<h3 id="1-3-第2层及往上"><a href="#1-3-第2层及往上" class="headerlink" title="1.3 第2层及往上"></a>1.3 第2层及往上</h3><p>对于一些Python的常用对象构造内存管理策略, 例如整数对象, 字符串对象等. </p>
+<h2 id="2-小块空间的内存池"><a href="#2-小块空间的内存池" class="headerlink" title="2. 小块空间的内存池"></a>2. 小块空间的内存池</h2><p>Python中很多时候都是申请的小块内存, 这些小块内存被申请后很快就被释放. 由于频繁地执行malloc和free操作使得操作系统在用户态和内核态频繁切换, 十分影响Python的执行效率. 为了提高执行效率, Python引入了<code>Pymalloc</code>内存池机制, 用于申请和释放小块内存.<br>整个内存池都可当做一个层次结构, 分为四层:</p>
+<ul>
+<li>block</li>
+<li>pool</li>
+<li>arena</li>
+<li>内存池</li>
+</ul>
+<p>block, pool, arena都有代码的实体, 内存池并没有实体, 只是一个概念上的东西</p>
+<h3 id="2-1-Block"><a href="#2-1-Block" class="headerlink" title="2.1 Block"></a>2.1 Block</h3><p>block是一个确定大小的内存块, 这个内存大小的值为size class. 为了在32位和64位平台上都有最佳性能, 所有的block都是8字节对齐的.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ALIGNMENT         8  <span class="comment">/* must be 2^N */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ALIGNMENT_SHIFT   3</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> ALIGNMENT_MASK    (ALIGNMENT - 1)</span></span><br></pre></td></tr></table></figure>
+<p>block的大小也有上限, 当申请的内存大于这个上限时, 不能使用block存储, 只能调用Python的第1层内存管理机制来处理请求, 即<code>PyMem</code>函数族</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> SMALL_REQUEST_THRESHOLD 256</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NB_SMALL_SIZE_CLASSES   (SMALL_REQUEST_THRESHOLD / ALIGNMENT)</span></span><br></pre></td></tr></table></figure>
+<p>根据<code>SMALL_REQUEST_THRESHOLD</code>和<code>ALIGNMENT</code>的限定, 我们可以得到不用的block的size class, 每一个size class对应一个class index</p>
+<table>
+<thead>
+<tr>
+<th>Request in bytes</th>
+<th>Size of allocated block</th>
+<th>Size class index</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1-8</td>
+<td>8</td>
+<td>0</td>
+</tr>
+<tr>
+<td>9-16</td>
+<td>16</td>
+<td>1</td>
+</tr>
+<tr>
+<td>17-24</td>
+<td>24</td>
+<td>2</td>
+</tr>
+<tr>
+<td>25-32</td>
+<td>32</td>
+<td>3</td>
+</tr>
+<tr>
+<td>33-40</td>
+<td>40</td>
+<td>4</td>
+</tr>
+<tr>
+<td>41-48</td>
+<td>48</td>
+<td>5</td>
+</tr>
+<tr>
+<td>49-56</td>
+<td>56</td>
+<td>6</td>
+</tr>
+<tr>
+<td>57-64</td>
+<td>64</td>
+<td>7</td>
+</tr>
+<tr>
+<td>65-72</td>
+<td>72</td>
+<td>8</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr>
+<td>241-248</td>
+<td>248</td>
+<td>30</td>
+</tr>
+<tr>
+<td>249-256</td>
+<td>256</td>
+<td>31</td>
+</tr>
+</tbody></table>
+<p>size class与size class index的转换:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 从size class index转换到size class</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INDEX2SIZE(I) (((uint)(I) + 1) &lt;&lt; ALIGNMENT_SHIFT)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 从size class转换到size class index</span></span><br><span class="line">size = (uint)(nbytes - <span class="number">1</span>) &gt;&gt; ALIGNMENT_SHIFT;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Pool"><a href="#2-2-Pool" class="headerlink" title="2.2 Pool"></a>2.2 Pool</h3><p>一组block可集合成为一个pool,一个pool管理着一堆有固定大小的内存块. 一个pool的大小通常为一个系统内存页, 4KB.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> SYSTEM_PAGE_SIZE      (4 * 1024)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SYSTEM_PAGE_SIZE_MASK (SYSTEM_PAGE_SIZE - 1)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> POOL_SIZE             SYSTEM_PAGE_SIZE  <span class="comment">/* must be 2^N */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> POOL_SIZE_MASK        SYSTEM_PAGE_SIZE_MASK</span></span><br></pre></td></tr></table></figure>
+<p>以下是pool的header:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> uchar block;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* pool的header */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pool_header</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span> &#123;</span> </span><br><span class="line">    block *_padding;</span><br><span class="line">    uint count; </span><br><span class="line">  &#125; ref;  <span class="comment">/* block的个数   */</span></span><br><span class="line">  block *freeblock;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">pool_header</span> *<span class="title">nextpool</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">pool_header</span> *<span class="title">prevpool</span>;</span></span><br><span class="line">  uint arenaindex;</span><br><span class="line">  uint szidx;</span><br><span class="line">  uint nextoffset;</span><br><span class="line">  uint maxnextoffset;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>每一个pool中的block大小都相同, 以下是生成pool的过程:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ROUNDUP(x)    (((x) + ALIGNMENT_MASK) &amp; ~ALIGNMENT_MASK)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> POOL_OVERHEAD ROUNDUP(sizeof(struct pool_header))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> struct        pool_header *poolp;</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> unchar        block</span></span><br><span class="line"></span><br><span class="line">poolp pool;</span><br><span class="line">block* bp;</span><br><span class="line"></span><br><span class="line">pool-&gt;ref.count = <span class="number">1</span>;</span><br><span class="line">pool-&gt;szidx = size;  <span class="comment">// 设置pool的size class index</span></span><br><span class="line">size = INDEX2SIZE(size);  <span class="comment">// 将size class index转换为size</span></span><br><span class="line">bp = (block*)pool + POOL_OVERHEAD;  <span class="comment">// 跳过header进行对齐</span></span><br><span class="line">pool-&gt;nextoffset = POOL_OVERHEAD + (size &lt;&lt; <span class="number">1</span>);</span><br><span class="line">pool-&gt;maxnextoffset = POOL_SIZE - size;</span><br><span class="line">pool-&gt;freeblock = bp + size;</span><br><span class="line">*(block**)(pool-&gt;freeblock) = <span class="literal">NULL</span>;</span><br><span class="line"><span class="keyword">return</span> (<span class="type">void</span>*)bp;</span><br></pre></td></tr></table></figure>
+<p>返回的bp为pool中的第一块block指针, 该block可使用的内存区间为<code>[bp, bp+size]</code><br><img src="/images/Python/memory-management-2.png" alt="Pool结构图"></p>
+<p>下面是连续申请5块28字节内存时发生的情况:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (pool != pool-&gt;nextpool) &#123;</span><br><span class="line">  ++pool-&gt;ref.count;</span><br><span class="line">  bp = pool-&gt;freeblock;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* ...... */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 有足够的空间 */</span></span><br><span class="line">  <span class="keyword">if</span> (pool-&gt;nextoffset &lt;= pool-&gt;maxnextoffset) &#123;</span><br><span class="line">    pool-&gt;freeblock = (block*)pool + pool-&gt;nextoffset;</span><br><span class="line">    pool-&gt;nextoffset += INDEX2SIZE(size);</span><br><span class="line">    *(block **)(pool-&gt;freeblock) = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">return</span> (<span class="type">void</span> *)bp;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>freeblock指向下一个可用block空间, freeblock向后推进需要nextoffset, maxnextoffset指明了pool最后一个block的位置, 相当于pool的边界. 当pool中释放了部分block, 会出现大量离散自由的block, 这时需要链接起这些空闲的block</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> POOL_ADDR(P) ((poolp)((uptr)(P) &amp; ~(uptr)POOL_SIZE_MASK))</span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">PyObject_Free</span><span class="params">(<span class="type">void</span> *p)</span></span><br><span class="line">&#123;</span><br><span class="line">  poolp pool;</span><br><span class="line">  block *lastfree;</span><br><span class="line">  poolp next, prev;</span><br><span class="line">  uint size;</span><br><span class="line"></span><br><span class="line">  pool = POOL_ADDR(p);</span><br><span class="line">  <span class="keyword">if</span> (Py_ADDRESS_IN_RANGE(p, pool)) &#123;</span><br><span class="line">    *(block **)p = lastfree = pool-&gt;freeblock;  <span class="comment">// [1]</span></span><br><span class="line">    pool-&gt;freeblock = (block *)p;               <span class="comment">// [2]</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* ...... */</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在释放的过程中, freeblock指向了被释放的block, 被释放的block中的内容指向了未分配的block, 而未分配的block中的内容为NULL<br><img src="/images/Python/memory-management-3.png" alt="释放block后自由block链表"></p>
+<p>这样在allocate block时就可以通过block中的内容是否为NULL来判断该block是否曾被释放过</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (pool != pool-&gt;nextpool) &#123;</span><br><span class="line">  ++pool-&gt;ref.count;</span><br><span class="line">  bp = pool-&gt;freeblock;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 判断是否为曾被释放的block</span></span><br><span class="line">  <span class="keyword">if</span> ((pool-&gt;freeblock = *(block **)bp) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="type">void</span> *)bp;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (pool-&gt;nextoffset &lt;= pool-&gt;maxnextoffset) &#123;</span><br><span class="line">    <span class="comment">/* ...... */</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Arena"><a href="#2-3-Arena" class="headerlink" title="2.3 Arena"></a>2.3 Arena</h3><p>多个pool组成一个arena, 单个arena的大小为256KB, 所以单个arena能存储的pool个数为64个</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ARENA_SIZE    (256 &lt;&lt; 10)	<span class="comment">/* 256KB */</span></span></span><br></pre></td></tr></table></figure>
+<p>以下是arena结构体:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> uchar block;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">arena_object</span> &#123;</span></span><br><span class="line">  uptr address;</span><br><span class="line">  block* pool_address;</span><br><span class="line">  uint nfreepools;</span><br><span class="line">  uint ntotalpools;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">pool_header</span>* <span class="title">freepools</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">arena_object</span>* <span class="title">nextarena</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">arena_object</span>* <span class="title">prevarena</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>一个arena包括一个arena_object和所管理的pool集合. 一个pool包含一个<code>pool_header</code>和所管理的block集合</p>
+<h4 id="2-3-1-未使用-的arena和-可用-的arena"><a href="#2-3-1-未使用-的arena和-可用-的arena" class="headerlink" title="2.3.1 &quot;未使用&quot;的arena和&quot;可用&quot;的arena"></a>2.3.1 &quot;未使用&quot;的arena和&quot;可用&quot;的arena</h4><p>多个arena组成一个小块内存的内存池, 但<code>arena_object</code>中的<code>nextarena</code>和<code>prevarena</code>用来链接多个arena, 多个arena实际存储在数组中.<br><img src="/images/Python/memory-management-4.png" alt="Pool和Arena的区别"></p>
+<p>由于arena初始化时并不一定有pool, 所以arena有两个状态: &quot;未使用&quot;和&quot;可用&quot;<br>当arena没有和pool集合链接时, 处于&quot;未使用&quot;状态; 一旦建立联系, 就切换到&quot;可用状态&quot;. &quot;未使用&quot;的arena的链接表头为<code>unused_arena_objects</code>, arena和arena之间使用<code>nextarena</code>连接, 是一个单向链表; &quot;可用&quot;的arena的链表表头为<code>usable_arenas</code>, arena和arena之间通过<code>nextarena</code>和<code>prevarena</code>连接, 是一个双向链表.<br><img src="/images/Python/memory-management-5.png" alt="arena中的某种状态"></p>
+<h4 id="2-3-2-申请arena"><a href="#2-3-2-申请arena" class="headerlink" title="2.3.2 申请arena"></a>2.3.2 申请arena</h4><p>Python使用<code>new_arena</code>来创建一个arena</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// arena的集合</span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">arena_object</span>* <span class="title">arenas</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line"><span class="comment">// 当前arenas中arena的数量</span></span><br><span class="line"><span class="type">static</span> uint maxarenas = <span class="number">0</span>;</span><br><span class="line"><span class="comment">// &quot;未使用&quot;arena的链表</span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">arena_object</span>* <span class="title">unused_arena_objects</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line"><span class="comment">// &quot;可用&quot;arena的链表</span></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">arena_object</span>* <span class="title">usable_arenas</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化时需要申请的arena_object个数</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> INITIAL_ARENA_OBJECTS 16</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="keyword">struct</span> arena_object* <span class="title function_">new_arena</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">arena_object</span>* <span class="title">arenaobj</span>;</span></span><br><span class="line">  uint excess;  <span class="comment">/* number of bytes above pool alignment */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 判断是否需要扩充&quot;未使用&quot;arena链表</span></span><br><span class="line">  <span class="keyword">if</span> (unused_arena_objects == <span class="literal">NULL</span>) &#123;</span><br><span class="line">    uint i;</span><br><span class="line">    uint numarenas;</span><br><span class="line">    <span class="type">size_t</span> nbytes;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将maxarena增加一倍</span></span><br><span class="line">    numarenas = maxarenas ? maxarenas &lt;&lt; <span class="number">1</span> : INITIAL_ARENA_OBJECTS;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (numarenas &lt;= maxarenas)</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NULL</span>;  <span class="comment">/* 溢出 */</span></span><br><span class="line">    <span class="keyword">if</span> (numarenas &gt; PY_SIZE_MAX / <span class="keyword">sizeof</span>(*arenas))</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NULL</span>;  <span class="comment">/* 溢出 */</span></span><br><span class="line"></span><br><span class="line">    nbytes = numarenas * <span class="keyword">sizeof</span>(*arenas);</span><br><span class="line">    arenaobj = (<span class="keyword">struct</span> arena_object *)<span class="built_in">realloc</span>(arenas, nbytes);</span><br><span class="line">    <span class="keyword">if</span> (arenaobj == <span class="literal">NULL</span>)</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    arenas = arenaobj;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 初始化新申请的arena_object, 并将其放入unused_arena_objects链表中</span></span><br><span class="line">    <span class="keyword">for</span> (i = maxarenas; i &lt; numarenas; ++i) &#123;</span><br><span class="line">      arenas[i].address = <span class="number">0</span>;  <span class="comment">/* mark as unassociated */</span></span><br><span class="line">      arenas[i].nextarena = i &lt; numarenas - <span class="number">1</span> ?</span><br><span class="line">                 &amp;arenas[i+<span class="number">1</span>] : <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    unused_arena_objects = &amp;arenas[maxarenas];</span><br><span class="line">    maxarenas = numarenas;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 从unused_arena_objects链表中取出一个&quot;未使用&quot;的arena,</span></span><br><span class="line"><span class="comment">   * 将抽出的arena与unused_arena_objects链表分离开来</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  arenaobj = unused_arena_objects;</span><br><span class="line">  unused_arena_objects = arenaobj-&gt;nextarena;</span><br><span class="line">  assert(arenaobj-&gt;address == <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 申请arena_object管理的内存(pool的存储空间), 256KB */</span></span><br><span class="line">  arenaobj-&gt;address = (uptr)<span class="built_in">malloc</span>(ARENA_SIZE);</span><br><span class="line">  ++narenas_currently_allocated;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 设置pool集合的相关信息</span></span><br><span class="line">  arenaobj-&gt;freepools = <span class="literal">NULL</span>;</span><br><span class="line">  arenaobj-&gt;pool_address = (block*)arenaobj-&gt;address;</span><br><span class="line">  arenaobj-&gt;nfreepools = ARENA_SIZE / POOL_SIZE;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将pool的起始地址调整为系统页的边界</span></span><br><span class="line">  excess = (uint)(arenaobj-&gt;address &amp; POOL_SIZE_MASK);</span><br><span class="line">  <span class="keyword">if</span> (excess != <span class="number">0</span>) &#123;</span><br><span class="line">    --arenaobj-&gt;nfreepools;</span><br><span class="line">    arenaobj-&gt;pool_address += POOL_SIZE - excess;</span><br><span class="line">  &#125;</span><br><span class="line">  arenaobj-&gt;ntotalpools = arenaobj-&gt;nfreepools;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> arenaobj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-内存池"><a href="#2-4-内存池" class="headerlink" title="2.4 内存池"></a>2.4 内存池</h3><h4 id="2-4-1-userpools"><a href="#2-4-1-userpools" class="headerlink" title="2.4.1 userpools"></a>2.4.1 userpools</h4><p>Python只规定了block的空间上限, 但并没有提及到arena的个数限制. Python提供了一个编译符号来控制是否限制内存池的大小. 当Python在<code>WITH_MEMORY_LIMITS</code>编译符号打开的情况下进行编译时, 也就限制了整个内存池的大小. 默认情况下并不限制大小.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifdef</span> WITH_MEMORY_LIMITS</span></span><br><span class="line">  <span class="meta">#<span class="keyword">ifndef</span> SMALL_MEMORY_LIMIT</span></span><br><span class="line">    <span class="meta">#<span class="keyword">define</span> SMALL_MEMORY_LIMIT (64 * 1024 * 1024) <span class="comment">/* 64MB */</span></span></span><br><span class="line">  <span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> WITH_MEMORY_LIMITS</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_ARENAS (SMALL_MEMORY_LIMIT / ARENA_SIZE)</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<p>由于一个arena的pool集合所管理的block大小并非不变, 所以可能导致一个arena中的pool集合并不有相同的block大小. 例如: 一个arena中的pool集合有一些在管理32字节的block, 有一些在管理64字节的block.<br>pool在任何时刻总处于三个状态中之一:</p>
+<ul>
+<li>used: pool中至少有一个block被使用, 且至少有一个block未被使用. 这种状态的pool被userpools数组维护.</li>
+<li>full: pool中的所有block都被使用. 这时pool在arena中, 但不在arena的freepools中.</li>
+<li>empty: pool中所有block都未被使用. 这时pool通过<code>pool_header</code>中的<code>nextpool</code>构成单向链表, 位于arena_object中的freepools<br><img src="/images/Python/memory-management-6.png" alt="某一时刻arena中pool集合的状态"></li>
+</ul>
+<p>所有处于used状态下的pool都位于usedpools的控制下, Python通过usedpools寻找一块可用的block. 但usedpools下的pools中的block大小并不相同, 这就需要一种机制来寻找合适的pool:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> uchar block;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PTA(x) (</span></span><br><span class="line">  (poolp)(</span><br><span class="line">    (uchar *)&amp;(usedpools[<span class="number">2</span>*(x)]) - <span class="number">2</span>*<span class="keyword">sizeof</span>(block *)</span><br><span class="line">  )</span><br><span class="line">)</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PT(x)  PTA(x), PTA(x)</span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> poolp usedpools[<span class="number">2</span> * ((NB_SMALL_SIZE_CLASSES + <span class="number">7</span>) / <span class="number">8</span>) * <span class="number">8</span>] = &#123;</span><br><span class="line">  PT(<span class="number">0</span>), PT(<span class="number">1</span>), PT(<span class="number">2</span>), PT(<span class="number">3</span>), PT(<span class="number">4</span>), PT(<span class="number">5</span>), PT(<span class="number">6</span>), PT(<span class="number">7</span>)</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> NB_SMALL_SIZE_CLASSES &gt; 8</span></span><br><span class="line">  , PT(<span class="number">8</span>), PT(<span class="number">9</span>), PT(<span class="number">10</span>), PT(<span class="number">11</span>), PT(<span class="number">12</span>), PT(<span class="number">13</span>), PT(<span class="number">14</span>), PT(<span class="number">15</span>)</span><br><span class="line">  <span class="comment">/* ...... */</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* NB_SMALL_SIZE_CLASSES &gt;  8 */</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>当申请一个32字节的pool时, 需要将这个pool放入usedpools. 先找到他的size class index, 也就是3. 然后进行<code>usedpools[3+3]-&gt;nextpool = pool</code>即可. <code>PyObject_Malloc</code>中利用了这个技巧来判断某个class size index对应的pool是否存在于usedpools中.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span>* <span class="title function_">PyObject_Malloc</span><span class="params">(<span class="type">size_t</span> nbytes)</span></span><br><span class="line">&#123;</span><br><span class="line">  block *bp;</span><br><span class="line">  poolp pool;</span><br><span class="line">  poolp next;</span><br><span class="line">  uint size;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((nbytes - <span class="number">1</span>) &lt; SMALL_REQUEST_THRESHOLD) &#123;</span><br><span class="line">    LOCK();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 获得size class index */</span></span><br><span class="line">    size = (uint)(nbytes - <span class="number">1</span>) &gt;&gt; ALIGNMENT_SHIFT;</span><br><span class="line">    pool = usedpools[size + size];</span><br><span class="line">        </span><br><span class="line">    <span class="comment">/* usedpools中有可用的pool */</span></span><br><span class="line">    <span class="keyword">if</span> (pool != pool-&gt;nextpool) &#123;</span><br><span class="line">      <span class="comment">/* ...... */</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* usedpools中没有可用的pool, 尝试获得空的pool */</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-4-2-Pool的初始化"><a href="#2-4-2-Pool的初始化" class="headerlink" title="2.4.2 Pool的初始化"></a>2.4.2 Pool的初始化</h4><p>Python启动时并没有分配内存, 而采用了延迟分配的策略. 当我们申请小块内存时, Python才会建立内存池. 当申请28字节的内存时, Python将申请32字节的内存, 并在usedpools中的对应位置查找. 如果没有找到可用的pool, Python会从usable_arenas链表中第一个可用arena中获得一个pool.<br>当从一个&quot;可用&quot;的arena中取出一个pool后, 下一次即使请求分配的pool的size class不同, 也可以从该arena中申请pool.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span>* <span class="title function_">PyObject_Malloc</span><span class="params">(<span class="type">size_t</span> nbytes)</span></span><br><span class="line">&#123;</span><br><span class="line">  block *bp;</span><br><span class="line">  poolp pool;</span><br><span class="line">  poolp next;</span><br><span class="line">  uint size;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((nbytes - <span class="number">1</span>) &lt; SMALL_REQUEST_THRESHOLD) &#123;</span><br><span class="line">    LOCK();</span><br><span class="line">    size = (uint)(nbytes - <span class="number">1</span>) &gt;&gt; ALIGNMENT_SHIFT;</span><br><span class="line">    pool = usedpools[size + size];</span><br><span class="line">    <span class="keyword">if</span> (pool != pool-&gt;nextpool) &#123;</span><br><span class="line">      <span class="comment">/* ...... */</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 如果usable_arenas链表为空, 则创建新表 */</span></span><br><span class="line">    <span class="keyword">if</span> (usable_arenas == <span class="literal">NULL</span>) &#123;</span><br><span class="line">      <span class="comment">/* 申请新的arena_object, 并放入usable_arenas链表 */</span></span><br><span class="line">      usable_arenas = new_arena();</span><br><span class="line">      usable_arenas-&gt;nextarena = usable_arenas-&gt;prevarena = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 从usable_arenas链表中第一个arena的freepools中抽取一个可用的pool */</span></span><br><span class="line">    pool = usable_arenas-&gt;freepools;</span><br><span class="line">    <span class="keyword">if</span> (pool != <span class="literal">NULL</span>) &#123;</span><br><span class="line">      usable_arenas-&gt;freepools = pool-&gt;nextpool;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* 调整usable_arenas链表中第一个arena的可用pool数量 */</span></span><br><span class="line">      --usable_arenas-&gt;nfreepools;</span><br><span class="line"></span><br><span class="line">      <span class="comment">/* 如果数量为0, 则将该arena从usable_arenas链表中移除 */</span></span><br><span class="line">      <span class="keyword">if</span> (usable_arenas-&gt;nfreepools == <span class="number">0</span>) &#123;</span><br><span class="line">        usable_arenas = usable_arenas-&gt;nextarena;</span><br><span class="line">        <span class="keyword">if</span> (usable_arenas != <span class="literal">NULL</span>) &#123;</span><br><span class="line">          usable_arenas-&gt;prevarena = <span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      init_pool:</span><br><span class="line">        <span class="comment">/* ...... */</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在我们有了一块用于32字节内存分配的pool, 为了提高内存分配的效率, 需要将pool放入到usedpools中, 这一步叫作init pool:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> ROUNDUP(x)    (((x) + ALIGNMENT_MASK) &amp; ~ALIGNMENT_MASK)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> POOL_OVERHEAD    ROUNDUP(sizeof(struct pool_header))</span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span>* <span class="title function_">PyObject_Malloc</span><span class="params">(<span class="type">size_t</span> nbytes)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* ...... */</span></span><br><span class="line"></span><br><span class="line">  init_pool:</span><br><span class="line">    <span class="comment">/* 将pool放入usedpools中 */</span></span><br><span class="line">    next = usedpools[size + size]; <span class="comment">/* == prev */</span></span><br><span class="line">    pool-&gt;nextpool = next;</span><br><span class="line">    pool-&gt;prevpool = next;</span><br><span class="line">    next-&gt;nextpool = pool;</span><br><span class="line">    next-&gt;prevpool = pool;</span><br><span class="line">    pool-&gt;ref.count = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* [1] 如果pool有正确的size结构, 则直接返回一个block */</span></span><br><span class="line">    <span class="keyword">if</span> (pool-&gt;szidx == size) &#123;</span><br><span class="line">        bp = pool-&gt;freeblock;</span><br><span class="line">        pool-&gt;freeblock = *(block **)bp;</span><br><span class="line">        UNLOCK();</span><br><span class="line">        <span class="keyword">return</span> (<span class="type">void</span> *)bp;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* [2] 初始化pool_header, 将freeblock指向第二个block, 返回第一个block */</span></span><br><span class="line">    pool-&gt;szidx = size;</span><br><span class="line">    size = INDEX2SIZE(size);</span><br><span class="line">    bp = (block *)pool + POOL_OVERHEAD;</span><br><span class="line">    pool-&gt;nextoffset = POOL_OVERHEAD + (size &lt;&lt; <span class="number">1</span>);</span><br><span class="line">    pool-&gt;maxnextoffset = POOL_SIZE - size;</span><br><span class="line">    pool-&gt;freeblock = bp + size;</span><br><span class="line">    *(block **)(pool-&gt;freeblock) = <span class="literal">NULL</span>;</span><br><span class="line">    UNLOCK();</span><br><span class="line">    <span class="keyword">return</span> (<span class="type">void</span> *)bp;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* ...... */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当一个从未被使用的pool, 其szidx为0xFFFF. 所以init pool时会执行<code>[2]</code>. 只有当pool从一个empty重新转为used状态时, 才会执行<code>[1]</code>.<br>以下是<code>new_arena</code>中取出新的arena后的初始化过程:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> DUMMY_SIZE_IDX 0xffff <span class="comment">/* size class of newly cached pools */</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span>* <span class="title function_">PyObject_Malloc</span><span class="params">(<span class="type">size_t</span> nbytes)</span></span><br><span class="line">&#123;</span><br><span class="line">  block *bp;</span><br><span class="line">  poolp pool;</span><br><span class="line">  poolp next;</span><br><span class="line">  uint size;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* ...... */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 从arena中取出一个新的pool */</span></span><br><span class="line">  pool = (poolp)usable_arenas-&gt;pool_address;</span><br><span class="line">  pool-&gt;arenaindex = usable_arenas - arenas;</span><br><span class="line">  pool-&gt;szidx = DUMMY_SIZE_IDX;</span><br><span class="line">  usable_arenas-&gt;pool_address += POOL_SIZE;</span><br><span class="line">  --usable_arenas-&gt;nfreepools;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (usable_arenas-&gt;nfreepools == <span class="number">0</span>) &#123;</span><br><span class="line">    usable_arenas = usable_arenas-&gt;nextarena;</span><br><span class="line">    <span class="keyword">if</span> (usable_arenas != <span class="literal">NULL</span>)</span><br><span class="line">      usable_arenas-&gt;prevarena = <span class="literal">NULL</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">goto</span> init_pool;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* ...... */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/4958.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Cookie</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/3f85.html">
+        <span class="next-text nav-default">New Style Class</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/9a67.html';
+  var disqus_title = "Memory Management";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

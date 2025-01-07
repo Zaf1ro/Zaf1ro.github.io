@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Pattern Matching"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/de17.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/de17.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/de17.html"/>
+
+
+<meta name="description" content="1. IntroductionPattern matching(模式匹配)又称字符串匹配问题, 问题可描述为: 给定字符串S和T, 判断S是否包含T(通常$|S| \gg |T|$), 其中T被称为pattern(模式串). 2. Brute Force该算法的思路很简单: 比较S的第一个字符和T的第一个字符, 若相等, 则继续比较两个字符串的第二个字符; 否则T回退到第一个字符, 并和S的第二个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pattern Matching">
+<meta property="og:url" content="https://zaf1ro.github.io/p/de17.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionPattern matching(模式匹配)又称字符串匹配问题, 问题可描述为: 给定字符串S和T, 判断S是否包含T(通常$|S| \gg |T|$), 其中T被称为pattern(模式串). 2. Brute Force该算法的思路很简单: 比较S的第一个字符和T的第一个字符, 若相等, 则继续比较两个字符串的第二个字符; 否则T回退到第一个字符, 并和S的第二个">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/pattern-matching/ABABAC-state-transition.png">
+<meta property="article:published_time" content="2023-05-10T22:57:33.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.028Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Algorithm/pattern-matching/ABABAC-state-transition.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Pattern Matching - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Brute-Force"><span class="toc-text">2. Brute Force</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Knuth-Morris-Pratt"><span class="toc-text">3. Knuth-Morris-Pratt</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Brute-Force"><span class="toc-text">3.1 Brute Force</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Skip-Impossible-Iteration"><span class="toc-text">3.2 Skip Impossible Iteration</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Prefix-Function"><span class="toc-text">3.3 Prefix Function</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-KMP-Implementation"><span class="toc-text">3.4 KMP Implementation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-DFA-Simulation"><span class="toc-text">3.5 DFA Simulation</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Pattern Matching
+        
+      </h1>
+      <time class="post-time">
+          05/10/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Pattern matching(模式匹配)又称<strong>字符串匹配</strong>问题, 问题可描述为: 给定字符串S和T, 判断S是否包含T(通常$|S| \gg |T|$), 其中T被称为<strong>pattern</strong>(模式串).</p>
+<h2 id="2-Brute-Force"><a href="#2-Brute-Force" class="headerlink" title="2. Brute Force"></a>2. Brute Force</h2><p>该算法的思路很简单: 比较S的第一个字符和T的第一个字符, 若相等, 则继续比较两个字符串的第二个字符; 否则T回退到第一个字符, 并和S的第二个字符比较, 以此类推, 直到S或T的所有字符比较完毕.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">search</span><span class="params">(String s, String t)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s.length(); i++) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (j &lt; t.length() &amp;&amp; s.charAt(i+j) == t.charAt(j)) &#123;</span><br><span class="line">            j++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (j == t.length()) <span class="keyword">return</span> i;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>假设S和T中的字符平均分布, 因此<code>S[0] = T[0]</code>的概率为$\frac{1}{26}$, <code>S[1] == T[1]</code>的概率为$\frac{1}{26^2}$, 假设S的长度为M, 则预期复杂度为$O(M)$; 但S和T中的字符并不是平均分布的, 假设S的长度为M, T的长度为N, 则最差时间复杂度为$O(MN)$.</p>
+<h2 id="3-Knuth-Morris-Pratt"><a href="#3-Knuth-Morris-Pratt" class="headerlink" title="3. Knuth-Morris-Pratt"></a>3. Knuth-Morris-Pratt</h2><h3 id="3-1-Brute-Force"><a href="#3-1-Brute-Force" class="headerlink" title="3.1 Brute Force"></a>3.1 Brute Force</h3><p>假设S为&quot;AAAAAAAAAB&quot;, T为&quot;AAAAB&quot;, Brute Force匹配字符串时会出现多次重复, 如下图:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">  0 1 2 3 4 5 6 7 8 9</span><br><span class="line">  A A A A A A A A A B</span><br><span class="line">1 A A A A B</span><br><span class="line">2   A A A A B</span><br><span class="line">3     A A A A B</span><br><span class="line">4       A A A A B</span><br><span class="line">5         A A A A B</span><br><span class="line">6           A A A A B</span><br></pre></td></tr></table></figure>
+<p>上图中, 第一次匹配失败后, brute force会将T向右移动一位并尝试匹配, 直到第六次匹配成功: 由于T的最后一位字符为B, 而<code>S[0:4]</code>均为A, 因此第二次到第五次匹配并没有必要, 可直接跳过<code>S[0:4]</code>, 直接从<code>S[5]</code>开始匹配.</p>
+<h3 id="3-2-Skip-Impossible-Iteration"><a href="#3-2-Skip-Impossible-Iteration" class="headerlink" title="3.2 Skip Impossible Iteration"></a>3.2 Skip Impossible Iteration</h3><p>可以发现, brute force完全忽略了第一次匹配得到的信息: S的子字符串与S的前缀子字符串相同, 且两个子字符串的长度相同. 若想降低brute force的复杂度, 则需减少比较字符的次数, 而KMP的核心思想在于<strong>跳过不可能匹配成功的字符</strong>. 假设S为&quot;ABCABC&quot;, T为&quot;ABCABD&quot;, brute force的步骤如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">   0 1 2 3 4 5 6 7</span><br><span class="line">   A B C A B C</span><br><span class="line">1  A B C A B D</span><br><span class="line">2    A B C A B D</span><br><span class="line">3      A B C A B D</span><br><span class="line">4        A B C A B D</span><br></pre></td></tr></table></figure>
+<p>第一次匹配时, 匹配停在了第六位字符(<code>S[5] != T[5]</code>), 说明<code>S[0:5] == T[0:5]</code>, 即<code>ABCAB</code>. 第一次匹配时我们可知&quot;AB&quot;出现在<code>S[0:1]</code>和<code>S[3:4]</code>, 且&quot;AB&quot;为T的前缀字符串, 因此让T向右移动一位或两位没有意义, 只有让T向右移动三位才能匹配到S的下一个&quot;AB&quot;.<br>假设<code>S[i] != T[j]</code>, 则上述过程可看作: S依然停留在i坐标, T向右移动以跳过不可能匹配成功的位置, 并重新比较<code>S[i]</code>. 因此, S不会回退, 也不会反复比较S中已匹配成功过的字符; 匹配失败时, 已匹配成功的子字符串长度为j, 因此T的移动范围为[1,j], 1表示向右移动一位, j表示<code>T[0:j-1]</code>之间不存在任何需要尝试匹配的位置; 由于<code>S[i-j:i-1] == T[0:j-1]</code>, 因此T已经拥有所有信息, 向右移动多少位无需考虑S的字符.</p>
+<h3 id="3-3-Prefix-Function"><a href="#3-3-Prefix-Function" class="headerlink" title="3.3 Prefix Function"></a>3.3 Prefix Function</h3><p>给定一个长度为n的字符串a, 则prefix function(前缀函数)为一个长度为n的数组$\pi$, 其中$\pi[i]$的定义为:</p>
+<ul>
+<li>若$a[0:i]$有一对相等的前缀和后缀: a[0:k-1]和a[i-(k-1):i], 那么$\pi[i]$就是这个前缀(或后缀)的长度, 即$\pi[i] &#x3D; k$</li>
+<li>若存在多对相等的前后缀, 则$\pi[i]$为最长一对的长度</li>
+<li>若不存在相等的前后缀, 则$\pi[i] &#x3D; 0$</li>
+</ul>
+<p>总结来说, $\pi[i]$是a[0:i]的最长相等前后缀的长度. 假设a为&quot;ABCABCD&quot;:</p>
+<ul>
+<li>$\pi[0] &#x3D; 0$: 规定$\pi[0]$为0</li>
+<li>$\pi[1] &#x3D; 0$: <code>AB</code>不存在相等前后缀</li>
+<li>$\pi[2] &#x3D; 0$: <code>ABC</code>不存在相等前后缀</li>
+<li>$\pi[3] &#x3D; 1$: <code>ABCA</code>存在一对相等前后缀(a[0]与a[3])</li>
+<li>$\pi[4] &#x3D; 2$: <code>ABCAB</code>存在一对相等前后缀(a[0:1]与a[3:4])</li>
+<li>$\pi[5] &#x3D; 3$: <code>ABCABC</code>存在一对相等前后缀(a[0:2]与a[3:5])</li>
+<li>$\pi[6] &#x3D; 0$: <code>ABCABCD</code>不存在相等前后缀</li>
+</ul>
+<p>因此, s的前缀函数为[0,0,0,1,2,3,0]. 之所以介绍前缀函数, 因为T的移动取决于前后缀: 假设a为S和T的公共子字符串, 则T的移动一定满足相等的前后缀. 以上一节的S和T为例, S为&quot;ABCABC&quot;, T为&quot;ABCABD&quot;, 第一次匹配停在第六位字符, 即公共子字符串a为&quot;ABCAB&quot;, T在向右移动后仍需匹配公共字符串a的后缀, 因此T的前缀需等于a的后缀, 而T的前缀也是a的前缀, 也就需计算a的相等前后缀.<br>现在的问题在于如何高效地计算前缀函数, 最容易想到的方法是逐个字符对比:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span>[] prefix(String a) &#123;</span><br><span class="line">    <span class="type">int</span>[] pi = <span class="keyword">new</span> <span class="title class_">int</span>[a.length()];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; a.length(); i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i; j &gt; <span class="number">0</span>; j--) &#123;</span><br><span class="line">            <span class="keyword">if</span> (a.substring(<span class="number">0</span>,j).equals(a.substring(i-j+<span class="number">1</span>,i+<span class="number">1</span>))) &#123;</span><br><span class="line">                pi[i] = j;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> pi;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该算法的时间复杂度为$O(N^3)$, 在优化该算法前, 我们需了解$\pi[i]$的涵义, $\pi[i]$共有两种涵义:</p>
+<ul>
+<li>$\pi[i]$表示最长相等前后缀的长度</li>
+<li>若$a[\pi[i]] &#x3D;&#x3D; a[i+1]$, 则$\pi[i+1] &#x3D; \pi[i]+1$, 因此$\pi[i]$表示$\pi[i+1]$的前缀字符串的末尾字符位置</li>
+</ul>
+<p>计算$\pi{i+1}$时, 我们已知$\pi[i]$的值, 而<strong>相邻的前缀函数最多增加1</strong>, 因此分为以下情况:</p>
+<ul>
+<li>若$a[i+1] &#x3D;&#x3D; a[\pi[i]]$: $\pi[i+1] &#x3D; \pi[i] + 1$</li>
+<li>若$a[i+1] !&#x3D; a[\pi[i]]$: 寻找仅次于$\pi[i]$的第二长度j, 且j必须保证相等前缀和性质($a[0 \ldots j-1] &#x3D;&#x3D; a[i-j+1 \ldots i]$). 若存在坐标j, 则比较$a[i+1]$和$a[j]$, 若相等, 则$\pi[i+1] &#x3D; j+1$; 若不存在j, 则寻找仅次于j的第二长度$j_2$, 如此循环, 直到j为0.</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span>[] prefix(String a) &#123;</span><br><span class="line">    <span class="type">int</span>[] pi = <span class="keyword">new</span> <span class="title class_">int</span>[a.length()];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; a.length(); i++) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> pi[i-<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; a.charAt(i) != a.charAt(j)) j = pi[j-<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">if</span> (a.charAt(i) == a.charAt(j)) j++;</span><br><span class="line">        pi[i] = j;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> pi;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该算法的时间复杂度为$O(N)$.</p>
+<h3 id="3-4-KMP-Implementation"><a href="#3-4-KMP-Implementation" class="headerlink" title="3.4 KMP Implementation"></a>3.4 KMP Implementation</h3><p>在进行真正的匹配前, 需计算T中每个元素的next值, 即当前字符与S不匹配时, 公共字符串的最长相等前后缀长度. 假设<code>S[i] != T[j]</code>, 则<code>next[j]</code>为<code>$pi[i-1]$</code>, 规定<code>next[0] = -1</code>, <code>next[1] = 0</code>. </p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">indexOf</span><span class="params">(String s, String t)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, j = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span>[] next = getNext(t);</span><br><span class="line">    <span class="keyword">while</span> (i &lt; s.length() &amp;&amp; j &lt; t.length()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.charAt(i) == t.charAt(j)) &#123; <span class="comment">// matched</span></span><br><span class="line">            i++;</span><br><span class="line">            j++;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (next[j] == -<span class="number">1</span>) &#123; <span class="comment">// unmatched, and no available pi</span></span><br><span class="line">            i++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// unmatched, move to next pi</span></span><br><span class="line">            j = next[j];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> j == t.length() ? i - j : -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"><span class="type">int</span>[] getNext(String a) &#123;</span><br><span class="line">    <span class="type">int</span>[] next = <span class="keyword">new</span> <span class="title class_">int</span>[a.length()];</span><br><span class="line">    next[<span class="number">0</span>] = -<span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">2</span>, j = <span class="number">0</span>; <span class="comment">// j = next[i-1]</span></span><br><span class="line">    <span class="keyword">while</span> (i &lt; a.length()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (a.charAt(i-<span class="number">1</span>) == a.charAt(j)) &#123; <span class="comment">// matched, pi[i] = pi[i-1] + 1</span></span><br><span class="line">            next[i++] = ++j;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (j &gt; <span class="number">0</span>) &#123; <span class="comment">// unmatched, search for second longest pi </span></span><br><span class="line">            j = next[j];</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            next[i++] = <span class="number">0</span>; <span class="comment">// unmatched, and no available pi</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-DFA-Simulation"><a href="#3-5-DFA-Simulation" class="headerlink" title="3.5 DFA Simulation"></a>3.5 DFA Simulation</h3><p>从另一个角度来看, KMP算法课看做一个DFA(Deterministic finite automaton, 确定性有限状态自动机):</p>
+<ul>
+<li>$Q$: 一个有限状态集合</li>
+<li>$\sum$: 一个有限的非空输入字符集</li>
+<li>$\delta$: 变换函数</li>
+<li>$q_0$: 开始状态</li>
+<li>$F$: 接受状态集合</li>
+</ul>
+<p>对于字符串匹配, DFA可描述为:</p>
+<ul>
+<li>$Q$:若字符串T长度为N, 则状态集大小为N</li>
+<li>$\sum$: ASCII字符</li>
+<li>$\delta$: KMP实现的状态转换函数</li>
+</ul>
+<p>假设T为&quot;ABABAC&quot;, DFA的状态转换图如下:<br><img src="/images/Algorithm/pattern-matching/ABABAC-state-transition.png" alt="Binary Heap"></p>
+<p>为构建一个DFA, 我们需要一个dfa二维数组, 每一行对应一种输入(<code>ASCII</code>), 每一列对应一种状态(<code>[0,N-1]</code>), 若<code>dfs[X][Y] = Z</code>, 表示DFA当前状态为<code>Y</code>, 当前输入为<code>X</code>, 状态应切换为<code>Z</code>. 构造DFA的代码如下:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">KMP</span><span class="params">(<span class="type">char</span>[] T)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> T.length;</span><br><span class="line">    dfa = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">128</span>][m];</span><br><span class="line">    dfa[T[<span class="number">0</span>]][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">0</span>, j = <span class="number">1</span>; j &lt; m; j++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> <span class="number">0</span>; c &lt; <span class="number">128</span>; c++) &#123;</span><br><span class="line">            dfa[c][j] = dfa[c][x]; <span class="comment">// Copy mismatch cases.</span></span><br><span class="line">        &#125;</span><br><span class="line">        dfa[T[j]][j] = j + <span class="number">1</span>; <span class="comment">// Set match case.</span></span><br><span class="line">        x = dfa[T[j]][x];     <span class="comment">// Update restart state.</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该函数中的<code>j</code>在循环中递增, 因此整个函数实际上从小到大更新每一种状态(每一列)下任意输入字符的状态转换. 假设当前状态为<code>j</code>, 当前输入字符为<code>c</code>, 则存在两种状态转换的情况:</p>
+<ul>
+<li><code>c == T[j]</code>: 状态切换为<code>j+1</code></li>
+<li><code>c != T[j]</code>: 状态回退(<code>&lt;j</code>)或维持不变(<code>j</code>)</li>
+</ul>
+<p><code>c == T[j]</code>时可写作<code>dfa[T[j]][j] = j+1</code>; 若<code>c != T[j]</code>, 则需找到当前状态的<strong>最长相等前缀状态</strong>, 假设为<code>x</code>, 则x已输入的字符串与j的后缀字符串相同, 且为最长. 这时可将j的输入字符交给x处理, 也就是<code>dfa[c][j] = dfa[c][x]</code>. 这与上一节的KMP实现相同: 若状态无法前进, 则后退尽量少的字符, 也就是最长相等前后缀.<br>问题在于如何获得状态j下的最长相等前缀状态<code>x</code>, 上述函数中<code>x = dfa[T[j]][x]</code>负责更新<code>j+1</code>状态的最长相等前缀状态, 可以理解为: 在状态<code>x</code>上输入当前字符<code>T[j]</code>, 存在两种可能:</p>
+<ul>
+<li>前缀和后缀追加<code>T[j]</code>后, x依然满足相等的前缀, 最长相等前缀的长度增加</li>
+<li>前缀和后缀追加<code>T[j]</code>后, x无法构成相等的前缀, 因此状态后退或维持不变</li>
+</ul>
+<p>由于状态<code>j</code>之前的状态转换已计算完毕, 且<code>x &lt; j</code>, 因此<code>dfa[T[j]][x]</code>一定返回状态<code>x</code>下输入为<code>T[j]</code>的最长相等前缀状态<code>x&#39;</code>, 也就是状态<code>j+1</code>的最长相等前缀状态.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/3b44.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Longest Palindromic Substring</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/7029.html">
+        <span class="next-text nav-default">Hash Function</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/de17.html';
+  var disqus_title = "Pattern Matching";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

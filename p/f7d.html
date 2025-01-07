@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="SQLite Temporary Files"/>
+
+
+
+
+  <meta name="keywords" content="Database," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/f7d.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/f7d.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/f7d.html"/>
+
+
+<meta name="description" content="1. 简介SQLite其中一个独一无二的特征就是数据库只包含一个文件. 由于备份数据库时数据库就是单独一个文件, 所以可以直接移动该文件, 这样简化了SQLite的使用. 这样可以让SQLite作为一个应用文件格式来使用. 但当一个完整的数据库放在一个磁盘文件上时, SQLite会在运行数据库时使用很多临时文件.这篇文章描述了SQLite生成并使用的许多临时文件. 包括临时文件何时创建、何时被删除">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLite Temporary Files">
+<meta property="og:url" content="https://zaf1ro.github.io/p/f7d.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 简介SQLite其中一个独一无二的特征就是数据库只包含一个文件. 由于备份数据库时数据库就是单独一个文件, 所以可以直接移动该文件, 这样简化了SQLite的使用. 这样可以让SQLite作为一个应用文件格式来使用. 但当一个完整的数据库放在一个磁盘文件上时, SQLite会在运行数据库时使用很多临时文件.这篇文章描述了SQLite生成并使用的许多临时文件. 包括临时文件何时创建、何时被删除">
+<meta property="og:locale">
+<meta property="article:published_time" content="2015-12-23T14:57:37.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.034Z">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+SQLite Temporary Files - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%AE%80%E4%BB%8B"><span class="toc-text">1. 简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B9%9D%E7%A7%8D%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6"><span class="toc-text">2. 九种临时文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6"><span class="toc-text">2.1 回滚日志文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E9%A2%84%E5%86%99%E5%BC%8F%E6%97%A5%E5%BF%97-Write-Ahead-Log-Files"><span class="toc-text">2.2 预写式日志(Write-Ahead Log Files)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E6%96%87%E4%BB%B6-Shared-Memory-Files"><span class="toc-text">2.3 共享内存文件(Shared-Memory Files)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E4%B8%BB%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6-Master-Journal-Files"><span class="toc-text">2.4 主日志文件(Master Journal Files)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-SQLite%E8%AF%AD%E5%8F%A5%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6-Statement-Journal-Files"><span class="toc-text">2.5  SQLite语句日志文件(Statement Journal Files)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E4%B8%B4%E6%97%B6%E6%95%B0%E6%8D%AE%E5%BA%93-TEMP-database"><span class="toc-text">2.6 临时数据库(TEMP database)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E8%A7%86%E5%9B%BE%E5%92%8C%E5%AD%90%E6%9F%A5%E8%AF%A2%E7%9A%84%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0-Materializations-Of-Views-And-Subqueries"><span class="toc-text">2.7 视图和子查询的具体实现(Materializations Of Views And Subqueries)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-%E4%B8%B4%E6%97%B6%E7%B4%A2%E5%BC%95-Transient-Indices"><span class="toc-text">2.8 临时索引(Transient Indices)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-9-%E7%94%A8%E4%BA%8EVACUUM%E7%9A%84%E4%B8%B4%E6%97%B6%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-text">2.9 用于VACUUM的临时数据库</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-SQLite-TEMP-STORE%E7%BC%96%E8%AF%91%E6%97%B6%E5%8F%82%E6%95%B0%E5%92%8C%E6%8C%87%E4%BB%A4"><span class="toc-text">3. SQLite_TEMP_STORE编译时参数和指令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%85%B6%E4%BB%96%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-text">4. 其他优化策略</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          SQLite Temporary Files
+        
+      </h1>
+      <time class="post-time">
+          12/23/15
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h2><p>SQLite其中一个独一无二的特征就是数据库只包含一个文件. 由于备份数据库时数据库就是单独一个文件, 所以可以直接移动该文件, 这样简化了SQLite的使用. 这样可以让SQLite作为一个应用文件格式来使用. 但当一个完整的数据库放在一个磁盘文件上时, SQLite会在运行数据库时使用很多临时文件.<br>这篇文章描述了SQLite生成并使用的许多临时文件. 包括临时文件何时创建、何时被删除、何时被利用、它们为什么很重要, 还有在一些创建临时文件很耗时的系统中如何避免创建临时文件.<br>SQLite使用临时文件的方式不被当做SQLite运行的准则. 这篇文档只是正确的描述了这篇文章被撰写时或最新版的SQLite运行情况. 所以没法保证未来SQLite的版本会按照现在的方式处理临时文件. 可能以后旧版临时文件的使用会在未来的SQLite版本中被抛弃, 并使用新类型的临时文件. </p>
+<h2 id="2-九种临时文件"><a href="#2-九种临时文件" class="headerlink" title="2. 九种临时文件"></a>2. 九种临时文件</h2><p>SQLite现在使用九种临时文件: </p>
+<ul>
+<li>回滚日志(Rollback journals)</li>
+<li>主日志(Maste journals)</li>
+<li>预写式日志(Write-ahead Log files)</li>
+<li>共享内存(Shared-memory files)</li>
+<li>SQL语句日志(Statement journals)</li>
+<li>临时数据库(TEMP databases)</li>
+<li>视图和子查询的持久化(Materializations of views and subqueries)</li>
+<li>临时索引</li>
+<li>用于VACUUM的数据库</li>
+</ul>
+<p>关于这些临时文件类型的额外信息可在续章了解. </p>
+<h3 id="2-1-回滚日志文件"><a href="#2-1-回滚日志文件" class="headerlink" title="2.1 回滚日志文件"></a>2.1 回滚日志文件</h3><p>回滚日志文件用来实现原子提交和回滚功能(可参考我的<a href="http://zaf1ro.github.io/2015/11/03/Atomic-commit-in-SQLite1/">另一篇文章</a>). 回滚日志文件通常和数据库文件位于一个文件夹, 并且和数据库相同名字, 除了附加的&quot;-journal&quot;这八个字符. 当事务第一次开始时就会生成回滚日志, 并会在事务提交或回滚时删除回滚日志. 该文件是实现SQLite原子提交和回滚的关键. 没有回滚日志, SQLite没法将不完整的事务回滚回去, 并且如果在事务中途发生了断电和系统崩溃, 那么整个数据库都会崩溃.<br>通常情况下回滚日志会在事务开启和结束时创建和关闭, 但还有有一些额外情况. 如果事务中途发生断电或系统崩溃, 那么回滚日志文件会被留在磁盘. 下一次另一个应用尝试打开数据库文件, 那么就会注意到被抛弃的回滚日志文件, 并使用日志文件中的信息将数据库恢复到之前的状态. SQLite就这样实现了原子提交:<br>如果应用在排它锁模式(exclusive locking mode)中设置了pragma: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA locking_mode=EXCLUSIVE;</span><br></pre></td></tr></table></figure>
+<p>在排它锁模式中, SQLite在第一次事务开始时创建了一个新的回滚日志文件. 但在事务结束时不会删除回滚日志. 回滚日志将被截断或头部被填充成0(取决于你所使用的SQLite版本), 但回滚日志不会被删除的. 直到退出排它访问模式之前, 回滚日志都不会被删除.<br>回滚日志的创建或删除也会由日志模式(journal mode pargma)改变. 默认的日志模式是DELETE, 该模式默认会在事务结束后删除回滚日志. PERSIST日志模式会将日志头部填充为0, 而不是删除回滚日志, 这能防止其他进程进行回滚数据库, 并且功能上和删除相同还不用花时间进行删除. 换句话说, PERSIST和EXCLUSIVE行为上看起来是相同的. 而OFF日志模式会直接忽略回滚日志, 换句话说就是没有写入回滚日志. OFF模式会关闭原子提交和回滚功能, 这样的话如果在事务中途发生断电或系统崩溃, 数据库由于没法恢复而导致崩溃. MEMORY模式会使得回滚日志存储在内存中, 而不是磁盘上. 由于回滚时日志文件不在磁盘中, 所以导致数据库崩溃. </p>
+<h3 id="2-2-预写式日志-Write-Ahead-Log-Files"><a href="#2-2-预写式日志-Write-Ahead-Log-Files" class="headerlink" title="2.2 预写式日志(Write-Ahead Log Files)"></a>2.2 预写式日志(Write-Ahead Log Files)</h3><p>当SQLite运行WAL模式时, 预写式日志会代替回滚日志文件. 正如回滚日志, WAL的功能也用来实现原子提交和回滚. WAL文件和数据库位于相同文件夹, 名字和数据库一样, 除了附加的&quot;-wal&quot;四个字符. 当第一次连接数据库时就会创建WAL文件, 并且会在数据库断开连接时删除WAL文件. 如果上一次连接没有断开, 那么WAL文件会一直留在文件系统, 并且会在下一次数据库打开时删除该文件. </p>
+<h3 id="2-3-共享内存文件-Shared-Memory-Files"><a href="#2-3-共享内存文件-Shared-Memory-Files" class="headerlink" title="2.3 共享内存文件(Shared-Memory Files)"></a>2.3 共享内存文件(Shared-Memory Files)</h3><p>当运行WAL模式时, 所有连接在相同数据库文件的SQLite数据库连接需要共享部分内存, 共享的部分内存用来作为WAL文件的索引. 大多数实现中, 在一个文件上调用mmap()创建共享内存来实现共享内存文件. 共享内存文件和数据库文件位于同一个文件夹中, 并且除了最后添加了&quot;-shm&quot;四个字符, 文件名与数据库名相同. 只有运行WAL模式时才会用到共享内存.<br>共享内存文件中的内存是不能持久保存的. 共享内存文件的唯一目的就是在WAL模式下, 当多个进程同时访问一个数据库时能提供一块共享内存. 如果VFS提供了另一种可选方案来实现访问共享内存, 那么就不会使用共享内存文件. 举个例子, 如果PRAGMA locking mode设置为EXCULSIVE(意味着只有一个进程能访问数据库文件), 那么将会从堆中分配共享内存, 而不是从共享内存文件中创建, 而且不会再创建共享内存文件.<br>共享内存文件和WAL文件有相同的寿命, 创建WAL文件时创建共享内存文件, 删除WAL文件时删除共享内存文件. 在WAL文件恢复时, 从WAL文件恢复时的一些内容中重建共享内存文件. </p>
+<h3 id="2-4-主日志文件-Master-Journal-Files"><a href="#2-4-主日志文件-Master-Journal-Files" class="headerlink" title="2.4 主日志文件(Master Journal Files)"></a>2.4 主日志文件(Master Journal Files)</h3><p>当一次事务对多个数据库进行修改时(例如ATTACH表达式), 主日志文件会作为原子提交过程的一部分. 主日志文件和主数据库文件位于相同文件夹中吗, 并带有随机后缀(调用sqlite3_open(), sqlite3_open16()或sqlite_open_v2()来创建数据库连接, 连接的数据库就是数据库文件). 主日志文件包含所有事务改变的附加辅助数据库名字. 当主日志文件被删除时多数据库事务将被提交. 其他详细信息可以参考<a href="http://zaf1ro.github.io/2015/11/03/Atomic-commit-in-SQLite1/">Atomic Commit In SQLite</a><br>当使用ATTACH命令连接辅助数据库并在一次事务中修改多个数据库时, 会导致一个数据库连接与二个或多个数据库文件进行沟通, 这时会生成主日志文件. 如果没有主日志文件, 对于单个数据库来说还是原子性的, 但是对于多数据库事务来说就不是原子性了. 换句话说, 如果提交由于断电或系统崩溃而中断, 那么可能有些数据库已经改变, 而有写数据库被回滚. 主日志文件可以保证数据库全部提交或全部回滚. </p>
+<h3 id="2-5-SQLite语句日志文件-Statement-Journal-Files"><a href="#2-5-SQLite语句日志文件-Statement-Journal-Files" class="headerlink" title="2.5  SQLite语句日志文件(Statement Journal Files)"></a>2.5  SQLite语句日志文件(Statement Journal Files)</h3><p>该文件负责回滚一个大的事务中部分SQLite语句结果. 举个例子, 假设一个UPDATE命令要修改数据库中的100行数据. 但在修改了前50条时, UPDATE造成了约束冲突, 这将会停止整个语句. SQLite语句日志文件被用来回滚已修改的50行, 把数据库恢复到执行语句之前的状态.<br>SQLite语句日志文件由UPDATE和INSERT语句创建, 因为这两条语句会对数据库的多行进行修改, 并且可能会造成约束或引发异常, 因此需要回滚部分结果. 如果UPDATE或INSERT语句没有包裹在BEGIN…COMMIT中, 并且如果该数据库连接没有其他语句正在运行, 那么不会创建SQLite语句日志文件, 因为可以用普通的回滚日志文件来代替. 如果使用了冲突消除算法, 那么SQLite语句日志将被忽略: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">UPDATE OR FAIL ...</span><br><span class="line">UPDATE OR IGNORE ...</span><br><span class="line">UPDATE OR REPLACE ...</span><br><span class="line">INSERT OR FAIL ...</span><br><span class="line">INSERT OR IGNORE ...</span><br><span class="line">INSERT OR REPLACE ...</span><br><span class="line">REPLACE INTO ....</span><br></pre></td></tr></table></figure>
+<p>SQLite语句日志被赋予了随机化名称, 而且不需要和主数据库在一个文件夹中, 并会在事务结束后被自动删除. SQLite语句日志文件的大小与UPDATE、INSERT所造成的改变大小成正比. </p>
+<h3 id="2-6-临时数据库-TEMP-database"><a href="#2-6-临时数据库-TEMP-database" class="headerlink" title="2.6 临时数据库(TEMP database)"></a>2.6 临时数据库(TEMP database)</h3><p>当使用&quot;CREATE TEMP TABLE&quot;时, 只有当前数据库连接能看到. 这些通过索引、触发器和视图连接取来的TEMP表都被存在一个单独的临时数据库文件中. 这个数据库文件在第一次调用&quot;CREATE TEMP TABLE&quot;时就被创建, 并且它与回滚日志有一定联系. 用来存储临时表的临时数据库文件将在数据库连接断开时(调用sqlite3_close())被自动删除.<br>当额外使用ATTACH语句时, 临时数据库文件虽有一些特殊属性, 但更像是辅助数据库文件. 当数据库连接断开时将会自动删除临时数据库. 临时数据库会将PRAGMA设置成synchronous&#x3D;OFF和journal_mode&#x3D;PERSIST. 并且DETACH和ATTACH命令不能用于临时数据库.<br>只有使用&quot;CREATE TEMP TABLE&quot;语句时才会创建临时数据库相关的临时文件和它的回滚日志文件. </p>
+<h3 id="2-7-视图和子查询的具体实现-Materializations-Of-Views-And-Subqueries"><a href="#2-7-视图和子查询的具体实现-Materializations-Of-Views-And-Subqueries" class="headerlink" title="2.7 视图和子查询的具体实现(Materializations Of Views And Subqueries)"></a>2.7 视图和子查询的具体实现(Materializations Of Views And Subqueries)</h3><p>包含子查询的查询语句必须单独评估每个子查询并将结果存放在临时表中, 然后使用临时表中的内容评估外层的搜索语句. 我们将这一过程称为&quot;实例化&quot;(materializing)子查询. SQLite中的查询优化器试图去避免实例化, 但有时不是那么好避免的. 由实例化创建的临时表存储在它所属的临时文件中, 并将在查询结束时被删除. 临时表的大小取决于子查询实例化中的数据大小. IN操作符右边的子查询通常被实例化. 举个例子: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SELECT * FROM ex1 WHERE ex1.a IN (SELECT b FROM ex2);</span><br></pre></td></tr></table></figure>
+<p>在上述查询语句中, &quot;SELECT b FROM ex2&quot;被当做子查询语句, 它的结果被存放在临时表中, 并允许使用二分查找来确定ex2.b是否存在. 一旦创建完毕表将会开启外部查询, 并为构建预期结果而一次次查询临时表总是否存在ex1.a. 只有查询结果为Ture时才能作为正确行.<br>为避免创建临时表, 查询语句将被重写成以下模样: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SELECT * FROM ex1 WHERE EXISTS(SELECT 1 FROM ex2 WHERE ex2.b=ex1.a);</span><br></pre></td></tr></table></figure>
+<p>SQLite3.5.4版本后, 如果ex2.b列如果有索引存在, 那么将会自动重写. 如果IN操作符右边是一个列表, 就像以下情况: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SELECT * FROM ex1 WHERE a IN (1,2,3);</span><br></pre></td></tr></table></figure>
+<p>IN操作符邮编的列表值将会被子查询而被实例化. 换句话说, 前面的语句将被转化为以下语句: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SELECT * FROM ex1 WHERE a IN (SELECT 1 UNION ALL</span><br><span class="line">                              SELECT 2 UNION ALL</span><br><span class="line">                              SELECT 3);</span><br></pre></td></tr></table></figure>
+<p>当IN操作符右侧是一个列表时, 通常会创建一个临时索引来控制右侧的数值. 当子查询出现在SELECT语句由FROM子句中时通常需要实例化: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SELECT * FROM ex1 JOIN (SELECT b FROM ex2) AS t ON t.b=ex1.a;</span><br></pre></td></tr></table></figure>
+<p>根据查询语句, SQLite需要实例化&quot;SELECT b FROM ex2&quot;子查询并将其结果放入临时表中, 然后将ex1和临时表执行join操作. 查询优化器通过&quot;展平&quot;(flattening)查询来避免实例化. SQLite会自动的将查询语句变为以下语句: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SELECT ex1.*, ex2.b FROM ex1 JOIN ex2 ON ex2.b=ex1.a;</span><br></pre></td></tr></table></figure>
+<p>更多复杂的查询可能不能展平查询语句, 因而不能避免创建临时表. 查询语句是够能被展平取决于外部查询或子查询是否包含聚合功能、ORDER BY、GROUP BY或LIMIT子句等等. 查询能否被展平的规则是够复杂, 已经超过了本文档的讲述范围, 所以暂时按下不表. </p>
+<h3 id="2-8-临时索引-Transient-Indices"><a href="#2-8-临时索引-Transient-Indices" class="headerlink" title="2.8 临时索引(Transient Indices)"></a>2.8 临时索引(Transient Indices)</h3><p>SQLite可能使用临时索引来实现SQL语句中几个特性:</p>
+<ul>
+<li>ORDER BY或GROUP BY子句</li>
+<li>聚类查询中的DISTINCT关键字</li>
+<li>通过UNION、EXCEPT或INRERSECT结合起来的联合SELECT语句</li>
+</ul>
+<p>每一个临时索引都存储在各自的临时文件中, 每一个临时索引的临时文件被都语句执行完毕后被自动删除.<br>SQLite会尝试用已存在的索引实现ORDER BY子句. 如果存在一个恰当的索引, 那么SQLite会使用该索引来获得要求的信息. 但如果SQLite找不到一个合适的索引, 它会评估查询语句并将所有行存在一个临时索引中, 其中data为行数据, key为ORDER BY子句. 评估后SQLite会沿着索引从头到尾走一遍来找到想要的行.<br>SQLite依照GROUP BY子句的要求来排序输出行顺序, 从而实现GROUP BY. 如果开启一个新的&quot;group&quot;, 每一个输出行都会与之前进行对比.<br>在临时文件中创建临时索引并存储索引中每一个结果行, 这么做可用于实现一次聚合查询DISTINCET关键字. 当新的结果行被计算出来时, 还需要检查他们是否存在于临时索引中, 并且他们是够应被抛弃掉.<br>在临时文件中创建一个临时索引并将左右两边子查询的结果存在临时索引中、删除副本, 这么做可实现用于混合查询中的UNION操作符. 在两个子查询都完毕后, 临时索引可从头到尾走一遍生成最终结果.<br>在临时文件中创建临时索引并将左边子查询的即如果存入临时索引, 从临时索引中删除右子查询中的结果, 最后索引从头到尾走一遍获得结果, 这么做可以实现混合查询中的EXCEPT操作符.<br>创建两个互相独立的临时索引并分别存在两个临时文件中, 左右两个子查询都执行完后将结果放入两个临时索引中, 然后两个索引一起从上向下过一遍, 输出两边都有的值. 这样就能实现混合查询中的INRERSECT操作符.<br>注意, 混合查询中的UNION ALL操作符并不适用临时索引(虽然UNION ALL左右两边的子查询可能会因构造不同而使用到临时索引)</p>
+<h3 id="2-9-用于VACUUM的临时数据库"><a href="#2-9-用于VACUUM的临时数据库" class="headerlink" title="2.9 用于VACUUM的临时数据库"></a>2.9 用于VACUUM的临时数据库</h3><p>SQLite通过创建临时文件并将重建的完整数据库移到临时文件中来实现VACUUM命令. 然后将临时文件的内容拷贝到原始数据库中并将临时文件删除.<br>临时文件的生存期和VACCUM命令的生存期一样. 临时文件的大小不会超过原始数据库大小. </p>
+<h2 id="3-SQLite-TEMP-STORE编译时参数和指令"><a href="#3-SQLite-TEMP-STORE编译时参数和指令" class="headerlink" title="3. SQLite_TEMP_STORE编译时参数和指令"></a>3. SQLite_TEMP_STORE编译时参数和指令</h2><p>由事务控制的临时文件, 也就是回滚日志、主日志、预写式日志和共享内存文件都会被写入磁盘. 但其他的临时文件只会存在于内存, 不会写入磁盘. 除了回滚日志、主日志和SQLite语句日志, 其他的临时文件是够写入磁盘或被存入内存都依赖于SQLITE_TEMP_STORE编译时参数、temp_store_pragma和临时文件的大小.<br>SQLITE_TEMP_STORE编译时参数是一个#define, 它的值是一个整数, 取值范围为0-3. SQLITE_TEMP_STORE编译时参数的意义如下: </p>
+<ul>
+<li>等于0时, 无论temp_store_pragma设置为什么, 临时文件都放在磁盘中</li>
+<li>等于1时, 临时文件默认存在磁盘中, 但可以被temp_store_pragma指令覆盖</li>
+<li>等于2时, 临时文件默认存在内存中, 但可以被temp_store_pragma指令覆盖</li>
+<li>等于3时, 无论temp_store_pragma设置为什么, 临时文件总存在内存中</li>
+</ul>
+<p>SQLITE_TEMP_STORE编译时参数默认为1, 这意味着将临时文件存储在磁盘中, 但可以用temp_store_pragma来覆盖这个选项. temp_store_pragma的值也对临时文件存储在哪里也有影响. 参数的值有以下意义: </p>
+<ul>
+<li>等于0时, 临时文件的存储位置完全由SQLITE_TEMP_STORE编译时参数决定</li>
+<li>等于1时, 如果SQLITE_TEMP_STORE编译时参数指定临时文件存储在内存中, 那么将会覆盖这条指令并用磁盘存储. </li>
+<li>等于2时, 如果SQLITE_TEMP_STORE编译时参数指定临时文件存储在磁盘中, 那么将会覆盖这条指令并用内存存储.</li>
+</ul>
+<p>默认temp_store_pragma为0, 这意味着直接使用SQLITE_TEMP_STORE编译时参数的方法.<br>重申一下, SQLITE_TEMP_STORE编译时参数和temp_store_pragma只会作用于除了回滚日志和主日志之外的临时文件. 无论SQLITE_TEMP_STORE编译时参数和temp_store_pragma都不会改变回滚日志和主日志的位置, 因为这两个文件只会存在磁盘中. </p>
+<h2 id="4-其他优化策略"><a href="#4-其他优化策略" class="headerlink" title="4. 其他优化策略"></a>4. 其他优化策略</h2><p>SQLite使用最近读取和写入的数据库页面的页面缓存. 页面缓存不知用于主数据库文件, 还用于临时索引和存储表的临时文件. 如果SQLite需要使用一个临时索引或表, 并且SQLITE_TEMP_STORE编译时参数和temp_store_pragma都设置成存储临时索引和表到磁盘中, 信息还是会存储在内存和页面缓存中. 直到页面缓存满之前都不会打开临时文件或将信息写入磁盘.<br>这意味着在临时索引和表比较小时, 都不会创建临时文件, 也就是说不会产生I&#x2F;O操作. 只有当临时数据很大导致RAM不够使用时, 才会搬到磁盘中.<br>每一个临时索引和表都存储在各自的页面缓存中, 最大的数据库页面数量由SQLITE_DEFAULT_TEMP_CACHE_SIZE编译时参数决定(默认是500). 数据库页面的最大值对每一个临时索引和表都相同. 这个值不能在运行时修改, 也不能对单个表或索引进行修改. 每个临时文件有自己的页面缓存和自己的SQLITE_DEFAULT_TEMP_CACHE_SIZE页面限制. </p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Database/">Database</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/d55a.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">SQLite Write-ahead Logging</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/3307.html">
+        <span class="next-text nav-default">P2P Network</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/f7d.html';
+  var disqus_title = "SQLite Temporary Files";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

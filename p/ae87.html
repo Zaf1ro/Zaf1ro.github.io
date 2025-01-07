@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="ZooKeeper Overview"/>
+
+
+
+
+  <meta name="keywords" content="Distributed System," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/ae87.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/ae87.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/ae87.html"/>
+
+
+<meta name="description" content="1. IntroductionZooKeeper是一个分布式开源协调服务(coordination service), 服务于各种分布式应用(Distributed Application). 这里存在两个关键点:  分布式应用 协调服务  明白上述两个关键点, 也就明白ZooKeeper的设计目的, 优缺点, 以及应用场景. 1.1 Distributed Application分布式系统的定义">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ZooKeeper Overview">
+<meta property="og:url" content="https://zaf1ro.github.io/p/ae87.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionZooKeeper是一个分布式开源协调服务(coordination service), 服务于各种分布式应用(Distributed Application). 这里存在两个关键点:  分布式应用 协调服务  明白上述两个关键点, 也就明白ZooKeeper的设计目的, 优缺点, 以及应用场景. 1.1 Distributed Application分布式系统的定义">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/ZooKeeper/1-1.jpeg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/ZooKeeper/1-2.jpeg">
+<meta property="article:published_time" content="2022-04-18T19:28:29.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.040Z">
+<meta property="article:tag" content="Distributed System">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/ZooKeeper/1-1.jpeg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+ZooKeeper Overview - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Distributed-Application"><span class="toc-text">1.1 Distributed Application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Coordination-Service"><span class="toc-text">1.2 Coordination Service</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Design-Goals-and-Guarantees"><span class="toc-text">2. Design Goals and Guarantees</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Consistency"><span class="toc-text">3. Consistency</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-What-is-Consistency"><span class="toc-text">3.1 What is Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-What-is-Consistency-Model"><span class="toc-text">3.2 What is Consistency Model</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Consistency-Models"><span class="toc-text">4. Consistency Models</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Strict-Consistency"><span class="toc-text">4.1 Strict Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Linearizability"><span class="toc-text">4.2 Linearizability</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Sequential-Consistency"><span class="toc-text">4.3 Sequential Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Causal-Consistency"><span class="toc-text">4.4 Causal Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-FIFO-Consistency"><span class="toc-text">4.5 FIFO Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-Eventual-Consistency"><span class="toc-text">4.6 Eventual Consistency</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Data-model-and-the-hierarchical-namespace"><span class="toc-text">5. Data model and the hierarchical namespace</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Nodes-and-ephemeral-nodes"><span class="toc-text">5.1 Nodes and ephemeral nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Znode"><span class="toc-text">5.2 Znode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Data-Access"><span class="toc-text">5.3 Data Access</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Ephemeral-Nodes"><span class="toc-text">5.4 Ephemeral Nodes</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Time-in-ZooKeeper"><span class="toc-text">6. Time in ZooKeeper</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-ZooKeeper-Stat-Structure"><span class="toc-text">7. ZooKeeper Stat Structure</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-ZooKeeper-Sessions"><span class="toc-text">8. ZooKeeper Sessions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-ZooKeeper-Watches"><span class="toc-text">9. ZooKeeper Watches</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          ZooKeeper Overview
+        
+      </h1>
+      <time class="post-time">
+          04/18/22
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>ZooKeeper是一个分布式开源协调服务(coordination service), 服务于各种分布式应用(Distributed Application). 这里存在两个关键点:</p>
+<ul>
+<li>分布式应用</li>
+<li>协调服务</li>
+</ul>
+<p>明白上述两个关键点, 也就明白ZooKeeper的设计目的, 优缺点, 以及应用场景.</p>
+<h3 id="1-1-Distributed-Application"><a href="#1-1-Distributed-Application" class="headerlink" title="1.1 Distributed Application"></a>1.1 Distributed Application</h3><p>分布式系统的定义为: 其组件位于不同的计算机上, 通过网络传递消息, 以此协调彼此的行为. 分布式应用就是运行在分布式系统中的程序. 其出现的主要原因是: 单机处理能力与业务负载的不匹配, 很多业务已经无法在单机上完成(运行效率问题, 地理分布问题, 存储空间问题等), 必须将负载分流到多个节点; 分布式系统还可提供<strong>容错性</strong>: 单个机器发生故障不会导致整个服务停止运行; 最后, 分布式系统能提供<strong>可拓展性</strong>: 随着时间推移, 业务负载(可以是用户数, 存储量, 每秒请求数等)也在不断增加, 分布式系统让集群中的节点数与处理能力成正比, 换句话说, 一台机器可以处理一定的吞吐量, 两台计算机就能处理两倍的吞吐量, 无需切分业务或优化性能就能实现增强性能.<br>但分布式应用并不是没有代价, 其带来了单机中没有的挑战:</p>
+<ul>
+<li>Hardware faults: 单机上的程序要么运行成功, 要么失败, 一旦单机出现硬件问题, 更倾向于直接宕机; 分布式系统则会出现许多意想不到的硬件故障, 且这些故障通常只会影响一个或多个机器.</li>
+<li>Unreliable Networks: 由于分布式系统中的机器通过网络通信, 且绝大多数网络没有一个延迟上限保证(消息在一定时间内传达), 发送端在没有收到回复前, 无法知道发生了什么(可能是网络问题, 也可能是接收方宕机).</li>
+<li>Unreliable Clocks: 由于通信不是即时的, 分布式系统中无法拥有统一的时钟.</li>
+</ul>
+<p>上述挑战会直接导致分布式系统的设计十分复杂:</p>
+<ul>
+<li>Inconsistency: 数据的partial failure(部分失效)</li>
+<li>Race condition: 两个机器同时使用同一资源</li>
+<li>Deadlock: 两个操作等待对方释放资源, 陷入永久等待</li>
+</ul>
+<h3 id="1-2-Coordination-Service"><a href="#1-2-Coordination-Service" class="headerlink" title="1.2 Coordination Service"></a>1.2 Coordination Service</h3><p>分布式系统中的很多问题在于: 集群中节点无法对某件事达成共识, 如: 单leader复制中, 所有节点都必须承认某个节点成为leader; 否则, 集群中会出现两个leader, 导致<strong>脑裂</strong>.<br>ZooKeeper就是为此而生, 其作为集群的一个服务, 让所有节点都对某个事件达成一致. 从功能上看, ZooKeeper提供了一个key-value存储服务, 任何节点都可以读取或写入数据.</p>
+<h2 id="2-Design-Goals-and-Guarantees"><a href="#2-Design-Goals-and-Guarantees" class="headerlink" title="2. Design Goals and Guarantees"></a>2. Design Goals and Guarantees</h2><p>ZooKeeper的设计目的如下:</p>
+<ul>
+<li>ZooKeeper is simple: 其允许分布式应用通过共享<strong>hierarchical namespace</strong>(分层命名空间)相互协调. ZooKeeper将数据保存在内存中, 以实现高吞吐量和低延迟.</li>
+<li>ZooKeeper is replicated: 作为分布式系统的协调服务, 必须保证高可用性, 因此其本身也由一组机器构成, 只要大多数机器存活, ZooKeeper就能提供服务.</li>
+<li>ZooKeeper is ordered: 其会为每次更新操作分配一个数字, 来表示所有事务顺序</li>
+<li>ZooKeeper is fast: 若大部分操作都是读取, 其运行效率会十分快.</li>
+</ul>
+<p>为实现上述目标, ZooKeeper需提供一些保证:</p>
+<ul>
+<li>Sequential Consistency(顺序一致性): 客户端的请求顺序与处理顺序一致</li>
+<li>Atomicity(原子性): 更新要么成功, 要么失败, 不存在部分结果</li>
+<li>Single System Image(单一视图): 无论客户端连接到哪一个服务器, 都会看到相同数据. 也就是说, 一旦客户端看到新数据, 就不会再看到旧数据</li>
+<li>Reliability(可靠性): 一旦完成更新, 该更新会一直存在, 直到下一次更新覆盖本次更新</li>
+<li>Timeliness(时效性): 客户端看到的视图在一定时间范围内是最新的</li>
+</ul>
+<h2 id="3-Consistency"><a href="#3-Consistency" class="headerlink" title="3. Consistency"></a>3. Consistency</h2><p>ZooKeeper使用<strong>Sequential Consistency</strong>作为其<strong>Consistency Model</strong>(一致性模型), 但分布式系统中还存在其他一致性模型. </p>
+<h3 id="3-1-What-is-Consistency"><a href="#3-1-What-is-Consistency" class="headerlink" title="3.1 What is Consistency"></a>3.1 What is Consistency</h3><p>当多个进程读写共享数据时, 一旦数据涉及<strong>replication</strong>(复制)和<strong>caching</strong>(缓存), 就会出现<strong>一致性问题</strong>.<br>为追求容错性与高性能, 分布式系统中存在大量共享数据, 每个节点都有自己的数据副本, 也可自行处理用户请求. 然而, 数据不一致会导致业务层面出现很多意想不到的问题, 例如, 两个用户向不同服务器预定同一班次飞机的同一个座位, 由于两个服务器的数据并非一致, 可能导致两个用户都预定成功.<br>因此, 当某个节点更新数据时, 其他节点需以某种方式保持同步. 然而, 数据同步的方式有很多: 越严格的同步要求, 对性能影响越大; 反之, 对性能影响越小. 我们需要一套模型来理解和分析数据同步(也称为<strong>数据复制</strong>)中的问题和基本假设.</p>
+<h3 id="3-2-What-is-Consistency-Model"><a href="#3-2-What-is-Consistency-Model" class="headerlink" title="3.2 What is Consistency Model"></a>3.2 What is Consistency Model</h3><p>一致性模型的定义为: 进程(应用)与数据存储的约定, 换句话说, 进程有了某种数据同步的保证(进程对数据的读写操作是可预期的). 虽然存在各种一致性模型, 但它们之间的区别主要在于两点:</p>
+<ul>
+<li>对于读取到旧数据的容忍程度</li>
+<li>数据副本的写入顺序</li>
+</ul>
+<h2 id="4-Consistency-Models"><a href="#4-Consistency-Models" class="headerlink" title="4. Consistency Models"></a>4. Consistency Models</h2><p>以下一致性模型对数据一致性的要求依次降低.</p>
+<h3 id="4-1-Strict-Consistency"><a href="#4-1-Strict-Consistency" class="headerlink" title="4.1 Strict Consistency"></a>4.1 Strict Consistency</h3><p>严格一致性, 最严格的一致性模型, 所有<strong>事务</strong>遵循一个<strong>total order</strong>(全序), 也就是说, 所有事务都按照一个全局时间顺序执行. 该一致性模型具备以下属性:</p>
+<ul>
+<li>事务未完成时, 其包含的所有写入都不可读</li>
+<li>一旦读取到新值, 之后的所有读取都会获得该值(直到下次写入)</li>
+</ul>
+<p>该一致性模型的优点在于, 事务的正确性得到保证; 但缺点在于, 读写操作的延迟变得十分高</p>
+<h3 id="4-2-Linearizability"><a href="#4-2-Linearizability" class="headerlink" title="4.2 Linearizability"></a>4.2 Linearizability</h3><p>线性一致性, 也称为<strong>atomic consistency</strong>(原子一致性), 或<strong>strong consistency</strong>(强一致性), 所有读写操作遵循一个全序, 也就是说, 当某个写入成功执行, 之后的读取都会读取到新值. 但与strict consistency不同, 线性一致性的执行单元是单个<strong>读写操作</strong>, 而不是<strong>事务</strong>.</p>
+<p>该一致性模型的优点在于, 很容易推导操作的正确性; 缺点在于, 读写操作的延迟较高.</p>
+<h3 id="4-3-Sequential-Consistency"><a href="#4-3-Sequential-Consistency" class="headerlink" title="4.3 Sequential Consistency"></a>4.3 Sequential Consistency</h3><p>顺序一致性, 单个进程内的读写操作遵循一个全序, 也就是说, 当进程成功写入后, 该进程之后的读取一定读取到新值. 与linearizability不同, 顺序一致性中的跨进程的操作之间没有顺序关系.<br>该一致性模型的优点在于, 比上述两种一致性模型更加灵活; 缺点在于, 系统中存在多种执行顺序的组合</p>
+<h3 id="4-4-Causal-Consistency"><a href="#4-4-Causal-Consistency" class="headerlink" title="4.4 Causal Consistency"></a>4.4 Causal Consistency</h3><p>因果一致性, 所有因果相关的操作遵循一个全序, 也就是说, 所有进程看到的因果相关的操作都遵循相同顺序. 与sequential consistency相比有两点不同:</p>
+<ul>
+<li>因果一致性不存在一个全序, 只有因果相关的操作需要排序</li>
+<li>不同进程中, 无因果相关的操作可能执行顺序不同</li>
+</ul>
+<p>该一致性模型的优点在于, 无需为所有操作排序, 即使是单个进程内的操作也无需按顺序执行; 缺点在于, 每个应用都有不同的因果关系, 需对并发操作进行因果判断</p>
+<h3 id="4-5-FIFO-Consistency"><a href="#4-5-FIFO-Consistency" class="headerlink" title="4.5 FIFO Consistency"></a>4.5 FIFO Consistency</h3><p>FIFO一致性, 对于单个进程的写入, 其他进程会按照其顺序执行; 但不同进程的写入在其他进程中可能交错执行. 与causal consistency不同, FIFO一致性不关心不同进程的写入是否存在任何关系.</p>
+<h3 id="4-6-Eventual-Consistency"><a href="#4-6-Eventual-Consistency" class="headerlink" title="4.6 Eventual Consistency"></a>4.6 Eventual Consistency</h3><p>最终一致性, 若没有写入, 所有数据副本会在一段时间后完成同步, 也就是说, 当用户写入后立即读取, 有可能读取到旧值; 但等待一段时间后, 还是能读取到新值. <strong>Eventual</strong>并没有一个确切的等待上限, 实际运行的系统需提供一个时间范围.<br>该一致性模型的优点在于, 拥有极高的性能与可用性; 缺点在于, 没有任何数据<strong>新鲜度</strong>保证</p>
+<h2 id="5-Data-model-and-the-hierarchical-namespace"><a href="#5-Data-model-and-the-hierarchical-namespace" class="headerlink" title="5. Data model and the hierarchical namespace"></a>5. Data model and the hierarchical namespace</h2><p>ZooKeeper的namespace与标准文件系统类似. 节点名由一连串路径构成, 用<code>/</code>分开.<br><img src="/images/System-Design/ZooKeeper/1-1.jpeg" alt="ZooKeeper&#39;s Hierarchical Namespace"></p>
+<h3 id="5-1-Nodes-and-ephemeral-nodes"><a href="#5-1-Nodes-and-ephemeral-nodes" class="headerlink" title="5.1 Nodes and ephemeral nodes"></a>5.1 Nodes and ephemeral nodes</h3><p>Namespace中的每个节点都有与之关联的数据, 以及子节点. 因此, 其与标准文件系统不同: namespace中的节点可看作一个文件, 也可作为一个文件夹. 每个节点都用于存储协调数据, 如状态信息, 配置, 位置信息. ZooKeeper中的节点一般称为<strong>znode</strong>.</p>
+<h3 id="5-2-Znode"><a href="#5-2-Znode" class="headerlink" title="5.2 Znode"></a>5.2 Znode</h3><p>Znode维护一个统计结构, 其中包含数据版本号, ACL更改, 时间戳, 以允许缓存验证和协调更新. 每当znode发生数据更新, 都会自增版本号:</p>
+<ul>
+<li>当客户端请求更改或删除znode时, 需提供一个版本号, 若版本号不匹配当前znode的版本号, 请求会被拒绝</li>
+<li>当客户端查询znode时, znode也会传回当前版本号.</li>
+</ul>
+<p>ZooKeeper中的<strong>znode</strong>指数据节点, <strong>server</strong>(服务器)指组成ZooKeeper服务的机器, <strong>quorum peer</strong>(法定人数)指组成一个整体的服务器, <strong>client</strong>(客户端)指任何使用ZooKeeper的进程或主机.</p>
+<h3 id="5-3-Data-Access"><a href="#5-3-Data-Access" class="headerlink" title="5.3 Data Access"></a>5.3 Data Access</h3><p>Znode的读写操作是原子性的: 读取会获得全部数据, 写入会覆盖所有数据. 每个znode都有<strong>Access Control List</strong>(ACL)来控制访问权限.<br>ZooKeeper客户端和服务器会确保znode的数据小于1M, 相对较大的数据需花费更多时间操作. 如果需要大数据存储, 可将数据放置在NFS或HDFS上, 并在ZooKeeper保存文件位置.</p>
+<h3 id="5-4-Ephemeral-Nodes"><a href="#5-4-Ephemeral-Nodes" class="headerlink" title="5.4 Ephemeral Nodes"></a>5.4 Ephemeral Nodes</h3><p>ZooKeeper支持创建<strong>ephemeral node</strong>(临时节点): 只要创建临时节点的session(会话)处于活动状态, 该节点就会一直存在; 一旦session结束, 该节点会被自动删除. 因此, 临时节点不能拥有子节点, 可使用<code>getEphemerals()</code>来查询某个session的所有临时节点.</p>
+<h2 id="6-Time-in-ZooKeeper"><a href="#6-Time-in-ZooKeeper" class="headerlink" title="6. Time in ZooKeeper"></a>6. Time in ZooKeeper</h2><p>ZooKeeper以多种方式跟踪时间:</p>
+<ul>
+<li>Zxid: 每当ZooKeeper的状态发生变化(写入数据或重新选举), 都会生成新的zxid. 该id表示所有修改的全序: 如果zxid1小于zxid2, 则zxid1发生在zxid1之前.</li>
+<li>Version number: 每当znode发生变化, 都会增加版本号. 以下是znode的三种版本号:<ul>
+<li>version: znode的修改次数</li>
+<li>cversion: znode子节点的修改次数</li>
+<li>aversion: ACL的修改次数</li>
+</ul>
+</li>
+<li>Ticks: 用于在multi-server的ZooKeeper中定义事件间隔时间, 如session超时, 连接超时, 状态上传. 客户端通常不会知道tick, 只有客户端请求的session超时小于最小session超时时间(2倍tick)时, server会告诉客户端最小session超时是多少.</li>
+<li>Real Time: ZooKeeper几乎不用物理时钟时间, 只有创建和修改znode时会将时间戳放入stat结构</li>
+</ul>
+<h2 id="7-ZooKeeper-Stat-Structure"><a href="#7-ZooKeeper-Stat-Structure" class="headerlink" title="7. ZooKeeper Stat Structure"></a>7. ZooKeeper Stat Structure</h2><p>ZooKeeper中每个znode都有一个<code>stat</code>结构, 字段如下:</p>
+<ul>
+<li>czxid: 创建该znode时分配的zxid</li>
+<li>mzxid: 该znode触发数据修改时, 最后一次分配的zxid</li>
+<li>pzxid: 该znode的子节点触发数据修改时, 最后一次分配的zxid</li>
+<li>ctime: 创建该znode的时钟时间(毫秒)</li>
+<li>mtime: 最后一次修改znode的时钟时间(毫秒)</li>
+<li>version: 该znode修改数据的次数</li>
+<li>cversion: 该znode的子节点修改的次数</li>
+<li>aversion: 该znode修改ACL的次数</li>
+<li>ephemeralOwner: 若该znode为临时节点, 该值为该节点会话的session id; 否则该值为0</li>
+<li>dataLength: 该znode的数据长度</li>
+<li>numChildren: 该znode的子节点数量</li>
+</ul>
+<h2 id="8-ZooKeeper-Sessions"><a href="#8-ZooKeeper-Sessions" class="headerlink" title="8. ZooKeeper Sessions"></a>8. ZooKeeper Sessions</h2><p>ZooKeeper客户端通过创建一个handle来与ZooKeeper service建立session. 成功创建handle后, 其状态会切换到<strong>CONNECTING</strong>; 客户端会尝试连接其中一个server, 并切换到<strong>CONNECTED</strong>状态; 若中途发生错误, 如session过期, 身份验证失败, 或应用程序关闭客户端, session会切换到<strong>CLOSED</strong>状态. 以下是客户端的状态变换图:<br><img src="/images/System-Design/ZooKeeper/1-2.jpeg" alt="State Transitions of a ZooKeeper Client"></p>
+<p>为创建session, 应用程序必须提供一个字符串, 以逗号分割, 包含多个pair(<code>host:port</code>), 每个pair对应一个ZooKeeper服务器. 客户端会随机挑选一个服务器并尝试连接, 若连接失败或断开连接, 客户端会自动尝试其他服务器.<br>当客户端获得ZooKeeper service的handle, ZooKeeper会创建一个session(一个64位数字), 并将其分配给客户端. 若客户端连接到其他server, 其会将sesion id作为握手的一部分一并发送. 处于安全考虑, server会为session创建一个密码, 每当客户端与server创建session, 都需要上传自己的session id和密码.<br>客户端可以为session请求一个超时时间, server会回复一个可用的超时时间, 最小超时时间为2倍的<code>tickTime</code>, 最大超时时间为20倍<code>tickTime</code>.<br>当客户端与server断开连接时, 其会自动搜索session创建期间指定的server列表. 当客户端最终与某个server重新连接时, 有两种可能:</p>
+<ul>
+<li>session重新回到<strong>CONNECTED</strong>状态</li>
+<li>session超时, 切换到<strong>EXPIRED</strong>状态</li>
+</ul>
+<p>不建议断开连接后创建新的session, 因为ZooKeeper客户端会自动重连, 只有收到session超时提醒时才需要创建新的session.<br>Session超时由ZooKeeper集群管理, 不由客户端管理. 当客户端与集群建立session时, 会提供一个超时时间, 若客户端在该时间内没有发送心跳包, 则集群认为session过期, 集群会删除该session创建的所有临时节点, 并立即通知正在查看这些节点的客户端; 由于客户端已经断开连接, 只有等重新连接时, watcher才能收到<code>session expired</code>通知. 以下是客户端收到&quot;session expired&quot;的过程:</p>
+<ol>
+<li>成功创建session, 客户端与集群正常通信</li>
+<li>客户端与集群失去连接</li>
+<li>集群检测到session超时, 但客户端仍没有连接到集群</li>
+<li>客户端最终重连到集群</li>
+<li>客户端收到&quot;session expired&quot;通知</li>
+</ol>
+<p>ZooKeeper客户端创建session时会有一个参数: <strong>watcher</strong>. 客户端的任何状态变更(event)都会通知watcher. 例如, 当客户端与服务器断开连接时, watcher会收到通知; session过期时, watcher也会收到通知. watcher会将初始状态设为disconnected. 当创建新连接时, watcher收到的第一个event通常是session connection.<br>若session空闲一段时间, 客户端会发送与一个PING请求来维持session存活. PING请求不仅让server知道客户端仍然存活, 也让客户端知道server处于活跃状态.<br>一旦成功与server建立连接, 客户端会在以下两种情况下生成<strong>connectionloss</strong>(C语言中返回结果码, Java抛出异常):</p>
+<ul>
+<li>应用程序在<strong>死亡&#x2F;无效</strong>的session上进行操作</li>
+<li>当服务器有挂起的操作时, 客户端与服务器断开连接</li>
+</ul>
+<h2 id="9-ZooKeeper-Watches"><a href="#9-ZooKeeper-Watches" class="headerlink" title="9. ZooKeeper Watches"></a>9. ZooKeeper Watches</h2><p>ZooKeeper客户端可通过watch机制来订阅服务器中某个节点的数据变化或状态变化, 并在变化时收到响应通知.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">ZooKeeper</span>(String connectString, <span class="type">int</span> sessionTimeout, Watcher watcher);</span><br></pre></td></tr></table></figure>
+<p>Watcher将作为当前session的defaultWatcher. 客户端通过读取操作(<code>getData()</code>, <code>getChildren()</code>, <code>exists()</code>)向服务器注册<strong>watch</strong>.<br>Watch具备以下属性:</p>
+<ul>
+<li>单次触发: 一旦watch被触发, 服务器端会将其移除. 例如, 客户端请求<code>getData(&quot;/znode1&quot;, true)</code>, 之后<code>/znode1</code>的数据被修改, 客户端会收到通知; 但若<code>/znode1</code>再次被修改, 客户端不会任何通知.</li>
+<li>串行执行: 客户端在收到watch通知前, 不会看到被修改的数据. 网络延迟和其他原因会导致不同客户端在不同时间点接收到watch通知, 但每个客户端看到的视图是一致的.</li>
+<li>轻量: 客户端并不会将watcher发送给服务器, watch的具体状态保存在客户端中; 只有客户端连接的服务器负责监视节点, 不会同步到集群; 服务器不会告诉客户端数据具体修改了哪些部分.</li>
+</ul>
+<p><code>getData()</code>和<code>exists()</code>用于监视节点, <code>getChildren()</code>用于监视子节点. 客户端可以监视一个还未创建的节点, <code>create()</code>会触发该watch和其父节点的watch; <code>delete()</code>会触发被删除节点的watch和其子节点的watch.</p>
+<p>Watcher包含一个回调函数(<code>void process(WatchedEvent event);</code>), 客户端可重写该函数来处理通知, <code>WatchedEvent</code>包含以下内容:</p>
+<ul>
+<li>keeperState: 通知状态, 如<strong>Disconnected</strong>, <strong>SyncConnected</strong>, <strong>AuthFailed</strong>, <strong>Expired</strong>, <strong>Closed</strong>等</li>
+<li>eventType: 通知类型, 如<strong>None</strong>, <strong>NodeCreated</strong>, <strong>NodeDeleted</strong>, <strong>NodeDataChanged</strong>, <strong>NodeChildrenChanged</strong>等</li>
+<li>path: 节点路径</li>
+</ul>
+<p>当节点发生变更时, 服务器并不会向该节点上所有设置watch的客户端发送通知, watch的触发取决于session的连接状态(state)和watch的事件类型(event). 以下是客户端断开连接的情况:</p>
+<ul>
+<li>若客户端网络中断, 或服务器宕机, 客户端检测到距离上次收到服务器回复超过一定时间, 会触发<strong>SessionTimeoutException</strong>, 并会向所有watch添加<strong>Disconnected</strong>通知.</li>
+<li>客户端尝试重新连接, 调用<code>HostProvider</code>的<code>next()</code>获取一个服务器地址:<ul>
+<li>若在session过期前连接到上一个服务器, watch正常触发</li>
+<li>若在session过期前连接到新的服务器, 由于所有服务器共享session, 但不共享watch, 因此会在新的服务器上注册所有watch</li>
+<li>session过期, 服务器返回<code>session expired</code>, 客户端放弃当前session的所有watch, 并自动开启新的session</li>
+</ul>
+</li>
+</ul>
+<p>使用watch时需注意几点:</p>
+<ul>
+<li>由于单次触发的属性, <strong>收到通知</strong>和<strong>再次注册watch</strong>之间有一定时间差, 需先注册watch, 再获取变更的节点数据&#x2F;信息, 这样可确保不会丢失最新的变更.</li>
+<li>服务器的watch通知发送后不会缓存, 也不能确保一定抵达客户端</li>
+<li>某种特殊情况下watch可能会丢失: 对于未创建的znode的exist watch, 若客户端断开连接期间创建了该节点, 且在重新连接前被删除, 该watch事件会丢失</li>
+<li>一个watch对象只会被通知一次: 例如, 某个watch对象在<code>exists()</code>和<code>getData()</code>中对同一文件监视, 之后该文件被删除, watch对象只会收到一次文件被删除的通知。</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Distributed-System/">Distributed System</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/5557.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">State Machine and Consensus</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/245f.html">
+        <span class="next-text nav-default">HDFS Recovery Process</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/ae87.html';
+  var disqus_title = "ZooKeeper Overview";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

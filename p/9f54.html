@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Notification System"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/9f54.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/9f54.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/9f54.html"/>
+
+
+<meta name="description" content="1. IntroductionA notification alerts a user with important information like breaking news, product updates, events, offerings, etc. Three types of notification formats:  mobile push notification SMS m">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Notification System">
+<meta property="og:url" content="https://zaf1ro.github.io/p/9f54.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionA notification alerts a user with important information like breaking news, product updates, events, offerings, etc. Three types of notification formats:  mobile push notification SMS m">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-iOS-push-notification.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-android-push-notification.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-sms-push-notification.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-email-push-notification.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-user-contact-in-database.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-high-level-design.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-improved-high-level-design.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-event-tracking.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-updated-design.jpg">
+<meta property="article:published_time" content="2024-04-16T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.052Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/10-iOS-push-notification.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Notification System - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Understand-the-problem-and-establish-design-scope"><span class="toc-text">2. Understand the problem and establish design scope</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Propose-high-level-design-and-get-buy-in"><span class="toc-text">3. Propose high-level design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Different-types-of-notifications"><span class="toc-text">3.1 Different types of notifications</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Contact-info-gathering-flow"><span class="toc-text">3.2 Contact info gathering flow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Notification-sending-receiving-flow"><span class="toc-text">3.3 Notification sending&#x2F;receiving flow</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-High-level-design"><span class="toc-text">3.3.1 High-level design</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Design-deep-dive"><span class="toc-text">4. Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Reliability"><span class="toc-text">4.1 Reliability</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-How-to-prevent-data-loss"><span class="toc-text">4.1.1 How to prevent data loss?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-Will-recipients-receive-a-notification-exactly-once"><span class="toc-text">4.1.2 Will recipients receive a notification exactly once?</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Additional-components-and-considerations"><span class="toc-text">4.2 Additional components and considerations</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1-Notification-template"><span class="toc-text">4.2.1 Notification template</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-2-Notification-setting"><span class="toc-text">4.2.2 Notification setting</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-3-Rate-limiting"><span class="toc-text">4.2.3 Rate limiting</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-4-Retry-mechanism"><span class="toc-text">4.2.4 Retry mechanism</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-5-Security-in-push-notifications"><span class="toc-text">4.2.5 Security in push notifications</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-6-Monitor-queued-notifications"><span class="toc-text">4.2.6 Monitor queued notifications</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-7-Events-tracking"><span class="toc-text">4.2.7 Events tracking</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-8-Updated-design"><span class="toc-text">4.2.8 Updated design</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Wrap-up"><span class="toc-text">5. Wrap up</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Notification System
+        
+      </h1>
+      <time class="post-time">
+          04/16/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>A notification alerts a user with important information like breaking news, product updates, events, offerings, etc. Three types of notification formats:</p>
+<ul>
+<li>mobile push notification</li>
+<li>SMS message</li>
+<li>Email</li>
+</ul>
+<h2 id="2-Understand-the-problem-and-establish-design-scope"><a href="#2-Understand-the-problem-and-establish-design-scope" class="headerlink" title="2. Understand the problem and establish design scope"></a>2. Understand the problem and establish design scope</h2><ul>
+<li>What types of notifications does the system support: Push notification, SMS message, and email</li>
+<li>Is it a real-time system: a soft real-time system, if the system is under a high workload, a slight delay is acceptable</li>
+<li>What are the supported devices: iOS devices, android devices, and laptop&#x2F;desktop</li>
+<li>What triggers notifications: Notifications can be triggered by client applications. They can also be scheduled on the server-side.</li>
+<li>Will users be able to opt-out: Yes, users who choose to opt-out will no longer receive notifications</li>
+<li>How many notifications are sent out each day: 10 million mobile push notifications, 1 million SMS messages, and 5 million emails.</li>
+</ul>
+<h2 id="3-Propose-high-level-design-and-get-buy-in"><a href="#3-Propose-high-level-design-and-get-buy-in" class="headerlink" title="3. Propose high-level design and get buy-in"></a>3. Propose high-level design and get buy-in</h2><h3 id="3-1-Different-types-of-notifications"><a href="#3-1-Different-types-of-notifications" class="headerlink" title="3.1 Different types of notifications"></a>3.1 Different types of notifications</h3><ul>
+<li>iOS push notification: three components to send an iOS push notification.<br><img src="/images/System-Design/Interview/10-iOS-push-notification.jpg" alt="iOS Push Notification"><ul>
+<li>Provider: build and send notification requests to <strong>Apple Push Notification Service</strong>(APNS)<ul>
+<li>Device token: a unique identifier used for sending push notifications</li>
+<li>Payload: This is a JSON dictionary that contains a notification&#39;s payload</li>
+</ul>
+</li>
+<li>APNS: provided by Apple to propagate push notifications to iOS devices</li>
+<li>iOS Device: It is the end client, which receives push notifications</li>
+</ul>
+</li>
+<li>Android push notification: <strong>Firebase Cloud Messaging</strong>(FCM) is commonly used to send push notifications to android devices<br><img src="/images/System-Design/Interview/10-android-push-notification.jpg" alt="Android Push Notification"></li>
+<li>SMS message: third party SMS services like <strong>Twilio</strong>, <strong>Nexmo</strong>, and many others are commonly used. Most of them are commercial services.<br><img src="/images/System-Design/Interview/10-sms-push-notification.jpg" alt="SMS Push Notification"></li>
+<li>Email: many of company opt for commercial email services which offer a better delivery rate and data analytics<br><img src="/images/System-Design/Interview/10-email-push-notification.jpg" alt="Email Push Notification"></li>
+</ul>
+<h3 id="3-2-Contact-info-gathering-flow"><a href="#3-2-Contact-info-gathering-flow" class="headerlink" title="3.2 Contact info gathering flow"></a>3.2 Contact info gathering flow</h3><p>when a user installs our app or signs up for the first time, API servers collect user contact info and store it in the database:<br><img src="/images/System-Design/Interview/10-user-contact-in-database.jpg" alt="User Contact"></p>
+<ul>
+<li>Email addresses and phone numbers are stored in the <code>user</code> table</li>
+<li>device tokens are stored in the <code>device</code> table</li>
+</ul>
+<h3 id="3-3-Notification-sending-receiving-flow"><a href="#3-3-Notification-sending-receiving-flow" class="headerlink" title="3.3 Notification sending&#x2F;receiving flow"></a>3.3 Notification sending&#x2F;receiving flow</h3><h4 id="3-3-1-High-level-design"><a href="#3-3-1-High-level-design" class="headerlink" title="3.3.1 High-level design"></a>3.3.1 High-level design</h4><p><img src="/images/System-Design/Interview/10-high-level-design.jpg" alt="High Level Design"></p>
+<ul>
+<li>Service 1 to N: A service can be a microservice, a cron job, or a distributed system that triggers notification sending events.</li>
+<li>Notification system: the centerpiece of sending&#x2F;receiving notifications. It provides APIs for services 1 to N, and builds notification payloads for third party services.</li>
+<li>Third-party services: responsible for delivering notifications to users<ul>
+<li>extensibility: system should easily plug or unplug of a third-party service</li>
+<li>navailablility: system should be availble for all time and regions</li>
+</ul>
+</li>
+<li>iOS, Android, SMS, Email: Users receive notifications on their devices. Three problems in this design:<ul>
+<li>Single point of failure (SPOF)</li>
+<li>Hard to scale: It is challenging to scale databases, caches, and different notification processing components independently.</li>
+<li>Performance bottleneck: Processing and sending notifications can be resource intensive. Handling everything in one system can result in the system overload, especially during peak hours.</li>
+</ul>
+</li>
+<li>High-level design: <ul>
+<li>Move the database and cache out of the notification server</li>
+<li>Add more notification servers and set up automatic horizontal scaling</li>
+<li>Introduce message queues to decouple the system components</li>
+</ul>
+</li>
+</ul>
+<p><img src="/images/System-Design/Interview/10-improved-high-level-design.jpg" alt="Improved High Level Design"></p>
+<ol>
+<li>A service calls APIs provided by notification servers to send notifications.</li>
+<li>Notification servers fetch metadata such as user info, device token, and notification setting from the cache or database</li>
+<li>A notification event is sent to the corresponding queue for processing. For instance, an iOS push notification event is sent to the iOS PN queue.</li>
+<li>Workers pull notification events from message queues.</li>
+<li>Workers send notifications to third party services.</li>
+<li>Third-party services send notifications to user devices.</li>
+</ol>
+<h2 id="4-Design-deep-dive"><a href="#4-Design-deep-dive" class="headerlink" title="4. Design deep dive"></a>4. Design deep dive</h2><h3 id="4-1-Reliability"><a href="#4-1-Reliability" class="headerlink" title="4.1 Reliability"></a>4.1 Reliability</h3><h4 id="4-1-1-How-to-prevent-data-loss"><a href="#4-1-1-How-to-prevent-data-loss" class="headerlink" title="4.1.1 How to prevent data loss?"></a>4.1.1 How to prevent data loss?</h4><p>The notification system cannot lose data. Notifications can usually be delayed or re-ordered, but never lost. Thus, the notification system persists notification data in a database and implements a retry mechanism. </p>
+<h4 id="4-1-2-Will-recipients-receive-a-notification-exactly-once"><a href="#4-1-2-Will-recipients-receive-a-notification-exactly-once" class="headerlink" title="4.1.2 Will recipients receive a notification exactly once?"></a>4.1.2 Will recipients receive a notification exactly once?</h4><p>No. Although notification is delivered exactly once most of the time, the distributed system could result in duplicate notifications. Here is a simple dedupe logic: When a notification arrives, we check the event ID to see if it&#39;s seen before. If it is seen before, it is discarded; Otherwise, we will send out the notification. </p>
+<h3 id="4-2-Additional-components-and-considerations"><a href="#4-2-Additional-components-and-considerations" class="headerlink" title="4.2 Additional components and considerations"></a>4.2 Additional components and considerations</h3><h4 id="4-2-1-Notification-template"><a href="#4-2-1-Notification-template" class="headerlink" title="4.2.1 Notification template"></a>4.2.1 Notification template</h4><p>Notification templates are introduced to avoid building every notification from scratch. The benefits of using notification templates include maintaining a consistent format, reducing the margin error, and saving time. A notification template is a preformatted notification to create your unique notification by customizing parameters, styling, tracking links, etc.</p>
+<h4 id="4-2-2-Notification-setting"><a href="#4-2-2-Notification-setting" class="headerlink" title="4.2.2 Notification setting"></a>4.2.2 Notification setting</h4><p>Before any notification is sent to a user, we first check if a user is opted-in to receive this type of notification. This information is stored in the notification setting table, with the following fields:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">user_id   bigInt</span><br><span class="line">channel   varchar   # push notification, email or SMS</span><br><span class="line">opt_in    boolean   # opt-in to receive notification</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-2-3-Rate-limiting"><a href="#4-2-3-Rate-limiting" class="headerlink" title="4.2.3 Rate limiting"></a>4.2.3 Rate limiting</h4><p>To avoid overwhelming users with too many notifications, we can limit the number of notifications a user can receive. Receivers could turn off notifications completely if we send too often.</p>
+<h4 id="4-2-4-Retry-mechanism"><a href="#4-2-4-Retry-mechanism" class="headerlink" title="4.2.4 Retry mechanism"></a>4.2.4 Retry mechanism</h4><p>When a third-party service fails to send a notification, the notification will be added to the message queue for retrying. If the problem persists, an alert will be sent out to developers.</p>
+<h4 id="4-2-5-Security-in-push-notifications"><a href="#4-2-5-Security-in-push-notifications" class="headerlink" title="4.2.5 Security in push notifications"></a>4.2.5 Security in push notifications</h4><p>Only authenticated or verified clients are allowed to send push notifications using our APIs.</p>
+<h4 id="4-2-6-Monitor-queued-notifications"><a href="#4-2-6-Monitor-queued-notifications" class="headerlink" title="4.2.6 Monitor queued notifications"></a>4.2.6 Monitor queued notifications</h4><p>A key metric to monitor is the total number of queued notifications. If the number is large, the notification events are not processed fast enough by workers.</p>
+<h4 id="4-2-7-Events-tracking"><a href="#4-2-7-Events-tracking" class="headerlink" title="4.2.7 Events tracking"></a>4.2.7 Events tracking</h4><p>Notification metrics, such as open rate, click rate, and engagement are important in understanding customer behaviors. Analytics service implements events tracking. Integration between the notification system and the analytics service is usually required.<br><img src="/images/System-Design/Interview/10-event-tracking.jpg" alt="Event tracking"></p>
+<h3 id="4-2-8-Updated-design"><a href="#4-2-8-Updated-design" class="headerlink" title="4.2.8 Updated design"></a>4.2.8 Updated design</h3><p><img src="/images/System-Design/Interview/10-updated-design.jpg" alt="Updated Design"></p>
+<p>Many new components are added in comparison with the previous design:</p>
+<ul>
+<li>The notification servers are equipped with two new features: authentication and rate-limiting.</li>
+<li>Add a retry mechanism to handle notification failures. If the system fails to send notifications, they are put back in the messaging queue and the workers will retry for a predefined number of times.</li>
+<li>Notification templates provide a consistent and efficient notification creation process</li>
+<li>Monitoring and tracking systems are added for system health checks and future improvements</li>
+</ul>
+<h2 id="5-Wrap-up"><a href="#5-Wrap-up" class="headerlink" title="5. Wrap up"></a>5. Wrap up</h2><ul>
+<li>Reliability: a robust retry mechanism to minimize the failure rate</li>
+<li>Security: AppKey&#x2F;appSecret pair is used to ensure only verified clients can send notifications</li>
+<li>Tracking and monitoring: These are implemented in any stage of a notification flow to capture important stats</li>
+<li>Respect user settings: Users may opt-out of receiving notifications</li>
+<li>Rate limiting: set up a frequency capping on the number of notifications</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/f46c.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - News Feed</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/1f68.html">
+        <span class="next-text nav-default">System Design - Web Crawler</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/9f54.html';
+  var disqus_title = "System Design - Notification System";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

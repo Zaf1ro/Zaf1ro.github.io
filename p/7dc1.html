@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Context Mapping"/>
+
+
+
+
+  <meta name="keywords" content="Microservices," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/7dc1.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/7dc1.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/7dc1.html"/>
+
+
+<meta name="description" content="1. Why use Context MappingContext不仅作为语义边界, 还作为团队边界. 那么不同的BC之间的关系如何表示, 这就需要用到Context Mapping. 以下是几个使用Context Mapping的原因:  逐渐复杂的Domain Knowledge让BC需要重新调整 组织架构的复杂度提升 团队数量和规模提升 跨地区&#x2F;跨时区的团队合作 与外部依赖的整合">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Context Mapping">
+<meta property="og:url" content="https://zaf1ro.github.io/p/7dc1.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Why use Context MappingContext不仅作为语义边界, 还作为团队边界. 那么不同的BC之间的关系如何表示, 这就需要用到Context Mapping. 以下是几个使用Context Mapping的原因:  逐渐复杂的Domain Knowledge让BC需要重新调整 组织架构的复杂度提升 团队数量和规模提升 跨地区&#x2F;跨时区的团队合作 与外部依赖的整合">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-2-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-2-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-2-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-2-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-2-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-2-6.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-3-1.png">
+<meta property="article:published_time" content="2021-02-23T19:44:12.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.036Z">
+<meta property="article:tag" content="Microservices">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/microservice/context-mapping-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Context Mapping - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Why-use-Context-Mapping"><span class="toc-text">1. Why use Context Mapping</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Context-Mapping-Patterns"><span class="toc-text">2. Context Mapping Patterns</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Shared-Kernel"><span class="toc-text">2.1 Shared Kernel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Partnership"><span class="toc-text">2.2 Partnership</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Anti-corruption-Layer"><span class="toc-text">2.3 Anti-corruption Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Separate-Way"><span class="toc-text">2.4 Separate Way</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Open-Host-Service-Published-Language"><span class="toc-text">2.5 Open Host Service&#x2F;Published Language</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-Big-Ball-of-Mud"><span class="toc-text">2.6 Big Ball of Mud</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-Customer-Supplier"><span class="toc-text">2.7 Customer-Supplier</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-Conformist"><span class="toc-text">2.8 Conformist</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-E-commerce-Bounded-Context"><span class="toc-text">3. E-commerce Bounded Context</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Context Mapping
+        
+      </h1>
+      <time class="post-time">
+          02/23/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Why-use-Context-Mapping"><a href="#1-Why-use-Context-Mapping" class="headerlink" title="1. Why use Context Mapping"></a>1. Why use Context Mapping</h2><p>Context不仅作为语义边界, 还作为团队边界. 那么不同的BC之间的关系如何表示, 这就需要用到<strong>Context Mapping</strong>. 以下是几个使用Context Mapping的原因:</p>
+<ul>
+<li>逐渐复杂的Domain Knowledge让BC需要重新调整</li>
+<li>组织架构的复杂度提升</li>
+<li>团队数量和规模提升</li>
+<li>跨地区&#x2F;跨时区的团队合作</li>
+<li>与外部依赖的整合</li>
+<li>与Legacy system系统整合</li>
+</ul>
+<h2 id="2-Context-Mapping-Patterns"><a href="#2-Context-Mapping-Patterns" class="headerlink" title="2. Context Mapping Patterns"></a>2. Context Mapping Patterns</h2><p>在介绍各种Pattern前, 需要先确定依赖表达的方式, 以下图为例:<br><img src="/images/microservice/context-mapping-1.png" alt="Downstream and Upstream in Context Mapping"></p>
+<p>在Context Mapping中, 我们用Upstream和Downstream来表示两个BC间的关系. <strong>Downstream依赖于Upstream</strong>. 之所以不使用箭头, 是因为箭头很容易被误认为成数据流, 而不是依赖关系. 因此, 上图的依赖关系为:</p>
+<ul>
+<li>B和C依赖于A</li>
+<li>C依赖于B</li>
+</ul>
+<h3 id="2-1-Shared-Kernel"><a href="#2-1-Shared-Kernel" class="headerlink" title="2.1 Shared Kernel"></a>2.1 Shared Kernel</h3><p>若两个Bounded Context共用一个domain model, 可以将共用部分提取出来, 称为<strong>Shared Kernel</strong>(共用内核):<br><img src="/images/microservice/context-mapping-2-1.png" alt="Shared Kernel"></p>
+<p>这种做法有好有坏: 好处是避免重复开发, 从而提高开发效率; 坏处是对Shared Kernel的高度依赖不利于未来拓展. 因此使用该pattern时需要注意一下几点:</p>
+<ul>
+<li>Kernel应边界明确且尽量小</li>
+<li>所有使用该Kernel的团队都应在修改kernel前与其他团队商议</li>
+<li>修改Kernel后应对两边BC都进行测试</li>
+</ul>
+<p>例如: Shopping Context和Financial Analysis共享Order Model, 在Order Model分别放在两个BC中并没有任何好处, 因此可考虑Shared Kernel</p>
+<h3 id="2-2-Partnership"><a href="#2-2-Partnership" class="headerlink" title="2.2 Partnership"></a>2.2 Partnership</h3><p>若两个Bounded Context要么一起成功, 要么一起失败, 且两边需要相互协作制定开发方案, 则可使用<strong>Partnership</strong>(合作关系):<br><img src="/images/microservice/context-mapping-2-2.png" alt="Partnership"></p>
+<p>注意, 该pattern并没有上下游关系, 而是互相依赖.</p>
+<h3 id="2-3-Anti-corruption-Layer"><a href="#2-3-Anti-corruption-Layer" class="headerlink" title="2.3 Anti-corruption Layer"></a>2.3 Anti-corruption Layer</h3><p><strong>Anti-corruption Layer</strong>(防腐层)是一种在不同BC之间转换概念或数据的pattern, 这样做可以防止BC的domain model收到外部污染. 其具有以下特点:</p>
+<ul>
+<li>可为单向或双向</li>
+<li>可作为一组service</li>
+<li>可利用FACADE模式来隐藏复杂的转换逻辑, 以此避免BC受污染</li>
+<li>仅包含转换逻辑, 不包含业务逻辑</li>
+</ul>
+<p>其中最常见的就是场景就是legacy system. 当面对legacy system时, 如果没有时间和精力去重构, 可以为其包裹一层ACL, 达到不影响当前功能下也能开发新功能的效果.<br><img src="/images/microservice/context-mapping-2-3.png" alt="Anti-corruption Layer"></p>
+<p>例如: 当面对多个外部系统时, 每个外部系统的数据涵义不相同. 这时可以在BC外部加上一层ACL, 用于翻译数据.</p>
+<h3 id="2-4-Separate-Way"><a href="#2-4-Separate-Way" class="headerlink" title="2.4 Separate Way"></a>2.4 Separate Way</h3><p>若两个Bounded Context因技术, 沟通或地理原因导致合作成本过高时, 可考虑切断两者的关系, 称为<strong>Separate Way</strong>(另谋他路). 当然, 这也不意味着两个BC丝毫没有关系, 仍有可能透过UI或手动模式来整合.<br>例如: 通常Order和Shipping合作, 这样消费者可以从Order页面查询物流信息. 但随着第三方物流公司的加入, Order Context很难整合这些外部依赖, 可选择将物流查询链接交给用户, 让用户去点击查询.</p>
+<h3 id="2-5-Open-Host-Service-Published-Language"><a href="#2-5-Open-Host-Service-Published-Language" class="headerlink" title="2.5 Open Host Service&#x2F;Published Language"></a>2.5 Open Host Service&#x2F;Published Language</h3><p>Open Host Service(开发主机服务, 简称OHS)意为上游BC制定一份protocol(协议)并公开, 让下游通过协议使用上游服务, 用于上游对接多个下游的情况. 与其在每个下游都创建一个ACL, 不如在上游创建一个OHS. 在使用OHS时, 一般会搭配Published Language(发布语言, 简称PL). OHS用于定义协议, PL作为传输数据的格式, 如XML, JSON, Protocol Buffer等.<br><img src="/images/microservice/context-mapping-2-4.png" alt="Open Host Service/Published Language"></p>
+<h3 id="2-6-Big-Ball-of-Mud"><a href="#2-6-Big-Ball-of-Mud" class="headerlink" title="2.6 Big Ball of Mud"></a>2.6 Big Ball of Mud</h3><p>当我们检查已有系统时, 经常会发现系统中存在混杂在一起的模型, 它们之间的边界是非常模糊的. 此时应为这些BC划定一个边界, 并将其归纳入一个<strong>Big Ball of Mud</strong>(大泥球)中. 在这个边界之内, 不要试图使用复杂的建模手段来化解问题. 同时, 这样的系统有可能会向其他系统蔓延, 应对此保持警觉. 在串联Big Ball of Mud时, 可考虑加上ACL充当翻译角色.</p>
+<h3 id="2-7-Customer-Supplier"><a href="#2-7-Customer-Supplier" class="headerlink" title="2.7 Customer-Supplier"></a>2.7 Customer-Supplier</h3><p>若某个Bounded Context与其他BC存在上下游关系时, 上游可独立于下游完成开发, 而下游必须受限于上游方的开发计划, 则采用Customer-Supplier(客户-供应商). 当上游开会做出决策时, 下游也需被通知, 甚至一起参加会议. 这时就很容易产生下游被上游限制的情况, 如果发生在跨公司团队之间, 则会导致开发效率底下.<br><img src="/images/microservice/context-mapping-2-5.png" alt="Customer-Supplier"></p>
+<p>其中一种解决方案是让上游将下游视为&quot;客户&quot;, 下游提出需求和预算, 双方共同制定<strong>Automated Acceptance Tests</strong>(自动化验收测试)以验证预期的效果. 只要上游修改后的代码能通过测试, 则可以放心地交给下游使用. 也可以在下游建立ACL以用于转换model. 该pattern适用于修改成本较小的BC使用.</p>
+<h3 id="2-8-Conformist"><a href="#2-8-Conformist" class="headerlink" title="2.8 Conformist"></a>2.8 Conformist</h3><p>同样是Bounded Context或团队间存在上下游关系时使用, 但此时上游没有满足下游的需求, 称为<strong>Conformist</strong>(遵奉者). 常见于大公司的两个部门之间, 跨公司合作, 或与系统内没人能完全懂的Legacy system建立联系.<br><img src="/images/microservice/context-mapping-2-6.png" alt="Conformist"></p>
+<p>一般来说, 当与外部系统的整合成本太高时, 会采用三种方案:</p>
+<ul>
+<li>上游依赖成本过高, 采用Separate Way</li>
+<li>上游有一定依赖价值, 但设计有缺陷(文件, 封装, 抽象存在问题), 考虑加ACL</li>
+<li>上游有一定依赖价值, 且设计不算差, 可考虑Conformist</li>
+</ul>
+<p>在Conformist的环境下, 下游Model完全受制于上游, 两者很容易产生强耦合. </p>
+<h2 id="3-E-commerce-Bounded-Context"><a href="#3-E-commerce-Bounded-Context" class="headerlink" title="3. E-commerce Bounded Context"></a>3. E-commerce Bounded Context</h2><p>以下是E-commerce的业务逻辑:</p>
+<ul>
+<li><strong>Purchase</strong>(结账)时判断<strong>Identity</strong>(会员)等级, 若是会员则会有折扣</li>
+<li><strong>Catalog</strong>(浏览商品)时, 部分商品只能被特定<strong>Identity</strong>(会员)等级的用户看到</li>
+<li><strong>Purchase</strong>(结账)时需从<strong>Catalog</strong>(商品目录)取得商品信息来计算价格</li>
+<li><strong>Purchase</strong>(结账)时需要通过<strong>External Payment</strong>(第三方支付)来处理支付</li>
+<li>整合<strong>External Shippment</strong>(第三方物流)让用户知道货物物流信息</li>
+<li><strong>Revenue</strong>(营收分析系统)需要与<strong>Purchase</strong>(购物系统)共享资料</li>
+</ul>
+<p>以下是一种Context Mapping的示例图:<br><img src="/images/microservice/context-mapping-3-1.png" alt="E-commerce Context Mapping"></p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/1f4.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Entity</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/a06c.html">
+        <span class="next-text nav-default">Bounded Context</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/7dc1.html';
+  var disqus_title = "Context Mapping";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

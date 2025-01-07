@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Standard I/O"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/f946.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/f946.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/f946.html"/>
+
+
+<meta name="description" content="1. Background在UNIX出现前, 程序必须明确指出链接到哪些输入和输出, 因此, 执行任何I&#x2F;O操作前, 程序需先获取一系列环境配置和硬件配置, 且每个系统的配置大不相同, 导致程序开发十分困难. UNIX的一切皆文件概念让程序执行I&#x2F;O操作的成本大大降低, 程序可通过UNIX filesystem访问一切资源, 包括机器服务和外部设备; 借助简化的文件模型, 程序">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Standard I&#x2F;O">
+<meta property="og:url" content="https://zaf1ro.github.io/p/f946.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Background在UNIX出现前, 程序必须明确指出链接到哪些输入和输出, 因此, 执行任何I&#x2F;O操作前, 程序需先获取一系列环境配置和硬件配置, 且每个系统的配置大不相同, 导致程序开发十分困难. UNIX的一切皆文件概念让程序执行I&#x2F;O操作的成本大大降低, 程序可通过UNIX filesystem访问一切资源, 包括机器服务和外部设备; 借助简化的文件模型, 程序">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/5-1-layer-of-stdio.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/5-4-io-buffering.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/5-4-setbuf-and-setvbuf.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/std-io-2.jpg">
+<meta property="article:published_time" content="2019-08-20T12:35:26.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.056Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/5-1-layer-of-stdio.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Standard I/O - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Background"><span class="toc-text">1. Background</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Introduction-of-Standard"><span class="toc-text">2. Introduction of Standard</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-I-O-Stream-and-FILE-Objects"><span class="toc-text">3. I&#x2F;O Stream and FILE Objects</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Buffered-I-O"><span class="toc-text">4. Buffered I&#x2F;O</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Open-a-Stream"><span class="toc-text">5. Open a Stream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Read-and-Write-a-Stream"><span class="toc-text">6. Read and Write a Stream</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-Character-at-a-time"><span class="toc-text">6.1 Character-at-a-time</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Line-at-a-Time-I-O"><span class="toc-text">6.2 Line-at-a-Time I&#x2F;O</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Binary-I-O"><span class="toc-text">7. Binary I&#x2F;O</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Position-a-Stream"><span class="toc-text">8. Position a Stream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Formatted-I-O"><span class="toc-text">9. Formatted I&#x2F;O</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-Formatted-Output"><span class="toc-text">9.1 Formatted Output</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-Formatted-Input"><span class="toc-text">9.2 Formatted Input</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Temporary-Files"><span class="toc-text">10. Temporary Files</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Memory-Streams"><span class="toc-text">11. Memory Streams</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Standard I/O
+        
+      </h1>
+      <time class="post-time">
+          08/20/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Background"><a href="#1-Background" class="headerlink" title="1. Background"></a>1. Background</h2><p>在UNIX出现前, 程序必须明确指出链接到哪些输入和输出, 因此, 执行任何I&#x2F;O操作前, 程序需先获取一系列环境配置和硬件配置, 且每个系统的配置大不相同, 导致程序开发十分困难. UNIX的<strong>一切皆文件</strong>概念让程序执行I&#x2F;O操作的成本大大降低, 程序可通过UNIX filesystem访问一切资源, 包括机器服务和外部设备; 借助简化的<strong>文件</strong>模型, 程序可从一个有序字节序列中读取数据, 直到文件结尾, 无需知道各个设备的底层信息.<br>UNIX并不是一个操作系统的名称, 而表示一系列操作系统, 当UNIX衍生出不同系统实现时, UNIX变体之间的代码移植变得愈发困难, 因此诞生了POSIX标准: 若程序遵循POSIX标准定义的接口, 则程序可在支持POSIX标准的不同UNIX变体之间移植.<br>C语言也需要自己的可移植性: ANSI C. 该标准规范了C语言的语法和语义, 还有其标准库, 让C语言适配不同操作系统, 当然包括UNIX.<br><img src="/images/UNIX/APUE/5-1-layer-of-stdio.png" alt="Layers of Abstraction"></p>
+<h2 id="2-Introduction-of-Standard"><a href="#2-Introduction-of-Standard" class="headerlink" title="2. Introduction of Standard"></a>2. Introduction of Standard</h2><p>C语言并没有将I&#x2F;O操作构建到语言中, 而是让其作为外部库. ANSI C将I&#x2F;O函数统一放置在<code>stdio.h</code>, 称为<strong>Standard I&#x2F;O</strong>; 与之相对, UNIX的I&#x2F;O操作称为<strong>File I&#x2F;O</strong>. 以下是两者的差别:</p>
+<ul>
+<li>File I&#x2F;O由POSIX Standard制定; Standard I&#x2F;O由ANSI C制定</li>
+<li>FIle I&#x2F;O兼容遵循POSIX的UNIX系统实现; Standard I&#x2F;O兼容主流操作系统, 包含UNIX之外的操作系统</li>
+<li>File I&#x2F;O的所有操作都需要kernel参与, 因此涉及到user mode与kernel mode的切换; Standard I&#x2F;O作为一个函数库, 在user mode执行, 必要时需调用File I&#x2F;O</li>
+<li>Standard I&#x2F;O引入了许多新概念和特性: Stream, line-by-line input, formatted output, buffered I&#x2F;O, safe writing</li>
+</ul>
+<p>大部分情况下, Standard I&#x2F;O更适合开发程序, 但开发者仍需学习File I&#x2F;O:</p>
+<ul>
+<li>了解File I&#x2F;O可帮助理解系统概念, 如进程如何管理文件</li>
+<li>有时Standard I&#x2F;O无法实现需求, 如获取文件的metadata</li>
+</ul>
+<h2 id="3-I-O-Stream-and-FILE-Objects"><a href="#3-I-O-Stream-and-FILE-Objects" class="headerlink" title="3. I&#x2F;O Stream and FILE Objects"></a>3. I&#x2F;O Stream and FILE Objects</h2><p>File I&#x2F;O中, 程序通过<strong>file descriptor</strong>读取, 修改, 或删除文件; Standard I&#x2F;O中, 程序通过<strong>stream</strong>操作文件. Stream不是一个设备或文件, 而是一个线性队列, 可从stream读取一个block的数据, 也可以向stream写入一个block的数据.<br>Standard I&#x2F;O支持<strong>wide character</strong>(宽字符), 也就是说, 每个字符由一个或多byte组成, 而不是ASCII的单byte. 处理单字符的函数称为<strong>normal character function</strong>(如<code>fread</code>, <code>fwrite</code>, <code>fgetc</code>等), 处理宽字符的函数称为<strong>wide character function</strong>(如<code>fgetwc</code>, <code>fgetws</code>, <code>fputwc</code>等). normal character function不能与wide character function混用, 否则会发生编码错误.<br><strong>stream orientation</strong>表示stream的字符类型, Standard I&#x2F;O通过stream orientation判断当前stream的字符类型为normal character或wide character. stream一旦确定stream orientation就无法更改, 以下是指定orientation的三种方法:</p>
+<ul>
+<li>若stream使用任意normal character function, 该stream确定为not wide  oriented</li>
+<li>若stream使用任意wide character function, 该stream确定为wide oriented</li>
+<li>使用<code>fwide</code>设置orientation</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set and determine the orientation of a FILE stream</span></span><br><span class="line"><span class="comment"> * @param mode if `mode` is zero, fwide() determines the current</span></span><br><span class="line"><span class="comment"> *        orientation of stream. If mode is non-zero, fwide() will</span></span><br><span class="line"><span class="comment"> *        attempt to set orientation(If not been set).</span></span><br><span class="line"><span class="comment"> *        * mode &gt; 0: byte-character oriented</span></span><br><span class="line"><span class="comment"> *        * mode &lt; 0: wide-character oriented</span></span><br><span class="line"><span class="comment"> * @return the orientation of stream after changing it.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fwide</span><span class="params">(FILE* stream, <span class="type">int</span> mode)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-Buffered-I-O"><a href="#4-Buffered-I-O" class="headerlink" title="4. Buffered I&#x2F;O"></a>4. Buffered I&#x2F;O</h2><p>对于File I&#x2F;O, 读取数据的流程如下:</p>
+<ol>
+<li>用户进程通过<code>read()</code>向Kernel发送system call, 从user mode切换到kernel mode</li>
+<li>CPU利用DMA(Direct Memory Access) controller将数据从硬盘读取到kernel mode的read buffer</li>
+<li>CPU将数据从read buffer拷贝到user mode的user buffer</li>
+<li>切回user mode, <code>read()</code>执行完毕</li>
+</ol>
+<p>若进程频繁调用<code>read()</code>, 需进行多次磁盘I&#x2F;O操作, 根据局部性原理, 操作系统引入了<strong>Page Cache</strong>(页缓存)来减少磁盘访问: 当进程调用<code>read()</code>时, 会首先检查数据是否在page cache中, 若存在, 则直接从page cache读取; 若不在, 则从磁盘读取, 并将后面的几个页面一并读取到页缓存. 当进程调用<code>write()</code>时, 会先写入page cache, 由操作系统决定何时刷入磁盘.<br>Standard I&#x2F;O的操作函数有自己的stdio buffer, 该buffer处于user mode, 这样避免在user mode和kernel mode之间频繁切换.<br><img src="/images/UNIX/APUE/5-4-io-buffering.png" alt="Summary of I/O Buffering"></p>
+<p>stdio buffer分为三种:</p>
+<ol>
+<li>Block buffered: buffer空间耗尽, 进程调用<code>fflush()</code>, 或进程退出时执行I&#x2F;O操作.</li>
+<li>Line buffered: buffer空间耗尽, 遇到newline(<code>\n</code>), 进程调用<code>fflush()</code>, 或进程退出时执行I&#x2F;O操作.</li>
+<li>Unbuffered: 不缓存任何数据, 每次调用I&#x2F;O函数都会执行I&#x2F;O操作.</li>
+</ol>
+<p>stdio buffer具有以下属性:</p>
+<ol>
+<li>stdin和stdout都必须使用fully buffered, 除非他们对应的不是interactive device.</li>
+<li>stderr永不使用fully buffered.</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @param mode must be one of the following macros:</span></span><br><span class="line"><span class="comment"> *        * _IONBF: unbuffered</span></span><br><span class="line"><span class="comment"> *        * _IOLBF: line buffered</span></span><br><span class="line"><span class="comment"> *        * _IOFBF: fully buffered</span></span><br><span class="line"><span class="comment"> * @param buf should point to a buffer at least `size` bytes long</span></span><br><span class="line"><span class="comment"> *        if mode is _IOLBF or _IOFBF</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setvbuf</span><span class="params">(FILE* stream, <span class="type">char</span>* buf, <span class="type">int</span> mode, <span class="type">size_t</span> size)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief stream buffering operations</span></span><br><span class="line"><span class="comment"> * @param buf if is not null, then use fully buffered; otherwise</span></span><br><span class="line"><span class="comment"> *        use unbuffered</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">setbuf</span><span class="params">(FILE* stream, <span class="type">char</span>* buf)</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/UNIX/APUE/5-4-setbuf-and-setvbuf.jpg" alt="Summary of the setbuf and setvbuf functions"></p>
+<p>注意: buffer所能使用的空间小于<code>size</code>, 因为其中一部分空间要用于存放操作记录. 通常情况下不需要自己申请buffer, 关闭stream时会自动释放buffer. 任何时刻进程都可执行flush:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief forces a write of all user-space buffered data for the </span></span><br><span class="line"><span class="comment"> *        given output or update stream via the stream&#x27;s underlying </span></span><br><span class="line"><span class="comment"> *        write function</span></span><br><span class="line"><span class="comment"> * @param stream if is NULL, fflush() flushes all open output streams</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fflush</span><span class="params">(FILE* steam)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>setvbuf()</code>只有在打开stream后, 执行I&#x2F;O操作前使用.</p>
+<h2 id="5-Open-a-Stream"><a href="#5-Open-a-Stream" class="headerlink" title="5. Open a Stream"></a>5. Open a Stream</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open the file pointed to by `pathname` and associates a </span></span><br><span class="line"><span class="comment"> *        stream with it</span></span><br><span class="line"><span class="comment"> * @param mode points to a string beginning with one of the </span></span><br><span class="line"><span class="comment"> *        following values:</span></span><br><span class="line"><span class="comment"> *        * r: Open text file for reading. The stream is positioned </span></span><br><span class="line"><span class="comment"> *          at the beginning of the file.</span></span><br><span class="line"><span class="comment"> *        * r+: Open for reading and writing. The stream is positioned</span></span><br><span class="line"><span class="comment"> *          at the beginning of the file.</span></span><br><span class="line"><span class="comment"> *        * w: Truncate to zero length or create text file for writing.</span></span><br><span class="line"><span class="comment"> *          The stream is positioned at the beginning of the file.</span></span><br><span class="line"><span class="comment"> *        * w+: Open for reading and writing. Create new file if it </span></span><br><span class="line"><span class="comment"> *          does not exist, otherwise it is truncated. The stream is</span></span><br><span class="line"><span class="comment"> *          positioned at the beginning of the file.</span></span><br><span class="line"><span class="comment"> *        * a: Open for appending. The file is created if it does not</span></span><br><span class="line"><span class="comment"> *          exist. The stream is positioned at the end of the file.</span></span><br><span class="line"><span class="comment"> *        * a+: Open for reading and appending. The file is created if </span></span><br><span class="line"><span class="comment"> *          it does not exist. Output is always appended to the end of </span></span><br><span class="line"><span class="comment"> *          the file.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">FILE* <span class="title function_">fopen</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">const</span> <span class="type">char</span>* mode)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief associates a stream with `fd`. This function can be used </span></span><br><span class="line"><span class="comment"> *        for special types of files which cannot be open by fopen().</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">FILE* <span class="title function_">fdopen</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">char</span> *mode)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open the file whose name is the string pointed to by </span></span><br><span class="line"><span class="comment"> *        `pathname` and associate the stream pointed to by `stream`. </span></span><br><span class="line"><span class="comment"> *        The original stream is closed if it exists.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">FILE* <span class="title function_">freopen</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* pathname, <span class="type">const</span> <span class="type">char</span>* mode, FILE* stream)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief flush the stream and close the underlying file descriptor.</span></span><br><span class="line"><span class="comment"> * @return 0 on success; EOF on error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fclose</span><span class="params">(FILE* stream)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下是不同的<code>mode</code>参数:<br><img src="/images/UNIX/std-io-2.jpg" alt="The type argument for opening a standard I/O stream"></p>
+<p>若进程以<strong>可读写</strong>的方式打开文件, 由于stream使用buffer来缓存数据, 且input与output的切换会导致buffer内容被清空. 为避免数据丢失, 需遵守以下规则:</p>
+<ul>
+<li>执行output操作(如<code>fwrite()</code>)后若进行input操作(如<code>fread()</code>), 需在两个操作之间执行<code>fflush</code>, <code>fseek</code>, <code>fsetpos</code>, 或<code>rewind</code></li>
+<li>执行<code>input</code>操作后若进行output操作, 需在两个操作之间运行<code>fseek</code>, <code>fsetpos</code>, <code>rewind</code>. 若input操作已经抵达EOF, 则无需该步骤.</li>
+</ul>
+<h2 id="6-Read-and-Write-a-Stream"><a href="#6-Read-and-Write-a-Stream" class="headerlink" title="6. Read and Write a Stream"></a>6. Read and Write a Stream</h2><p>stream有三种读写方式:</p>
+<ol>
+<li>Character-at-a-time I&#x2F;O: 一次读取或写入一个字符 </li>
+<li>Line-at-a-time I&#x2F;O: 一次读取或写入一行 </li>
+<li>Direct I&#x2F;O: 一次读取或写入固定长度的字符</li>
+</ol>
+<h3 id="6-1-Character-at-a-time"><a href="#6-1-Character-at-a-time" class="headerlink" title="6.1 Character-at-a-time"></a>6.1 Character-at-a-time</h3><p>读取stream:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read the next character from `stream`</span></span><br><span class="line"><span class="comment"> * @return character as an unsigned char on success; EOF on</span></span><br><span class="line"><span class="comment"> *         error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">getc</span><span class="params">(FILE* stream)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief obtain the next byte as an unsigned char converted to an</span></span><br><span class="line"><span class="comment"> *        int, from the input stream pointed to by `stream`, and </span></span><br><span class="line"><span class="comment"> *        advance the file position indicator.</span></span><br><span class="line"><span class="comment"> *        But not like getc() working as a macro, fgetc() works as </span></span><br><span class="line"><span class="comment"> *        a function, it would be slower than getc(). </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fgetc</span><span class="params">(FILE *stream)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief get a byte from a stdin stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">getchar</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>写入stream:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief push byte back specified by `c` back onto the input stream</span></span><br><span class="line"><span class="comment"> *        pointed to by `stream`. The Pushed-back character will be </span></span><br><span class="line"><span class="comment"> *        returned by subsequent reads in reverse order of their</span></span><br><span class="line"><span class="comment"> *        pushing.</span></span><br><span class="line"><span class="comment"> * @param c if the value of `c` equals </span></span><br><span class="line"><span class="comment"> EOF, the operation</span></span><br><span class="line"><span class="comment">       shall fail and the input stream shall be left unchanged.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ungetc</span><span class="params">(<span class="type">int</span> c, FILE *stream)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief put a byte on a stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">putc</span><span class="params">(<span class="type">int</span> c, FILE *fp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as putc(), but not like putc() working as a macro, </span></span><br><span class="line"><span class="comment"> *        fputc() works as a function</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fputc</span><span class="params">(<span class="type">int</span> c, FILE *fp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief put a byte on a stdout stream, same way as putc(c, stdout).</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">putchar</span><span class="params">(<span class="type">int</span> c)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-Line-at-a-Time-I-O"><a href="#6-2-Line-at-a-Time-I-O" class="headerlink" title="6.2 Line-at-a-Time I&#x2F;O"></a>6.2 Line-at-a-Time I&#x2F;O</h3><p>读取stream:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read bytes from stream into the array pointed to by `s`</span></span><br><span class="line"><span class="comment"> *        until `n-1` bytes are read, or a newline is read, or an</span></span><br><span class="line"><span class="comment"> *        end-of-file condition is encountered</span></span><br><span class="line"><span class="comment"> </span></span><br><span class="line"><span class="comment"> </span></span><br><span class="line"><span class="comment"> read in at most size-1 characters(The buffer is </span></span><br><span class="line"><span class="comment"> *        terminated with a null byte) from fp and stores </span></span><br><span class="line"><span class="comment"> *        them into the buffer pointed to by s.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">char</span>* <span class="title function_">fgets</span><span class="params">(<span class="type">char</span>* s, <span class="type">int</span> n, FILE* fp)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read a line from stdin into the buffer pointed to by `s`</span></span><br><span class="line"><span class="comment"> *        until a terminating newline or EOF. No check for buffer</span></span><br><span class="line"><span class="comment"> *        overrun. Never use this function.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">char</span>* <span class="title function_">gets</span><span class="params">(<span class="type">char</span>* s)</span>;</span><br></pre></td></tr></table></figure>
+<p>写入stream:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief write the null-terminated string pointed to by `s` to the </span></span><br><span class="line"><span class="comment"> *        stream pointed to by `stream`</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fputs</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* s, FILE* stream)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief write string s and a trailing newline to stdout</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">puts</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *s)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-Binary-I-O"><a href="#7-Binary-I-O" class="headerlink" title="7. Binary I&#x2F;O"></a>7. Binary I&#x2F;O</h2><p>有时要读取的数据太长, 导致<code>getc()</code>读取效率过低; 数据中含有大量null或newline, 导致<code>gets()</code>无法正确运行.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief read `nobj` items of data, each `size` bytes long, from the</span></span><br><span class="line"><span class="comment"> *        stream pointed to by `stream`, storing them at the location</span></span><br><span class="line"><span class="comment"> *        given by `ptr`.</span></span><br><span class="line"><span class="comment"> * @return the number of items read on success; short item </span></span><br><span class="line"><span class="comment"> *         count or zero on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">size_t</span> <span class="title function_">fread</span><span class="params">(<span class="type">void</span>* ptr, <span class="type">size_t</span> size, <span class="type">size_t</span> nobj, FILE* stream)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief write `nobj` items of data, each `size` bytes long, to the</span></span><br><span class="line"><span class="comment"> *        `stream` pointed to by `stream`, obtaining them from the</span></span><br><span class="line"><span class="comment"> *        location given by `ptr`.</span></span><br><span class="line"><span class="comment"> * @return the number of uitems write on success; short item count or</span></span><br><span class="line"><span class="comment"> *         zero on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">size_t</span> <span class="title function_">fwrite</span><span class="params">(<span class="type">const</span> <span class="type">void</span>* ptr, <span class="type">size_t</span> size, <span class="type">size_t</span> nobj, FILE* stream)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-Position-a-Stream"><a href="#8-Position-a-Stream" class="headerlink" title="8. Position a Stream"></a>8. Position a Stream</h2><p>Standard I&#x2F;O提供了<code>ftell()</code>和<code>fseek()</code>设置文件位置.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief obtain the current value of the file position indicator for</span></span><br><span class="line"><span class="comment"> *        the stream pointed to by `stream`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">long</span> <span class="title function_">ftell</span><span class="params">(FILE* stream)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the file position indicator for the stream pointed to</span></span><br><span class="line"><span class="comment"> *        by `stream`. The new position(in bytes) is obtained by adding</span></span><br><span class="line"><span class="comment"> *        `offset` bytes to the position specified by `whence`.</span></span><br><span class="line"><span class="comment"> * @param whence must be one of the following values:</span></span><br><span class="line"><span class="comment"> *        * SEEK_SET: the start of the file</span></span><br><span class="line"><span class="comment"> *        * SEEK_CUR: the current position indicator</span></span><br><span class="line"><span class="comment"> *        * SEEK_END: send-of-file</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fseek</span><span class="params">(FILE* stream, <span class="type">long</span> offset, <span class="type">int</span> whence)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief reset the file position indicator in a stream, equivalent to </span></span><br><span class="line"><span class="comment"> *        fseek(stream, 0, SEEK_SET);</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">rewind</span><span class="params">(FILE *fp)</span>;</span><br></pre></td></tr></table></figure>
+<p>若文件大小超过long最大值, 则<code>ftell()</code>和<code>fseek()</code>无法正确处理, 应避免使用<code>ftell()</code>和<code>fseek()</code>, 而使用<code>ftello()</code>和<code>fseeko()</code>.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">off_t</span> <span class="title function_">ftello</span><span class="params">(FILE* stream)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">fseeko</span><span class="params">(FILE* stream, <span class="type">off_t</span> offset, <span class="type">int</span> whence)</span>;</span><br></pre></td></tr></table></figure>
+<p>有些系统的<code>off_t</code>和<code>long</code>都为32-bit, 但可通过设置<code>_FILE_OFFSET_BITS = 64</code>将<code>off_t</code>改为64-bit.<br><code>ftello()</code>和<code>fseeko()</code>只适合处理ASCII编码的文件, 若文件使用其他编码, 需使用<code>fgetpos()</code>和<code>fsetpos()</code>.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store file position indicator for the stream pointed to by </span></span><br><span class="line"><span class="comment"> *        `stream` in the object pointed to by `pos`</span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fgetpos</span><span class="params">(FILE *fp, <span class="type">fpos_t</span> *pos)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set file position indicators for the stream pointed to by</span></span><br><span class="line"><span class="comment"> *        `stream` according to the value of the object pointed to by</span></span><br><span class="line"><span class="comment"> *        `pos`, which the application shall ensure is a value obtained</span></span><br><span class="line"><span class="comment"> *        from an earlier call to fgetpos() on the same stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fsetpos</span><span class="params">(FILE *fp, <span class="type">fpos_t</span> *pos)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="9-Formatted-I-O"><a href="#9-Formatted-I-O" class="headerlink" title="9. Formatted I&#x2F;O"></a>9. Formatted I&#x2F;O</h2><h3 id="9-1-Formatted-Output"><a href="#9-1-Formatted-Output" class="headerlink" title="9.1 Formatted Output"></a>9.1 Formatted Output</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief produce output according to a `format` to stdout</span></span><br><span class="line"><span class="comment"> * @return the number of characters output on success; negative value </span></span><br><span class="line"><span class="comment"> *         on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">printf</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* format, ...)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as printf(), but write output to the given stream</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fprintf</span><span class="params">(FILE *fp, <span class="type">const</span> <span class="type">char</span> *format, ...)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as printf(), but write output to the given file </span></span><br><span class="line"><span class="comment"> *        descriptor</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">dprintf</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">char</span> *format, ...)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as printf(), but write to the character string `buf`.</span></span><br><span class="line"><span class="comment"> *        It&#x27;s possible to overflow the buffer pointed to by `buf`</span></span><br><span class="line"><span class="comment"> *        that can lead to program instability and security violation.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sprintf</span><span class="params">(<span class="type">char</span> *buf, <span class="type">const</span> <span class="type">char</span> *format, ...)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as sprintf(), but explicit set the size of buffer.</span></span><br><span class="line"><span class="comment"> *        The part that exceed the size of buffer will be discarded.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">snprintf</span><span class="params">(<span class="type">char</span> *buf, <span class="type">size_t</span> size, <span class="type">const</span> <span class="type">char</span> *format, ...)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下5个函数与上述函数功能相同, 但使用<code>va_list</code>替代<code>...</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">vprintf</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *format, va_list ap)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">vfprintf</span><span class="params">(FILE *fp, <span class="type">const</span> <span class="type">char</span> *format, va_list ap)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">vdprintf</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">char</span> *format, va_list ap)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">vsprintf</span><span class="params">(<span class="type">char</span> *str, <span class="type">const</span> <span class="type">char</span> *format, va_list ap)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">vsnprintf</span><span class="params">(<span class="type">char</span> *str, <span class="type">size_t</span> size, <span class="type">const</span> <span class="type">char</span> *format, </span></span><br><span class="line"><span class="params">              va_list ap)</span>;</span><br></pre></td></tr></table></figure>
+<p>所有printf函数都有一个<code>format</code>参数, 以<code>%</code>开始来描述输出的character的格式. 共有四个可选项</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">%[flags][fldwidth][precision][lenmodifier]convtype</span><br></pre></td></tr></table></figure>
+
+<h3 id="9-2-Formatted-Input"><a href="#9-2-Formatted-Input" class="headerlink" title="9.2 Formatted Input"></a>9.2 Formatted Input</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief scan input according to `format` from stdin </span></span><br><span class="line"><span class="comment"> * @return the number of input items matched and assigned on success; </span></span><br><span class="line"><span class="comment"> *         EOF on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">scanf</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* format, ...)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as scanf(), but read input from the stream.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fscanf</span><span class="params">(FILE* stream, <span class="type">const</span> <span class="type">char</span>* format, ...)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as scanf(), but read input from the character string</span></span><br><span class="line"><span class="comment"> *        pointed to by str.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sscanf</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* str, <span class="type">const</span> <span class="type">char</span>* format, ...)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下3个函数与上述函数功能相同, 但使用<code>va_list</code>替代<code>...</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">vscanf</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *format, va_list ap)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">vsscanf</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *str, <span class="type">const</span> <span class="type">char</span> *format, va_list ap)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">vfscanf</span><span class="params">(FILE *stream, <span class="type">const</span> <span class="type">char</span> *format, va_list ap)</span>;</span><br></pre></td></tr></table></figure>
+<p>Formatted Input也以<code>%</code>为起点来描述整个format参数. 共有三个可选项</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">%[*][fldwidth][m][lenmodifier]convtype</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="10-Temporary-Files"><a href="#10-Temporary-Files" class="headerlink" title="10. Temporary Files"></a>10. Temporary Files</h2><p>临时文件有三个用途:</p>
+<ul>
+<li>内存不足时, 使用临时文件放置</li>
+<li>写入数据大于系统的地址空间时, 使用临时文件放置</li>
+<li>用于进程间的数据通信</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief returns a pointer to a string that is a valid filename that</span></span><br><span class="line"><span class="comment"> *        does not exist at some point in time, so that programmers</span></span><br><span class="line"><span class="comment"> *        can use it as a suitable name for a temporary file. </span></span><br><span class="line"><span class="comment"> * @param ptr If ptr is NULL, the generated pathname is stored in</span></span><br><span class="line"><span class="comment"> *        a static area, and a pointer to this  area is returned;</span></span><br><span class="line"><span class="comment"> *        If ptr is not NULL, and ptr is a array of at least L_tmpnam</span></span><br><span class="line"><span class="comment"> *        number of characters, the generated pathname is stored in </span></span><br><span class="line"><span class="comment"> *        this array, and ptr is returned</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">char</span>* <span class="title function_">tmpnam</span><span class="params">(<span class="type">char</span>* ptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a temporary binary file that is automatically removed</span></span><br><span class="line"><span class="comment"> *        when it is closed or program termination.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">FILE* <span class="title function_">tmpfile</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>需要注意的是, 如果我们使用<code>tmpnam()</code>后, 使用其返回的文件名调用<code>open()</code>创建文件, 可能有其他进程创建同名文件, 因此需设置为<code>open(filename, O_CREAT | O_EXCL | O_NOFOLLOW)</code>.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief generate a uniquely named temporary directory from template.</span></span><br><span class="line"><span class="comment"> * @param template the last six characters must be &quot;XXXXXX&quot; and these</span></span><br><span class="line"><span class="comment"> *        are replaced with a string that makes the directory name </span></span><br><span class="line"><span class="comment"> *        unique.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">char</span>* <span class="title function_">mkdtemp</span><span class="params">(<span class="type">char</span>* template)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief generate a unique temporary filename from `template`, create, </span></span><br><span class="line"><span class="comment"> *        open the file, and return an open file descriptor for the file.</span></span><br><span class="line"><span class="comment"> * @param template The last six characters must be &quot;XXXXXX&quot; and these</span></span><br><span class="line"><span class="comment"> *        are replaced with a string that makes the filename unique.</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"> create a regular file with a unique name and </span></span><br><span class="line"><span class="comment"> *        opens it. The temporary file will not be removed </span></span><br><span class="line"><span class="comment"> *        automatically. The file created with access </span></span><br><span class="line"><span class="comment"> *        permissions S_IRUSR | S_IWUSR.</span></span><br><span class="line"><span class="comment"> * @param template same as mkdtemp(), the last six </span></span><br><span class="line"><span class="comment"> *        characters of template must be &quot;XXXXXX&quot;.</span></span><br><span class="line"><span class="comment"> * @return The file descriptor for reading and writing.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">mkstemp</span><span class="params">(<span class="type">char</span>* template)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>mkdtemp()</code>创建的文件夹的权限为<code>0700</code></li>
+<li><code>mkstemp</code>创建的文件的权限为<code>0600</code></li>
+</ul>
+<h2 id="11-Memory-Streams"><a href="#11-Memory-Streams" class="headerlink" title="11. Memory Streams"></a>11. Memory Streams</h2><p>Standard I&#x2F;O会将数据缓存在buffer来加快处理速度, 且进程可创建自己的buffer. Single UNIX Specification Version 4后提供了memory streams来避免使用底层存储设备, 对于FILE stream的所有操作都在内存发生. 从而更快的处理数据.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open a stream that permits the access specified </span></span><br><span class="line"><span class="comment"> *        by type. The stream allows I/O to be performed on </span></span><br><span class="line"><span class="comment"> *        the memory buffer pointed to by buf. This buffer </span></span><br><span class="line"><span class="comment"> *        must be at least size bytes long.</span></span><br><span class="line"><span class="comment"> * @param buf if buf is NULL, the function allocates a </span></span><br><span class="line"><span class="comment"> *        buffer of size bytes and the buffer will be freed </span></span><br><span class="line"><span class="comment"> *        when the stream is closed.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">FILE* <span class="title function_">fmemopen</span><span class="params">(<span class="type">void</span> *buf, <span class="type">size_t</span> size, <span class="type">const</span> <span class="type">char</span> *type)</span>;</span><br></pre></td></tr></table></figure>
+<p>相对于file-based standard I&#x2F;O streams, memrory stream有几点不同:</p>
+<ol>
+<li>Memory stream的type设置为append后, file position会设置为buffer中的第一个NULL byte的位置. 若buffer中没有NULL byte, 则以buffer最后一个字节为file position.</li>
+<li>若buf为NULL, 则type不应设为只读或只写. 因为fmemopen()得到的stream无法获取buffer的地址, 所以写入的数据永远无法读取. 同理, buffer读取的内容永远无法修改或添加.</li>
+<li>当调用fclose(), fflush(), fseek(), fseeko()或fsetpos()时会在当前file position处添加一个NULL byte.</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief open a stream for writing to a buffer. The buffer </span></span><br><span class="line"><span class="comment"> *        is dynamically allocated, and automatically grows </span></span><br><span class="line"><span class="comment"> *        as required. After closing the stream, the caller </span></span><br><span class="line"><span class="comment"> *        should free this buffer.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">FILE *<span class="title function_">open_memstream</span><span class="params">(<span class="type">char</span> **bufp, <span class="type">size_t</span> *sizep)</span>;</span><br><span class="line">FILE *<span class="title function_">open_wmemstream</span><span class="params">(<span class="type">wchar_t</span> **bufp, <span class="type">size_t</span> *sizep)</span>;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/4ad7.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Data Files and Infomation</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/49f7.html">
+        <span class="next-text nav-default">Files and Directories</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/f946.html';
+  var disqus_title = "Standard I/O";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

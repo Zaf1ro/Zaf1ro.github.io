@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Tools of Parallel-Programming Trade"/>
+
+
+
+
+  <meta name="keywords" content="Concurrency," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/d031.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/d031.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/d031.html"/>
+
+
+<meta name="description" content="1. Scripting Languagescompute_it 1 &gt; compute_it.1.out &amp;compute_it 2 &gt; compute_it.2.out &amp;waitcat compute_it.1.outcat compute_it.2.out  &amp;表示程序后台运行 wait command阻塞shell直到两个程序结束运行 cat输出结果">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tools of Parallel-Programming Trade">
+<meta property="og:url" content="https://zaf1ro.github.io/p/d031.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Scripting Languagescompute_it 1 &gt; compute_it.1.out &amp;compute_it 2 &gt; compute_it.2.out &amp;waitcat compute_it.1.outcat compute_it.2.out  &amp;表示程序后台运行 wait command阻塞shell直到两个程序结束运行 cat输出结果">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-05-21T17:52:54.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.033Z">
+<meta property="article:tag" content="Concurrency">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Tools of Parallel-Programming Trade - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Scripting-Languages"><span class="toc-text">1. Scripting Languages</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-POSIX-Multiprocessing"><span class="toc-text">2. POSIX Multiprocessing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-POSIX-Process-Creation-and-Destruction"><span class="toc-text">2.1 POSIX Process Creation and Destruction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-POSIX-Thread-Creation-and-Destruction"><span class="toc-text">2.2 POSIX Thread Creation and Destruction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-POSIX-Locking"><span class="toc-text">2.3 POSIX Locking</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-POSIX-Reader-Writer-Locking"><span class="toc-text">2.4 POSIX Reader-Writer Locking</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Atomic-Operations"><span class="toc-text">2.5 Atomic Operations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-Per-Thread-Variables"><span class="toc-text">2.6 Per-Thread Variables</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Tools of Parallel-Programming Trade
+        
+      </h1>
+      <time class="post-time">
+          05/21/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Scripting-Languages"><a href="#1-Scripting-Languages" class="headerlink" title="1. Scripting Languages"></a>1. Scripting Languages</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">compute_it 1 &gt; compute_it.1.out &amp;</span><br><span class="line">compute_it 2 &gt; compute_it.2.out &amp;</span><br><span class="line"><span class="built_in">wait</span></span><br><span class="line"><span class="built_in">cat</span> compute_it.1.out</span><br><span class="line"><span class="built_in">cat</span> compute_it.2.out</span><br></pre></td></tr></table></figure>
+<ul>
+<li>&amp;表示程序后台运行</li>
+<li>wait command阻塞shell直到两个程序结束运行</li>
+<li>cat输出结果</li>
+</ul>
+<h2 id="2-POSIX-Multiprocessing"><a href="#2-POSIX-Multiprocessing" class="headerlink" title="2. POSIX Multiprocessing"></a>2. POSIX Multiprocessing</h2><h3 id="2-1-POSIX-Process-Creation-and-Destruction"><a href="#2-1-POSIX-Process-Creation-and-Destruction" class="headerlink" title="2.1 POSIX Process Creation and Destruction"></a>2.1 POSIX Process Creation and Destruction</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> pid = fork();</span><br><span class="line"><span class="keyword">if</span> (pid == <span class="number">0</span>) &#123;</span><br><span class="line">  <span class="comment">/* child */</span></span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span>(pid &lt; <span class="number">0</span>) &#123;</span><br><span class="line">  <span class="comment">/* parent, upon error */</span></span><br><span class="line">  perror(<span class="string">&quot;fork&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  <span class="comment">/* parent, pid == child ID */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>fork()</code>创建进程</li>
+<li><code>fork()</code>调用后返回两次pid, 一次是parent process, 一次是child process<ul>
+<li>若pid &#x3D;&#x3D; 0, 则为child process</li>
+<li>若pid &lt; 0, 则<code>fork()</code>执行失败</li>
+<li>若pid &gt; 0, 则为parent process, pid即为child process的ID</li>
+</ul>
+</li>
+<li>Parent process可通过调用<code>wait()</code>来等待child process完成执行</li>
+</ul>
+<p><code>wait()</code>只能等待一个child process, 若parent process需要等待多个child process:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">waitall</span><span class="params">(<span class="type">void</span>)</span> </span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> pid;</span><br><span class="line">  <span class="type">int</span> status;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">    pid = wait(&amp;status);</span><br><span class="line">    <span class="keyword">if</span> (pid == <span class="number">-1</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (errno == ECHILD) </span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      perror(<span class="string">&quot;wait&quot;</span>);</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>wait()</code>阻塞parent process, 直到有child process结束运行</li>
+<li><code>wait()</code>返回pid &gt; 0, 则说明有一个child process结束运行</li>
+<li><code>wait()</code>返回pid &#x3D;&#x3D; -1, 则说明发生错误</li>
+<li>若pid为-1且errno为ECHILD, 则说明没有等待中的child process</li>
+</ul>
+<h3 id="2-2-POSIX-Thread-Creation-and-Destruction"><a href="#2-2-POSIX-Thread-Creation-and-Destruction" class="headerlink" title="2.2 POSIX Thread Creation and Destruction"></a>2.2 POSIX Thread Creation and Destruction</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> x = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">mythread</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">  x = <span class="number">1</span>;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Child process set x=1\n&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> *argv[])</span> </span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">pthread_t</span> tid;</span><br><span class="line">  <span class="type">void</span> *vp;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (pthread_create(&amp;tid, <span class="literal">NULL</span>, mythread, <span class="literal">NULL</span>) != <span class="number">0</span>) &#123;</span><br><span class="line">    perror(<span class="string">&quot;pthread_create&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (pthread_join(tid, &amp;vp) != <span class="number">0</span>) &#123;</span><br><span class="line">    perror(<span class="string">&quot;pthread_join&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Parent process sess x=%d\n&quot;</span>, x);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>pthread_create负责创建一个线程, pthread_join负责等待指定ID的线程执行完毕.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Creates a new thread</span></span><br><span class="line"><span class="comment"> * @param thread: A pointer to store ID of the new thread</span></span><br><span class="line"><span class="comment"> * @param attr: Attributes of thw new thread</span></span><br><span class="line"><span class="comment"> * @param start_routine: execution method of the new thread</span></span><br><span class="line"><span class="comment"> * @param arg: the argument of start_routine</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_create</span><span class="params">(<span class="type">pthread_t</span> *thread, <span class="type">const</span> <span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                   <span class="type">void</span> *(*start_routine)(<span class="type">void</span> *), <span class="type">void</span> *arg)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Waits for the thread specified by thread ID to terminate</span></span><br><span class="line"><span class="comment"> * @param thread: Joinable thread</span></span><br><span class="line"><span class="comment"> * @param retval: The result of thread execution method</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_join</span><span class="params">(<span class="type">pthread_t</span> thread, <span class="type">void</span> **retval)</span>;</span><br></pre></td></tr></table></figure>
+<p>必须确保只有一个thread在修改x值, 当存在多个thread同时想要读取或刷新数据时, 该情况被称为&quot;data race&quot;.</p>
+<h3 id="2-3-POSIX-Locking"><a href="#2-3-POSIX-Locking" class="headerlink" title="2.3 POSIX Locking"></a>2.3 POSIX Locking</h3><p>POSIX Locking可避免data race的情况出现. 最简单的锁类型为互斥锁(pthread_mutex_t)</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// initialize lock_a and lock_b</span></span><br><span class="line"><span class="type">pthread_mutex_t</span> lock_a = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"><span class="type">pthread_mutex_t</span> lock_b = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"><span class="type">int</span> x = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">lock_reader</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  <span class="type">int</span> newx = <span class="number">-1</span>;</span><br><span class="line">  <span class="type">int</span> oldx = <span class="number">-1</span>;</span><br><span class="line">  <span class="type">pthread_mutex_t</span> *pmlp = (<span class="type">pthread_mutex_t</span> *)arg;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (pthread_mutex_lock(pmlp) != <span class="number">0</span>) &#123; <span class="comment">// try to acquire lock_a</span></span><br><span class="line">    perror(<span class="string">&quot;lock_reader:pthread_mutex_lock&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">    newx = READ_ONCE(x);</span><br><span class="line">    <span class="keyword">if</span> (newx != oldx) &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;lock_reader(): x = %d\n&quot;</span>, newx);</span><br><span class="line">    &#125;</span><br><span class="line">    oldx = newx;</span><br><span class="line">    poll(<span class="literal">NULL</span>, <span class="number">0</span>, <span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (pthread_mutex_unlock(pmlp) != <span class="number">0</span>) &#123;</span><br><span class="line">    perror(<span class="string">&quot;lock_reader:pthread_mutex_unlock&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">lock_writer</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  <span class="type">pthread_mutex_t</span> *pmlp = (<span class="type">pthread_mutex_t</span> *)arg;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (pthread_mutex_lock(pmlp) != <span class="number">0</span>) &#123;</span><br><span class="line">    perror(<span class="string">&quot;lock_writer:pthread_mutex_lock&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">    WRITE_ONCE(x, READ_ONCE(x) + <span class="number">1</span>);</span><br><span class="line">    poll(<span class="literal">NULL</span>, <span class="number">0</span>, <span class="number">5</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (pthread_mutex_unlock(pmlp) != <span class="number">0</span>) &#123;</span><br><span class="line">    perror(<span class="string">&quot;lock_writer:pthread_mutex_unlock&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>lock_reader()</code>不断读取x的数值</li>
+<li><code>lock_writer()</code>不断修改x的数值</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;Creating two threads using same lock:\n&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> (pthread_create(&amp;tid1, <span class="literal">NULL</span>, lock_reader, &amp;lock_a) != <span class="number">0</span>) &#123;</span><br><span class="line">  perror(<span class="string">&quot;pthread_create&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (pthread_create(&amp;tid2, <span class="literal">NULL</span>, lock_writer, &amp;lock_a) != <span class="number">0</span>) &#123;</span><br><span class="line">  perror(<span class="string">&quot;pthread_create&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (pthread_join(tid1, &amp;vp) != <span class="number">0</span>) &#123;</span><br><span class="line">  perror(<span class="string">&quot;pthread_join&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (pthread_join(tid2, &amp;vp) != <span class="number">0</span>) &#123;</span><br><span class="line">  perror(<span class="string">&quot;pthread_join&quot;</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* output:</span></span><br><span class="line"><span class="comment"> * Creating two threads using same lock:</span></span><br><span class="line"><span class="comment"> * lock_reader(): x = 0</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+<p>lock_reader和lock_writer使用同一个lock: lock_a. 当<code>lock_reader()</code>运行时, <code>lock_writer()</code>将会被阻塞, 因为无法获得lock_a.</p>
+<h3 id="2-4-POSIX-Reader-Writer-Locking"><a href="#2-4-POSIX-Reader-Writer-Locking" class="headerlink" title="2.4 POSIX Reader-Writer Locking"></a>2.4 POSIX Reader-Writer Locking</h3><p>POSIX API还提供了另一个锁: 读写锁(pthread_rwlock_t)</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize pthread_rwlock_t statically</span></span><br><span class="line"><span class="comment"> */</span> </span><br><span class="line">PTHREAD_RWLOCK_INITIALIZER </span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize initialize pthread_rwlock_t dynamically</span></span><br><span class="line"><span class="comment"> */</span> </span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_init</span><span class="params">(<span class="type">pthread_rwlock_t</span> *<span class="keyword">restrict</span> rwlock, </span></span><br><span class="line"><span class="params">                        <span class="type">const</span> <span class="type">pthread_rwlockattr_t</span> *<span class="keyword">restrict</span> attr)</span>; </span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief lock a reader-writer lock object for reading</span></span><br><span class="line"><span class="comment"> * @param A pointer to reader-writer lock</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_rdlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br></pre></td></tr></table></figure>
+<p>如果critical section(获取锁和解锁之间的代码)过小, 那么rwlock的性能并不比mutex lock好, 因为获取rwlock时需要额外的逻辑处理(区分reader lock和writer lock和避免writer starvation), 大部分时间将会浪费在获取锁和解锁上. rwlock的优势在于scalability(扩展性), 也就是可以存在多个thread同时拥有reader lock, 所以rwlock需要在critical section处理较长时间时使用, 例如critical section需要I&#x2F;O等待时间.</p>
+<h3 id="2-5-Atomic-Operations"><a href="#2-5-Atomic-Operations" class="headerlink" title="2.5 Atomic Operations"></a>2.5 Atomic Operations</h3><p>Reader-writer lock在应对较小的critical section时比较吃力, 这是更应使用atomic operations(原子操作)来处理. 以下是GCC自带的Atomic Builtins:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Perform the operation suggested by the name, </span></span><br><span class="line"><span class="comment"> * @return The value that had previously been in memory</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">type __sync_fetch_and_add(type *ptr, type value_);</span><br><span class="line">type __sync_fetch_and_sub(type *ptr, type value_);</span><br><span class="line">type __sync_fetch_and_or(type *ptr, type value_);</span><br><span class="line">type __sync_fetch_and_and(type *ptr, type value_);</span><br><span class="line">type __sync_fetch_and_xor(type *ptr, type value_);</span><br><span class="line">type __sync_fetch_and_nand(type *ptr, type value_);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Perform the operation suggested by the name</span></span><br><span class="line"><span class="comment"> * @return The new value after operation</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">type __sync_add_and_fetch(type *ptr, type value_);</span><br><span class="line">type __sync_sub_and_fetch(type *ptr, type value_);</span><br><span class="line">type __sync_or_and_fetch(type *ptr, type value_);</span><br><span class="line">type __sync_and_and_fetch(type *ptr, type value_);</span><br><span class="line">type __sync_xor_and_fetch(type *ptr, type value_);</span><br><span class="line">type __sync_nand_and_fetch(type *ptr, type value_);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Perform an atomic compare and swap, </span></span><br><span class="line"><span class="comment"> *        if the current value of *ptr is oldval, </span></span><br><span class="line"><span class="comment"> *        then write newval into *ptr.</span></span><br><span class="line"><span class="comment"> * @return The contents of *ptr before the operation</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">type __sync_val_compare_and_swap(type *ptr, type oldval type newval);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Issues a full memory barrier. </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> __sync_synchronize();</span><br></pre></td></tr></table></figure>
+<p>C11也提供了atomic operations:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdatomic.h&gt;</span></span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Atomically loads atomic variable.</span></span><br><span class="line"><span class="comment"> * @param obj: pointer to the atomic object to access.</span></span><br><span class="line"><span class="comment"> * @return The current value pointed to obj</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">C <span class="title function_">atomic_load</span><span class="params">(<span class="type">const</span> <span class="keyword">volatile</span> A* obj)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Atomically replaces the value of the variable </span></span><br><span class="line"><span class="comment"> *        pointed to `obj` with `desired`.</span></span><br><span class="line"><span class="comment"> * @param obj: pointer to the atomic object to modify</span></span><br><span class="line"><span class="comment"> * @param desired: The value to be stored in the atomic object.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">atomic_store</span><span class="params">(<span class="keyword">volatile</span> A* obj , C desired)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Atomically perform obj the operation suggested by the name with arg</span></span><br><span class="line"><span class="comment"> * @return The value obj held previously.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">C <span class="title function_">atomic_fetch_add</span><span class="params">(<span class="keyword">volatile</span> A* obj, M arg)</span>;</span><br><span class="line">C <span class="title function_">atomic_fetch_sub</span><span class="params">(<span class="keyword">volatile</span> A* obj, M arg)</span>;</span><br><span class="line">C <span class="title function_">atomic_fetch_or</span><span class="params">(<span class="keyword">volatile</span> A* obj, M arg)</span>;</span><br><span class="line">C <span class="title function_">atomic_fetch_xor</span><span class="params">(<span class="keyword">volatile</span> A* obj, M arg)</span>;</span><br><span class="line">C <span class="title function_">atomic_fetch_and</span><span class="params">(<span class="keyword">volatile</span> A* obj, M arg)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Establishes memory synchronization ordering of </span></span><br><span class="line"><span class="comment"> *        non-atomic and relaxed atomic accesses</span></span><br><span class="line"><span class="comment"> * @param order: the memory ordering executed by this fence</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">atomic_thread_fence</span><span class="params">(memory_order order)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-6-Per-Thread-Variables"><a href="#2-6-Per-Thread-Variables" class="headerlink" title="2.6 Per-Thread Variables"></a>2.6 Per-Thread Variables</h3><p>Pre-thread variables也称为thread-specific data(线程私有变量). 顾名思义, 该变量在每个线程都存在, 但每个线程的该变量却与其他线程的同名变量互不影响, 以下是POSIX提供的primitives:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Create a thread-specific data key visible to all threads in the process</span></span><br><span class="line"><span class="comment"> * @return If successful, return 0. Otherwise, return an error number</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_key_create</span><span class="params">(<span class="type">pthread_key_t</span> *key, <span class="type">void</span> (*destructor)(<span class="type">void</span> *))</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Deletes thread-specific data keys created with pthread_key_create(), </span></span><br><span class="line"><span class="comment"> *        The data associated with key do not need to be NULL when the key is deleted.</span></span><br><span class="line"><span class="comment"> * @return If successful, return 0. Otherwise, return an error number</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_key_delete</span><span class="params">(<span class="type">pthread_key_t</span> key)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Associates the data `value` with the key `key`.</span></span><br><span class="line"><span class="comment"> * @return If successful, return 0. Otherwise, return -1 and set errno</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_setspecific</span><span class="params">(<span class="type">pthread_key_t</span> key, <span class="type">void</span> *value)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Get the value currently bound to the key on the calling thread</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">pthread_getspecific</span><span class="params">(<span class="type">pthread_key_t</span> key)</span>;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Concurrency/">Concurrency</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/e99f.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Counting</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/aba0.html">
+        <span class="next-text nav-default">Hardware</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/d031.html';
+  var disqus_title = "Tools of Parallel-Programming Trade";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

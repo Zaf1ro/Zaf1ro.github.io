@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="PyObject"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/1c3f.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/1c3f.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/1c3f.html"/>
+
+
+<meta name="description" content="1. PyObjectPyObject定义在object.h typedef struct _object&amp;#123;  PyObject_HEAD&amp;#125; PyObject;  PyObject_HEAD定义在object.h中 #define PyObject_HEAD      \  Py_ssize_t ob_refcnt;    \  struct _typeobject *ob_t">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PyObject">
+<meta property="og:url" content="https://zaf1ro.github.io/p/1c3f.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. PyObjectPyObject定义在object.h typedef struct _object&amp;#123;  PyObject_HEAD&amp;#125; PyObject;  PyObject_HEAD定义在object.h中 #define PyObject_HEAD      \  Py_ssize_t ob_refcnt;    \  struct _typeobject *ob_t">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-02-24T04:21:23.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.051Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+PyObject - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-PyObject"><span class="toc-text">1. PyObject</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%8D%E5%AE%9A%E9%95%BF%E5%8F%98%E9%87%8F"><span class="toc-text">2. 不定长变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%B1%BB%E5%9E%8B%E5%AF%B9%E8%B1%A1"><span class="toc-text">3. 类型对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="toc-text">4. 对象的创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%AF%B9%E8%B1%A1%E7%9A%84%E8%A1%8C%E4%B8%BA"><span class="toc-text">5. 对象的行为</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E7%B1%BB%E5%9E%8B%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-text">6. 类型的类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Python%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%A4%9A%E6%80%81%E6%80%A7"><span class="toc-text">7. Python对象的多态性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0"><span class="toc-text">8. 引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Python%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-text">9. Python对象的分类</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          PyObject
+        
+      </h1>
+      <time class="post-time">
+          02/23/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-PyObject"><a href="#1-PyObject" class="headerlink" title="1. PyObject"></a>1. PyObject</h2><p>PyObject定义在object.h</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">object</span>&#123;</span></span><br><span class="line">  PyObject_HEAD</span><br><span class="line">&#125; PyObject;</span><br></pre></td></tr></table></figure>
+
+<p>PyObject_HEAD定义在object.h中</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PyObject_HEAD      \</span></span><br><span class="line"><span class="meta">  Py_ssize_t ob_refcnt;    \</span></span><br><span class="line"><span class="meta">  struct _typeobject *ob_type;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>ob_refcnt为引用计数器, 若某个<code>PyObject*</code>指向该对象, 则<code>ob_refcnt + 1</code>; 若某个<code>PyObject*</code>被删除, 则<code>ob_refcnt - 1</code>; 若<code>ob_refcnt == 0</code>, 则将该对象从堆中删除.</li>
+<li><code>_typeobject</code>为结构体, 内部装有该对象类型的信息, ob_type为结构体指针</li>
+</ul>
+<p>PyObject仅仅是Python各个对象的父类.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">  PyObject_HEAD</span><br><span class="line">  <span class="type">long</span> ob_ival,</span><br><span class="line">&#125; PyIntObject;</span><br></pre></td></tr></table></figure>
+<p>PyIntObject不仅具有PyObject的所有参数, 还多了一个long类型的数值, 数值就存储于此</p>
+<h2 id="2-不定长变量"><a href="#2-不定长变量" class="headerlink" title="2. 不定长变量"></a>2. 不定长变量</h2><p>如果是int类型的变量, 很容易通过<code>ob_ival</code>存储数据, 但如果需要保存string类型变量, 则Python无法知道用户输入的string会有多少char类型变量, 这时就需要不定长变量的对象</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PyObject_VAR_HEAD    \</span></span><br><span class="line"><span class="meta">  PyObject_HEAD      \</span></span><br><span class="line"><span class="meta">  Py_ssize_t ob_size;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">  PyObject_VAR_HEAD</span><br><span class="line">&#125; PyVarObject;</span><br></pre></td></tr></table></figure>
+<p><code>ob_size</code>表示该对象所具有的元素个数, 所以<code>PyVarObject</code>可以表示变长对象. 假设list有5个元素, 则ob_size为5.</p>
+<h2 id="3-类型对象"><a href="#3-类型对象" class="headerlink" title="3. 类型对象"></a>3. 类型对象</h2><p><code>_typeobject</code>结构体如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> &#123;</span></span><br><span class="line">  PyObject_VAR_HEAD</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *tp_name; <span class="comment">/* 类型名, 可以显示为&quot;&lt;module&gt;.&lt;name&gt;&quot; */</span></span><br><span class="line">  Py_ssize_t tp_basicsize, tp_itemsize; <span class="comment">/* 单个元素大小和元素个数 */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 标准操作函数 */</span></span><br><span class="line">  destructor tp_dealloc;</span><br><span class="line">  printfunc tp_print;</span><br><span class="line">  getattrfunc tp_getattr;</span><br><span class="line">  setattrfunc tp_setattr;</span><br><span class="line">  cmpfunc tp_compare;</span><br><span class="line">  reprfunc tp_repr;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Method suites for standard classes */</span></span><br><span class="line">  PyNumberMethods *tp_as_number;</span><br><span class="line">  PySequenceMethods *tp_as_sequence;</span><br><span class="line">  PyMappingMethods *tp_as_mapping;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* More standard operations (here for binary compatibility) */</span></span><br><span class="line">  hashfunc tp_hash;</span><br><span class="line">  ternaryfunc tp_call;</span><br><span class="line">  reprfunc tp_str;</span><br><span class="line">  getattrofunc tp_getattro;</span><br><span class="line">  setattrofunc tp_setattro;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Functions to access object as input/output buffer */</span></span><br><span class="line">  PyBufferProcs *tp_as_buffer;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Flags to define presence of optional/expanded features */</span></span><br><span class="line">  <span class="type">long</span> tp_flags;</span><br><span class="line"></span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *tp_doc; <span class="comment">/* Documentation string */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Assigned meaning in release 2.0 */</span></span><br><span class="line">  <span class="comment">/* call function for all accessible objects */</span></span><br><span class="line">  traverseproc tp_traverse;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* delete references to contained objects */</span></span><br><span class="line">  inquiry tp_clear;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Assigned meaning in release 2.1 */</span></span><br><span class="line">  <span class="comment">/* rich comparisons */</span></span><br><span class="line">  richcmpfunc tp_richcompare;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* weak reference enabler */</span></span><br><span class="line">  Py_ssize_t tp_weaklistoffset;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Added in release 2.2 */</span></span><br><span class="line">  <span class="comment">/* Iterators */</span></span><br><span class="line">  getiterfunc tp_iter;</span><br><span class="line">  iternextfunc tp_iternext;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* Attribute descriptor and subclassing stuff */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">PyMethodDef</span> *<span class="title">tp_methods</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">PyMemberDef</span> *<span class="title">tp_members</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">PyGetSetDef</span> *<span class="title">tp_getset</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> *<span class="title">tp_base</span>;</span></span><br><span class="line">  PyObject *tp_dict;</span><br><span class="line">  descrgetfunc tp_descr_get;</span><br><span class="line">  descrsetfunc tp_descr_set;</span><br><span class="line">  Py_ssize_t tp_dictoffset;</span><br><span class="line">  initproc tp_init;</span><br><span class="line">  allocfunc tp_alloc;</span><br><span class="line">  newfunc tp_new;</span><br><span class="line">  freefunc tp_free; <span class="comment">/* Low-level free-memory routine */</span></span><br><span class="line">  inquiry tp_is_gc; <span class="comment">/* For PyObject_IS_GC */</span></span><br><span class="line">  PyObject *tp_bases;</span><br><span class="line">  PyObject *tp_mro; <span class="comment">/* method resolution order */</span></span><br><span class="line">  PyObject *tp_cache;</span><br><span class="line">  PyObject *tp_subclasses;</span><br><span class="line">  PyObject *tp_weaklist;</span><br><span class="line">  destructor tp_del;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> COUNT_ALLOCS</span></span><br><span class="line">  <span class="comment">/* these must be last and never explicitly initialized */</span></span><br><span class="line">  Py_ssize_t tp_allocs;</span><br><span class="line">  Py_ssize_t tp_frees;</span><br><span class="line">  Py_ssize_t tp_maxalloc;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> *<span class="title">tp_prev</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">typeobject</span> *<span class="title">tp_next</span>;</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125; PyTypeObject;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-对象的创建"><a href="#4-对象的创建" class="headerlink" title="4. 对象的创建"></a>4. 对象的创建</h2><p>Python有两种方式创建一个整数对象</p>
+<ul>
+<li>通过AOL(Abstract Object Layer)创建<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">PyObject* intObj = PyObject_New(PyObject, &amp;PyInt_Type);</span><br></pre></td></tr></table></figure></li>
+<li>通过COL(Concrete Object Layer)创建<br>这种API只能作用于某一类型的对象, 对于int对象, 可以使用一下表达式:<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">PyObject* intObj = PyInt_FromLong(<span class="number">10</span>);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>下面是a&#x3D;int(10)的实现流程:</p>
+<ol>
+<li>调用<code>PyInt_Type</code>中的tp_new</li>
+<li>如果<code>PyInt_Type</code>中的tp_new为null, 则通过<code>tp_base</code>指定的基类调用基类的<code>tp_new</code></li>
+<li>通过<code>tp_new</code>为对象申请内存, 并转向<code>PyInt_Type</code>的<code>tp_init</code></li>
+<li>通过<code>tp_init</code>完成初始化对象</li>
+</ol>
+<h2 id="5-对象的行为"><a href="#5-对象的行为" class="headerlink" title="5. 对象的行为"></a>5. 对象的行为</h2><p><code>PyTypeObject</code>中有很多函数指针, 这些函数指针指向某个函数或是null. 例如:</p>
+<ol>
+<li><code>tp_hash</code>指明该类型对象所能生成的hash值</li>
+<li><code>tp_as_number</code>指向<code>PyNumberMethods</code>, 定义了一个数值对象支持的操作</li>
+<li><code>tp_as_sequence</code>指向<code>PySequenceMethods</code>, 定义了一个list对象支持的操作</li>
+<li><code>tp_as_mapping</code>指向<code>PyMappingMethods</code>, 定义了一个dict对象支持的操作</li>
+</ol>
+<h2 id="6-类型的类型"><a href="#6-类型的类型" class="headerlink" title="6. 类型的类型"></a>6. 类型的类型</h2><p>Python的类型其实是一个对象, 那么这个类型对象的类型就是<code>PyType_Type</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">PyTypeObject PyType_Type = &#123;</span><br><span class="line">  PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* ob_size */</span></span><br><span class="line">  <span class="string">&quot;type&quot;</span>,                               <span class="comment">/* tp_name */</span></span><br><span class="line">  <span class="keyword">sizeof</span>(PyHeapTypeObject),             <span class="comment">/* tp_basicsize */</span></span><br><span class="line">  <span class="keyword">sizeof</span>(PyMemberDef),                  <span class="comment">/* tp_itemsize */</span></span><br><span class="line">  (destructor)type_dealloc,             <span class="comment">/* tp_dealloc */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_print */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_getattr */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_setattr */</span></span><br><span class="line">  type_compare,                         <span class="comment">/* tp_compare */</span></span><br><span class="line">  (reprfunc)type_repr,                  <span class="comment">/* tp_repr */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_as_number */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_as_sequence */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_as_mapping */</span></span><br><span class="line">  (hashfunc)_Py_HashPointer,            <span class="comment">/* tp_hash */</span></span><br><span class="line">  (ternaryfunc)type_call,               <span class="comment">/* tp_call */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_str */</span></span><br><span class="line">  (getattrofunc)type_getattro,          <span class="comment">/* tp_getattro */</span></span><br><span class="line">  (setattrofunc)type_setattro,          <span class="comment">/* tp_setattro */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_as_buffer */</span></span><br><span class="line">  Py_TPFLAGS_DEFAULT |                  <span class="comment">/* tp_flags */</span></span><br><span class="line">  Py_TPFLAGS_HAVE_GC |</span><br><span class="line">  Py_TPFLAGS_BASETYPE,    </span><br><span class="line">  type_doc,                             <span class="comment">/* tp_doc */</span></span><br><span class="line">  (traverseproc)type_traverse,          <span class="comment">/* tp_traverse */</span></span><br><span class="line">  (inquiry)type_clear,                  <span class="comment">/* tp_clear */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_richcompare */</span></span><br><span class="line">  offsetof(PyTypeObject, tp_weaklist),  <span class="comment">/* tp_weaklistoffset */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_iter */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_iternext */</span></span><br><span class="line">  type_methods,                         <span class="comment">/* tp_methods */</span></span><br><span class="line">  type_members,                         <span class="comment">/* tp_members */</span></span><br><span class="line">  type_getsets,                         <span class="comment">/* tp_getset */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_base */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_dict */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_descr_get */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_descr_set */</span></span><br><span class="line">  offsetof(PyTypeObject, tp_dict),      <span class="comment">/* tp_dictoffset */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_init */</span></span><br><span class="line">  <span class="number">0</span>,                                    <span class="comment">/* tp_alloc */</span></span><br><span class="line">  type_new,                             <span class="comment">/* tp_new */</span></span><br><span class="line">  PyObject_GC_Del,                      <span class="comment">/* tp_free */</span></span><br><span class="line">  (inquiry)type_is_gc,                  <span class="comment">/* tp_is_gc */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>所有<code>PyTypeObject</code>对象都是通过<code>PyType_Type</code>创建, 以下是<code>PyType_Object</code>和<code>PyType_Type</code>的关系:</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">int</span>.__class__</span><br><span class="line">&lt;<span class="built_in">type</span> <span class="string">&#x27;type&#x27;</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">type</span>.__class__</span><br><span class="line">&lt;<span class="built_in">type</span> <span class="string">&#x27;type&#x27;</span>&gt;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码中的&#39;type&#39;指的就是<code>PyType_Type</code>, 也就是Python中的metaclass. 以下是<code>PyInt_Type</code>和<code>PyType_Type</code>之间的关系:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">PyTypeObject PyInt_Type = &#123;</span><br><span class="line">  PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line">  <span class="number">0</span>,</span><br><span class="line">  <span class="string">&quot;int&quot;</span>,</span><br><span class="line">  <span class="keyword">sizeof</span>(PyIntObject),</span><br><span class="line">  <span class="number">0</span>,</span><br><span class="line">  (destructor)int_dealloc,  <span class="comment">/* tp_dealloc */</span></span><br><span class="line">  (printfunc)int_print,     <span class="comment">/* tp_print */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_getattr */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_setattr */</span></span><br><span class="line">  (cmpfunc)int_compare,     <span class="comment">/* tp_compare */</span></span><br><span class="line">  (reprfunc)int_repr,       <span class="comment">/* tp_repr */</span></span><br><span class="line">  &amp;int_as_number,           <span class="comment">/* tp_as_number */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_as_sequence */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_as_mapping */</span></span><br><span class="line">  (hashfunc)int_hash,       <span class="comment">/* tp_hash */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_call */</span></span><br><span class="line">  (reprfunc)int_repr,       <span class="comment">/* tp_str */</span></span><br><span class="line">  PyObject_GenericGetAttr,  <span class="comment">/* tp_getattro */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_setattro */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_as_buffer */</span></span><br><span class="line">  Py_TPFLAGS_DEFAULT |      <span class="comment">/* tp_flags */</span></span><br><span class="line">  Py_TPFLAGS_CHECKTYPES |</span><br><span class="line">  Py_TPFLAGS_BASETYPE,    </span><br><span class="line">  int_doc,                  <span class="comment">/* tp_doc */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_traverse */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_clear */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_richcompare */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_weaklistoffset */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_iter */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_iternext */</span></span><br><span class="line">  int_methods,              <span class="comment">/* tp_methods */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_members */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_getset */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_base */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_dict */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_descr_get */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_descr_set */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_dictoffset */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_init */</span></span><br><span class="line">  <span class="number">0</span>,                        <span class="comment">/* tp_alloc */</span></span><br><span class="line">  int_new,                  <span class="comment">/* tp_new */</span></span><br><span class="line">  (freefunc)int_free,       <span class="comment">/* tp_free */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>以下是宏定义<code>PyObject_HEAD_INIT</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifdef</span> Py_TRACE_REFS</span></span><br><span class="line">  <span class="meta">#<span class="keyword">define</span> _PyObject_EXTRA_INIT 0, 0,</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">  <span class="meta">#<span class="keyword">define</span> _PyObject_EXTRA_INIT</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PyObject_HEAD_INIT(type)  \</span></span><br><span class="line"><span class="meta">  _PyObject_EXTRA_INIT    \</span></span><br><span class="line"><span class="meta">  1, type,</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-Python对象的多态性"><a href="#7-Python对象的多态性" class="headerlink" title="7. Python对象的多态性"></a>7. Python对象的多态性</h2><p>虽然Python有很多类型对象, 但是函数之间传递使用的都是<code>PyObject*</code>. Python可以通过对象的ob_type来判定该对象的具体操作, 例如:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">long</span> <span class="title function_">PyObject_Hash</span><span class="params">(PyObject* v)</span></span><br><span class="line">&#123;</span><br><span class="line">  PyTypeObject* tp = v-&gt;ob_type;</span><br><span class="line">  <span class="keyword">if</span>(tp-&gt;tp_hash!=null)</span><br><span class="line">    <span class="keyword">return</span> (*tp-&gt;tp_hash)(v);</span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-引用计数"><a href="#8-引用计数" class="headerlink" title="8. 引用计数"></a>8. 引用计数</h2><p>Python通过<code>ob_refcnt</code>来实现垃圾回收机制, 通过<code>Py_INCREF(op)</code>和<code>Py_DECREF(op)</code>两个宏来增加和减少一个对象的引用计数. 当一个对象的引用计数减少到0后, <code>Py_DECREF</code>将调用该对象的析构函数来释放内存和资源.<br><code>ob_refcnt</code>是一个32位的整数变量, 所以一个对象的引用个数是有限的. 另外, 类型对象不受引用计数影响, 即永远不会被析构. 以下是有关引用计数的宏:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _Py_NewReference(op) ((op)-&gt;ob_refcnt = 1)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _Py_Dealloc(op) ((*(op)-&gt;ob_type-&gt;tp_dealloc)((PyObject*)(op))</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> Py_INCREF(op) ((op)-&gt;ob_refcnt++)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> Py_DECREF(op)        \</span></span><br><span class="line"><span class="meta">  <span class="keyword">if</span> (--op-&gt;ob_refcnt != 0)     \</span></span><br><span class="line"><span class="meta">    ;    \</span></span><br><span class="line"><span class="meta">  <span class="keyword">else</span>      \</span></span><br><span class="line"><span class="meta">    _Py_Dealloc((PyObject*)(op))</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="9-Python对象的分类"><a href="#9-Python对象的分类" class="headerlink" title="9. Python对象的分类"></a>9. Python对象的分类</h2><p>Python的对象从概念上分为5类:</p>
+<ul>
+<li>Fundamental对象: 类型对象(type)</li>
+<li>Numeric对象: 数值对象(int, float, bool)</li>
+<li>Sequence对象: 容纳其他对象的序列集合对象(string, list, tuple)</li>
+<li>Mapping对象: 类似于C++中的map的关联对象(dict)</li>
+<li>Internal对象: Python虚拟机在运行时内部使用的对象(function, code, frame, module, method)</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/d2e9.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">PyIntObject</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/bd06.html">
+        <span class="next-text nav-default">CRC (Cyclic Redundancy Check)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/1c3f.html';
+  var disqus_title = "PyObject";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

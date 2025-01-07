@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Process Control"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/c259.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/c259.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/c259.html"/>
+
+
+<meta name="description" content="1. Process Indetifiers每个进程都有一个唯一, 非负的PID(process ID, 进程ID). PID支持重用, 进程一旦被停用, 其PID会被其他新建进程重用. 但大多数UNIX系统会推迟该操作, 以保证新进程不会被误认为上一个进程. 以下是一些特殊进程, 具体细节因系统实现不同而不同:  PID 0: scheduler process(调度进程), 用于进程调度, s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Process Control">
+<meta property="og:url" content="https://zaf1ro.github.io/p/c259.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Process Indetifiers每个进程都有一个唯一, 非负的PID(process ID, 进程ID). PID支持重用, 进程一旦被停用, 其PID会被其他新建进程重用. 但大多数UNIX系统会推迟该操作, 以保证新进程不会被误认为上一个进程. 以下是一些特殊进程, 具体细节因系统实现不同而不同:  PID 0: scheduler process(调度进程), 用于进程调度, s">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/8-2-sharing-of-open-files.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/8-8-exec-func.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/8-8-set-user-id.png">
+<meta property="article:published_time" content="2019-09-01T16:46:20.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.057Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/8-2-sharing-of-open-files.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Process Control - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Process-Indetifiers"><span class="toc-text">1. Process Indetifiers</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-fork-Function"><span class="toc-text">2. fork Function</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Memory-Sharing"><span class="toc-text">2.1 Memory Sharing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-File-Sharing"><span class="toc-text">2.2 File Sharing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Other-Sharing"><span class="toc-text">2.3 Other Sharing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-vfork-Function"><span class="toc-text">3. vfork Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-exit-Functions"><span class="toc-text">4. exit Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-wait-and-waitpid-Functions"><span class="toc-text">5. wait and waitpid Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-waitid-Function"><span class="toc-text">6. waitid Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-wait3-and-wait4-Function"><span class="toc-text">7. wait3 and wait4 Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-exec-Functions"><span class="toc-text">8. exec Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Change-User-IDs-and-Group-IDs"><span class="toc-text">9. Change User IDs and Group IDs</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-setreuid-setregid-Functions"><span class="toc-text">9.1 setreuid, setregid Functions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-seteuid-and-setegid-Functions"><span class="toc-text">9.2 seteuid and setegid Functions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-Example"><span class="toc-text">9.3 Example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Interpreter-Files"><span class="toc-text">10. Interpreter Files</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-system-Function"><span class="toc-text">11. system Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-Process-Accounting"><span class="toc-text">12. Process Accounting</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-Process-Scheduling"><span class="toc-text">13. Process Scheduling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-Process-Times"><span class="toc-text">14. Process Times</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Process Control
+        
+      </h1>
+      <time class="post-time">
+          09/01/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Process-Indetifiers"><a href="#1-Process-Indetifiers" class="headerlink" title="1. Process Indetifiers"></a>1. Process Indetifiers</h2><p>每个进程都有一个唯一, 非负的PID(process ID, 进程ID). PID支持重用, 进程一旦被停用, 其PID会被其他新建进程重用. 但大多数UNIX系统会推迟该操作, 以保证新进程不会被误认为上一个进程. 以下是一些特殊进程, 具体细节因系统实现不同而不同:</p>
+<ul>
+<li>PID 0: scheduler process(调度进程), 用于进程调度, system process之一.</li>
+<li>PID 1: init process, bootstrap结束时由kernel调用, 程序位于<code>/etc/init</code>或<code>/sbin/init</code>:<ul>
+<li>负责初始化UNIX系统</li>
+<li>该进程不会退出</li>
+<li>该进程不是system process, 而是普通进程</li>
+<li>该进程拥有superuser权限</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the process ID (PID) of the calling process.</span></span><br><span class="line"><span class="comment"> *        This is often used by routines that generate unique</span></span><br><span class="line"><span class="comment"> *        temporary filename</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">getpid</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the process ID (PID) of parent of the calling</span></span><br><span class="line"><span class="comment"> *        process. This will be either the ID of the process </span></span><br><span class="line"><span class="comment"> *        that created this process using fork(), or, if that</span></span><br><span class="line"><span class="comment"> *        process has already terminated, the ID of the process</span></span><br><span class="line"><span class="comment"> *        to which this process has been reparented (either init</span></span><br><span class="line"><span class="comment"> *        or a process defined via the prctl() </span></span><br><span class="line"><span class="comment"> *        PR_SET_CHILD_SUBREAPER operation)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">getppid</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the real user ID of the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">uid_t</span> <span class="title function_">getuid</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the effective user ID of the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">uid_t</span> <span class="title function_">geteuid</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the real group ID of the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">gid_t</span> <span class="title function_">getgid</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the effective group ID of the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">gid_t</span> <span class="title function_">getegid</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-fork-Function"><a href="#2-fork-Function" class="headerlink" title="2. fork Function"></a>2. fork Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a new process by duplicating the calling process</span></span><br><span class="line"><span class="comment"> * @return PID of the child process is returned in the parent</span></span><br><span class="line"><span class="comment"> *         process, return 0 in the child process; return -1 in </span></span><br><span class="line"><span class="comment"> *         the parent process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">fork</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>Child process的<code>fork()</code>返回值为0, 而不是PPID(parent process&#39;s PID), 因为child process可通过<code>getppid()</code>获得PPID. 一个进程可拥有多个child process, 因此parent process的<code>fork()</code>返回值为child process的PID.<br>有些UNIX系统会提供<code>fork()</code>的变种, 如Linux的<code>clone()</code>.</p>
+<h3 id="2-1-Memory-Sharing"><a href="#2-1-Memory-Sharing" class="headerlink" title="2.1 Memory Sharing"></a>2.1 Memory Sharing</h3><p>Child process会复制parent process的大部分内存数据, 包括data segment, heap, stack, 因此两者不共享数据, 除了text segment(read-only).<br>由于复制数据会降低运行速度, 且<strong>fork-exec model</strong>(<code>fork()</code>生成的child process执行<code>exec()</code>以运行其他程序)被广泛使用, 因此child process并没有必要复制parent process的数据, <strong>copy-on-write</strong>(COW)应运而生: child process一开始不会复制parent process的数据, 而是共享同一区域内存. 只有当其中一方(child process或parent process)试图写入数据时才会复制被修改的内存区域.</p>
+<h3 id="2-2-File-Sharing"><a href="#2-2-File-Sharing" class="headerlink" title="2.2 File Sharing"></a>2.2 File Sharing</h3><p><code>fork()</code>会对parent process的每个file descriptor调用<code>dup()</code>, 因此child process与parent process共享file descriptor. 由于parent process与child process指向相同的table entry, 因此child process可以在parent process所在文件的相同位置继续读写.<br><img src="/images/UNIX/APUE/8-2-sharing-of-open-files.jpg" alt="Sharing of open files between parent and child after fork"></p>
+<p>若parent process和child process在没有同步机制的情况下对同一file descriptor进行操作, 很可能导致数据丢失或逻辑错误. 有以下两种方法保证同步:</p>
+<ul>
+<li>parent process等待child process的操作完毕后再执行操作.</li>
+<li>parent process和child process各自关闭不需要的file descriptor, 避免两个进程操作同一file descriptor</li>
+</ul>
+<h3 id="2-3-Other-Sharing"><a href="#2-3-Other-Sharing" class="headerlink" title="2.3 Other Sharing"></a>2.3 Other Sharing</h3><p>以下是parent process和child process的相同之处:</p>
+<ul>
+<li>real user ID, real group ID, effective user ID, 和effective group ID</li>
+<li>supplementary group IDs</li>
+<li>process group ID</li>
+<li>session ID</li>
+<li>controlling terminal</li>
+<li>set-user-ID和set-group-ID bits</li>
+<li>current working directory</li>
+<li>root directory</li>
+<li>file mode creation mask</li>
+<li>signal mask和dispositions</li>
+<li>所有打开的file descriptor的close-on-exec flag</li>
+<li>environment variables</li>
+<li>attached shared memory segments</li>
+<li>memory mappings</li>
+<li>resource limits</li>
+</ul>
+<p>以下是parent process与child process的不同之处:</p>
+<ul>
+<li>child process拥有自己的PID</li>
+<li>child process的PPID与parent process的PID相同, 因此, child process的PPID一定与parent process的PPID不同(init的PPID为0)</li>
+<li>child process的进程资源利用率(<code>getrusage()</code>)和CPU使用时长(<code>times()</code>)重置为0</li>
+<li>child process的等待信号队列重置为空</li>
+<li>child process不会继承parent process的memory lock(<code>mlock()</code>)</li>
+<li>child process不会继承parent process对semaphore的修改(<code>semop()</code>)</li>
+<li>child process不会继承parent process的record lock(<code>fcntl()</code>)</li>
+<li>child process不会继承parent process的timer(<code>setitimer()</code>, <code>alarm()</code>, <code>timer_create()</code>)</li>
+<li>child process不会继承parent process未完成的异步I&#x2F;O操作(<code>aio_read()</code>, <code>aio_write(3)</code>), 也不会继承异步I&#x2F;O上下文(<code>io_steup()</code>)</li>
+</ul>
+<p>以下是<code>fork()</code>执行失败的主要原因:</p>
+<ul>
+<li>系统内的进程数量达到上限: 进程数达到<code>RLIMIT_NPROC</code>资源上限, 或达到PID数量上限</li>
+<li>该real user ID的child process数量达到上限</li>
+</ul>
+<h2 id="3-vfork-Function"><a href="#3-vfork-Function" class="headerlink" title="3. vfork Function"></a>3. vfork Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a child process and block parent</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">vfork</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>vfork()</code>与<code>fork()</code>存在两点不同:</p>
+<ul>
+<li><code>vfork()</code>生成的child process不复制parent process的地址空间, 因此共享parent process的所有数据. 只有调用<code>exec()</code>或<code>exit()</code>才会退出parent process的地址空间.</li>
+<li><code>fork()</code>不保证child process和parent process的执行顺序, 而<code>vfork()</code>要求child process必须在parent process之前运行, 需要阻塞parent process, 直到child process调用<code>exec()</code>或<code>exit()</code>退出进程.</li>
+</ul>
+<h2 id="4-exit-Functions"><a href="#4-exit-Functions" class="headerlink" title="4. exit Functions"></a>4. exit Functions</h2><p>以下是五种<strong>正常中止进程</strong>的方式:</p>
+<ul>
+<li><code>main()</code>中调用<code>return()</code>, 相当于调用<code>exit()</code></li>
+<li>调用<code>exit()</code>. 会调用所有<code>atexit()</code>注册的exit handler, 并关闭所有I&#x2F;O streams. 由于<code>exit()</code>由ISO C定义, 所以不处理file descritptor, 多进程, 和任务控制.</li>
+<li>调用<code>_exit()</code>或<code>_Exit()</code>. ISO C定义<code>_Exit()</code>中止进程且不调用exit handler. <code>_exit()</code>由POSIX.1定义, 因此会关闭file descriptor, 并将所有child process的parent process改为init.</li>
+<li>进程的最后一个线程的start routine调用<code>return()</code>, 该线程的返回值不会作为进程的返回值, 而是以0提出.</li>
+<li>进程的最后一个线程调用<code>pthread_exit()</code>.</li>
+</ul>
+<p>以下是三种<strong>异常中止进程</strong>的方式:</p>
+<ul>
+<li>调用<code>abort()</code>, 不会删除临时文件, 不关闭stream buffer, 也不会调用<code>atexit()</code>注册的exit handler</li>
+<li>进程收到特定signal<ul>
+<li>进程调用<code>abort()</code></li>
+<li>其他进程向当前进程发送signal</li>
+<li>kernel发送signal, 如发生错误</li>
+</ul>
+</li>
+<li>进程的最后一个线程回应cancellation request</li>
+</ul>
+<p>无论进程如何中止, kernel都会关闭所有open file descriptor, 并释放内存. 进程被中止时, 其parent process会收到exit status. 若进程调用<code>exit()</code>, <code>_exit()</code>, 或<code>_Exit()</code>中止进程, 则exit status为其参数; 若进程异常中止, kernel会生成一个termination status, 其parent process可通过<code>wait()</code>或<code>waitpid()</code>获取termination status.<br>若进程中止时, 其child process仍未退出, 则child process的PPID改为1(init), 这样可保证任何进程在任何时刻都有一个PPID.<br>若child process中止时, 其parent process仍未退出, kernel会将中止的进程信息保留在内存中, 以便后续parent process调用<code>wait()</code>或<code>waitpid()</code>获取termination status. 保存的进程信息包括: 被中止进程的PID, CPU运行时间, termination status. 这些已被中止但未被parent process知晓的进程称为<strong>zombie process</strong>.<br>若进程的parent process为init, 则该进程永远不会成为zombie process, 因为无论进程何时中止, init都会调用<code>wait()</code>获取其termination status. init的child process有两种生成方式:</p>
+<ul>
+<li>init直接生成的进程(<code>getty</code>)</li>
+<li>进程的parent process中止, 其parent process转为init</li>
+</ul>
+<h2 id="5-wait-and-waitpid-Functions"><a href="#5-wait-and-waitpid-Functions" class="headerlink" title="5. wait and waitpid Functions"></a>5. wait and waitpid Functions</h2><p>无论进程如何中止, kernel都会向其parent process发送<code>SIGCHLD</code>信号. 该信号为异步提醒, parent process可选择忽略该信号, 或提供一个signal handler处理该信号, 且信号默认处理会被忽略. <code>wait()</code>和&#96;&#96;waitpid()&#96;可提供以下功能:</p>
+<ul>
+<li>若所有child process都在运行, 则阻塞当前进程</li>
+<li>若某个child process被中止, 则立刻返回该child process的termination status</li>
+<li>若没有任何child process, 则立即返回错误</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief suspend execution of the calling thread until one </span></span><br><span class="line"><span class="comment"> *        of its child process terminates. The call of </span></span><br><span class="line"><span class="comment"> *        wait(&amp;wstatus) is equal to waitpid(-1, &amp;wstatus, 0)</span></span><br><span class="line"><span class="comment"> * @param wstatus store the termination status</span></span><br><span class="line"><span class="comment"> * @return PID of terminated child process on success; -1 </span></span><br><span class="line"><span class="comment"> *         on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">wait</span><span class="params">(<span class="type">int</span> *wstatus)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief suspend execution of the calling thread until a </span></span><br><span class="line"><span class="comment"> *        child process specified by `pid` has changed state.</span></span><br><span class="line"><span class="comment"> *        By default, waitpid() waits only for terminated </span></span><br><span class="line"><span class="comment"> *        children, but this behavior is modifiable via </span></span><br><span class="line"><span class="comment"> *        the `options` argument.</span></span><br><span class="line"><span class="comment"> * @param pid PID of child process:</span></span><br><span class="line"><span class="comment"> *        * &lt;-1: wait for any child process whose process </span></span><br><span class="line"><span class="comment">            group ID is equal to the absolute value of `pid`</span></span><br><span class="line"><span class="comment"> *        * -1: wait for any child process</span></span><br><span class="line"><span class="comment"> *        * 0: wait for any child process whose process group </span></span><br><span class="line"><span class="comment"> *          ID is equal to that of the calling process</span></span><br><span class="line"><span class="comment"> *        * &gt;0: wait for the child process whose process ID is</span></span><br><span class="line"><span class="comment"> *          equal to the value of `pid`</span></span><br><span class="line"><span class="comment"> * @param options an OR of zero or more of the following values:</span></span><br><span class="line"><span class="comment"> *        * WNOHANG: return immediately if pid is not available</span></span><br><span class="line"><span class="comment"> *        * WUNTRACED: return if a child process has stopped </span></span><br><span class="line"><span class="comment"> *        * WCONTINUED: return if a stopped child process has </span></span><br><span class="line"><span class="comment"> *          been resumed by delivery of SIGCONT</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">waitpid</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">int</span> *wstatus, <span class="type">int</span> options)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>waitpid()</code>与<code>wait()</code>的区别:</p>
+<ol>
+<li><code>waitpid()</code>可等待指定PID的child process, <code>wait()</code>只能等待当前进程的child process</li>
+<li><code>waitpid()</code>提供nonblocking模式, 无需阻塞当前进程</li>
+<li><code>waitpid()</code>提供WUNTRACED和WCONTINUED来支持job control</li>
+</ol>
+<h2 id="6-waitid-Function"><a href="#6-waitid-Function" class="headerlink" title="6. waitid Function"></a>6. waitid Function</h2><p>Single UNIX Specification提供了额外的函数来获取exit status.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief wait for a child process to change state</span></span><br><span class="line"><span class="comment"> * @param idtype specify which child process it waits for</span></span><br><span class="line"><span class="comment"> *        * P_PID: wait for the child process which PID </span></span><br><span class="line"><span class="comment"> *          matches `id`</span></span><br><span class="line"><span class="comment"> *        * P_PGID: wait for any child process whose </span></span><br><span class="line"><span class="comment"> *          process group ID matches `id`</span></span><br><span class="line"><span class="comment"> *        * P_ALL: wait for any child process, `id` is </span></span><br><span class="line"><span class="comment"> *          ignored</span></span><br><span class="line"><span class="comment"> * @param infop: store the current state of a child process</span></span><br><span class="line"><span class="comment"> * @param options: same as the option argument in waitpid()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">waitid</span><span class="params">(<span class="type">idtype_t</span> idtype, <span class="type">id_t</span> id, <span class="type">siginfo_t</span> *infop, </span></span><br><span class="line"><span class="params">           <span class="type">int</span> options)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-wait3-and-wait4-Function"><a href="#7-wait3-and-wait4-Function" class="headerlink" title="7. wait3 and wait4 Function"></a>7. wait3 and wait4 Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as waitpid(), but additionally return </span></span><br><span class="line"><span class="comment"> *        resource usage information about the child</span></span><br><span class="line"><span class="comment"> *        in the structure pointed to by rusage</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">wait3</span><span class="params">(<span class="type">int</span> *status, <span class="type">int</span> options, <span class="keyword">struct</span> rusage *rusage)</span>;</span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">wait4</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">int</span> *status, <span class="type">int</span> options, </span></span><br><span class="line"><span class="params">            <span class="keyword">struct</span> rusage *rusage)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>wait3(status, options, rusage);</code>等同于<code>waitpid(-1, status, options)</code>, 但会返回额外的资源使用信息, 其中包括user CPU运行时间, system CPU运行时间, page fault的数量, 接收到的signal数量等. </p>
+<h2 id="8-exec-Functions"><a href="#8-exec-Functions" class="headerlink" title="8. exec Functions"></a>8. exec Functions</h2><p>当进程调用<code>exec</code>时, 进程开始执行新程序, 其PID不会改变, 但text segment, data segment, heap, stack都会被替换. </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief The exec() family of functions replaces the </span></span><br><span class="line"><span class="comment"> *        current process image with a new process image</span></span><br><span class="line"><span class="comment"> * @param path path of the executed program</span></span><br><span class="line"><span class="comment"> * @param arg a list of one or more pointers to </span></span><br><span class="line"><span class="comment"> *        null-terminated strings that represent the </span></span><br><span class="line"><span class="comment"> *        argument list available to the executed program</span></span><br><span class="line"><span class="comment"> * @param envp an array of pointers to null-terminated</span></span><br><span class="line"><span class="comment"> *        strings that represent the argument list </span></span><br><span class="line"><span class="comment"> *        available to the new program</span></span><br><span class="line"><span class="comment"> * @param file filename of the executed program. If </span></span><br><span class="line"><span class="comment"> *        fileanme contains a slash, it is taken as a </span></span><br><span class="line"><span class="comment"> *        pathname. Otherwise, the executable file is </span></span><br><span class="line"><span class="comment"> *        searched for in the directories specified by the </span></span><br><span class="line"><span class="comment"> *        PATH env variable</span></span><br><span class="line"><span class="comment"> * @param fd file descriptor of the executed program</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">execl</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path, <span class="type">const</span> <span class="type">char</span> *arg, ...)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execv</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path, <span class="type">char</span> *<span class="type">const</span> argv[])</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execle</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path, <span class="type">const</span> <span class="type">char</span> *arg, ..., </span></span><br><span class="line"><span class="params">           <span class="type">char</span> *<span class="type">const</span> envp[])</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execve</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path, <span class="type">char</span> *<span class="type">const</span> argv[], </span></span><br><span class="line"><span class="params">           <span class="type">char</span> *<span class="type">const</span> envp[])</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execlp</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *file, <span class="type">const</span> <span class="type">char</span> *arg, ...)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execvp</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *file, <span class="type">char</span> *<span class="type">const</span> argv[])</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">fexecve</span><span class="params">(<span class="type">int</span> fd, <span class="type">char</span> *<span class="type">const</span> argv[], <span class="type">char</span> *<span class="type">const</span> envp[])</span>;</span><br></pre></td></tr></table></figure>
+<p>除了PID, exec后的进程还继承了原本的一些属性:</p>
+<ul>
+<li>PID和PPID</li>
+<li>real user ID和real group ID</li>
+<li>supplementary group IDs</li>
+<li>process group ID</li>
+<li>session ID</li>
+<li>controlling terminal</li>
+<li>alarm时钟剩余的时间</li>
+<li>current working directory</li>
+<li>root directory</li>
+<li>file mode creation mask</li>
+<li>file lock</li>
+<li>process signal mask</li>
+<li>pending signal</li>
+<li>resource limits</li>
+<li>nice value</li>
+<li>tms_utime, tms_stime, tms_cutime, 和tms_cstime</li>
+</ul>
+<p>若<code>exec()</code>执行的程序设置了set-user-ID bit, 则EUID(effective user ID)会改为程序文件的owner ID; 若没有设置set-user-ID bit, 则EUID不变.<br>UNIX系统的实现中, 只有<code>execve()</code>在kernel中调用system call, 其他的exec函数为库函数, 最后通过调用<code>execve()</code>来调用system call<br><img src="/images/UNIX/APUE/8-8-exec-func.png" alt="Relationship of the exec functions"></p>
+<p>还有三种情况需要考虑:</p>
+<ul>
+<li>若file descriptor设置了close-on-exec flag, 则exec会关闭该file descriptor</li>
+<li>exec会关闭所有directory streams, 因为<code>opendir()</code>会调用<code>fcntl()</code>, 为每个directory stream设置close-on-exec flag</li>
+<li>exec会保留进程原本的real user ID和real group ID, 但若程序文件设置了set-user-ID bit或set-group-ID bit, 则effective user ID会改变; 否则effective user ID保持不变, effective group ID同理.</li>
+</ul>
+<h2 id="9-Change-User-IDs-and-Group-IDs"><a href="#9-Change-User-IDs-and-Group-IDs" class="headerlink" title="9. Change User IDs and Group IDs"></a>9. Change User IDs and Group IDs</h2><p>UNIX系统中的权限和访问控制基于user ID和group ID. 当进程需要额外权限时, 需将自身的user ID或group ID改为其他合适的ID. 设计应用时应遵循<strong>least-privilege model</strong>(最少权限模型), 保证非必要用户无权限访问某些文件, 以降低安全风险.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the effective user ID of the calling process</span></span><br><span class="line"><span class="comment"> *        it is equivalent to setresuid(uid, uid, uid)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setuid</span><span class="params">(<span class="type">uid_t</span> uid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the effective group ID of the calling process</span></span><br><span class="line"><span class="comment"> *        it is equivalent to setresgid(gid, gid, gid)    </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setgid</span><span class="params">(<span class="type">gid_t</span> gid)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>setuid()</code>遵循以下规则:</p>
+<ul>
+<li>若进程为privileged process, 则将real user ID, effective user ID, 和saved set-user-ID设置为<code>uid</code></li>
+<li>若进程不为privileged process, 但<code>uid</code>与进程的real user ID, effective user ID, 或saved set-user-ID相同, 则将effective user ID设置为<code>uid</code></li>
+<li>若不满足上述两条规则, 则返回-1, 并设置errno</li>
+</ul>
+<p><code>setgid()</code>同理</p>
+<p>以下是user ID被改变的情况:</p>
+
+<table>
+  <tr>
+    <td rowspan="2">ID</td>
+    <td colspan="2">exec</td>
+    <td colspan="2">setuid(uid)</td>
+  </tr>
+  <tr>
+    <td>set-user-ID bit off</td>
+    <td>set-user-ID bit on</td>
+    <td>superuser</td>
+    <td>unprivileged user</td>
+  </tr>
+  <tr>
+    <td>real user ID</td>
+    <td>unchanged</td>
+    <td>unchanged</td>
+    <td>set to uid</td>
+    <td>unchanged</td>
+  </tr>
+  <tr>
+    <td>effective user ID</td>
+    <td>unchanged</td>
+    <td>set from user ID of program file</td>
+    <td>set to uid</td>
+    <td>set to uid</td>
+  </tr>
+  <tr>
+    <td>saved set-user-ID</td>
+    <td>copied from effective user ID</td>
+    <td>copied from effective user ID</td>
+    <td>set to uid</td>
+    <td>unchanged</td>
+  </tr>
+</table>
+
+
+<h3 id="9-1-setreuid-setregid-Functions"><a href="#9-1-setreuid-setregid-Functions" class="headerlink" title="9.1 setreuid, setregid Functions"></a>9.1 setreuid, setregid Functions</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set real and effective user IDs of the calling </span></span><br><span class="line"><span class="comment"> *        process.</span></span><br><span class="line"><span class="comment"> *        it is equivalent to setresuid(ruid, euid, -1)</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setreuid</span><span class="params">(<span class="type">uid_t</span> ruid, <span class="type">uid_t</span> euid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set real and effective group IDs of the calling </span></span><br><span class="line"><span class="comment"> *        process.</span></span><br><span class="line"><span class="comment"> *        it is equivalent to setresgid(rgid, euid, -1)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setregid</span><span class="params">(<span class="type">gid_t</span> rgid, <span class="type">gid_t</span> egid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the real user ID, effective user ID,</span></span><br><span class="line"><span class="comment"> *        and saved set-user-ID of the calling process.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setresuid</span><span class="params">(<span class="type">uid_t</span> ruid, <span class="type">uid_t</span> euid, <span class="type">uid_t</span> suid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the real group ID, effective group ID,</span></span><br><span class="line"><span class="comment"> *        and saved set-group-ID of the calling process.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setresgid</span><span class="params">(<span class="type">gid_t</span> rgid, <span class="type">gid_t</span> egid, <span class="type">gid_t</span> sgid)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>setresuid()</code>遵循以下规则:</p>
+<ul>
+<li>若<code>ruid</code>, <code>euid</code>, 或<code>sgid</code>为-1, 则不修改real user ID, effective user ID, 或saved set-user-ID.</li>
+<li>若进程为privileged process, 则可将real user ID, effective user ID, 和saved set-user-ID设置为任意值</li>
+<li>若进程为unprivileged process, 则只能设置effective user ID, 且effective user ID必须为当前进程的real user ID, effective user ID, 或saved set-user-ID</li>
+</ul>
+<p><code>setresgid()</code>与上述同理.</p>
+<h3 id="9-2-seteuid-and-setegid-Functions"><a href="#9-2-seteuid-and-setegid-Functions" class="headerlink" title="9.2 seteuid and setegid Functions"></a>9.2 seteuid and setegid Functions</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set effective user ID of the callig process</span></span><br><span class="line"><span class="comment"> *        If the process has privilege, it can set </span></span><br><span class="line"><span class="comment"> *        effective user ID to any value; If the process </span></span><br><span class="line"><span class="comment"> *        does not have privilege, effective user id can </span></span><br><span class="line"><span class="comment"> *        only be set to real user ID or saved set-user-ID</span></span><br><span class="line"><span class="comment"> *        it is equivalent to setresgid(-1, euid, -1)</span></span><br><span class="line"><span class="comment"> * @return 0 on suceess; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">seteuid</span><span class="params">(<span class="type">uid_t</span> uid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set effective group ID of the calling process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setegid</span><span class="params">(<span class="type">gid_t</span> gid)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>seteuid()</code>遵循以下规则:</p>
+<ul>
+<li>若进程为privileged process, 则可将effective user ID设置为任意值</li>
+<li>若进程不为privileged process, 则只能将effective user ID设置为real user ID or saved set-user-ID</li>
+</ul>
+<p><code>setegid()</code>与上述同理. 相比于<code>setuid()</code>, 该函数不会修改saved set-user-ID, 因此当privileged process使用<code>setuid()</code>降级自身权限以运行程序, 运行后无法恢复到superuser, 这时可使用<code>seteuid()</code>.</p>
+<p>以下是所有可以更改user ID的函数:<br><img src="/images/UNIX/APUE/8-8-set-user-id.png" alt="Summary of all the functions that set the various user IDs"></p>
+<h3 id="9-3-Example"><a href="#9-3-Example" class="headerlink" title="9.3 Example"></a>9.3 Example</h3><p>Linux 3.2.0添加了<code>at</code>程序, 可在指定时间点执行一些命令. 该程序的set-user-ID为<code>daemon</code>. 为防止权限泄露, 执行命令时必须在user和daemon切换, 以下是执行步骤:</p>
+<ol>
+<li>假设<code>at</code>程序的owner为root, 且设置了set-user-ID bit:</li>
+</ol>
+<ul>
+<li>real user ID &#x3D; our user ID (不变)</li>
+<li>effective user ID &#x3D; root (由于开启set-user-ID bit, 因此修改EUID)</li>
+<li>saved set-user-ID &#x3D; root</li>
+</ul>
+<ol start="2">
+<li><code>at</code>程序调用<code>seteuid()</code>, 将EUID改为进程的real user ID:</li>
+</ol>
+<ul>
+<li>real user ID &#x3D; our user ID (不变)</li>
+<li>effective user ID &#x3D; our user ID</li>
+<li>saved set-user-ID &#x3D; root (不变)</li>
+</ul>
+<ol start="3">
+<li>当<code>at</code>访问daemon的配置文件(包含用户输入的命令和执行时间)时, <code>at</code>会调用<code>seteuid</code>将EUID设置为root:</li>
+</ol>
+<ul>
+<li>real user ID &#x3D; our user ID (不变)</li>
+<li>effective user ID &#x3D; root</li>
+<li>saved set-user-ID &#x3D; root (不变)</li>
+</ul>
+<ol start="4">
+<li>访问root的文件后, <code>at</code>会调用<code>seteuid()</code>降低权限, 将EUID改回为user ID:</li>
+</ol>
+<ul>
+<li>real user ID &#x3D; our user ID (不变)</li>
+<li>effective user ID &#x3D; our user ID</li>
+<li>saved set-user-ID &#x3D; root (不变)</li>
+</ul>
+<ol start="5">
+<li>daemon以root权限运行, 为运行用户输入的命令, daemon调用<code>fork()</code>生成子进程, 并让子进程调用<code>setuid()</code>, 由于child process也是以root权限执行, 因此会修改所有ID:</li>
+</ol>
+<ul>
+<li>real user ID &#x3D; our user ID</li>
+<li>effective user ID &#x3D; our user ID</li>
+<li>saved set-user-ID &#x3D; our user ID</li>
+</ul>
+<h2 id="10-Interpreter-Files"><a href="#10-Interpreter-Files" class="headerlink" title="10. Interpreter Files"></a>10. Interpreter Files</h2><p>现代UNIX系统中, interpreter file(解释器文件)作为文本文件, 会以<code>#!pathname [optional-argument]</code>作为第一行, 感叹号和路径名之间的空格使可选的, 最常见的开头如下:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">#!/bin/sh</span><br></pre></td></tr></table></figure>
+<ul>
+<li>pathname通常为absolute pathname(绝对路径), 因为该路径不会执行特殊操作(不会使用<code>PATH</code>)</li>
+<li>interpreter file的处理在kernel进行, 会作为<code>exec</code>系统调用的一部分</li>
+<li>kernel执行的文件不是interpreter file, 而是第一行指定的文件</li>
+</ul>
+<p>相比于使用interpreter, interpreter file有以下优点:</p>
+<ul>
+<li>隐藏pathname: 用户不必知道使用哪个pathname, 直接执行文件即可:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">/* Without using interpreter file */</span><br><span class="line">awk -f awkexample optional-arguments</span><br><span class="line"></span><br><span class="line">/* Using interpreter file */</span><br><span class="line">awkexample optional-arguments</span><br></pre></td></tr></table></figure></li>
+<li>interpreter file提供了一种高效获取多个options的方式:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">/* Without using interpreter file */</span><br><span class="line">awk ’BEGIN &#123;</span><br><span class="line">  <span class="keyword">for</span> (i = 0; i &lt; ARGC; i++)</span><br><span class="line">    <span class="built_in">printf</span> <span class="string">&quot;ARGV[%d] = %s\n&quot;</span>, i, ARGV[i]</span><br><span class="line">  <span class="built_in">exit</span></span><br><span class="line">&#125;’ $*</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">/* Using interpreter file */</span><br><span class="line"><span class="comment">#!/usr/bin/awk -f</span></span><br><span class="line">BEGIN &#123;</span><br><span class="line">  <span class="keyword">for</span> (i = 0; i &lt; ARGC; i++)</span><br><span class="line">    <span class="built_in">printf</span> <span class="string">&quot;ARGV[%d] = %s\n&quot;</span>, i, ARGV[i]</span><br><span class="line">  <span class="built_in">exit</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol start="3">
+<li>UNIX默认使用<code>/bin/sh</code>作为shell, interpreter file可指定其他shell  <figure class="highlight text"><table><tr><td class="code"><pre><span class="line">#!/bin/csh</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>以下是UNIX执行interpreter file的流程:</p>
+<ol>
+<li>shell读取命令并对文件名调用<code>execlp</code>, 由于interpreter file为可执行文件, 而不是机器可执行码, 因此会返回错误.</li>
+<li>以interpreter file内的pathname作为shell</li>
+<li>shell执行文件, 但运行<code>awk</code>, shell会调用<code>fork()</code>, <code>exec()</code>, 和<code>wait()</code></li>
+</ol>
+<h2 id="11-system-Function"><a href="#11-system-Function" class="headerlink" title="11. system Function"></a>11. system Function</h2><p>ISO C定义了<code>system()</code>, 该函数的实现依赖于系统调用.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief use fork() to create a child process that </span></span><br><span class="line"><span class="comment"> *        executes the shell command specified in `cmd` </span></span><br><span class="line"><span class="comment"> *        using execl() as follows:  </span></span><br><span class="line"><span class="comment"> *        execl(&quot;/bin/sh&quot;, &quot;sh&quot;, &quot;-c&quot;, cmd, (char *) NULL);</span></span><br><span class="line"><span class="comment"> * @return return after the command has been completed.</span></span><br><span class="line"><span class="comment"> *         The return value is one of the following:</span></span><br><span class="line"><span class="comment"> *         * nonzero if `cmd` is NULL, and shell is</span></span><br><span class="line"><span class="comment"> *           available; 0 if no shell is available</span></span><br><span class="line"><span class="comment"> *         * -1 if child process could not be created</span></span><br><span class="line"><span class="comment"> *           or its status could not be retrieved</span></span><br><span class="line"><span class="comment"> *         * if a shell could not be executed in the  </span></span><br><span class="line"><span class="comment"> *           child process, then the return value is </span></span><br><span class="line"><span class="comment"> *           as though the child shell terminated by</span></span><br><span class="line"><span class="comment"> *           calling _exit() with status 127</span></span><br><span class="line"><span class="comment"> *         * if all system calls succeed, the return </span></span><br><span class="line"><span class="comment"> *           value is the termination status of the</span></span><br><span class="line"><span class="comment"> *           child shell</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">system</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *cmd)</span>;</span><br></pre></td></tr></table></figure>
+<p>在设置了set-user-ID bit的执行程序内调用<code>system()</code>可能造成安全漏洞, 因此永远不要这么做. 若以root权限执行程序, <code>system()</code>执行<code>fork()</code>和<code>exec()</code>后, child process的EUID会变为superuser, 而不是parent process的EUID, set-group-ID同理.</p>
+<h2 id="12-Process-Accounting"><a href="#12-Process-Accounting" class="headerlink" title="12. Process Accounting"></a>12. Process Accounting</h2><p>UNIX系统中可开启<strong>process accounting</strong>(进程会计), 每当进程结束时, kernel都会写入一条<strong>accounting record</strong>(会计记录), 该记录会包含一些二进制数据, 如command名字, CPU占用时间, user ID, group ID, 和开始时间. <code>acct()</code>函数可用于开启或关闭process accounting:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief enable or disable process accounting. </span></span><br><span class="line"><span class="comment"> * @param filename If it is an existing file, </span></span><br><span class="line"><span class="comment"> *        accounting is turned on, and records for </span></span><br><span class="line"><span class="comment"> *        each terminating process are appended to </span></span><br><span class="line"><span class="comment"> *        filename as it terminates.</span></span><br><span class="line"><span class="comment"> *        If it is NULL, causes accounting to be </span></span><br><span class="line"><span class="comment"> *        turned off.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">acct</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *filename)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="13-Process-Scheduling"><a href="#13-Process-Scheduling" class="headerlink" title="13. Process Scheduling"></a>13. Process Scheduling</h2><p>UNIX只有粗粒度的进程调度, 每个进程的调度策略和优先级由kernel决定. 通过修改nice值, 可让低优先级的进程优先被执行. 越小的nice值, 进程的优先级越高, 因此, nice值也可以理解为: nice的进程不会占用太多CPU的时间, 会为其他进程腾出更多运行时间. 只有privileged process可以降低nice值, 非privileged process只能增加nice值来降低自身优先级.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief add `inc` to the nice value for the calling </span></span><br><span class="line"><span class="comment"> *        thread. The range of nice value is [-20, 19]</span></span><br><span class="line"><span class="comment"> * @return new nice value is returned on success; </span></span><br><span class="line"><span class="comment"> *         -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">nice</span><span class="params">(<span class="type">int</span> inc)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief obtain the scheduling priority of the process, </span></span><br><span class="line"><span class="comment"> *        process group, or user as indicated by `which`</span></span><br><span class="line"><span class="comment"> *        and `who`.</span></span><br><span class="line"><span class="comment"> * @param which must be one of the following values:</span></span><br><span class="line"><span class="comment"> *        * PROI_PROCESS: process</span></span><br><span class="line"><span class="comment"> *        * PROI_PRGP: process group</span></span><br><span class="line"><span class="comment"> *        * PRIO_USER: user ID</span></span><br><span class="line"><span class="comment"> * @param who zero for the calling process, the process </span></span><br><span class="line"><span class="comment"> *        group of the calling process, or the real user</span></span><br><span class="line"><span class="comment"> *        ID of the calling process.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">getpriority</span><span class="params">(<span class="type">int</span> which, <span class="type">id_t</span> who)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set the scheduling priority of the process, </span></span><br><span class="line"><span class="comment"> *        process group, or users as indicated by </span></span><br><span class="line"><span class="comment"> *        `which`, `who`, and `prio`</span></span><br><span class="line"><span class="comment"> * @param prio a value in the range -20 to 19</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setpriority</span><span class="params">(<span class="type">int</span> which, <span class="type">id_t</span> who, <span class="type">int</span> prio)</span>;</span><br></pre></td></tr></table></figure>
+<p>The Single UNIX Specification规定nice值的范围为$[0, 2*\text{NZERO}-1]$, <code>NZERO</code>由系统决定. 但没有规定fork()创造的child process如何继承nice value.</p>
+<h2 id="14-Process-Times"><a href="#14-Process-Times" class="headerlink" title="14. Process Times"></a>14. Process Times</h2><p>任何进程都可通过调用<code>times()</code>获取自身进程和其已中止子进程的以下三种时间:</p>
+<ul>
+<li>User CPU time: 进程在user space中执行指令所使用的CPU时间</li>
+<li>System CPU time: 进程在kernel space中执行指令所使用的CPU时间</li>
+<li>Wall clock: User CPU time和System CPU time之和</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tms</span> &#123;</span></span><br><span class="line">  <span class="type">clock_t</span> tms_utime;  <span class="comment">/* user CPU time */</span></span><br><span class="line">  <span class="type">clock_t</span> tms_stime;  <span class="comment">/* system CPU time */</span></span><br><span class="line">  <span class="type">clock_t</span> tms_cutime; <span class="comment">/* terminated user CPU time of children */</span></span><br><span class="line">  <span class="type">clock_t</span> tms_cstime; <span class="comment">/* terminated system CPU time of children */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief store the current process times in the </span></span><br><span class="line"><span class="comment"> *        struct `tms` that `buf` points to.</span></span><br><span class="line"><span class="comment"> * @return the number of clock ticks that have </span></span><br><span class="line"><span class="comment"> *         elapsed since a point in the past. </span></span><br><span class="line"><span class="comment"> *         return -1 on error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">clock_t</span> <span class="title function_">times</span><span class="params">(<span class="keyword">struct</span> tms *buf)</span>;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/ba76.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Process Relationships</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/8ccf.html">
+        <span class="next-text nav-default">Process Environment</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/c259.html';
+  var disqus_title = "Process Control";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Scanner (2)"/>
+
+
+
+
+  <meta name="keywords" content="Compiler," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/d5c.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/d5c.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/d5c.html"/>
+
+
+<meta name="description" content="1. Implement Scanners三种将DFA转换为可执行代码的方法:  table-driven scanner direct-coded scanner hand-coded scanner  上述所有scanner都会模拟DFA的方式: 重复读取输入字符串中的每个字符, DFA状态转移, 并最终停止与某个状态. 若停止于accepting state, 则返回该单词的词素及其语法范畴">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Scanner (2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/d5c.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Implement Scanners三种将DFA转换为可执行代码的方法:  table-driven scanner direct-coded scanner hand-coded scanner  上述所有scanner都会模拟DFA的方式: 重复读取输入字符串中的每个字符, DFA状态转移, 并最终停止与某个状态. 若停止于accepting state, 则返回该单词的词素及其语法范畴">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-28.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-29.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-30.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-31.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-32.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-33.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-34.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-35.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-36.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-37.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-38.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Compiler/2-39.png">
+<meta property="article:published_time" content="2020-02-08T17:49:12.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.032Z">
+<meta property="article:tag" content="Compiler">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Compiler/2-28.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Scanner (2) - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Implement-Scanners"><span class="toc-text">1. Implement Scanners</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Table-Driven-Scanner"><span class="toc-text">1.1 Table-Driven Scanner</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Direct-Coded-Scanner"><span class="toc-text">1.2 Direct-Coded Scanner</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Hand-Coded-Scanner"><span class="toc-text">1.3 Hand-Coded Scanner</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-1-Buffer-the-Input-Stream"><span class="toc-text">1.3.1 Buffer the Input Stream</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-2-Generate-Lexemes"><span class="toc-text">1.3.2 Generate Lexemes</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-Handle-Keywords"><span class="toc-text">1.4 Handle Keywords</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Advanced-Topics"><span class="toc-text">2. Advanced Topics</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-DFA-to-Regular-Expression"><span class="toc-text">2.1 DFA to Regular Expression</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Another-Approach-to-DFA-Minimization-Brzozowski%E2%80%99s-Algorithm"><span class="toc-text">2.2 Another Approach to DFA Minimization: Brzozowski’s Algorithm</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Closure-Free-Regular-Expression"><span class="toc-text">2.3 Closure-Free Regular Expression</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Scanner (2)
+        
+      </h1>
+      <time class="post-time">
+          02/08/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Implement-Scanners"><a href="#1-Implement-Scanners" class="headerlink" title="1. Implement Scanners"></a>1. Implement Scanners</h2><p>三种将DFA转换为可执行代码的方法:</p>
+<ul>
+<li>table-driven scanner</li>
+<li>direct-coded scanner</li>
+<li>hand-coded scanner</li>
+</ul>
+<p>上述所有scanner都会模拟DFA的方式: 重复读取输入字符串中的每个字符, DFA状态转移, 并最终停止与某个状态. 若停止于accepting state, 则返回该单词的词素及其语法范畴; 若不是accepting state, 则需要判断状态转移路径上有没有遇到过accepting state并回溯到合适的状态节点.</p>
+<h3 id="1-1-Table-Driven-Scanner"><a href="#1-1-Table-Driven-Scanner" class="headerlink" title="1.1 Table-Driven Scanner"></a>1.1 Table-Driven Scanner</h3><p>Table-driven scanner需要使用一个skeleton scanner和一个table, compiler用户负责提供lexical pattern, 一般由RE表示. Scanner generator负责用于驱动skeleton scanner的table. 假设RE为$r[0\cdots9]^{+}$, 则生成的table如下:<br><img src="/images/Compiler/2-28.png" alt="The Classifier Table, CharCat"></p>
+<center>The Classifier Table, CharCat</center>
+
+<p><img src="/images/Compiler/2-29.png" alt="The Transition Table, δ"></p>
+<center>The Transition Table, δ</center>
+
+<p><img src="/images/Compiler/2-30.png" alt="The Token Type Table, Type"></p>
+<center>The Token Type Table, Type</center>
+
+<p>skeleton scanner代码如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">NextWord()</span><br><span class="line">  state $\leftarrow$ $s_0$;</span><br><span class="line">  lexeme $\leftarrow$ &quot;&quot;;</span><br><span class="line">  clear stack;</span><br><span class="line">  push(bad);</span><br><span class="line"></span><br><span class="line">  while (state $\neq$ $s_e$) do</span><br><span class="line">    NextChar(char);</span><br><span class="line">    lexeme $\leftarrow$ lexeme + char;</span><br><span class="line">    if state $\in$ $S_A$</span><br><span class="line">      clear stack;</span><br><span class="line">    push(state);</span><br><span class="line">    cat $\leftarrow$ CharCat[char];</span><br><span class="line">    state $\leftarrow$ $\delta$[state,cat];</span><br><span class="line">  end;</span><br><span class="line"></span><br><span class="line">  while (state $\notin$ $S_A$ and state $\neq$ bad) do</span><br><span class="line">    state $\leftarrow$ pop();</span><br><span class="line">    truncate lexeme;</span><br><span class="line">    RollBack();</span><br><span class="line">  end;</span><br><span class="line"></span><br><span class="line">  if state $\in$ $S_A$</span><br><span class="line">    return Type[state];</span><br><span class="line">  else</span><br><span class="line">    return invalid;</span><br></pre></td></tr></table></figure>
+<p>上述代码中, 若第一个while循环结束时不属于accepting  state, 则进入第二个while循环来回溯到最近的accpeting state. 对于某些RE可能会导致大量回滚, 影响scanner的运行时间. 假设RE为$ab|(ab^{*}c)$为例, 以下是其DFA:<br><img src="/images/Compiler/2-31.png" alt="The DFA of ab(ab)&lt;sup&gt;*&lt;/sup&gt;c"></p>
+<p>假设输入字符串为<strong>ababababc</strong>, scanner将读取所有字符, 并返回认为该字符串符合RE规定; 但若输入字符串为<strong>abababab</strong>, scanner运行步骤如下:</p>
+<ol>
+<li>扫描所有字符, while循环的终止状态不为accepting state, 回滚至最近的accepting state, 也就是<strong>ab</strong>, 剩下<strong>ababab</strong></li>
+<li>扫描所有字符, 循环后回滚, 返回<strong>ab</strong>, 剩下<strong>abab</strong></li>
+<li>扫描所有字符, 循环后回滚, 返回<strong>ab</strong>, 剩下<strong>ab</strong></li>
+<li>扫描所有字符, 无需回滚, 返回<strong>ab</strong></li>
+</ol>
+<p>为避免多次回滚问题, 需要一个全局计数器<strong>InputPos</strong>来记录输入流中的位置, 二维比特数组<strong>Failed</strong>来记录scanner扫描时发现的死胡同, 横坐标为state, 纵坐标为输入字符串的读取位置InputPos.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">InitializeScanner()</span><br><span class="line">  InputPos = 0;</span><br><span class="line">  for each state s in the DFA do</span><br><span class="line">    for i = 0 to |input stream| do</span><br><span class="line">      Failed[s, i] ← false;</span><br><span class="line">    end;</span><br><span class="line">  end;</span><br><span class="line"></span><br><span class="line">NextWord()</span><br><span class="line">  state $\leftarrow$ $s_0$ ;</span><br><span class="line">  lexeme $\leftarrow$ &quot;&quot;;</span><br><span class="line">  clear stack;</span><br><span class="line">  push($\langle$bad, bad$\rangle$);</span><br><span class="line"></span><br><span class="line">  while (state $\neq$ $s_e$) do</span><br><span class="line">    NextChar(char);</span><br><span class="line">    InputPos $\leftarrow$ InputPos + 1;</span><br><span class="line">    lexeme $\leftarrow$ lexeme + char;</span><br><span class="line">    if Failed[state, InputPos]</span><br><span class="line">      break;</span><br><span class="line">    if state $\in$ $S_A$</span><br><span class="line">      clear stack;</span><br><span class="line">    push($\langle$state, InputPos$\rangle$);</span><br><span class="line">    cat $\leftarrow$ CharCat[char];</span><br><span class="line">    state $\leftarrow$ $\delta$[state,cat];</span><br><span class="line">  end;</span><br><span class="line"></span><br><span class="line">  while(state $\notin$ $S_A$ and state $\neq$ bad ) do</span><br><span class="line">    Failed[state, InputPos] ← true;</span><br><span class="line">    $\langle$state, InputPos$\rangle$ ← pop();</span><br><span class="line">    truncate lexeme;</span><br><span class="line">    RollBack();</span><br><span class="line">  end;</span><br><span class="line"></span><br><span class="line">  if state $\in$ $S_A$</span><br><span class="line">    return TokenType[state];</span><br><span class="line">  else </span><br><span class="line">    return bad;</span><br></pre></td></tr></table></figure>
+<p>假设RE和输入字符串不变, scanner运行步骤如下:</p>
+<ol>
+<li>将Failed数组中所有元素置为<strong>false</strong>, 并将InputPos置为0</li>
+<li>扫描所有字符, while循环的终止状态不为accepting state, 回滚至最近的accepting state, 也就是<strong>ab</strong>, 剩下<strong>ababab</strong>. 回滚期间会将stack中所有失败路径的$\langle \text{state}, \text{InputPos} \rangle$在Failed中设置为<strong>true</strong>, 包括$\langle s_2, 3 \rangle, \langle s_3, 4 \rangle, \langle s_4, 5 \rangle, \cdots$</li>
+<li>第二次扫描字符时, 会在读取完前两个字符<strong>ab</strong>后中断, 因为$\text{Failed}[s_2, 3] &#x3D;&#x3D; true$. 返回<strong>ab</strong>, 剩下<strong>abab</strong>.</li>
+<li>第三次扫描字符同上, 会在读取完前两个字符<strong>ab</strong>后中断. 返回<strong>ab</strong>, 剩下<strong>ab</strong></li>
+<li>扫描并返回<strong>ab</strong></li>
+</ol>
+<p>可以看到, 这一优化通过空间换时间的方式, 记录那些不可能导向accepting state的路径, 因此之后的字符串扫描会避开回滚.<br>给定一个DFA, scanner generator可为DFA中的每个字符创建一个列, 每一行表示一个状态. 遍历DFA时, 为每个转移字符设置对应生成的状态, 并将相同的多列合并为一列. 若DFA已经最小化, 则不存在合并问题.</p>
+<h3 id="1-2-Direct-Coded-Scanner"><a href="#1-2-Direct-Coded-Scanner" class="headerlink" title="1.2 Direct-Coded Scanner"></a>1.2 Direct-Coded Scanner</h3><p>为提高table-driven scanner的性能, 可以将$\text{cat} \leftarrow \text{CharCat}[char]$和$\text{state} \leftarrow \delta[state,cat]$这两步合并, 节省DFA状态转移时间.<br>虽然这两次查找的时间都在$O(1)$量级, 但当我们从<strong>CharCat</strong>表中取出第i个元素时, 需要计算该元素地址: $@\text{CharCat} + i \times w$, 其中$@\text{CharCat}$表示CharCat表的起始地址, w表示每个元素所占字节数; 而$\delta$的元素取操作更复杂: $@\delta + (\text{state} \times \text{number_of_columns} + \text{cat}) \times w$, 其中$@\delta$表示$\delta$的起始地址, w表示每个元素所占字节数. 每次while循环都需要要进行两次地址计算操作, 并从内存中加载.<br>因此, 在Direct-coded scanner中摒弃了CharCat表和$\delta$表, 而是为每个状态编写一段代码, 用代码片段的跳转替代查表操作. 若RE为$r[0 \cdots 9]^{+}$, 以下是Direct-coded scanner的代码:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$s_&#123;init&#125;$: </span><br><span class="line">  lexeme $\leftarrow$ &quot;&quot;;</span><br><span class="line">  clear stack;</span><br><span class="line">  push(bad);</span><br><span class="line">  goto $s_0$;</span><br><span class="line"></span><br><span class="line">$s_0$:</span><br><span class="line">  NextChar(char);</span><br><span class="line">  lexeme $\leftarrow$ lexeme + char;</span><br><span class="line">  if state $\in$ $S_A$</span><br><span class="line">    clear stack;</span><br><span class="line">  push(state);</span><br><span class="line">  if (char = &#x27;r&#x27;)</span><br><span class="line">    goto $s_1$;</span><br><span class="line">  else</span><br><span class="line">    goto $s_&#123;out&#125;$;</span><br><span class="line"></span><br><span class="line">$s_1$:</span><br><span class="line">  NextChar(char);</span><br><span class="line">  lexeme $\leftarrow$ lexeme + char;</span><br><span class="line">  if state $\in$ $S_A$</span><br><span class="line">    clear stack;</span><br><span class="line">  push(state);</span><br><span class="line">  if (&#x27;0&#x27; $\leqslant$ char $\leqslant$ &#x27;9&#x27;)</span><br><span class="line">    goto $s_2$;</span><br><span class="line">  else</span><br><span class="line">    goto $s_&#123;out&#125;$;</span><br><span class="line"></span><br><span class="line">$s_2$: </span><br><span class="line">  NextChar(char);</span><br><span class="line">  lexeme $\leftarrow$ lexeme + char;</span><br><span class="line">  if state $\in$ $S_A$</span><br><span class="line">    clear stack;</span><br><span class="line">  push(state);</span><br><span class="line">  if (&#x27;0&#x27; $\leqslant$ char $\leqslant$ &#x27;9&#x27;)</span><br><span class="line">    goto $s_2$;</span><br><span class="line">  else</span><br><span class="line">    goto $s_&#123;out&#125;$</span><br><span class="line"></span><br><span class="line">$s_&#123;out&#125;$:</span><br><span class="line">  while (state $\notin$ $S_A$ and state $\neq$ bad) do</span><br><span class="line">    state $\leftarrow$ pop();</span><br><span class="line">    truncate lexeme;</span><br><span class="line">    RollBack();</span><br><span class="line">  end;</span><br><span class="line">  if state $\in$ $S_A$</span><br><span class="line">    return Type[state];</span><br><span class="line">  else</span><br><span class="line">    return invalid;</span><br></pre></td></tr></table></figure>
+<p>上述代码使得状态跳转无需查表, 通过<strong>goto</strong>语句可跳转至其他状态. 虽然提升了运行效率, 但也会破坏结构化程序设计的宗旨, 从而造成bug频出且代码可读性下降. 因此该代码应由scanner generator生成, 而不是由人工编写. 本例中对于字符的判断十分简单, 因为只需要对字符$r$, $[0-9]$和EOF进行判断; 但若字符分布比较分散, 则table-driven scanner效率更高.</p>
+<h3 id="1-3-Hand-Coded-Scanner"><a href="#1-3-Hand-Coded-Scanner" class="headerlink" title="1.3 Hand-Coded Scanner"></a>1.3 Hand-Coded Scanner</h3><p>虽然table-driven scanner和direct-coded scanner已经能保证单个字符的处理时间保持在常数量级, 大部分商业compiler仍然使用hand-coded scanner, 以此来减少scanner与compiler中其他组件的接口开销, 并且通过细节上的优化, 可以实现输入端读取字符效率的提高, 也可以提升输出端生成词素的效率.</p>
+<h4 id="1-3-1-Buffer-the-Input-Stream"><a href="#1-3-1-Buffer-the-Input-Stream" class="headerlink" title="1.3.1 Buffer the Input Stream"></a>1.3.1 Buffer the Input Stream</h4><p>每次输入一个字符都需要进行I&#x2F;O读取操作, 这显然开销过大, 因此可使用buffered I&#x2F;O. 每次I&#x2F;O操作不再读取单个字符, 而是读取一个固定长度的字符串, 并保存在buffer中. NextChar()函数直接从内存中读取, 不需要进行I&#x2F;O操作, 这样每个字符的读取开销就平摊到一次字符串读取. 使用buffer和指针也有利于Rollback()操作, 只要没有越过buffer的起始位置, 都可以通过移动指针来实现回滚.<br><img src="/images/Compiler/2-32.png" alt="buffer for scanner"></p>
+<p>以下是NextChar()和Rollback()在双缓存下的实现代码:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Initialization()</span><br><span class="line">  Input ← 0;</span><br><span class="line">  Fence ← 0;</span><br><span class="line">  fill Buffer[0 : n];</span><br><span class="line"></span><br><span class="line">NextWord()</span><br><span class="line">  Char $\leftarrow$ Buffer[Input];</span><br><span class="line">  Input $\leftarrow$ (Input + 1) mod 2n;</span><br><span class="line">  if (Input mod n = 0)</span><br><span class="line">    fill Buffer[Input : Input+n-1];</span><br><span class="line">    Fence $\leftarrow$ (Input + n) mod 2n;</span><br><span class="line">  return Char;</span><br><span class="line"></span><br><span class="line">Rollback()</span><br><span class="line">  if (Input = Fence)</span><br><span class="line">    signal roll back error;</span><br><span class="line">  Input ← (Input - 1) mod 2n;</span><br></pre></td></tr></table></figure>
+<p>每读取一个字符, scanner会将指针地址**+1**, 然后<strong>2n</strong>取模; 每次回滚, 需要将指针地址**-1**, 然后<strong>2n</strong>取模. Input表示buffer的当前读取位置, <strong>Fence</strong>表示表示有效缓冲区的起始地址, 用于防止Rollback()操作超出范围.</p>
+<h4 id="1-3-2-Generate-Lexemes"><a href="#1-3-2-Generate-Lexemes" class="headerlink" title="1.3.2 Generate Lexemes"></a>1.3.2 Generate Lexemes</h4><p>Table-driven scanner和direct-coded scanner都将输入字符累加到字符串lexeme中. 但scanner之后的parser有时无需获得原字符串, 而需要另一种形式的信息. 以register编号为例, compiler更在意register的整数编号, 而不是以<strong>r</strong>开头的字符串. 这时就需要在手动修改代码:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">begin;</span><br><span class="line">  RegNum $\leftarrow$ RegNum $\times$ 10 + (char - &#x27;0&#x27;);</span><br><span class="line">  goto $s_2$;</span><br><span class="line">end;</span><br></pre></td></tr></table></figure>
+<p>有些scanner会识别注释和空白并丢弃, 这些scanner的优化会让整个编译效率提升.</p>
+<h3 id="1-4-Handle-Keywords"><a href="#1-4-Handle-Keywords" class="headerlink" title="1.4 Handle Keywords"></a>1.4 Handle Keywords</h3><p>一般来说, 我们会将所有keywords(关键字)放入RE, 生成DFA, 并通过scanner识别keyword. 但存在另一种方案: 将所有keyword都识别为identifier, 然后用hash table(散列表)判断该字符串是否为keyword. 因为对于hand-coded scanner来说, keyword数量的增加会让DFA中的状态数量明显增加, 为了平衡实现负担, 可使用<strong>perfect hashing</strong>(完美散列), 使用合适的hash function来生成一个无碰撞的整数集, 保证keyword查找所需的时间复杂度为$O(1)$.<br>若使用scanner generator创建recognizer, 则状态数量的增加不会导致编译效率下降(但会导致占用内存增加), 更适合将keyword的识别功能交给DFA.</p>
+<h2 id="2-Advanced-Topics"><a href="#2-Advanced-Topics" class="headerlink" title="2. Advanced Topics"></a>2. Advanced Topics</h2><h3 id="2-1-DFA-to-Regular-Expression"><a href="#2-1-DFA-to-Regular-Expression" class="headerlink" title="2.1 DFA to Regular Expression"></a>2.1 DFA to Regular Expression</h3><p>Thompson’s construction和subset construction已经证明DFA和RE有同等的表达力. 通过Kleene&#39;s construction可将一个DFA转换为同等的RE. 可将DFA的transition diagram看做一个有向图, $L(\text{DFA})$表示DFA中所有可接受的字符串集合, RE则需要表示$L(\text{DFA})$中所有字符串. 若DFA中有环, 则$L(\text{DFA})$中存在无限个的字符串, RE可用Kleene closure来表示所有环导致的子路径集合.<br>假设给定$\text{DFA}(D, \sum, {\delta}_D, d_0, D_A)$, 其中状态集为$\{d_0, d1, \cdots, d_n\}$, 算法代码如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">for i = 0 to $|D|$ − 1</span><br><span class="line">  for j = 0 to $|D|$ − 1</span><br><span class="line">    $R_&#123;ij&#125;^&#123;-1&#125;$ = &#123;$a \ | \ \delta(d_i, a) = d_j$&#125;</span><br><span class="line">    if (i = j) then</span><br><span class="line">      $R_&#123;ij&#125;^&#123;-1&#125;$ = $R_&#123;ij&#125;^&#123;-1&#125; | \&#123;\epsilon\&#125;$</span><br><span class="line">for k = 0 to $|D|$ − 1</span><br><span class="line">  for i = 0 to $|D|$ − 1</span><br><span class="line">    for j = 0 to $|D|$ − 1</span><br><span class="line">      $R_&#123;ij&#125;^k$ = $R_&#123;ij&#125;^k(R_&#123;ij&#125;^&#123;k-1&#125;)^&#123;*&#125;R_&#123;ij&#125;^&#123;k-1&#125; | R_&#123;ij&#125;^&#123;k-1&#125;$</span><br><span class="line">$L$ = $R_&#123;0j&#125;^&#123;|D|-1&#125;, \ s_j \in D_A$ </span><br></pre></td></tr></table></figure>
+<p>$R^{k}_{ij}$表示从状态节点$d_i$到状态节点$d_j$, 且不经过状态节点编号大于$k$的所有字符串集合, 每个$R^{k}_{ij}$都由一个RE表示, 以下是$R^{k}_{ij}$的几种特殊形式:</p>
+<ol>
+<li>$R^{-1}_{ij}$: 表示在不跨越任何节点的情况下, 从状态节点$d_i$到$d_j$. 表示状态节点$d_i$与$d_j$直连, $R^{-1}_{ij}$表示$\sum$中任意字符, 但不包括$\epsilon$.</li>
+<li>$R^{-1}_{ii}$: 表示在不跨越任何节点的情况下, 从状态节点$d_i$到其自身. 表示$d_i$的自身闭环, $R^{-1}_{ii}$表示$\sum$中任意字符, 且包括$\epsilon$</li>
+<li>$R^{n}_{0j}$: 由于$n$为状态节点的最大编号, 所以对跨越的节点不做任何限制的情况下, 从起始状态$d_0$到$d_j$的所有字符串集合, 其中$d_j \in D_A$, 等同于从start state到accepting state的所有可能的字符串, 也就是RE所能表示的所有字符串</li>
+</ol>
+<p>为获得$R^{n}_{0j}$, 需要一个从$R^{-1}_{0j}$到$R^{n}_{0j}$的推导公式: $R^{k}_{ij} &#x3D; R^{k-1}_{ik} (R^{k-1}_{kk})^{*} R^{k-1}_{kj} | R^{k-1}_{ij}$. 从$k-1$递进到$k$, 需将三条子路径首尾相连: 从i到k的子路径, 从k到自身的子路径, 从k到j的子路径, 且这三条子路径的状态编号不大于$k-1$. 也就是说, 将所有经过k的路径添加到$R^{k-1}_{ij}$中, 即可获得$R^{k}_{ij}$. RE的运算需要<a target="_blank" rel="noopener external nofollow noreferrer" href="https://en.wikipedia.org/wiki/Kleene_algebra">Kleene algebra</a>, 以下面的DFA为例:<br><img src="/images/Compiler/2-33.png" alt="DFA Transition Diagram"></p>
+<p>首先初始化所有$R^{-1}_{ij}$:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$R^&#123;-1&#125;_&#123;00&#125; = a \ | \ \epsilon$</span><br><span class="line">$R^&#123;-1&#125;_&#123;01&#125; = b$</span><br><span class="line">$R^&#123;-1&#125;_&#123;02&#125; = \phi$</span><br><span class="line">$R^&#123;-1&#125;_&#123;10&#125; = \phi$</span><br><span class="line">$R^&#123;-1&#125;_&#123;11&#125; = b \ | \ \epsilon$</span><br><span class="line">$R^&#123;-1&#125;_&#123;12&#125; = a$</span><br><span class="line">$R^&#123;-1&#125;_&#123;20&#125; = \phi$</span><br><span class="line">$R^&#123;-1&#125;_&#123;21&#125; = a \ | \ b$</span><br><span class="line">$R^&#123;-1&#125;_&#123;22&#125; = \epsilon$</span><br></pre></td></tr></table></figure>
+<p>第一次循环, k &#x3D; 0 (跨越状态编号为0的节点):</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$R^&#123;0&#125;_&#123;00&#125; = R^&#123;-1&#125;_&#123;00&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;00&#125; | R^&#123;-1&#125;_&#123;00&#125; = a^*$</span><br><span class="line">$R^&#123;0&#125;_&#123;01&#125; = R^&#123;-1&#125;_&#123;00&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;01&#125; | R^&#123;-1&#125;_&#123;01&#125; = a^*b$</span><br><span class="line">$R^&#123;0&#125;_&#123;02&#125; = R^&#123;-1&#125;_&#123;00&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;02&#125; | R^&#123;-1&#125;_&#123;02&#125; = \phi$</span><br><span class="line">$R^&#123;0&#125;_&#123;10&#125; = R^&#123;-1&#125;_&#123;10&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;00&#125; | R^&#123;-1&#125;_&#123;10&#125; = \phi$</span><br><span class="line">$R^&#123;0&#125;_&#123;11&#125; = R^&#123;-1&#125;_&#123;10&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;01&#125; | R^&#123;-1&#125;_&#123;11&#125; = b | \epsilon$</span><br><span class="line">$R^&#123;0&#125;_&#123;12&#125; = R^&#123;-1&#125;_&#123;10&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;02&#125; | R^&#123;-1&#125;_&#123;12&#125; = a$</span><br><span class="line">$R^&#123;0&#125;_&#123;20&#125; = R^&#123;-1&#125;_&#123;20&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;00&#125; | R^&#123;-1&#125;_&#123;20&#125; = \phi$</span><br><span class="line">$R^&#123;0&#125;_&#123;21&#125; = R^&#123;-1&#125;_&#123;20&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;01&#125; | R^&#123;-1&#125;_&#123;21&#125; = a \ | \ b$</span><br><span class="line">$R^&#123;0&#125;_&#123;22&#125; = R^&#123;-1&#125;_&#123;20&#125; (R^&#123;-1&#125;_&#123;00&#125;)^&#123;*&#125; R^&#123;-1&#125;_&#123;02&#125; | R^&#123;-1&#125;_&#123;22&#125; = \epsilon$</span><br></pre></td></tr></table></figure>
+<p>第二次循环, k &#x3D; 1 (跨越状态编号为1的节点):</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$R^&#123;1&#125;_&#123;00&#125; = R^&#123;0&#125;_&#123;01&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;00&#125; | R^&#123;0&#125;_&#123;00&#125; = a^*$</span><br><span class="line">$R^&#123;1&#125;_&#123;01&#125; = R^&#123;0&#125;_&#123;01&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;01&#125; | R^&#123;0&#125;_&#123;01&#125; = a^*b^*b$</span><br><span class="line">$R^&#123;1&#125;_&#123;02&#125; = R^&#123;0&#125;_&#123;01&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;02&#125; | R^&#123;0&#125;_&#123;02&#125; = \phi$</span><br><span class="line">$R^&#123;1&#125;_&#123;10&#125; = R^&#123;0&#125;_&#123;11&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;00&#125; | R^&#123;0&#125;_&#123;10&#125; = \phi$</span><br><span class="line">$R^&#123;1&#125;_&#123;11&#125; = R^&#123;0&#125;_&#123;11&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;01&#125; | R^&#123;0&#125;_&#123;11&#125; = b*$</span><br><span class="line">$R^&#123;1&#125;_&#123;12&#125; = R^&#123;0&#125;_&#123;11&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;02&#125; | R^&#123;0&#125;_&#123;12&#125; = b^*a$</span><br><span class="line">$R^&#123;1&#125;_&#123;20&#125; = R^&#123;0&#125;_&#123;21&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;00&#125; | R^&#123;0&#125;_&#123;20&#125; = \phi$</span><br><span class="line">$R^&#123;1&#125;_&#123;21&#125; = R^&#123;0&#125;_&#123;21&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;01&#125; | R^&#123;0&#125;_&#123;21&#125; = (a|b)b^*$</span><br><span class="line">$R^&#123;1&#125;_&#123;22&#125; = R^&#123;0&#125;_&#123;21&#125; (R^&#123;0&#125;_&#123;11&#125;)^&#123;*&#125; R^&#123;0&#125;_&#123;02&#125; | R^&#123;0&#125;_&#123;22&#125; = (a|b)b*a|\epsilon$</span><br></pre></td></tr></table></figure>
+<p>第三次循环, k &#x3D; 2 (跨越状态编号为2的节点):</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$R^&#123;2&#125;_&#123;00&#125; = R^&#123;1&#125;_&#123;02&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;20&#125; | R^&#123;1&#125;_&#123;00&#125; = a^*$</span><br><span class="line">$R^&#123;2&#125;_&#123;01&#125; = R^&#123;1&#125;_&#123;02&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;21&#125; | R^&#123;1&#125;_&#123;01&#125; = a^*b(a(a|b)b^*)^*$</span><br><span class="line">$R^&#123;2&#125;_&#123;02&#125; = R^&#123;1&#125;_&#123;02&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;22&#125; | R^&#123;1&#125;_&#123;02&#125; = a^*b^*b(a(a|b)b^*)^*a$</span><br><span class="line">$R^&#123;2&#125;_&#123;10&#125; = R^&#123;1&#125;_&#123;12&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;20&#125; | R^&#123;1&#125;_&#123;10&#125; = \phi$</span><br><span class="line">$R^&#123;2&#125;_&#123;11&#125; = R^&#123;1&#125;_&#123;12&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;21&#125; | R^&#123;1&#125;_&#123;11&#125; = (a(a|b)|b)^*$</span><br><span class="line">$R^&#123;2&#125;_&#123;12&#125; = R^&#123;1&#125;_&#123;12&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;22&#125; | R^&#123;1&#125;_&#123;12&#125; = (a(a|b)|b)^*a$</span><br><span class="line">$R^&#123;2&#125;_&#123;20&#125; = R^&#123;1&#125;_&#123;22&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;20&#125; | R^&#123;1&#125;_&#123;20&#125; = \phi$</span><br><span class="line">$R^&#123;2&#125;_&#123;21&#125; = R^&#123;1&#125;_&#123;22&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;21&#125; | R^&#123;1&#125;_&#123;21&#125; = (a|b)(a|(a|b)|b)^*$</span><br><span class="line">$R^&#123;2&#125;_&#123;22&#125; = R^&#123;1&#125;_&#123;22&#125; (R^&#123;1&#125;_&#123;22&#125;)^&#123;*&#125; R^&#123;1&#125;_&#123;22&#125; | R^&#123;1&#125;_&#123;22&#125; = ((a|b)b^*a)^*$</span><br></pre></td></tr></table></figure>
+<p>该DFA中start state为$q_0$, accepting state为$q_1$, 因此RE为$R^2_{01}$, 也就是$a^{*}b(a(a|b)|b)^{*}$</p>
+<h3 id="2-2-Another-Approach-to-DFA-Minimization-Brzozowski’s-Algorithm"><a href="#2-2-Another-Approach-to-DFA-Minimization-Brzozowski’s-Algorithm" class="headerlink" title="2.2 Another Approach to DFA Minimization: Brzozowski’s Algorithm"></a>2.2 Another Approach to DFA Minimization: Brzozowski’s Algorithm</h3><p>之前提到使用subset construction将NFA转化为DFA, 原理在于消除重复前缀路径, 这给了Brzozowski一个将NFA直接变为minimal DFA的思路: 假设存在一个NFA $n$, Brzozowski’s Algorithm的算法过程如下:</p>
+<ol>
+<li>reverse(n): 反转$n$中所有转移的方向, 将原本的start state改为accepting state, 并添加一个新的start state, 连接至原本的accepting state</li>
+<li>subset(n): 利用subset construction合并所有相同前缀路径的状态</li>
+<li>reachable(n): 丢弃所有无关状态和转移</li>
+<li>再次重复上述三部</li>
+</ol>
+<p>Brzozowski’s Algorithm的算法也可总结为:<br>$$reachable(subset(reverse(reachable(subset(reverse(n))))))$$</p>
+<p>内层的reachable, subset和reverse负责消除NFA中重复的后缀路径; 外层的reachable, subset和reverse负责消除NFA中重复的前缀路径. 以$abc|bc|ad$为例, 其NFA图如下:<br><img src="/images/Compiler/2-34.png" alt="NFA for abc|bc|ad"></p>
+<p>反转NFA的所有转移方向, 并添加一个新的start state, 名为$s_{11}$:<br><img src="/images/Compiler/2-35.png" alt="Reverse the NFA"></p>
+<p>使用subset(n)消除NFA中重复的后缀路径:<br><img src="/images/Compiler/2-36.png" alt="Subset the NFA"></p>
+<p>再次反转NFA的所有转移方向:<br><img src="/images/Compiler/2-37.png" alt="Reverse the DFA"></p>
+<p>再进行subset(n)消除NFA中重复的前缀路径:<br><img src="/images/Compiler/2-38.png" alt="Subset the NFA to Produce the Minimal DFA"></p>
+<p>虽然看似要进行两次subset导致复杂度提升, 但其实执行起来很快, 也比较容易实现.</p>
+<h3 id="2-3-Closure-Free-Regular-Expression"><a href="#2-3-Closure-Free-Regular-Expression" class="headerlink" title="2.3 Closure-Free Regular Expression"></a>2.3 Closure-Free Regular Expression</h3><p>RE中的子类在词法分析之外也有应用, 该子类就是closure-free regular expression, 例如: $w_1 | w_2 | w_3 | \cdots | w_n$, 其中$w_i$都是$\sum$中字符连接构成. 这种RE有一个性质, 其transition diagram是无环的.<br>很多字符串的识别问题都可以用这种无闭包RE描述, 例如词典的单词, 过滤的URL或散列表中的键. 为构建无闭包RE的DFA, 需从$s_0$状态开始, 沿新单词对应的转移路径前进, 直到耗尽输入或到达$s_e$. 若输入耗尽, 则将新单词对应的最终状态指定为accepting state; 若到达$s_e$, 则向DFA添加一条路径. Recognizer识别每个输入字符只需要常数时间.<br>使用这种方法构造出的DFA不能保证是最小的, 例如: deed, feed, seed的无环DFA如下<br><img src="/images/Compiler/2-39.png" alt="Subset the NFA to Produce the Minimal DFA"></p>
+<p>三条路径都有共同后缀<strong>eed</strong>, 所以最小化可以合并$(s_2, s_6, s_{10})$, $(s_3, s_7, s_{11})$, $(s_4, s_8, s_{12})$</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Compiler/">Compiler</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/52ae.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Parser (1)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/dc20.html">
+        <span class="next-text nav-default">Scanner (1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/d5c.html';
+  var disqus_title = "Scanner (2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="JVM (2)"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/a4a2.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/a4a2.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/a4a2.html"/>
+
+
+<meta name="description" content="1. Class文件与JDK的版本   JDK版本 Class文件版本(major.minor)    1.0 45.3   1.1 45.3   1.2 46.0   1.3 47.0   1.4 48.0   5 49.0   6 50.0   7 51.0   8 52.0   2. Java虚拟机 必须遵循Java虚拟机规范 多种实现, 例如: HotSpot, J9, JRockit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM (2)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/a4a2.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Class文件与JDK的版本   JDK版本 Class文件版本(major.minor)    1.0 45.3   1.1 45.3   1.2 46.0   1.3 47.0   1.4 48.0   5 49.0   6 50.0   7 51.0   8 52.0   2. Java虚拟机 必须遵循Java虚拟机规范 多种实现, 例如: HotSpot, J9, JRockit">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-11-08T13:58:48.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.050Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+JVM (2) - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Class%E6%96%87%E4%BB%B6%E4%B8%8EJDK%E7%9A%84%E7%89%88%E6%9C%AC"><span class="toc-text">1. Class文件与JDK的版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Java%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-text">2. Java虚拟机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">3. Java虚拟机字节码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%9F%BA%E4%BA%8E%E6%A0%88-VS-%E5%9F%BA%E4%BA%8E%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">4. 基于栈 VS 基于寄存器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="toc-text">5. Class文件结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-constant-pool%E7%BB%93%E6%9E%84"><span class="toc-text">5.1 constant_pool结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-access-flags"><span class="toc-text">5.2 access_flags:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Constant-Pool"><span class="toc-text">5.3 Constant Pool</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Frames-%E6%A0%88%E5%B8%A7"><span class="toc-text">6. Frames(栈帧)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%8A%9F%E8%83%BD"><span class="toc-text">6.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E7%BB%84%E5%90%88%E9%83%A8%E5%88%86"><span class="toc-text">6.2 组合部分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%85%B6%E4%BB%96"><span class="toc-text">6.3 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Local-Variables"><span class="toc-text">7. Local Variables</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E5%8A%9F%E8%83%BD"><span class="toc-text">7.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%85%B6%E4%BB%96"><span class="toc-text">7.2 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Operand-Stacks"><span class="toc-text">8. Operand Stacks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E5%8A%9F%E8%83%BD"><span class="toc-text">8.1 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%85%B6%E4%BB%96"><span class="toc-text">8.2 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Dynamic-Linking"><span class="toc-text">9. Dynamic Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E6%99%AE%E9%80%9A%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8"><span class="toc-text">10. 普通函数的调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Synchronization-%E5%90%8C%E6%AD%A5"><span class="toc-text">11. Synchronization(同步)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F"><span class="toc-text">12. 运行时数据区域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#12-1-%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8-Program-Counter-Register"><span class="toc-text">12.1 程序计数器(Program Counter Register)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-2-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88-Java-Virtual-Machine-Stacks"><span class="toc-text">12.2 Java虚拟机栈(Java Virtual Machine Stacks)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-3-%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88-Native-Method-Stack"><span class="toc-text">12.3 本地方法栈(Native Method Stack)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-4-Heap-%E5%A0%86"><span class="toc-text">12.4 Heap(堆)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-5-%E6%96%B9%E6%B3%95%E5%8C%BA-Method-Area"><span class="toc-text">12.5 方法区(Method Area)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-6-%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0-Run-time-Constant-Pool"><span class="toc-text">12.6 运行时常量池(Run-time Constant Pool)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-7-%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="toc-text">12.7 直接内存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-JVM%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-text">13. JVM的数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#13-1-Primitive-types"><span class="toc-text">13.1 Primitive types</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-2-reference-types"><span class="toc-text">13.2 reference types</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E6%B2%A1%E6%9C%89%E5%88%86%E9%85%8D%E5%88%B0%E5%A0%86%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%AE%9E%E4%BE%8B"><span class="toc-text">14. 没有分配到堆的对象实例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-%E5%9B%9B%E7%A7%8D%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B"><span class="toc-text">15. 四种引用类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-%E5%BC%BA%E5%BC%95%E7%94%A8-Strong-Reference"><span class="toc-text">15.1 强引用(Strong Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-%E8%BD%AF%E5%BC%95%E7%94%A8-Soft-Reference"><span class="toc-text">15.2 软引用(Soft Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-3-%E5%BC%B1%E5%BC%95%E7%94%A8-Weak-Reference"><span class="toc-text">15.3 弱引用(Weak Reference)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-4-%E8%99%9A%E5%BC%95%E7%94%A8-Phantom-Reference"><span class="toc-text">15.4 虚引用(Phantom Reference)</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          JVM (2)
+        
+      </h1>
+      <time class="post-time">
+          11/08/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Class文件与JDK的版本"><a href="#1-Class文件与JDK的版本" class="headerlink" title="1. Class文件与JDK的版本"></a>1. Class文件与JDK的版本</h2><table>
+<thead>
+<tr>
+<th>JDK版本</th>
+<th>Class文件版本(major.minor)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.0</td>
+<td>45.3</td>
+</tr>
+<tr>
+<td>1.1</td>
+<td>45.3</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>46.0</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>47.0</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>48.0</td>
+</tr>
+<tr>
+<td>5</td>
+<td>49.0</td>
+</tr>
+<tr>
+<td>6</td>
+<td>50.0</td>
+</tr>
+<tr>
+<td>7</td>
+<td>51.0</td>
+</tr>
+<tr>
+<td>8</td>
+<td>52.0</td>
+</tr>
+</tbody></table>
+<h2 id="2-Java虚拟机"><a href="#2-Java虚拟机" class="headerlink" title="2. Java虚拟机"></a>2. Java虚拟机</h2><ol>
+<li>必须遵循Java虚拟机规范</li>
+<li>多种实现, 例如: HotSpot, J9, JRockit</li>
+</ol>
+<ul>
+<li>必须符合JVM规范</li>
+<li>JVM规范之外的细节可自行实现</li>
+<li>必须通过JCK测试才能成为Java VM</li>
+</ul>
+<ol start="3">
+<li>只有符合规范的Class文件才能执行, 否则报错</li>
+<li>可支持其他语言, 例如: Scala、Clojure、Groovy、Fantom、Fortress、Nice、Jython、JRuby、Rhino、Jaskel</li>
+</ol>
+<h2 id="3-Java虚拟机字节码"><a href="#3-Java虚拟机字节码" class="headerlink" title="3. Java虚拟机字节码"></a>3. Java虚拟机字节码</h2><ol>
+<li>相当于传统编译器的中间代码(例如C++编译器优化时生成的中间代码)</li>
+<li>基于栈的指令集体系结构</li>
+</ol>
+<ul>
+<li>代码紧凑</li>
+<li>方便实现高移植性的解释器</li>
+<li>相对于基于寄存器的体系结构来说速度上较慢</li>
+</ul>
+<ol start="3">
+<li>指令不定长(1-4字节)</li>
+<li>设计目标</li>
+</ol>
+<ul>
+<li>易于校验</li>
+<li>易于编译</li>
+<li>易于解释执行</li>
+<li>易于移植</li>
+<li>包含大量类型信息</li>
+</ul>
+<ol start="5">
+<li>指令类别</li>
+</ol>
+<ul>
+<li>局部变量读&#x2F;写</li>
+<li>算数与类型转换</li>
+<li>条件&#x2F;无条件跳转</li>
+<li>对象创建和操作</li>
+<li>数据创建和操作</li>
+<li>方法调用</li>
+<li>栈操作(操作数栈)</li>
+</ul>
+<h2 id="4-基于栈-VS-基于寄存器"><a href="#4-基于栈-VS-基于寄存器" class="headerlink" title="4. 基于栈 VS 基于寄存器"></a>4. 基于栈 VS 基于寄存器</h2><ol>
+<li>保存临时值的位置不同</li>
+</ol>
+<ul>
+<li>基于栈: 将临时值保存在栈上</li>
+<li>基于寄存器: 将临时值保存在寄存器上</li>
+</ul>
+<ol start="2">
+<li>代码所占的体积不同</li>
+</ol>
+<ul>
+<li>基于栈: 代码紧凑, 单个条目体积小, 但条目数多</li>
+<li>基于寄存器: 代码较大, 但条目数少<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 实现20+7 */</span></span><br><span class="line"><span class="comment">/* Stack-Based */</span></span><br><span class="line">POP <span class="number">20</span></span><br><span class="line">POP <span class="number">7</span></span><br><span class="line">ADD <span class="number">20</span>, <span class="number">7</span>, result</span><br><span class="line">PUSH result</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Register-Based */</span></span><br><span class="line">ADD R1, R2, R3</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol start="3">
+<li>栈的名称在不同的虚拟机中有所不同</li>
+</ol>
+<ul>
+<li>HotSpot中成为&quot;表达式栈&quot;(expression stack)</li>
+<li>JVM中称为&quot;操作数栈&quot;(operand stack)</li>
+</ul>
+<h2 id="5-Class文件结构"><a href="#5-Class文件结构" class="headerlink" title="5. Class文件结构"></a>5. Class文件结构</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">  u4 magic;                 <span class="comment">/* 0xCAFEBABE, magic number */</span></span><br><span class="line">  u2 minor_version;         <span class="comment">/* 大版本号 */</span></span><br><span class="line">  u2 major_version;         <span class="comment">/* 小版本号 */</span></span><br><span class="line">  u2 constant_pool_count;   <span class="comment">/* constant_pool中的entry数量+1 */</span> </span><br><span class="line">  cp_info constant_pool [constant_pool_count-<span class="number">1</span>];  <span class="comment">/* 包含String, 类和接口名, field名称和其他constant. index范围: [1 - constant_pool_count-1] */</span></span><br><span class="line">  u2 access_flags;          <span class="comment">/* 标记该Class/Interface的访问权限, 如果为ACC_INTERFACE则说明是interface, 否则为class */</span></span><br><span class="line">  u2 this_class;            <span class="comment">/* 一个index, 表示constant_pool中的CONSTANT_Class_info */</span></span><br><span class="line">  u2 super_class;           <span class="comment">/* 0或者是constant_pool中的一个index */</span></span><br><span class="line">  u2 interfaces_count;      <span class="comment">/* 直接实现的interface数量(对于class和interface都有) */</span></span><br><span class="line">  u2 interfaces[interfaces_count];  <span class="comment">/* interface在constant_pool中的index */</span></span><br><span class="line">  u2 fields_count;          <span class="comment">/* fields中fields_count的数量 */</span></span><br><span class="line">  field_info fields[fields_count];  <span class="comment">/* 包含fields_count个field_info */</span></span><br><span class="line">  u2 methods_count;         <span class="comment">/* method_info的数量 */</span></span><br><span class="line">  method_info methods[methods_count]; <span class="comment">/* 包含methods_count个method_info */</span></span><br><span class="line">  u2 attributes_count;      <span class="comment">/* attribute_info的数量 */</span></span><br><span class="line">  attribute_info attributes[attributes_count];  <span class="comment">/* 包含attributes_count个attribute_info */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-1-constant-pool结构"><a href="#5-1-constant-pool结构" class="headerlink" title="5.1 constant_pool结构"></a>5.1 constant_pool结构</h3><ul>
+<li>constant_pool_count</li>
+<li>constant_pool<ul>
+<li>cp_info<ul>
+<li>tag - 类型</li>
+<li>info - 具体内容</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-2-access-flags"><a href="#5-2-access-flags" class="headerlink" title="5.2 access_flags:"></a>5.2 access_flags:</h3><ul>
+<li>access_flags占两字节(16位), 各个访问权限占其中的一位. 例如:<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* access_flags: 0x0600 = ACC_INTERFACE(0x020) + ACC_ABSTRACT(0x0400) </span></span><br><span class="line"><span class="comment"> * 由于ACC_INTERFACE表示这是一个interface, 所以必然有ACC_ABSTRACT.</span></span><br><span class="line"><span class="comment"> * 必然不能有ACC_FINAL, ACC_SUPER, ACC_ENUM</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">TestInterface</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* access_flags: 0x0021 = ACC_PUBLIC(0x0001) + ACC_SUPER(0x0020) */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* ACC_SUPER只是为了向前兼容性, JVM并不处理该flag */</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="5-3-Constant-Pool"><a href="#5-3-Constant-Pool" class="headerlink" title="5.3 Constant Pool"></a>5.3 Constant Pool</h3><ul>
+<li>CONSTANT_Class_info<ul>
+<li>u1 tag: 7</li>
+<li>u2 name_index: 指向constant_pool中的一个CONSTANT_Utf8_info</li>
+</ul>
+</li>
+<li>CONSTANT_Fieldref_info, CONSTANT_Methodref_info和CONSTANT_InterfaceMethodref_info<ul>
+<li>CONSTANT_Fieldref_info<ul>
+<li>u1 tag: 9</li>
+<li>u2 class_index: 指向constant_pool中的一个CONSTANT_Class_info</li>
+<li>name_and_type_index: 指向constant_pool中的一个CONSTANT_NameAndType_info</li>
+</ul>
+</li>
+<li>CONSTANT_Methodref_info<ul>
+<li>u1 tag: 10</li>
+<li>u2 class_index: 同上</li>
+<li>u2 name_and_type_index: 同上</li>
+</ul>
+</li>
+<li>CONSTANT_InterfaceMethodref_info<ul>
+<li>u1 tag: 11</li>
+<li>u2 class_index: 同上</li>
+<li>u2 name_and_type_index: 同上</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>CONSTANT_String_info<ul>
+<li>u1 tag: 8</li>
+<li>u2 string_index: 指向constant_pool中的一个CONSTANT_Utf8_info</li>
+</ul>
+</li>
+<li>CONSTANT_Integer_info和CONSTANT_Float_info<ul>
+<li>CONSTANT_Integer_info<ul>
+<li>u1 tag: 3</li>
+<li>u4 bytes: 4字节的int</li>
+</ul>
+</li>
+<li>CONSTANT_Float_info<ul>
+<li>u1 tag: 4</li>
+<li>u4 bytes: 4字节的float</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>CONSTANT_Long_info和CONSTANT_Double_info<ul>
+<li>CONSTANT_Long_info<ul>
+<li>u1 tag: 5</li>
+<li>u4 high_bytes</li>
+<li>u4 low_bytes</li>
+</ul>
+</li>
+<li>CONSTANT_Double_info<ul>
+<li>u1 tag: 6</li>
+<li>u4 high_bytes</li>
+<li>u4 low_bytes</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>CONSTANT_NameAndType_info<ul>
+<li>u1 tag: 12</li>
+<li>u2 name_index: 指向constant_pool中的一个CONSTANT_Utf8_info, 代表类&#x2F;接口的函数名</li>
+<li>u2 descriptor_index: 指向constant_pool中的一个CONSTANT_Utf8_info, 代表类&#x2F;接口的descriptor(descriptor&#x3D;参数+返回值)</li>
+</ul>
+</li>
+<li>CONSTANT_Utf8_info<ul>
+<li>u1 tag: 1</li>
+<li>u2 length: 字节数</li>
+<li>u1 bytes[length]: 包含length个字节的字符数组</li>
+</ul>
+</li>
+<li>CONSTANT_MethodHandle_info<ul>
+<li>u1 tag: 15</li>
+<li>u1 reference_kind: 范围是[1-9], 表示某个method handle</li>
+<li>u2 reference_index: 指向constant_pool中的一个entry, 根据reference_kind来决定entry的类型</li>
+</ul>
+</li>
+<li>CONSTANT_MethodType_info<ul>
+<li>u1 tag: 16</li>
+<li>u2 descriptor: 指向constant_pool中的一个CONSTANT_Utf8_info, 表示一个method descriptor</li>
+</ul>
+</li>
+<li>CONSTANT_InvokeDynamic_info<ul>
+<li>u1 tag: 18</li>
+<li>u2 bootstrap_method_attr_index: 表示bootstrap_methods的一个index</li>
+<li>u2 name_and_type_index: 指向constant_pool中的一个CONSTANT_NameAndType_info, 表示一个method name和method descriptor</li>
+</ul>
+</li>
+</ul>
+<h2 id="6-Frames-栈帧"><a href="#6-Frames-栈帧" class="headerlink" title="6. Frames(栈帧)"></a>6. Frames(栈帧)</h2><h3 id="6-1-功能"><a href="#6-1-功能" class="headerlink" title="6.1 功能"></a>6.1 功能</h3><p>用于存储数据和临时结果, 也用来操作动态链接, 返回值和分派异常(对于method)</p>
+<h3 id="6-2-组合部分"><a href="#6-2-组合部分" class="headerlink" title="6.2 组合部分"></a>6.2 组合部分</h3><ul>
+<li>Local variable</li>
+<li>Operand stack</li>
+<li>指向常量池中已解析的方法引用</li>
+<li>其他信息:<ul>
+<li>Current method指针</li>
+<li>Local variable指针</li>
+<li>Constant pool指针</li>
+<li>returnAddress指针</li>
+<li>Operand Stack顶部指针</li>
+<li>等等</li>
+</ul>
+</li>
+</ul>
+<h3 id="6-3-其他"><a href="#6-3-其他" class="headerlink" title="6.3 其他"></a>6.3 其他</h3><ol>
+<li>每次有方法被调用时就会创建一个frame, 当method运行完毕后就会销毁frame(无论method正常结束或异常结束). Frame在单个线程中的JVM stacks分配空间(保证线程独立), 每个frame有自己的local variable, operand stack和一个run-time constant pool的引用(当前线程的class)</li>
+<li>local variable和operand stack的大小在编译时就确定了, frame的大小依赖于JVM的实现.</li>
+<li>thread, method和frame有两种状态: current和非current. 如果当前thread的某个method运行中, 则当前class, method和所对应的frame被称为current class, current method和current frame</li>
+</ol>
+<h2 id="7-Local-Variables"><a href="#7-Local-Variables" class="headerlink" title="7. Local Variables"></a>7. Local Variables</h2><h3 id="7-1-功能"><a href="#7-1-功能" class="headerlink" title="7.1 功能"></a>7.1 功能</h3><p>位于Frame中. 将变量放在一个数组中, 数组单元称为slot(每个slot长度为32位), 数组的长度在编译时就固定下来. 变量通过数组索引访问(以0为初始索引值)</p>
+<h3 id="7-2-其他"><a href="#7-2-其他" class="headerlink" title="7.2 其他"></a>7.2 其他</h3><ol>
+<li>boolean, byte, char, short, int, float, reference和returnAddress占一个slot. long和double占两个slot(连续分配, 如果某long值的索引值为n, 则占用数组中n和n+1)</li>
+<li>除了临时变量和参数, 还会存放临时返回值, ret指令的返回值</li>
+<li>一个slot在一个方法中可以分配给多个变量使用, 只要这些变量的作用域不重叠就可以, 与变量类型无关</li>
+</ol>
+<h2 id="8-Operand-Stacks"><a href="#8-Operand-Stacks" class="headerlink" title="8. Operand Stacks"></a>8. Operand Stacks</h2><h3 id="8-1-功能"><a href="#8-1-功能" class="headerlink" title="8.1 功能"></a>8.1 功能</h3><p>位于Frame中. 作为一个LIFO的栈, 用于实现opcode的操作用的栈. 在编译时深度就固定</p>
+<h3 id="8-2-其他"><a href="#8-2-其他" class="headerlink" title="8.2 其他"></a>8.2 其他</h3><ol>
+<li>Operand Stack刚被创建时为空, opcode就会将local variable或fields中的局部变量或常量放入Operand Stack中. Operand Stack也用来将一个method的result传递给另一个method作为参数</li>
+<li>Operand Stack的每一个entry能包含任意JVM type, 包括long和double</li>
+<li>Operand Stack中的值必须使用正确的类型处理, 例如: 放入两个int值时, 不能将int值作为long或double类型放入. 但也有部分opcode(dup, swap)不以特定类型处理entry</li>
+</ol>
+<h2 id="9-Dynamic-Linking"><a href="#9-Dynamic-Linking" class="headerlink" title="9. Dynamic Linking"></a>9. Dynamic Linking</h2><p>每个frame都有run-time constant pool中的一个引用. 该引用是为了支持method code的dynamic linking. Dynamic linking将symbolic method reference转换为concrete method reference, 将为解析某些符号而加载类, 并将变量的访问变为内存中的偏移量</p>
+<h2 id="10-普通函数的调用"><a href="#10-普通函数的调用" class="headerlink" title="10. 普通函数的调用"></a>10. 普通函数的调用</h2><p>一共有五个指令能调用函数:</p>
+<ul>
+<li>invokevirtual: 根据对象的类型分派方法</li>
+<li>invokeinterface: 调用一个interface的方法</li>
+<li>invokespecial: 调用一个特殊的对象方法, 例如: 初始化方法, private方法, superclass方法</li>
+<li>invokestatic: 调用一个类方法(静态方法)</li>
+<li>invokdynamic: 执行invokedynamic call site时调用的指令, 将call site与某个bootstrap method关联, 有这个bootstrap method来返回一个对象(包含mehthod handle), 并指明该执行什么方法<br>当函数正常调用完毕后， current frame用来恢复invoker的状态, 包括invoker的local variables, operand stack, 跳过pc register执行过的指令. invoker会收到current frame的返回值, 并继续执行</li>
+</ul>
+<h2 id="11-Synchronization-同步"><a href="#11-Synchronization-同步" class="headerlink" title="11. Synchronization(同步)"></a>11. Synchronization(同步)</h2><ul>
+<li>功能: JVM支持method和一个method中instruction序列的同步操作. 这一功能主要由monitor实现</li>
+<li>method级别的同步很隐晦, 在调用方法和退出方法时就实现了. 当某个method的run-time constant pool中的method_info的flag有ACC_SYNCHRONIZED时, method invocation instruction将会检查到, 并将current thread放入monitor中.</li>
+<li>Strutured locking表示这样一个情况: 每一个从monitor退出的method都对应一次method invocation. 共有两条规则来保证structured locking:<ul>
+<li>一次方法调用中, 进入的monitor次数必须和从monitor退出的次数一样(无论函数是否正常调用)</li>
+<li>一次方法调用中, 单个线程释放monitor的数量不能超过进入monitor的数量</li>
+</ul>
+</li>
+</ul>
+<h2 id="12-运行时数据区域"><a href="#12-运行时数据区域" class="headerlink" title="12. 运行时数据区域"></a>12. 运行时数据区域</h2><h3 id="12-1-程序计数器-Program-Counter-Register"><a href="#12-1-程序计数器-Program-Counter-Register" class="headerlink" title="12.1 程序计数器(Program Counter Register)"></a>12.1 程序计数器(Program Counter Register)</h3><ul>
+<li>功能: 对于非Native方法, 存储JVM指令的地址. 如果是Native方法, PC register的值不确定</li>
+<li>pc register范围足够大, 可以装下任意returnAddress或native pointer, 所以没有OutOfMemoryError</li>
+<li>JVM支持多线程执行, 所以每个线程的pc register独立运行</li>
+</ul>
+<h3 id="12-2-Java虚拟机栈-Java-Virtual-Machine-Stacks"><a href="#12-2-Java虚拟机栈-Java-Virtual-Machine-Stacks" class="headerlink" title="12.2 Java虚拟机栈(Java Virtual Machine Stacks)"></a>12.2 Java虚拟机栈(Java Virtual Machine Stacks)</h3><ul>
+<li>功能: 防止局部变量和临时结果, 用于函数的调用和返回. </li>
+<li>线程私有, 线程创建时就会生成一个Stack, 生存周期与线程相同. 每当线程调用一个方法, 就会创建一个Frame(存放Local variables, Operand Stack, Dynamic linking). 方法的执行也就是frame入栈出栈的过程.</li>
+<li>JVM stack可使用固定或动态大小, 以下有几种异常情况:<ul>
+<li>栈深度大于虚拟机所允许: StackOverflowError(单个线程的递归产生, 通过不断添加Stack Frame使得内存不足)</li>
+<li>无法申请到足够内存: OutOfMemoryError(通过产生大量线程, 新线程没有内存)</li>
+</ul>
+</li>
+</ul>
+<h3 id="12-3-本地方法栈-Native-Method-Stack"><a href="#12-3-本地方法栈-Native-Method-Stack" class="headerlink" title="12.3 本地方法栈(Native Method Stack)"></a>12.3 本地方法栈(Native Method Stack)</h3><ul>
+<li>功能: 支持其他语言的栈空间. 不支持native method的JVM可不用创建Native method stack. 如果支持native method, 则每次创建线程时创建该区域</li>
+<li>该区域可为固定大小或动态大小. </li>
+<li>异常情况:<ul>
+<li>单个线程的native method stack不足, 抛出StackOverflowError</li>
+<li>大量线程导致native method stack不足, 抛出OutOfMemoryError</li>
+</ul>
+</li>
+</ul>
+<h3 id="12-4-Heap-堆"><a href="#12-4-Heap-堆" class="headerlink" title="12.4 Heap(堆)"></a>12.4 Heap(堆)</h3><ul>
+<li>功能: 提供一块由全部线程共享的区域. 所有class对象和数组都分配在这里</li>
+<li>JVM启动时自动创建heap, 由GC来实现自动管理对象(对象无法显式释放). 从内存回收的角度, 现在收集器采用分代收集算法. Java堆分为新生代和老年代, 还可以细分为Eden空间, From Survivor空间和To Survivor空间等. </li>
+<li>Heap可以是固定大小, 也可以根据需求增大或缩小. Heap的内存也不必是连续分配的.</li>
+<li>Java堆是GC管理的主要区域. </li>
+<li>异常情况: 如果堆上无法完成内存分配, 并且无法拓展, 则抛出OutOfMemoryError(大量申请类对象导致)</li>
+</ul>
+<h3 id="12-5-方法区-Method-Area"><a href="#12-5-方法区-Method-Area" class="headerlink" title="12.5 方法区(Method Area)"></a>12.5 方法区(Method Area)</h3><ul>
+<li>功能: 各线程共享的内存空间, 用来存储每个类的结构, 例如: run-time constant pool, field, method data和方法运行的指令</li>
+<li>JVM启动时生成Method Area. 虽然属于heap, 但JVM实现时倾向于不对Method Area进行GC和压缩. 可以是固定大小或动态大小</li>
+<li>异常情况: 无法满足内存分配需求时抛出OutOfMemoryError(大量生成类导致类的相关信息过多, 最后方法区溢出)</li>
+<li>HotSpot的实现: 将Method Area成为<strong>PermGen</strong>(Permanent Generation, 永久代), 因为这样可像管理Java堆一样管理这部分内存. 目前HotSpot也放弃了PermGen, 并逐步采用Native Memory来实现方法区的管理(因为永久代可能导致内存溢出, 需要通过-XX:MaxPermSize重新设置上限)</li>
+</ul>
+<h3 id="12-6-运行时常量池-Run-time-Constant-Pool"><a href="#12-6-运行时常量池-Run-time-Constant-Pool" class="headerlink" title="12.6 运行时常量池(Run-time Constant Pool)"></a>12.6 运行时常量池(Run-time Constant Pool)</h3><ul>
+<li>功能: 包含每个class和interface的run-time representation(class文件中的constant_pool), 这其中包含几种数据:<ul>
+<li>compile-time确定的数值常量</li>
+<li>run-time确定的method和field</li>
+</ul>
+</li>
+<li>Run-time constant pool分配在Method Area中, 当class或interface创建时会创建Run-time constant pool</li>
+<li>异常情况: 当创建class或interface时, 生成的相关信息超过了Run-time Constant Pool的内存大小, 抛出OutOfMemoryError()</li>
+</ul>
+<h3 id="12-7-直接内存"><a href="#12-7-直接内存" class="headerlink" title="12.7 直接内存"></a>12.7 直接内存</h3><ul>
+<li>功能: 直接内存不是运行时数据区的一部分, 它可以不占用堆空间直接分配到物理内存中, 但仍受操作系统最大内存的限制. 无法满足时抛出OutOfMemoryError</li>
+<li>通过需要大内存空间且频繁访问时才需要直接内存, 因为这块区域读取速度更快, 且不受JVM垃圾回收管理. 可通过unsafe.allocateMemory()在直接内存中分配空间</li>
+</ul>
+<h2 id="13-JVM的数据类型"><a href="#13-JVM的数据类型" class="headerlink" title="13. JVM的数据类型"></a>13. JVM的数据类型</h2><p>JVM中只有两种数据类型: Primitive type和Reference type</p>
+<h3 id="13-1-Primitive-types"><a href="#13-1-Primitive-types" class="headerlink" title="13.1 Primitive types"></a>13.1 Primitive types</h3><ul>
+<li>numeric types<ul>
+<li>integral type: 默认为0<ul>
+<li>byte: 8位二进制补码</li>
+<li>short: 16位二进制补码</li>
+<li>int: 32位二进制补码</li>
+<li>long: 64位二进制补码</li>
+</ul>
+</li>
+<li>floating-point type: 默认为+0<ul>
+<li>float: 32位float-extended-exponent值, 默认为+0</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>boolean type: 32位(使用int表示boolean), 1表示true, 0表示false, 默认为0</li>
+<li>returnAddress type: 指向某个opcode的指针, Primitive type中唯一不能被程序员修改的值</li>
+</ul>
+<h3 id="13-2-reference-types"><a href="#13-2-reference-types" class="headerlink" title="13.2 reference types"></a>13.2 reference types</h3><ul>
+<li>class type</li>
+<li>array type<br>一个array type包含一维的component type, 如果component type也是一个array type, 那么该array type也有一个component type. 如果array type的component type不是array type(可以是primitive type, class type或interface type), 则称作element type.</li>
+<li>interface type</li>
+</ul>
+<h2 id="14-没有分配到堆的对象实例"><a href="#14-没有分配到堆的对象实例" class="headerlink" title="14. 没有分配到堆的对象实例"></a>14. 没有分配到堆的对象实例</h2><ol>
+<li>堆是由所有线程共享的, 而new操作会将对象分配到堆上, 这就导致每次分配操作必然伴随着锁操作. 而锁的使用时有一定开销, 当对象频繁分配时不免影响效率</li>
+<li>JVM在Eden Space中开辟了一块区域用于线程私有, 被称为TLAB(Thread-local allocation buffer), 默认占Eden Space的1%. 这样就避免了小对象的分配需要锁, 也适合快速GC. </li>
+<li>逃逸分析下, 如果某个对象只存在于某个方法和线程内, 那么说明该对象可分配在栈上. 因为该对象是局部性的</li>
+</ol>
+<h2 id="15-四种引用类型"><a href="#15-四种引用类型" class="headerlink" title="15. 四种引用类型"></a>15. 四种引用类型</h2><h3 id="15-1-强引用-Strong-Reference"><a href="#15-1-强引用-Strong-Reference" class="headerlink" title="15.1 强引用(Strong Reference)"></a>15.1 强引用(Strong Reference)</h3><p>GC永不会回收的引用对象(即使内存不足报错), 除非引用改为null</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">r0</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;123&quot;</span>);</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r0);   <span class="comment">// 123</span></span><br><span class="line">r0 = <span class="literal">null</span>;</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r0);   <span class="comment">// null</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="15-2-软引用-Soft-Reference"><a href="#15-2-软引用-Soft-Reference" class="headerlink" title="15.2 软引用(Soft Reference)"></a>15.2 软引用(Soft Reference)</h3><p>用于描述有用但非必需的对象, 缓存不足时进行GC. 适合用于创建缓存, 例如网页缓存.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">SoftReference&lt;String&gt; r = <span class="keyword">new</span> <span class="title class_">SoftReference</span>(<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;bcd&quot;</span>));</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r.get());  <span class="comment">// bcd</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="15-3-弱引用-Weak-Reference"><a href="#15-3-弱引用-Weak-Reference" class="headerlink" title="15.3 弱引用(Weak Reference)"></a>15.3 弱引用(Weak Reference)</h3><p>强度比软引用更弱, 只能生存到下一次GC之前. 但由于GC线程的优先级很低, 所以可以作为级别较低的缓存, 例如Tomcat的LRU缓存. 可被强引用拯救被GC的命运</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">WeakReference&lt;String&gt; r = <span class="keyword">new</span> <span class="title class_">WeakReference</span>(<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>));</span><br><span class="line"><span class="type">String</span> <span class="variable">test</span> <span class="operator">=</span> r.get();</span><br><span class="line">System.gc();</span><br><span class="line">System.out.println(r.get()); <span class="comment">// 如果没有test引用则返回null, 但由于test强引用, 因而使得r所指向的对象躲过GC</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="15-4-虚引用-Phantom-Reference"><a href="#15-4-虚引用-Phantom-Reference" class="headerlink" title="15.4 虚引用(Phantom Reference)"></a>15.4 虚引用(Phantom Reference)</h3><p>最弱的引用关系. 无法通过虚引用得到一个对象实例, 且完全不会对生存时间构成影响, 也不会被强引用拯救被GC的命运. 可用于两点: 不用担心析构问题, 因为虚引用的对象在GC中必被销毁; 可知道对象何时被析构</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">ReferenceQueue</span> <span class="variable">rq</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReferenceQueue</span>();</span><br><span class="line">PhantomReference&lt;String&gt; r = <span class="keyword">new</span> <span class="title class_">PhantomReference</span>(<span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;def&quot;</span>), rq);</span><br><span class="line">System.out.println(r.get());  <span class="comment">// null</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/94a0.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">JVM (3)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/f4a1.html">
+        <span class="next-text nav-default">JVM (1)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/a4a2.html';
+  var disqus_title = "JVM (2)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Linux cgroups"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/f10b.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/f10b.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/f10b.html"/>
+
+
+<meta name="description" content="1. Introductioncgroups全称为control groups, 作为Linux kernel的一个特性, 可将进程分配到不同的group, 并为每个group配置某个资源的限额或监控. 以下是cgroups中的一些名词解释:  cgroup: cgroups中资源分配的最小单元, 包含零个或多个进程, 可关联一个或多个subsystem subsystem: 也称为resourc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux cgroups">
+<meta property="og:url" content="https://zaf1ro.github.io/p/f10b.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introductioncgroups全称为control groups, 作为Linux kernel的一个特性, 可将进程分配到不同的group, 并为每个group配置某个资源的限额或监控. 以下是cgroups中的一些名词解释:  cgroup: cgroups中资源分配的最小单元, 包含零个或多个进程, 可关联一个或多个subsystem subsystem: 也称为resourc">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-01-02T13:44:25.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.058Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Linux cgroups - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Why-are-cgroups-needed"><span class="toc-text">2. Why are cgroups needed</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-cgroups-version-1-and-version-2"><span class="toc-text">3. cgroups version 1 and version 2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-cgroups-version-1"><span class="toc-text">4. cgroups version 1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-cgroups-v1-controllers"><span class="toc-text">4.1 cgroups v1 controllers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Tasks-versus-processes"><span class="toc-text">4.2 Tasks versus processes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Mount-v1-controller"><span class="toc-text">4.3 Mount v1 controller</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Unmount-cgroups-v1-filesystem"><span class="toc-text">4.4 Unmount cgroups v1 filesystem</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Creating-cgroups-and-moving-processes"><span class="toc-text">4.5 Creating cgroups and moving processes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-Remove-cgroup"><span class="toc-text">4.6 Remove cgroup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-Cgroups-v1-release-notification"><span class="toc-text">4.7 Cgroups v1 release notification</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-cgroups-version-2"><span class="toc-text">5. cgroups version 2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Background"><span class="toc-text">5.1 Background</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-cgroups-v2-unified-hierarchy"><span class="toc-text">5.2 cgroups v2 unified hierarchy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-cgroups-v2-controllers"><span class="toc-text">5.3 cgroups v2 controllers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-cgroups-v2-subtree-control"><span class="toc-text">5.4 cgroups v2 subtree control</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-No-internal-processes"><span class="toc-text">5.5 No internal processes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-cgroups-v2-cgroup-events-file"><span class="toc-text">5.6 cgroups v2 cgroup.events file</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-7-cgroups-v2-release-notification"><span class="toc-text">5.7 cgroups v2 release notification</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-8-cgroups-v2-cgroup-stat-file"><span class="toc-text">5.8 cgroups v2 cgroup.stat file</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Linux cgroups
+        
+      </h1>
+      <time class="post-time">
+          01/02/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>cgroups全称为<strong>control groups</strong>, 作为Linux kernel的一个特性, 可将进程分配到不同的group, 并为每个group配置某个资源的限额或监控. 以下是cgroups中的一些名词解释:</p>
+<ul>
+<li>cgroup: cgroups中资源分配的最小单元, 包含零个或多个进程, 可关联一个或多个subsystem</li>
+<li>subsystem: 也称为<strong>resource controller</strong>, 用于限制或监控某种资源</li>
+<li>hierarchy: cgroup的组织形式, 类似于文件系统的树状结构. 系统中的每个进程都属于一个cgroup, 而每个cgroup属于一个hierarchy</li>
+</ul>
+<h2 id="2-Why-are-cgroups-needed"><a href="#2-Why-are-cgroups-needed" class="headerlink" title="2. Why are cgroups needed"></a>2. Why are cgroups needed</h2><p>Linux kernel有过很多为进程分组的尝试:</p>
+<ul>
+<li>child process: parent process的所有child process组成一个最简单的group, 用户可调用<code>wait()</code>检查该group是否为空. 若<code>wait()</code>返回<code>ECHILD</code>说明该group为空; 若<code>wait()</code>没有返回错误或没有返回, 说明该group不为空.</li>
+<li>process group: V7 Unix中, 当进程第一次打开一个tty, Unix会为其创建一个process group, 进程的所有child process都属于该process group. Process group用于简化kernel对多个进程进行signal操作, 但用户无法主动向某个group发送signal.</li>
+<li>job control: 4BSD引入<strong>job control</strong>, 用于让多个程序共用一个terminal, 用户可通过<code>Ctrl-Z</code>停止当前程序, 并让其他程序使用terminal, 因此需支持用户向process group发送signal(<code>kill()</code>的PID为负值). 一个job等同于一个process group, 多个job共享一个terminal, 其中一个job称为<strong>foreground job</strong>, 该job中的进程可接收signal和terminal输入, 并输出到terminal; 其他job称为<strong>background job</strong>, 该job种的进程读取或写入terminal时会收到<code>SIGTTIN</code>或<code>SIGTTOU</code>.</li>
+<li>session: 4.4BSD引入<strong>session</strong>, 每个进程属于一个process group, 每个process group属于一个session. Session用于为daemon process及其child process创建一个独立环境, 由于关闭terminal会关闭对应process group中的所有进程, 因此daemon process不能依赖任何terminal, daemon process可调用<code>setsid()</code>创建一个新的session, 让其自动创建新的process group, 并摆脱原terminal的控制.</li>
+</ul>
+<p>上述对于进程的分组存在以下局限:</p>
+<ul>
+<li>用户无法自定义group的名称</li>
+<li>功能过于简单: 只能控制signal和terminal的I&#x2F;O</li>
+<li>层级过于简单: 进程只能分配到某个group中, 没有其他形式的组织结构</li>
+</ul>
+<p>以下是cgroups的功能:</p>
+<ul>
+<li>资源限制: 对cgroup中的进程进行资源总额限制</li>
+<li>优先级分配: 通过分配cpu时间或I&#x2F;O带宽, 从而控制进程运行的优先级</li>
+<li>资源统计: 统计进程的资源使用量, 如cpu使用时长, 内存用量等</li>
+<li>进程控制: 对cgroup中的进程执行挂起和恢复操作</li>
+</ul>
+<h2 id="3-cgroups-version-1-and-version-2"><a href="#3-cgroups-version-1-and-version-2" class="headerlink" title="3. cgroups version 1 and version 2"></a>3. cgroups version 1 and version 2</h2><p>Linux kernel 2.6.24引入cgroup, 并在之后添加多个controller(subsystem), 但由于不同controller相互矛盾的设计, 以及多个hierarchy带来的复杂性, Linux 3.10引入<strong>cgroup v2</strong>, 并将之前的cgroup称为<strong>cgroup v1</strong>. 两个版本的cgroup有相似之处, 也有不同之处, 虽然可以在系统中同时使用cgroup v1和cgroup v2, 但推荐只使用cgroup v2.<br>cgroup(无论v1或v2)的任何操作都通过一个pseudo-filesystem实现, 称为<strong>cgroupfs</strong>, 因此没有添加任何新的API.</p>
+<h2 id="4-cgroups-version-1"><a href="#4-cgroups-version-1" class="headerlink" title="4. cgroups version 1"></a>4. cgroups version 1</h2><p>cgroups v1支持多个hierarchy, 也就是说, 一个系统中可存在多个hierarchy, 每个hierarchy可绑定零个或多个controller, 每个hierarchy包含系统内的所有进程.</p>
+<h3 id="4-1-cgroups-v1-controllers"><a href="#4-1-cgroups-v1-controllers" class="headerlink" title="4.1 cgroups v1 controllers"></a>4.1 cgroups v1 controllers</h3><p>以下是cgroups v1中常见的controller:</p>
+<ul>
+<li>cpu: 系统繁忙时, 保证cgroup中进程的最低cpu使用率; 系统不忙时, 不会限制cpu使用率</li>
+<li>cpuacct: 统计cgroup中进程的cpu使用率</li>
+<li>cpuset: 为cgroup中的进程分配cpu和NUMA节点</li>
+<li>memory: 为cgroup中的进程设置process memory, kernel memory和swap的上限</li>
+<li>devices: 控制cgroup中的进程创建设备, 打开设备, 或写入设备</li>
+<li>freezer: 挂起或恢复cgroup中所有进程</li>
+<li>net_cls: 标记cgroup中进程的网络数据包, 允许<strong>tc</strong>控制数据包</li>
+<li>blkio: 控制cgroup中进程访问block device</li>
+<li>perf_event: 允许cgroup中进程被perf工具监控</li>
+<li>net_prio: 为cgroup中进程设置每个network interface的流量优先级</li>
+</ul>
+<h3 id="4-2-Tasks-versus-processes"><a href="#4-2-Tasks-versus-processes" class="headerlink" title="4.2 Tasks versus processes"></a>4.2 Tasks versus processes</h3><p>cgroups v1中存在tasks和processes的概念, tasks表示线程, processes表示进程, 一个进程内的多个tasks可属于不同cgroup. 但将同一进程的线程分配到不同cgroup可能导致一些问题, 例如: 由于进程的所有线程共享一个address space, 因此不应使用memory controller.</p>
+<h3 id="4-3-Mount-v1-controller"><a href="#4-3-Mount-v1-controller" class="headerlink" title="4.3 Mount v1 controller"></a>4.3 Mount v1 controller</h3><p>cgroups v1 hierarchy呈现为filesystem的层级结构, 使用hierarchy前需<strong>mount</strong> cgroup filesystem.</p>
+<ul>
+<li>将一个controller挂载到一个hierarchy:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mount -t cgroup -o cpu none /sys/fs/cgroup/cpu</span><br></pre></td></tr></table></figure></li>
+<li>将多个controller挂载到不同hierarchy:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mount -t cgroup -o cpu,cpuacct none /sys/fs/cgroup/cpu,cpuacct</span><br></pre></td></tr></table></figure></li>
+<li>将多个controller挂载到一个hierarchy:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mount -t cgroup -o cpu,memory cgroup /sys/fs/cgroup/cpu_memory</span><br></pre></td></tr></table></figure></li>
+<li>将所有controller挂载到一个hierarchy:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mount -t cgroup -o all cgroup /sys/fs/cgroup</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>每个mount point都是一个hierarchy, hierarchy的根部文件夹称为<strong>root cgroup</strong>(如<code>/sys/fs/cgroup/cpu</code>), 每个hierarchy包含系统内所有进程, 用户可在root cgroup中创建并嵌套文件夹, 称为<strong>child cgroup</strong>, 因此每个hierarchy组成一个cgroup树状结构.<br>若将多个controller挂载到一个hierarchy, 该hierarchy中的进程会受到所有controller的影响; 若将多个controller挂载到不同的hierarchy, 则同一进程会出现在不同的hierarchy中, 例如: 进程可位于<code>/sys/fs/cgroup/cpu</code>, 其挂载cpu controller, 也可位于<code>/sys/fs/cgroup/memory</code>, 其挂载memory controller.</p>
+<h3 id="4-4-Unmount-cgroups-v1-filesystem"><a href="#4-4-Unmount-cgroups-v1-filesystem" class="headerlink" title="4.4 Unmount cgroups v1 filesystem"></a>4.4 Unmount cgroups v1 filesystem</h3><p>使用<code>umount</code>命令可卸载cgroup filesystem:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">umount /sys/fs/cgroup/pids</span><br></pre></td></tr></table></figure>
+<p>需要注意的是, 只有hierarchy中所有child cgroup都没有进程时, umount才能真正卸载cgroups filesystem, 换句话说, 需在umount前将child cgroup中进程移至root cgroup. 需要注意的是, root cgroup中存在child cgroup不影响umount, 只要child cgroup中没有任何进程即可.</p>
+<h3 id="4-5-Creating-cgroups-and-moving-processes"><a href="#4-5-Creating-cgroups-and-moving-processes" class="headerlink" title="4.5 Creating cgroups and moving processes"></a>4.5 Creating cgroups and moving processes</h3><p>假设已将cpu controller挂载到<code>/sys/fs/cgroup/cpu</code>, root cgroup包含的文件如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">ls</span> /sys/fs/cgroup/cpu</span><br><span class="line">cgroup.clone_children  cpu.cfs_quota_us  cpu.uclamp.max  cpuacct.usage         cpuacct.usage_percpu_sys   cpuacct.usage_user</span><br><span class="line">cgroup.procs           cpu.shares        cpu.uclamp.min  cpuacct.usage_all     cpuacct.usage_percpu_user  notify_on_release</span><br><span class="line">cpu.cfs_period_us      cpu.stat          cpuacct.stat    cpuacct.usage_percpu  cpuacct.usage_sys          tasks</span><br></pre></td></tr></table></figure>
+<p>创建一个cgroup:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> /sys/fs/cgroup/cpu/cg1</span><br></pre></td></tr></table></figure>
+<p>新建的cgroup不包含任何进程, 可将PID写入<code>cgroup.procs</code>文件:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> $$ &gt; /sys/fs/cgroup/cpu/cg1/cgroup.procs</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>写入PID时, 会将该进程的所有线程移入对应的cgroup</li>
+<li>若PID为0, 会将当前进程移入对应的cgroup</li>
+<li>一个进程只能出现在一个hierarchy中的一个cgroup, 写入一个cgroup时, 会自动将进程从其他cgroup中移除</li>
+<li>读取<code>cgroup.procs</code>可获得该cgroup中所有PID</li>
+<li>cgroups v1支持同一进程中的不同线程处于不同cgroup: 将thread ID写入对应cgroup的<code>tasks</code>文件</li>
+</ul>
+<h3 id="4-6-Remove-cgroup"><a href="#4-6-Remove-cgroup" class="headerlink" title="4.6 Remove cgroup"></a>4.6 Remove cgroup</h3><p>移除cgroup前需满足以下条件:</p>
+<ul>
+<li>该cgroup下没有任何child cgroup<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/sys/fs/cgroup/cpu# mkdir -p cg1/cg2</span><br><span class="line">/sys/fs/cgroup/cpu# rmdir cg1</span><br><span class="line">rmdir: failed to remove &#x27;cg1&#x27;: Device or resource busy</span><br></pre></td></tr></table></figure></li>
+<li>该cgroup没有包含任何进程<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">/sys/fs/cgroup/cpu# <span class="built_in">echo</span> $$ &gt; cg1/cgroup.procs</span><br><span class="line">/sys/fs/cgroup/cpu# <span class="built_in">rmdir</span> cg1</span><br><span class="line"><span class="built_in">rmdir</span>: failed to remove <span class="string">&#x27;cg1&#x27;</span>: Device or resource busy</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="4-7-Cgroups-v1-release-notification"><a href="#4-7-Cgroups-v1-release-notification" class="headerlink" title="4.7 Cgroups v1 release notification"></a>4.7 Cgroups v1 release notification</h3><p>若某个cgroup中没有任何child cgroup, 也不包含任何进程, 则可以说该cgroup为空. 每个hierarchy的root cgroup包含以下两个文件来决定是否通知用户cgroup为空:</p>
+<ul>
+<li>release_agent: 当cgroup为空时, kernel会触发该文件内的程序路径</li>
+<li>notify_on_release: 若为0, 则cgroup为空时不会触发release_agent中的程序; 若为1, 则触发</li>
+</ul>
+<h2 id="5-cgroups-version-2"><a href="#5-cgroups-version-2" class="headerlink" title="5. cgroups version 2"></a>5. cgroups version 2</h2><h3 id="5-1-Background"><a href="#5-1-Background" class="headerlink" title="5.1 Background"></a>5.1 Background</h3><p>截止Linux kernel 4.3, cgroups v1已拥有12个controller, 但随着越来越多的开发者使用cgroups, 很多开发者发现了cgroups设计上的不合理之处:</p>
+<ul>
+<li>创建child cgroup时, 一些controller会将参数传给child cgroup, 而一些controller不会</li>
+<li>cgroups v1支持系统中存在多个hierarchy, 其为开发者提供一些灵活性, 开发者可根据需求将同一进程分配到不同的hierarchy; 但也引入很多问题:<ul>
+<li>一个controller只能挂载到一个hierarchy: 对于资源分配类的controller, 这种实现很合理; 但对于freezer, 不同hierarchy中的cgroup可能都需要暂停或恢复进程. 当然也可以让一个controller挂载到多个hierarchy, 但实现上会十分复杂.</li>
+<li>不同controller的行为不同, 对于hierarchy的使用也不同: 有些controller会从上向下遍历hierarchy, 有些则从下向上</li>
+</ul>
+</li>
+<li>真正使用多个hierarchy的开发者很少</li>
+<li>controller的实现尽量避免侵入kernel, 但导致整合的很差</li>
+</ul>
+<p>cgroups v2中, 所有controller挂载到一个unified hierarchy, 且系统只能有一个hierarchy. 以下是cgroups v2的新特性:</p>
+<ul>
+<li>cgroup v2只允许一个unified hierarchy, 且该hierarchy挂载所有controller</li>
+<li>除了root cgroup, 进程只能驻留在leaf node中(没有任何child cgroup的cgroup)</li>
+<li>cgroup可通过<code>cgroup.subtree_control</code>文件选择是否开启child cgroup的某个controller</li>
+<li>移除cgroups v1中的<code>tasks</code>文件, 因此一个进程的所有线程必须位于一个cgroup</li>
+<li><code>cgroup.events</code>文件负责通知空的cgroup</li>
+</ul>
+<h3 id="5-2-cgroups-v2-unified-hierarchy"><a href="#5-2-cgroups-v2-unified-hierarchy" class="headerlink" title="5.2 cgroups v2 unified hierarchy"></a>5.2 cgroups v2 unified hierarchy</h3><p>cgroups v1允许开发者将不同的controller挂载到不同的hierarchy, 这提供了一定的灵活性; 但实际中, 这么做的人很少, 且增加了维护的难度. cgroups v2中, 所有controller自动挂载到hierarchy上, 因此挂载cgroups v2 filesystem时无需指定controller:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mount -t cgroup2 none /mnt/cgroup2</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-cgroups-v2-controllers"><a href="#5-3-cgroups-v2-controllers" class="headerlink" title="5.3 cgroups v2 controllers"></a>5.3 cgroups v2 controllers</h3><p>以下是cgroups v2中所有controller:</p>
+<ul>
+<li>cpu: 等同于cgroups v1的cpu和cpuacct</li>
+<li>cpuset: 等同于cgroups v1的cpuset</li>
+<li>freezer: 等同于cgroups v1的freezer</li>
+<li>hugetlb: 等同于cgroups v1的hugetlb</li>
+<li>io: 等同于cgroups v1的blkio</li>
+<li>memory: 等同于cgroups v1的memory</li>
+<li>perf_event: 等同于cgroups v1的perf_event</li>
+<li>pids: 等同于cgroups v1的pids</li>
+<li>rdma: 等同于cgroups v1的rdma</li>
+</ul>
+<p>需要注意的是, 若同时使用cgroups v1和v2, 上述controller只能挂载到其中一个cgroups filesystem. 因此使用cgroups v2前, 需卸载controller所在的cgroups v1 filesystem.</p>
+<h3 id="5-4-cgroups-v2-subtree-control"><a href="#5-4-cgroups-v2-subtree-control" class="headerlink" title="5.4 cgroups v2 subtree control"></a>5.4 cgroups v2 subtree control</h3><p>以下是cgroups v2 filesystem中root cgroup包含的文件:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">ls</span> /sys/fs/cgroup</span><br><span class="line">cgroup.controllers      cgroup.type      io.max               memory.max           memory.swap.high</span><br><span class="line">cgroup.events           cpu.idle         io.pressure          memory.min           memory.swap.max</span><br><span class="line">cgroup.freeze           cpu.max          io.prio.class        memory.numa_stat     memory.zswap.current</span><br><span class="line">cgroup.kill             cpu.max.burst    io.stat              memory.oom.group     memory.zswap.max</span><br><span class="line">cgroup.max.depth        cpu.pressure     io.weight            memory.peak          pids.current</span><br><span class="line">cgroup.max.descendants  cpu.stat         memory.current       memory.pressure      pids.events</span><br><span class="line">cgroup.procs            cpu.weight       memory.events        memory.reclaim       pids.max</span><br><span class="line">cgroup.stat             cpu.weight.nice  memory.events.local  memory.stat</span><br><span class="line">cgroup.subtree_control  io.bfq.weight    memory.high          memory.swap.current</span><br><span class="line">cgroup.threads          io.latency       memory.low           memory.swap.events</span><br></pre></td></tr></table></figure>
+<p>cgroups v2 filesystem中, 每一个cgroup都包含以下两个文件:</p>
+<ul>
+<li>cgroup.controllers: 只读文件, 包含cgroup可使用的controller, 对应parent cgroup中<code>cgroup.subtree_control</code>文件内的controller<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cat</span> x/y/cgroup.controllers</span><br><span class="line">cpu io memory pids</span><br></pre></td></tr></table></figure></li>
+<li>cgroup.subtree_control: 可读写文件, 决定cgroup的child cgroup可使用哪些controller. 能添加到该文件的controller必须是<code>cgroup.controllers</code>内的controller子集. 开启controller使用<code>+</code>, 禁用controller使用<code>-</code>:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;+pids -memory&#x27;</span> &gt; x/y/cgroup.subtree_control</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>由于<code>cgroup.subtree_control</code>中的controller是<code>cgroup.controllers</code>的子集, 因此一旦cgroup中的某个controller被禁用, 则其下面的所有cgroup都无法使用该controller.<br>将controller添加到<code>cgroup.subtree_control</code>后, child cgroup会自动创建controller对应的interface file. 例如, 向<code>cgroup.subtree_control</code>添加<code>pids</code>, child cgroup自动创建<code>pids.max</code>文件.</p>
+<h3 id="5-5-No-internal-processes"><a href="#5-5-No-internal-processes" class="headerlink" title="5.5 No internal processes"></a>5.5 No internal processes</h3><p>cgroups v2遵循&quot;无内部进程&quot;规则: 简单来说, 除了root cgroup, 进程只能驻留在leaf node中(cgroup没有任何child cgroup). 之所以设置这条规则, 因为很难决定如何让cgroups将资源划分给parent cgroup和child cgroup.<br>假设cgroups filesystem中存在<code>/cf1/cg2</code>, 则进程只能驻留在<code>/cg1/cg2</code>, 不能驻留在<code>/cg1</code>. 推荐实践方法: 将用于容纳进程的cgroup命名为<code>leaf</code>, 其他cgroup根据分类需求命名, 因此上文应改为<code>/cg1/leaf</code>, 这样开发者可清晰地知道哪些cgroup用于容纳进程, 哪些cgroup用于分类进程.<br>实际上, 该规则更加复杂: 非root cgroup不能同时满足以下两个条件:</p>
+<ul>
+<li>cgroup包含进程</li>
+<li>cgroup的<code>cgroup.subtree_control</code>文件非空</li>
+</ul>
+<p>因此, cgroups v2 filesystem中可能存在一个cgroup: 其包含进程, 但也拥有child cgroup; 但该cgroup在清空进程前, 不能向<code>cgroup.subtree_control</code>文件添加任何controller.</p>
+<h3 id="5-6-cgroups-v2-cgroup-events-file"><a href="#5-6-cgroups-v2-cgroup-events-file" class="headerlink" title="5.6 cgroups v2 cgroup.events file"></a>5.6 cgroups v2 cgroup.events file</h3><p>cgroups v2中每个非root cgroup都拥有一个只读文件, 名为<code>cgroup.events</code>. 该文件由多个key-value pair组成, key和value由空格分隔, 每个key-value pair各占一行:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">cat</span> mygrp/cgroup.events</span><br><span class="line">populated 1</span><br><span class="line">frozen 0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>populated: 若为1, 则cgroup或其嵌套child cgroup拥有进程; 否则为0</li>
+<li>frozen: 若为1, 则cgroup中所有进程已被挂起; 否则为0</li>
+</ul>
+<h3 id="5-7-cgroups-v2-release-notification"><a href="#5-7-cgroups-v2-release-notification" class="headerlink" title="5.7 cgroups v2 release notification"></a>5.7 cgroups v2 release notification</h3><p>cgroups v2提供了一个提醒空cgroup的新机制: cgroups v1的<code>release_agent</code>和<code>notify_on_release</code>被移除, 取而代之的是<code>cgroup.events</code>文件的<code>populated</code>值, 该值为0时表示cgroup及其嵌套child group内没有任何进程; 否则为1.<br>相比于cgroups v1, cgroups v2的新机制拥有以下优点:</p>
+<ul>
+<li>cgroups v2允许一个进程同时监控多个<code>cgroup.events</code>文件; cgroups v1需为每次通知创建单独进程</li>
+<li>cgroups v2允许多个进程同时监控一个cgroup; cgroups v1只能为一个cgroup设置一个release agent</li>
+</ul>
+<h3 id="5-8-cgroups-v2-cgroup-stat-file"><a href="#5-8-cgroups-v2-cgroup-stat-file" class="headerlink" title="5.8 cgroups v2 cgroup.stat file"></a>5.8 cgroups v2 cgroup.stat file</h3><p>cgroups v2中的每个cgroup都拥有一个只读文件, 名为<code>cgroup.stat</code>, 该文件包含多个key-value pair.</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cat</span> mygrp/cgroup.stat</span><br><span class="line">nr_descendants 0</span><br><span class="line">nr_dying_descendants 0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>nr_descendants: 当前cgroup及其嵌套child cgroup中, <strong>living cgroup</strong>的数量</li>
+<li>nr_dying_descendants: 当前cgroup及其嵌套child cgroup中, <strong>dying cgroup</strong>的数量</li>
+</ul>
+<p>创建cgroup后, cgroup的状态为<code>living</code>; 用户删除cgroup时, cgroup状态先切换为<code>dying</code>, 并在一段时间后真正删除(时长取决于系统负载). 处于dying状态的cgroup无法添加任何进程, 也无法回到living状态.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/4850.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Virtual File System</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/93ff.html">
+        <span class="next-text nav-default">Linux namespace</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/f10b.html';
+  var disqus_title = "Linux cgroups";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

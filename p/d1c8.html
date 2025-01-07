@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Elementary TCP Sockets"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/d1c8.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/d1c8.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/d1c8.html"/>
+
+
+<meta name="description" content="1. IntroductionUNIX可以让一个server同时与多个client建立连接并通信. 本章会调用让server调用fork(), 为每个client创建一个进程. 通常情况下, TCP server会先启动, 之后client启动并试图连接server. Server处理完毕请求后回复client, 直到client关闭本次连接. 整个流程如下图: 2. socket Functio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Elementary TCP Sockets">
+<meta property="og:url" content="https://zaf1ro.github.io/p/d1c8.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionUNIX可以让一个server同时与多个client建立连接并通信. 本章会调用让server调用fork(), 为每个client创建一个进程. 通常情况下, TCP server会先启动, 之后client启动并试图连接server. Server处理完毕请求后回复client, 直到client关闭本次连接. 整个流程如下图: 2. socket Functio">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-1-sock-func-for-tcp-cli-svr.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-5-two-queues-by-tcp.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-5-handshake-and-two-queue-by-tcp.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-7-exe-func.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-8-before-accept-return.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-8-after-accept-return.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-8-after-fork-return.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-8-after-parent-child-close-sock.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/4-10-inetd-spawn-server.gif">
+<meta property="article:published_time" content="2019-11-20T01:42:05.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.043Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/4-1-sock-func-for-tcp-cli-svr.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Elementary TCP Sockets - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-socket-Function"><span class="toc-text">2. socket Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-connect-Function"><span class="toc-text">3. connect Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-bind-Function"><span class="toc-text">4. bind Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-listen-Function"><span class="toc-text">5. listen Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-accept-Function"><span class="toc-text">6. accept Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-fork-and-exec-Functions"><span class="toc-text">7. fork and exec Functions</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-fork-Function"><span class="toc-text">7.1 fork Function</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-exec-Function"><span class="toc-text">7.2 exec Function</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Concurrent-Servers"><span class="toc-text">8. Concurrent Servers</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-close-Function"><span class="toc-text">9. close Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-getsockname-and-getpeername-Functions"><span class="toc-text">10. getsockname and getpeername Functions</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Elementary TCP Sockets
+        
+      </h1>
+      <time class="post-time">
+          11/19/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>UNIX可以让一个server同时与多个client建立连接并通信. 本章会调用让server调用<code>fork()</code>, 为每个client创建一个进程. 通常情况下, TCP server会先启动, 之后client启动并试图连接server. Server处理完毕请求后回复client, 直到client关闭本次连接. 整个流程如下图:<br><img src="/images/Network/UNP/4-1-sock-func-for-tcp-cli-svr.gif" alt="Socket functions for elementary TCP client/server"></p>
+<h2 id="2-socket-Function"><a href="#2-socket-Function" class="headerlink" title="2. socket Function"></a>2. socket Function</h2><p>想要进行network I&#x2F;O操作, 必须先执行<code>socket()</code>创建一个socket对象.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create an endpoint for communication and returns a </span></span><br><span class="line"><span class="comment"> *        file descriptor of that endpoint</span></span><br><span class="line"><span class="comment"> * @param family: the protocol family</span></span><br><span class="line"><span class="comment"> * @param type: the communication semantics</span></span><br><span class="line"><span class="comment"> * @param protocl: a particular protocol to be used with the </span></span><br><span class="line"><span class="comment"> *        socket</span></span><br><span class="line"><span class="comment"> * @return a file descriptor on success; -1 on error and errno</span></span><br><span class="line"><span class="comment"> *         is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">socket</span><span class="params">(<span class="type">int</span> family, <span class="type">int</span> type, <span class="type">int</span> protocol)</span></span><br></pre></td></tr></table></figure>
+<p><code>socket()</code>参数所能使用的常量:</p>
+<ul>
+<li>family:<ul>
+<li>AF_INET: IPv4 protocols</li>
+<li>AF_INET6: IPv6 protocols </li>
+<li>AF_LOCAL: UNIX domain protocols</li>
+<li>AF_ROUTE: Routing socket</li>
+<li>AF_KEY: Key socket</li>
+</ul>
+</li>
+<li>type:</li>
+<li>SOCK_STREAM: stream socket</li>
+<li>SOCK_DRGAM: datagram socket</li>
+<li>SOCK_SEQPACKET: sequenced packet socket</li>
+<li>SOCK_RAW: raw socket</li>
+<li>protocol</li>
+<li>IPPROTO_TCP: TCP transport protocol</li>
+<li>IPPROTO_UDP: UDP transport protocol</li>
+<li>IPPROTO_SCTP: SCTP transport protocol</li>
+</ul>
+<p>以下是family和type的可用组合:</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">AF_INET</th>
+<th align="center">AF_INET6</th>
+<th align="center">AF_LOCAL</th>
+<th align="center">AF_ROUTE</th>
+<th align="center">AF_KEY</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">SOCK_STREAM</td>
+<td align="center">TCP,SCTP</td>
+<td align="center">TCP,SCTP</td>
+<td align="center">Yes</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">SOCK_DGRAM</td>
+<td align="center">UDP</td>
+<td align="center">UDP</td>
+<td align="center">Yes</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">SOCK_SEQPACKET</td>
+<td align="center">SCTP</td>
+<td align="center">SCTP</td>
+<td align="center">Yes</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">SOCK_RAW</td>
+<td align="center">IPv4</td>
+<td align="center">IPv6</td>
+<td align="center"></td>
+<td align="center">Yes</td>
+<td align="center">Yes</td>
+</tr>
+</tbody></table>
+<p>Protocol family分为两种: <code>AF_xxx</code>和<code>PF_xxx</code>. <code>AF_</code>代表address family, <code>PF_</code>表示protocol family. 原本计划设计一个支持多个address family的protocol family, <code>PF_</code>用于创建socket, <code>AF_</code>用于socket address structure中; 但实际上并没有实现, <code>&lt;sys/socket.h&gt;</code>中<code>PF_</code>与<code>AF_</code>值相同, 因此本例使用<code>AF_</code>作为family参数.</p>
+<h2 id="3-connect-Function"><a href="#3-connect-Function" class="headerlink" title="3. connect Function"></a>3. connect Function</h2><p><code>connect()</code>可用于TCP client向TCP server发起连接:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief connect the socket referred to by the file descriptor</span></span><br><span class="line"><span class="comment"> *        sockfd to the address specified by addr</span></span><br><span class="line"><span class="comment"> * @param sockfd: socket descriptor</span></span><br><span class="line"><span class="comment"> * @param addr: a pointer to a socket address structure</span></span><br><span class="line"><span class="comment"> * @param len: the size of addr </span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">connect</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="keyword">struct</span> sockaddr* addr, <span class="type">socklen_t</span> len)</span>;</span><br></pre></td></tr></table></figure>
+<p>addr指向的socket address structure必须含有server的IP address和port. Client调用<code>connect()</code>之前不需要调用<code>bind()</code>, 内核会自动为client分配一个临时端口. <code>connect()</code>会初始化TCP三次握手, 只有完成连接或出错后才会返回, 以下是几种错误的可能性:</p>
+<ol>
+<li>Client发出SYN后无回复, 返回<code>ETIMEDOUT</code>.</li>
+<li>Client发出SYN后, server回复RST, 表示server指定端口没有程序运行, client返回<code>ECONNREFUSED</code>.</li>
+<li>client发出SYN后, 中间路由返回ICMP &quot;destination unreachable&quot;. Client还会多次尝试发送SYN, 若仍没收到回复, 则返回<code>EHOSTUNREACH</code>或<code>ENETUNREACH</code>.</li>
+</ol>
+<p>RST出现情况:</p>
+<ul>
+<li>对端指定端口没有进程运行(三次握手中)</li>
+<li>对端想取消已有连接(三次握手之后)</li>
+<li>对端接收到一个根本不存在的segment</li>
+</ul>
+<p><code>connect()</code>会将socket状态从<code>CLOSED</code>切换到<code>SYN_SENT</code>, 如果成功建立连接则切换到<code>ESTABLISHED</code>, 若失败则该socket不可再用, 必须被关闭.</p>
+<h2 id="4-bind-Function"><a href="#4-bind-Function" class="headerlink" title="4. bind Function"></a>4. bind Function</h2><p><code>bind()</code>会为socket分配一个local protocol address(包括一个32-bit IPv4 address或128-bit IPv6 address和一个16bit TCP或UDP port number). </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Assign the address specified by addr to the socket </span></span><br><span class="line"><span class="comment"> * referred to by the file descriptor sockfd</span></span><br><span class="line"><span class="comment"> * @param sockfd: the file descriptor of socket</span></span><br><span class="line"><span class="comment"> * @param addr: a pointer to the socket address structure</span></span><br><span class="line"><span class="comment"> * @param len: the size of the socket address structure</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">bind</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="keyword">struct</span> sockaddr* addr, <span class="type">socklen_t</span> len)</span>;</span><br></pre></td></tr></table></figure>
+<p>client不需调用<code>bind()</code>, 内核会自动分配一个临时port. server则需手动调用<code>bind()</code>, 因为server必须使用固定port来保持与client的连接.<br>bind可以指定IP address和port number, 也可以不指定:</p>
+<table>
+<thead>
+<tr>
+<th align="center">IP Address</th>
+<th align="center">Port</th>
+<th align="center">Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">通配符</td>
+<td align="center">0</td>
+<td align="center">Kernel chooses IP address and port</td>
+</tr>
+<tr>
+<td align="center">通配符</td>
+<td align="center">nonzero</td>
+<td align="center">Kernel chooses IP address, specfies port</td>
+</tr>
+<tr>
+<td align="center">本地IP地址</td>
+<td align="center">0</td>
+<td align="center">Kernel specifies IP address, chooses port</td>
+</tr>
+<tr>
+<td align="center">本地IP地址</td>
+<td align="center">nonzero</td>
+<td align="center">Kernel sepecifies IP address and port</td>
+</tr>
+</tbody></table>
+<p>对于IPv4, 通配符为<code>INADDR_ANY</code>;, 通知内核来选择IP地址.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">servaddr</span>;</span></span><br><span class="line">servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br></pre></td></tr></table></figure>
+<p>对于IPv6, 通配符为<code>in6addr_any</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in6</span> <span class="title">serv</span>;</span></span><br><span class="line">serv.sin6_addr = in6addr_any;</span><br></pre></td></tr></table></figure>
+<p><code>bind()</code>不会返回临时分配的port number, 需调用<code>getsockname()</code>来获取protocol address. <code>bind()</code>最常返回的错误为 <code>EADDRINUSE</code>, 表示address已被使用.</p>
+<h2 id="5-listen-Function"><a href="#5-listen-Function" class="headerlink" title="5. listen Function"></a>5. listen Function</h2><p><code>listen()</code>只会被TCP server调用.</p>
+<ol>
+<li>当socket被创建后会即可向外发送请求, <code>listen()</code>可将未建立连接的socket变为passive socket, 将socket状态从<code>CLOSED</code>切换为<code>LISTEN</code>.</li>
+<li><code>listen()</code>的<code>backlog</code>参数表示kernel为socket保留的最大连接数量</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief mark the socket referred to by sockfd as a passive </span></span><br><span class="line"><span class="comment"> *        socket</span></span><br><span class="line"><span class="comment"> * @param sockfd: a file descriptor refers to socket of </span></span><br><span class="line"><span class="comment"> *        type SOCK_STREAM or SOCK_SEQPACKET</span></span><br><span class="line"><span class="comment"> * @param backlog: the maximum length to which the queue of </span></span><br><span class="line"><span class="comment"> *        pending connections for sockfd</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">listen</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">int</span> backlog)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>Kernel为passoive socket维护了两个队列, 两个队列长度之和即为<code>backlog</code>:</p>
+<ul>
+<li>Incomplete connection queue: 收到SYN但还没完成YCP三次握手, socket位于<code>SYN_RCVD</code>状态</li>
+<li>Completed connection queue:	完成TCP三次握手, socket位于<code>ESTABLISHED</code>状态</li>
+</ul>
+<p>以下是kernel维护的两个queue:<br><img src="/images/Network/UNP/4-5-two-queues-by-tcp.gif" alt="The two queues maintained by TCP for a listening socket"></p>
+<p>以下是TCP三次握手的流程:<br><img src="/images/Network/UNP/4-5-handshake-and-two-queue-by-tcp.gif" alt="TCP three-way handshake and the two queues for a listening socket"></p>
+<p>当server收到client的SYN时, 会将该请求加入到incompleted queue并回复ACK. 若ACK回复超时, 则将该请求从imcomplete queue中移除; 若收到client发来的SYN-ACK后, 将该请求从imcomplete queue移至completed queue尾部. 进程调用<code>accpet()</code>会从completed queue取出并处理首部第一个请求; 若completed queue为空, 则进程进入睡眠状态.<br>backlog的数值一般为<strong>5</strong>, 但并不适用于现在网络, Berkeley-derived系统为<code>backlog</code>添加了模糊因子(乘以1.5). 不要将<code>backlog</code>定义为0. 因为各系统对于0都有不同的处理方式, 若不想接受任何请求, 直接关闭passive socket.<br>在不考虑报文丢失或重传的情况下, 连接请求在imcompleted queue停留的时间为1 RTT.<br>当queue已经占满时, TCP server会忽略client发送的SYN且不发送RST. 因为拥塞是暂时的, 且client会再次发送SYN来请求连接. 如果server回复RST, 则client所调用的<code>connect()</code>会报错; 而不回复RST可让client的<code>connect()</code>自动重发SYN.</p>
+<h2 id="6-accept-Function"><a href="#6-accept-Function" class="headerlink" title="6. accept Function"></a>6. accept Function</h2><p>Server调用<code>accept()</code>从completed queue的首部取出一个请求. 若completed queue为空, 则进程进入睡眠.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief extract the first connection request on the queue</span></span><br><span class="line"><span class="comment"> *        of pending connections for the listening socket </span></span><br><span class="line"><span class="comment"> *        sockfd, creates a new connected socket</span></span><br><span class="line"><span class="comment"> * @param sockfd: a socket which is listening for connection</span></span><br><span class="line"><span class="comment"> * @param addr: a pointer to a socket address structure</span></span><br><span class="line"><span class="comment"> * @param len: length of the structure pointed to by addr</span></span><br><span class="line"><span class="comment"> * @return A file descriptor for the accepted socket on success;</span></span><br><span class="line"><span class="comment"> *         -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">accept</span><span class="params">(<span class="type">int</span> sockfd, <span class="keyword">struct</span> sockaddr* addr, <span class="type">socklen_t</span>* len)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>accpet()</code>成功调用后返回一个全新的file descriptor, 表示与client的TCP connection. 因此<code>accept()</code>实际上返回以下三个数据:</p>
+<ol>
+<li>return value: 表示与client的TCP connection</li>
+<li>参数addr: 表示client的protocol address</li>
+<li>参数len: 表示参数addr的大小</li>
+</ol>
+<h2 id="7-fork-and-exec-Functions"><a href="#7-fork-and-exec-Functions" class="headerlink" title="7. fork and exec Functions"></a>7. fork and exec Functions</h2><p>在创建concurrent server之前, 必须先学习<code>fork()</code>和<code>exec()</code>的使用</p>
+<h3 id="7-1-fork-Function"><a href="#7-1-fork-Function" class="headerlink" title="7.1 fork Function"></a>7.1 fork Function</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a new process by duplicating the calling process</span></span><br><span class="line"><span class="comment"> * @return PID of child process is returned in the parent on </span></span><br><span class="line"><span class="comment"> *         success; 0 is returned in the child; -1 is </span></span><br><span class="line"><span class="comment"> *         returned on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pid_t</span> <span class="title function_">fork</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>fork()</code>虽然只调用一次, 但会返回两个值. 因此调用<code>fork()</code>需使用<strong>if</strong>来判断当前进程为父进程还是子进程. 之所以子进程中的<code>fork()</code>不返回父进程PID, 是因为<code>getppid()</code>可获取当前进程的父进程PID; 但由于一个进程可拥有多个子进程, 因此父进程需通过<code>fork()</code>获取子进程的PID.<br><code>fork()</code>可用于server的并发处理: server在成功调用<code>accept()</code>后调用<code>fork()</code>, 父进程和子进程会共享connected socket: 子进程负责读取和写入connected socket, 父进程负责关闭connected socket. 以下是<code>fork()</code>的两种用法:</p>
+<ol>
+<li>进程调用<code>fork()</code>复制自身, 并使用子进程完成其他任务, 如: network server</li>
+<li>进程调用<code>fork(),</code> 在子进程中调用<code>exec()</code>替代原本进程数据来执行其他任务, 如: shell执行程序</li>
+</ol>
+<h3 id="7-2-exec-Function"><a href="#7-2-exec-Function" class="headerlink" title="7.2 exec Function"></a>7.2 exec Function</h3><p>exec有6种不同的函数表示, 区别如下:</p>
+<ol>
+<li>执行的程序目录: filename或pathname</li>
+<li>执行程序的参数: 可变参数或数组指针 </li>
+<li>执行程序的环境变量: 使用当前进程的环境变量或指定新的环境变量</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">execl</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">const</span> <span class="type">char</span> *arg0, ... <span class="comment">/* (char *)0 */</span>)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execv</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">char</span> *<span class="type">const</span> argv[])</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execle</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">const</span> <span class="type">char</span> *arg0, ... <span class="comment">/* (char *)0, char *const envp[] */</span>)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execve</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">char</span> *<span class="type">const</span> argv[], <span class="type">char</span> *<span class="type">const</span> envp[])</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execlp</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *filename, <span class="type">const</span> <span class="type">char</span> *arg0, ... <span class="comment">/* (char *)0 */</span>)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">execvp</span><span class="params">(cosnt <span class="type">char</span> *filename, <span class="type">char</span> *<span class="type">const</span> argv[])</span>;</span><br></pre></td></tr></table></figure>
+<p>以下是6种exec函数的关系图:<br><img src="/images/Network/UNP/4-7-exe-func.gif" alt="Relationship among the six exec functions"></p>
+<h2 id="8-Concurrent-Servers"><a href="#8-Concurrent-Servers" class="headerlink" title="8. Concurrent Servers"></a>8. Concurrent Servers</h2><p>若sever需服务多个client, 最简单的方式就是让server为每个client调用<code>fork()</code>处理请求:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">pid_t</span> pid;</span><br><span class="line"><span class="type">int</span> listenfd, connfd;</span><br><span class="line"></span><br><span class="line">listenfd = Socket( ... );</span><br><span class="line"></span><br><span class="line"><span class="comment">/* fill in sockaddr_in&#123;&#125; with server&#x27;s well-known port */</span></span><br><span class="line">Bind(listenfd, ... );</span><br><span class="line">Listen(listenfd, LISTENQ);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">  connfd = Accept (listenfd, ... ); <span class="comment">/* probably blocks */</span></span><br><span class="line">  <span class="keyword">if</span>((pid = Fork()) == <span class="number">0</span>) &#123;</span><br><span class="line">    Close(listenfd); <span class="comment">/* child closes listening socket */</span></span><br><span class="line">    doit(connfd);    <span class="comment">/* process the request */</span></span><br><span class="line">    Close(connfd);   <span class="comment">/* done with this client */</span></span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);         <span class="comment">/* child terminates */</span></span><br><span class="line">  &#125;</span><br><span class="line">  Close(connfd); <span class="comment">/* parent closes connected socket */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当<code>accept()</code>返回后, 说明server与client成功建立连接. 这时调用<code>fork()</code>让子进程与父进程共享connfd: 子进程负责与client的通信, 父进程负责等待新的连接.<br>对TCP connection调用<code>close()</code>会向client发送FIN终止连接, 上述代码中子进程父进程虽然分别调用<code>close()</code>, 但并不会发送两次FIN: 每个file或socket都有一个reference count, 当server调用<code>fork()</code>后, connfd的refernece count会从1变为2, 每次调用<code>close()</code>都会使该socket的reference count减1, 只有当reference count变为0时才会向client发送FIN. 因此只有最后一次调用<code>close()</code>才会发送FIN.<br>以下是client与server之间的连接状态流程:</p>
+<ol>
+<li><p>server调用<code>accept()</code>之前:<br><img src="/images/Network/UNP/4-8-before-accept-return.gif" alt="Status of client/server before call to accept returns"></p>
+</li>
+<li><p>server调用<code>accept()</code>后:<br><img src="/images/Network/UNP/4-8-after-accept-return.gif" alt="Status of client/server after return from accept"></p>
+</li>
+<li><p>server调用<code>fork()</code>后:<br><img src="/images/Network/UNP/4-8-after-fork-return.gif" alt="Status of client/server after fork returns"></p>
+</li>
+<li><p>父进程调用<code>close(connfd)</code>, 子进程调用<code>close(listenfd)</code>后<br><img src="/images/Network/UNP/4-8-after-parent-child-close-sock.gif" alt="Status of client/server after parent and child close appropriate sockets"></p>
+</li>
+</ol>
+<h2 id="9-close-Function"><a href="#9-close-Function" class="headerlink" title="9. close Function"></a>9. close Function</h2><p><code>close()</code>用于关闭socket并中止TCP连接.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief close a file descriptor</span></span><br><span class="line"><span class="comment"> * @param sockfd: A file descriptor for socket</span></span><br><span class="line"><span class="comment"> * @return 0 on success; -1 on error and errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">close</span><span class="params">(<span class="type">int</span> sockfd)</span>;</span><br></pre></td></tr></table></figure>
+<p>调用<code>close()</code>后, server会继续将未发送完毕的数据发送给client, 之后再进行TCP four-packet connection termination. 如果需要强制关闭一段connection, 可调用<code>shutdown()</code>. 不调用<code>close()</code>也很危险, 每个系统的file descriptor都有数量上限, 不调用<code>close()</code>会导致connected socket用光所有file descriptor; 而且不调用<code>close()</code>会让TCP connection一直保持连接状态. </p>
+<h2 id="10-getsockname-and-getpeername-Functions"><a href="#10-getsockname-and-getpeername-Functions" class="headerlink" title="10. getsockname and getpeername Functions"></a>10. getsockname and getpeername Functions</h2><p><code>getsockname()</code>和<code>getpeername()</code>用于获取socket的local protocol address和foreign protocol address.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">getsockname</span><span class="params">(<span class="type">int</span> sockfd, <span class="keyword">struct</span> sockaddr* localaddr, <span class="type">socklen_t</span>* addrlen)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">getpeername</span><span class="params">(<span class="type">int</span> sockfd, <span class="keyword">struct</span> sockaddr* peeraddr, <span class="type">socklen_t</span>* addrlen)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下是<code>getsockname()</code>和<code>getpeername()</code>的使用情景:</p>
+<ul>
+<li><p>client调用<code>connect()</code>后可通过<code>getsockname()</code>获取当前connection使用的local IP address和port number.</p>
+</li>
+<li><p>server在调用<code>bind()</code>时使用0作为port number, 可调用<code>getsockname()</code>获取kernel自动分配的local port number.</p>
+</li>
+<li><p><code>getsockname()</code>也可用于获取address family:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">sockfd_to_family</span><span class="params">(<span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_storage</span> <span class="title">ss</span>;</span></span><br><span class="line">  <span class="type">socklen_t</span> len;</span><br><span class="line"></span><br><span class="line">  len = <span class="keyword">sizeof</span>(ss);</span><br><span class="line">  <span class="keyword">if</span> (getsockname(sockfd, (SA *) &amp;ss, &amp;len) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span>(<span class="number">-1</span>);</span><br><span class="line">  <span class="keyword">return</span>(ss.ss_family);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>server在调用<code>bind()</code>时将通配符作为IP address, 可调用getsockname()获取kernel自动分配的IP address</p>
+</li>
+<li><p>server调用<code>accept()</code>后, 调用<code>fork()</code>复制自身并执行exec来运行其他程序, 这时只能通过调用<code>getpeername()</code>来获取client的protocol address, 因为exec会抹除子进程中的所有内存数据, 包括foreign protocol address. 如下图:<br><img src="/images/Network/UNP/4-10-inetd-spawn-server.gif" alt="Example of inetd spawning a server"></p>
+<p>调用exec后, connfd会和peer&#39;s address一样被清除. 但调用<code>getpeername()</code>时又必须使用connfd. 因此在调用exec时可将connfd作为参数传入, 或者在调用exec之前为connfd创建一个descriptor.</p>
+</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/66fb.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">TCP Client/Server</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2e41.html">
+        <span class="next-text nav-default">Sockets Introduction</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/d1c8.html';
+  var disqus_title = "Elementary TCP Sockets";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

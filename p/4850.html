@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Virtual File System"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/4850.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/4850.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/4850.html"/>
+
+
+<meta name="description" content="1. Everything is a fileUnix及其衍生的操作系统贯彻一条理念: 万物皆文件. 该理念用于处理资源的输入和输出, 如文档, 硬盘, modem, 键盘, 打印机, 进程间通信; 该概念的优点在于, 用户可使用相同的API操作不同类型的资源. 但也存在一些例外, 如shared memory(共享内存), semaphores(信息量), symbolic link(符号链接)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Virtual File System">
+<meta property="og:url" content="https://zaf1ro.github.io/p/4850.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Everything is a fileUnix及其衍生的操作系统贯彻一条理念: 万物皆文件. 该理念用于处理资源的输入和输出, 如文档, 硬盘, modem, 键盘, 打印机, 进程间通信; 该概念的优点在于, 用户可使用相同的API操作不同类型的资源. 但也存在一些例外, 如shared memory(共享内存), semaphores(信息量), symbolic link(符号链接)">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Linux/virtual-filesystem/1-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Linux/virtual-filesystem/layered-arch-of-VFS.gif">
+<meta property="article:published_time" content="2023-02-20T15:30:52.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.058Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Linux/virtual-filesystem/1-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Virtual File System - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Everything-is-a-file"><span class="toc-text">1. Everything is a file</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-File-descriptor"><span class="toc-text">2. File descriptor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-File-System"><span class="toc-text">3. File System</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Virtual-File-System"><span class="toc-text">4. Virtual File System</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Directory-Entry-Cache"><span class="toc-text">4.1 Directory Entry Cache</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Inode"><span class="toc-text">4.2 Inode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Inode-Operations"><span class="toc-text">4.2 Inode Operations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Superblock"><span class="toc-text">4.3 Superblock</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Virtual File System
+        
+      </h1>
+      <time class="post-time">
+          02/20/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Everything-is-a-file"><a href="#1-Everything-is-a-file" class="headerlink" title="1. Everything is a file"></a>1. Everything is a file</h2><p>Unix及其衍生的操作系统贯彻一条理念: 万物皆文件. 该理念用于处理资源的输入和输出, 如文档, 硬盘, modem, 键盘, 打印机, 进程间通信; 该概念的优点在于, 用户可使用相同的API操作不同类型的资源. 但也存在一些例外, 如shared memory(共享内存), semaphores(信息量), symbolic link(符号链接), process(进程), 上述资源并不作为文件形式呈现.</p>
+<h2 id="2-File-descriptor"><a href="#2-File-descriptor" class="headerlink" title="2. File descriptor"></a>2. File descriptor</h2><p>打开一个文件时, UNIX会为其创建对应的file descriptor(简称fd). Fd作为文件的唯一标识符, 进程对文件的一切操作都需要fd作为接口, 因此也称为<strong>Everything is a file descriptor</strong>.<br>UNIX会为每个进程分配一个<strong>file descriptor table</strong>, 该table包含进程打开的所有文件, 每个entry包含以下信息:</p>
+<ul>
+<li>Controlling flags: 进程调用<code>open()</code>时附加的file creation flag和file status flag, 如<code>O_APPEND</code>, <code>O_ASYNC</code>, <code>O_CLOEXEC</code>, <code>O_CREAT</code></li>
+<li>指向file table一条entry的指针</li>
+</ul>
+<p>其中, <strong>file table</strong>是系统层面的一个数据结构, 每一条entry代表一个打开的文件:</p>
+<ul>
+<li>File offset</li>
+<li>File status flags: 控制进程操作文件的行为, 如文件为只读或只写, 向文件追加或覆盖数据</li>
+<li>File access mode: 文件权限</li>
+<li>File position: 进程读写文件的位置</li>
+<li>指向inode的指针</li>
+</ul>
+<p><strong>inode table</strong>是系统层面的一个数据结构, 包含以下信息:</p>
+<ul>
+<li>File type(普通文件, FIFO, socket等)</li>
+<li>File permission</li>
+<li>File properties(文件大小, 时间戳等)</li>
+</ul>
+<p><img src="/images/Linux/virtual-filesystem/1-1.png" alt="Mount Namespaces"></p>
+<p>需要注意的是, file descriptor table中的多个entry可指向file table的同一entry(调用<code>dup()</code>), file table中的多个entry可指向inode table中的同一entry(同一文件被打开多次).<br>Linux中, 可通过<code>/proc/PID/fd/</code>查看一个进程拥有的所有file descriptor, 其中<code>/proc/PID/fd/0</code>为stdin, <code>/proc/PID/fd/1</code>为stdout, <code>/proc/PID/fd/2</code>为stderr.<br>Kernel可使用file descriptor以及上述table跟踪进程打开的文件, 并记录文件的相关信息, 如inode number, file mode, file position等.</p>
+<h2 id="3-File-System"><a href="#3-File-System" class="headerlink" title="3. File System"></a>3. File System</h2><p>File system作为操作系统中重要的一环, 用于管理数据的分段及其命名. 若没有file system, 存储设备中的数据只是一团二进制, 无法分辨一段数据的开始和结束位置. 将数据分为多段, 并为每段数据分配名字, 便诞生出<strong>file</strong>的概念. File system会以不同标准分为不同实现:</p>
+<ul>
+<li>不同操作系统: <code>FAT</code>(DOS和Windows), <code>ext</code>(Linux), <code>UFS</code>(Solaris和BSD)</li>
+<li>内置checksum和冗余备份: Btrfs</li>
+<li>专门为固态设备优化: APFS, exFAT</li>
+<li>分布式file system: Amazon S3</li>
+<li>peer-to-peer file system: Cleversafe</li>
+<li>加密文件: eCryptfs</li>
+</ul>
+<p>除了保存在存储设备上的文件, 还有一些文件只存在于内存中, 这类文件的file system称为<strong>pseudo file system</strong>(伪文件系统), 如<code>procfs</code>, 该file system以文件的形式展示系统内的进程信息, 用户可通过读取对应文件来获取进程信息.<br>UNIX支持在一个系统内使用多个file system, 也因此引入一个问题: 如何让用户随时访问不同file system中的文件. UNIX的方案为<strong>virtual file system</strong>(简称为VFS), VFS将不同file system中的文件放入一个统一的hierarchy, 也就是说, 系统中只有一个root directory, 且所有file system的文件都在其中. 虽然UNIX会为每个存储设备一个名称, 但访问设备中的文件并不需要设备名, 只需知道文件在directory tree中的位置.</p>
+<h2 id="4-Virtual-File-System"><a href="#4-Virtual-File-System" class="headerlink" title="4. Virtual File System"></a>4. Virtual File System</h2><p>VFS作为file system之上的一层抽象层, 为用户提供了一套统一的访问不同类型file system的方式. VFS制定了一套kernel与file system的接口, 因此, 只要新的file system符合接口标准, 就可加入kernel.</p>
+<p><img src="/images/Linux/virtual-filesystem/layered-arch-of-VFS.gif" alt="Mount Namespaces"></p>
+<h3 id="4-1-Directory-Entry-Cache"><a href="#4-1-Directory-Entry-Cache" class="headerlink" title="4.1 Directory Entry Cache"></a>4.1 Directory Entry Cache</h3><p>对于<code>open()</code>, <code>stat()</code>, <code>chmod()</code>等系统调用, <strong>directory entry cache</strong>(简称为<code>dentry cache</code>)可帮助VFS通过<code>pathname</code>参数快速找到对应文件, 因此, dentry cache是一种连接pathname和inode的机制. 若VFS访问文件时, 该文件未被缓存到dentry cache中, 则VFS会为其分配<code>dentry object</code>(简称为<code>dentry</code>). 假设查询路径为<code>/home/user/name</code>, VFS会生成四个<code>dentry</code>: <code>/</code>, <code>home</code>, <code>name</code>和<code>user</code>.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dentry</span> &#123;</span></span><br><span class="line">  <span class="type">atomic_t</span>                 d_count;   <span class="comment">/* 当前dentry的使用次数  */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">inode</span>             *<span class="title">d_inode</span>;</span>  <span class="comment">/* 指向inode */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">qstr</span>              <span class="title">d_name</span>;</span>    <span class="comment">/* 文件名 */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">dentry</span>            *<span class="title">d_parent</span>;</span> <span class="comment">/* 指向parent dentry */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>         <span class="title">d_child</span>;</span>   <span class="comment">/* 指向child dentry链表的头部 */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>         <span class="title">d_subdirs</span>;</span> <span class="comment">/* 指向subdirectories链表的头部 */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">dentry_operations</span> *<span class="title">d_op</span>;</span>     <span class="comment">/* dentry operations table */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">super_block</span>       *<span class="title">d_sb</span>;</span>     <span class="comment">/* superblock of file */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>         <span class="title">d_lru</span>;</span>     <span class="comment">/* 指向LRU链表的头部, 方便将当前dentry移至LRU链表头部 */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">hlist_node</span>        <span class="title">d_hash</span>;</span>    <span class="comment">/* 链接到dentry cache的hash链表 */</span></span><br><span class="line">  <span class="comment">// ... </span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>Dentry通过<code>d_parent</code>和<code>d_subdirs</code>实现了文件系统的层级结构, 整个系统存在一个root dentry, 且root dentry不存在<code>d_parent</code>; 其他dentry则必须拥有一个<code>d_parent</code>.<br>一个dentry存在三种状态:</p>
+<ul>
+<li>used: <code>d_inode</code>指向一个inode, 且<code>d_count &gt; 0</code>, 表示该dentry正在被VFS使用</li>
+<li>unused: <code>d_inode</code>指向一个inode, 且<code>d_count = 0</code>, 表示该dentry未被VFS使用, 但未来可能使用</li>
+<li>negative: <code>d_inode</code>为NULL, 因为文件被删除或路径不正确, 保留该dentry只是为了以后快速查找</li>
+</ul>
+<p>除了dentry object, dentry cache还包含以下部分:</p>
+<ul>
+<li>LRU链表: 包含unused和negative状态dentry的双向链表, 该链表使用insertion sort(插入排序算法)插入dentry, 因此dentry越靠近头部, 说明该dentry最近被使用. 当kernel需要回收内存时, 根据局部性原理, 会从链表尾部移除dentry.</li>
+<li><code>struct list_head dentry_hashtable[D_HASHSIZE];</code>: 数组坐标表示dentry的hash值, 每个数组元素是一个dentry组成的链表, 且链表内dentry的hash值相同. 该hashtable可让VFS根据pathname快速找到对应的dentry.</li>
+</ul>
+<p>出于查询性能考虑, dentry只保存在内存中, 不会存入磁盘.</p>
+<h3 id="4-2-Inode"><a href="#4-2-Inode" class="headerlink" title="4.2 Inode"></a>4.2 Inode</h3><p>inode提供了kernel所需的所有关于file的信息. 对于block device filesystem, inode保存在磁盘中, 需要时加载到内存, 修改时写回磁盘; 对于pseudo filesystem, inode保存在内存中. 多个dentry可指向同一inode.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">inode</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">hlist_node</span>       <span class="title">i_hash</span>;</span>              <span class="comment">/* hash list */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>        <span class="title">i_list</span>;</span>              <span class="comment">/* list of inodes */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>        <span class="title">i_dentry</span>;</span>            <span class="comment">/* list of dentries */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>           i_ino;               <span class="comment">/* inode number */</span></span><br><span class="line">  <span class="type">atomic_t</span>                i_count;             <span class="comment">/* reference counter */</span></span><br><span class="line">  <span class="type">umode_t</span>                 i_mode;              <span class="comment">/* access permissions */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span>            i_nlink;             <span class="comment">/* number of hard links */</span></span><br><span class="line">  <span class="type">uid_t</span>                   i_uid;               <span class="comment">/* user id of owner */</span></span><br><span class="line">  <span class="type">gid_t</span>                   i_gid;               <span class="comment">/* group id of owner */</span></span><br><span class="line">  <span class="type">kdev_t</span>                  i_rdev;              <span class="comment">/* real device node */</span></span><br><span class="line">  <span class="type">loff_t</span>                  i_size;              <span class="comment">/* file size in bytes */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span>         <span class="title">i_atime</span>;</span>             <span class="comment">/* last access time */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span>         <span class="title">i_mtime</span>;</span>             <span class="comment">/* last modify time */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">timespec</span>         <span class="title">i_ctime</span>;</span>             <span class="comment">/* last change time */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span>            i_blkbits;           <span class="comment">/* block size in bits */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>           i_blksize;           <span class="comment">/* block size in bytes */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>           i_version;           <span class="comment">/* version number */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>           i_blocks;            <span class="comment">/* file size in blocks */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">short</span>          i_bytes;             <span class="comment">/* bytes consumed */</span></span><br><span class="line">  <span class="type">spinlock_t</span>              i_lock;              <span class="comment">/* spinlock */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">rw_semaphore</span>     <span class="title">i_alloc_sem</span>;</span>         <span class="comment">/* nests inside of i_sem */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">semaphore</span>        <span class="title">i_sem</span>;</span>               <span class="comment">/* inode semaphore */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">inode_operations</span> *<span class="title">i_op</span>;</span>               <span class="comment">/* inode ops table */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">super_block</span>      *<span class="title">i_sb</span>;</span>               <span class="comment">/* associated superblock */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">file_lock</span>        *<span class="title">i_flock</span>;</span>            <span class="comment">/* file lock list */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">address_space</span>    *<span class="title">i_mapping</span>;</span>          <span class="comment">/* associated mapping */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">address_space</span>    <span class="title">i_data</span>;</span>              <span class="comment">/* mapping for device */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">dquot</span>            *<span class="title">i_dquot</span>[<span class="title">MAXQUOTAS</span>];</span> <span class="comment">/* disk quotas for inode */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>           i_state;             <span class="comment">/* state flags */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>           dirtied_when;        <span class="comment">/* first dirtying time */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span>            i_flags;             <span class="comment">/* filesystem flags */</span></span><br><span class="line">  <span class="type">atomic_t</span>                i_writecount;        <span class="comment">/* count of writers */</span></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-Inode-Operations"><a href="#4-2-Inode-Operations" class="headerlink" title="4.2 Inode Operations"></a>4.2 Inode Operations</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">inode_operations</span> &#123;</span></span><br><span class="line">  <span class="comment">/* open(), creat(): create a new inode associated with the dentry</span></span><br><span class="line"><span class="comment">     `dentry` in a parent inode directory `dir` with given mode */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">create</span><span class="params">(<span class="keyword">struct</span> inode *dir, <span class="keyword">struct</span> dentry *dentry, <span class="type">int</span> mode)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* search an inode in a parent inode directory `dir`. The name to</span></span><br><span class="line"><span class="comment">     look for is in the dentry `dentry`. If target inode does not</span></span><br><span class="line"><span class="comment">     exist, a NULL inode should be inserted into the dentry(called</span></span><br><span class="line"><span class="comment">     a negative dentry) */</span></span><br><span class="line">  <span class="keyword">struct</span> dentry* <span class="title function_">lookup</span><span class="params">(<span class="keyword">struct</span> inode *dir, <span class="keyword">struct</span> dentry *dentry)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* link(): create a hard link of the file `old` in the directory</span></span><br><span class="line"><span class="comment">     `dir` with the new filename `dentry` */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">link</span><span class="params">(<span class="keyword">struct</span> dentry *old_dentry, <span class="keyword">struct</span> inode *dir, <span class="keyword">struct</span> dentry *dentry)</span>;</span><br><span class="line">  <span class="comment">/* unlink(): remove the inode specified by the dentry `dentry`</span></span><br><span class="line"><span class="comment">     from the directory `dir` */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">unlink</span><span class="params">(<span class="keyword">struct</span> inode *dir, <span class="keyword">struct</span> dentry *dentry)</span>;</span><br><span class="line">  <span class="comment">/* symlink(): create a symbolic link named `symname` of the file</span></span><br><span class="line"><span class="comment">     `dentry` in the directory `dir` */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">symlink</span><span class="params">(<span class="keyword">struct</span> inode *dir, <span class="keyword">struct</span> dentry *dentry, <span class="type">const</span> <span class="type">char</span> *symname)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* mkdir(): create a new directory with the given initial mode */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">mkdir</span><span class="params">(<span class="keyword">struct</span> inode *dir, <span class="keyword">struct</span> dentry *dentry, <span class="type">int</span> mode)</span>;</span><br><span class="line">  <span class="comment">/* rmdir(): remove the directory referenced by `dentry` from the</span></span><br><span class="line"><span class="comment">     directory `dir` */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">rmdir</span><span class="params">(<span class="keyword">struct</span> inode *dir, <span class="keyword">struct</span> dentry *dentry)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* mknod(): create a special file (device, pipe or socket). The</span></span><br><span class="line"><span class="comment">     file is referenced by the device ID `rdev` and dentry `dentry` </span></span><br><span class="line"><span class="comment">     in the directory `dir`. Initial permissions are given via `mode`. */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">mknod</span><span class="params">(<span class="keyword">struct</span> inode *dir, <span class="keyword">struct</span> dentry *dentry, <span class="type">int</span> mode, <span class="type">dev_t</span> rdev)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* rename(): move the file specified by `old_dentry` from `old_dir`</span></span><br><span class="line"><span class="comment">     directory to `new_dir` directory. Filename specified by `new_dentry` */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">rename</span><span class="params">(<span class="keyword">struct</span> inode *old_dir, <span class="keyword">struct</span> dentry *old_dentry, </span></span><br><span class="line"><span class="params">             <span class="keyword">struct</span> inode *new_dir, <span class="keyword">struct</span> dentry *new_dentry)</span>;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* copy at most `buflen` bytes of the full path associated with the</span></span><br><span class="line"><span class="comment">     symbolic link specified by `dentry` into the specified buffer */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">readlink</span><span class="params">(<span class="keyword">struct</span> dentry *dentry, <span class="type">char</span> *buffer, <span class="type">int</span> buflen)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* translate a symbolic link to the inode to which it points.</span></span><br><span class="line"><span class="comment">     The link pointed at by `dentry` is translated and the result</span></span><br><span class="line"><span class="comment">     is stored in the nameidata structure pointed at by `nd` */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">follow_link</span><span class="params">(<span class="keyword">struct</span> dentry *dentry, <span class="keyword">struct</span> nameidata *nd)</span>;</span><br><span class="line">  <span class="comment">/* clean up after a call to follow_link() */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">put_link</span><span class="params">(<span class="keyword">struct</span> dentry *dentry, <span class="keyword">struct</span> nameidata *nd)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* modify the size of the given file referenced by inode `inode`.</span></span><br><span class="line"><span class="comment">     The new size of file should be set in `i_size` field */</span></span><br><span class="line">  <span class="type">void</span> <span class="title function_">truncate</span><span class="params">(<span class="keyword">struct</span> inode *inode)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* check whether the specified access mode `mask` is allowed for</span></span><br><span class="line"><span class="comment">     the file referenced by inode `inode` */</span></span><br><span class="line">  <span class="type">int</span> <span class="title function_">permission</span><span class="params">(<span class="keyword">struct</span> inode *inode, <span class="type">int</span> mask)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> <span class="title function_">setattr</span><span class="params">(<span class="keyword">struct</span> dentry *dentry, <span class="keyword">struct</span> iattr *attr)</span>;</span><br><span class="line">  <span class="type">int</span> <span class="title function_">getattr</span><span class="params">(<span class="keyword">struct</span> vfsmount *mnt, <span class="keyword">struct</span> dentry *dentry, <span class="keyword">struct</span> kstat *stat)</span>;</span><br><span class="line">  <span class="type">int</span> <span class="title function_">setxattr</span><span class="params">(<span class="keyword">struct</span> dentry *dentry, <span class="type">const</span> <span class="type">char</span> *name, <span class="type">const</span> <span class="type">void</span> *value, </span></span><br><span class="line"><span class="params">               <span class="type">size_t</span> size, <span class="type">int</span> flags)</span>;</span><br><span class="line">  <span class="type">ssize_t</span> <span class="title function_">getxattr</span><span class="params">(<span class="keyword">struct</span> dentry *dentry, <span class="type">const</span> <span class="type">char</span> *name,</span></span><br><span class="line"><span class="params">                   <span class="type">void</span> *value, <span class="type">size_t</span> size)</span>;</span><br><span class="line">  <span class="type">ssize_t</span> <span class="title function_">listxattr</span><span class="params">(<span class="keyword">struct</span> dentry *dentry, <span class="type">char</span> *<span class="built_in">list</span>, <span class="type">size_t</span> size)</span>;</span><br><span class="line">  <span class="type">int</span> <span class="title function_">removexattr</span><span class="params">(<span class="keyword">struct</span> dentry *dentry, <span class="type">const</span> <span class="type">char</span> *name)</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-Superblock"><a href="#4-3-Superblock" class="headerlink" title="4.3 Superblock"></a>4.3 Superblock</h3><p>Superblock表示一个挂载的file system, 其中包含file system所需的metadata. 若file system的superblock损坏, 则VFS无法挂载该file system, 因此file system会有多个superblock备份.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>        <span class="title">s_list</span>;</span>            <span class="comment">/* list of all superblocks */</span></span><br><span class="line">  <span class="type">dev_t</span>                   s_dev;             <span class="comment">/* identifier */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>           s_blocksize;       <span class="comment">/* block size in bytes */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>           s_old_blocksize;   <span class="comment">/* old block size in bytes */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>           s_blocksize_bits;  <span class="comment">/* block size in bits */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span>           s_dirt;            <span class="comment">/* dirty flag */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>      s_maxbytes;        <span class="comment">/* max file size */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">file_system_type</span> <span class="title">s_type</span>;</span>            <span class="comment">/* filesystem type */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">super_operations</span> <span class="title">s_op</span>;</span>              <span class="comment">/* superblock methods */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">dquot_operations</span> *<span class="title">dq_op</span>;</span>            <span class="comment">/* quota methods */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">quotactl_ops</span>     *<span class="title">s_qcop</span>;</span>           <span class="comment">/* quota control methods */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">export_operations</span> *<span class="title">s_export_op</span>;</span>     <span class="comment">/* export methods */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>            s_flags;          <span class="comment">/* mount flags */</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">long</span>            s_magic;          <span class="comment">/* filesystem&#x27;s magic number */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">dentry</span>            *<span class="title">s_root</span>;</span>          <span class="comment">/* directory mount point */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">rw_semaphore</span>      <span class="title">s_umount</span>;</span>         <span class="comment">/* unmount semaphore */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">semaphore</span>         <span class="title">s_lock</span>;</span>           <span class="comment">/* superblock semaphore */</span></span><br><span class="line">  <span class="type">int</span>                      s_count;          <span class="comment">/* superblock ref count */</span></span><br><span class="line">  <span class="type">int</span>                      s_syncing;        <span class="comment">/* filesystem syncing flag */</span></span><br><span class="line">  <span class="type">int</span>                      s_need_sync_fs;   <span class="comment">/* not-yet-synced flag */</span></span><br><span class="line">  <span class="type">atomic_t</span>                 s_active;         <span class="comment">/* active reference count */</span></span><br><span class="line">  <span class="type">void</span>                     *s_security;      <span class="comment">/* security module */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>         <span class="title">s_dirty</span>;</span>          <span class="comment">/* list of dirty inodes */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>         <span class="title">s_io</span>;</span>             <span class="comment">/* list of writebacks */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">hlist_head</span>        <span class="title">s_anon</span>;</span>           <span class="comment">/* anonymous dentries */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>         <span class="title">s_files</span>;</span>          <span class="comment">/* list of assigned files */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">block_device</span>      *<span class="title">s_bdev</span>;</span>          <span class="comment">/* associated block device */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span>         <span class="title">s_instances</span>;</span>      <span class="comment">/* instances of this fs */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">quota_info</span>        <span class="title">s_dquot</span>;</span>          <span class="comment">/* quota-specific options */</span></span><br><span class="line">  <span class="type">char</span>                     s_id[<span class="number">32</span>];         <span class="comment">/* text name */</span></span><br><span class="line">  <span class="type">void</span>                     *s_fs_info;       <span class="comment">/* filesystem-specific info */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">semaphore</span>         <span class="title">s_vfs_rename_sem</span>;</span> <span class="comment">/* rename semaphore */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>superblock中最重要的成员为<code>s_op</code>, 其中包含file syste对inode的所有操作.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* create and initialize a new inode object under</span></span><br><span class="line"><span class="comment">   the given superblock */</span></span><br><span class="line"><span class="keyword">struct</span> inode* <span class="title function_">alloc_inode</span><span class="params">(<span class="keyword">struct</span> super_block *sb)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* deallocates the given inode pointed to by `inode` */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">destroy_inode</span><span class="params">(<span class="keyword">struct</span> inode *inode)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* reads the inode specified by inode-&gt;i_ino from disk</span></span><br><span class="line"><span class="comment">   and fills in the rest of the inode structure */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">read_inode</span><span class="params">(<span class="keyword">struct</span> inode *inode)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* invoked by VFS when an inode is dirtied(modified) */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">dirty_inode</span><span class="params">(<span class="keyword">struct</span> inode *inode)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* write the given inode to disk, `wait` parameter specifies</span></span><br><span class="line"><span class="comment">   whether the operation should be synchronous */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">write_inode</span><span class="params">(<span class="keyword">struct</span> inode *inode, <span class="type">int</span> wait)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* release the given inode */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">put_inode</span><span class="params">(<span class="keyword">struct</span> inode *inode)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* invoked by VFS when the last reference to the inode is dropped */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">drop_inode</span><span class="params">(<span class="keyword">struct</span> inode *inode)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* delete the given inode from the disk */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">delete_inode</span><span class="params">(<span class="keyword">struct</span> inode *inode)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* invoked by VFS when free the superblock(unmount) */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">put_super</span><span class="params">(<span class="keyword">struct</span> super_block *sb)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* update the on-disk superblock with the specified superblock */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">write_super</span><span class="params">(<span class="keyword">struct</span> super_block *sb)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* synchronize filesystem metadata with the on-disk filesystem */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">sync_fs</span><span class="params">(<span class="keyword">struct</span> super_block *sb, <span class="type">int</span> wait)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* obtain filesystem statistic */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">statfs</span><span class="params">(<span class="keyword">struct</span> super_block *sb, <span class="keyword">struct</span> statfs *statfs)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* invoked by VFS when the filesystem is remounted with</span></span><br><span class="line"><span class="comment">   new mount options */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">remount_fs</span><span class="params">(<span class="keyword">struct</span> super_block *sb, <span class="type">int</span> *flags, <span class="type">char</span> *data)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* invoked by VFS to release the inode and clear any pages</span></span><br><span class="line"><span class="comment">   containing related data */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">clear_inode</span><span class="params">(<span class="keyword">struct</span> inode *)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* invoked by VFS to interrupt a mount operation */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">umount_begin</span><span class="params">(<span class="keyword">struct</span> super_block *sb)</span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/1d0a.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Sort an Array</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/f10b.html">
+        <span class="next-text nav-default">Linux cgroups</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/4850.html';
+  var disqus_title = "Virtual File System";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

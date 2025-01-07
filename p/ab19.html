@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Merge Sort"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/ab19.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/ab19.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/ab19.html"/>
+
+
+<meta name="description" content="1. Merge SortMerge sort(归并排序)是一种comparison-based sorting algorithm(基于比较的排序算法), 并且大部分实现都能做到stable sort(相同元素在输入和输出中的相对位置保持不变). Merge sort是一种divide-and-conquer algorithm(分治算法): 将两个已排序的数组合并为一个大的排序数组, 该操作可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Merge Sort">
+<meta property="og:url" content="https://zaf1ro.github.io/p/ab19.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Merge SortMerge sort(归并排序)是一种comparison-based sorting algorithm(基于比较的排序算法), 并且大部分实现都能做到stable sort(相同元素在输入和输出中的相对位置保持不变). Merge sort是一种divide-and-conquer algorithm(分治算法): 将两个已排序的数组合并为一个大的排序数组, 该操作可">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/merge-sort-top-down.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/merge-sort-bottom-up.png">
+<meta property="article:published_time" content="2023-03-21T21:03:28.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.027Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Algorithm/merge-sort-top-down.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Merge Sort - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Merge-Sort"><span class="toc-text">1. Merge Sort</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Top-down-Merge-Sort"><span class="toc-text">1.1 Top-down Merge Sort</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Bottom-up-Merge-Sort"><span class="toc-text">1.2 Bottom-up Merge Sort</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-Merge-k-Sorted-Lists"><span class="toc-text">23. Merge k Sorted Lists</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Merge-Sort"><span class="toc-text">Merge Sort</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#315-Count-of-Smaller-Numbers-After-Self"><span class="toc-text">315. Count of Smaller Numbers After Self</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Merge-Sort-1"><span class="toc-text">Merge Sort</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2426-Number-of-Pairs-Satisfying-Inequality"><span class="toc-text">2426. Number of Pairs Satisfying Inequality</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Merge-Sort-Binary-Search"><span class="toc-text">Merge Sort + Binary Search</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#327-Count-of-Range-Sum"><span class="toc-text">327. Count of Range Sum</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Presum-Merge-Sort-Binary-Search"><span class="toc-text">Presum + Merge Sort + Binary Search</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Merge Sort
+        
+      </h1>
+      <time class="post-time">
+          03/21/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Merge-Sort"><a href="#1-Merge-Sort" class="headerlink" title="1. Merge Sort"></a>1. Merge Sort</h2><p>Merge sort(归并排序)是一种<strong>comparison-based sorting algorithm</strong>(基于比较的排序算法), 并且大部分实现都能做到stable sort(相同元素在输入和输出中的相对位置保持不变). Merge sort是一种<strong>divide-and-conquer algorithm</strong>(分治算法): 将两个已排序的数组合并为一个大的排序数组, 该操作可递归排序整个数组: 将数组分为两半, 排序这两个数组(递归), 合并两个数组. 算法时间复杂度为$O(n\log(n))$, 空间复杂度分为两种情况:</p>
+<ul>
+<li>$O(n)$:: 申请一个辅助数组, merge两个数组时存放元素</li>
+<li>$O(1)$: In-place merge sort(原地归并排序), 但此类算法存在一些妥协: 要么无法做到stable, 要么时间复杂度上升到$O(n\log^2(n))$, 或对数据集有限制条件, 且算法实现较复杂.</li>
+</ul>
+<p>时间复杂度为$O(n\log(n))$, 且空间复杂度为$O(n)$的merge sort分为以下两种实现方法.</p>
+<h3 id="1-1-Top-down-Merge-Sort"><a href="#1-1-Top-down-Merge-Sort" class="headerlink" title="1.1 Top-down Merge Sort"></a>1.1 Top-down Merge Sort</h3><p>Top-down merge sort递归地将数组拆分为子数组, 直到子数组的长度为1, 然后在每个递归层级中将拆分的子数组合并为一个大的数组, 如下图:<br><img src="/images/Algorithm/merge-sort-top-down.png" alt="Top-down Merge Sort"></p>
+<p>以下是Top-down merge sort的Java实现:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] sortArray(<span class="type">int</span>[] nums) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length;</span><br><span class="line">        mergeSort(nums, <span class="keyword">new</span> <span class="title class_">int</span>[n], <span class="number">0</span>, n-<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> nums;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">mergeSort</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span>[] aux, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l &gt;= r) <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        mergeSort(nums, aux, l, m);</span><br><span class="line">        mergeSort(nums, aux, m+<span class="number">1</span>, r);</span><br><span class="line">        merge(nums, aux, l, m, r);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">merge</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span>[] aux, <span class="type">int</span> l, <span class="type">int</span> m, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        System.arraycopy(nums, l, aux, l, r - l + <span class="number">1</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> l, j = m + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> l; k &lt;= r; k++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &gt; m)                 nums[k] = aux[j++];</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (j &gt; r)            nums[k] = aux[i++];</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (aux[i] &lt;= aux[j]) nums[k] = aux[i++];</span><br><span class="line">            <span class="keyword">else</span>                       nums[k] = aux[j++];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上代码存在很多可以优化的地方:</p>
+<ul>
+<li>对于过小的数组, 可使用insertion sort排序</li>
+<li>若两个拆分的数组已经排序好(<code>a[last] &lt;= b[first]</code>), 则不需要合并</li>
+<li>每次合并都需复制数值: 对拆分的两个子数组调用sort方法时, 第一次sort将结果放入辅助数组, 第二次sort将结果放回原数组, 因此需切换原数组和辅助数组</li>
+</ul>
+<p>以下是优化后的Java实现:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] sortArray(<span class="type">int</span>[] nums) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length;</span><br><span class="line">        mergeSort(Arrays.copyOf(nums, n), nums, <span class="number">0</span>, n-<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> nums;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">mergeSort</span><span class="params">(<span class="type">int</span>[] src, <span class="type">int</span>[] dst, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l &gt;= r) <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        mergeSort(dst, src, l, m);</span><br><span class="line">        mergeSort(dst, src, m+<span class="number">1</span>, r);</span><br><span class="line">        <span class="keyword">if</span> (src[m] &lt;= src[m+<span class="number">1</span>]) &#123;</span><br><span class="line">            System.arraycopy(src, l, dst, l, r - l + <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        merge(src, dst, l, m, r);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">merge</span><span class="params">(<span class="type">int</span>[] src, <span class="type">int</span>[] dst, <span class="type">int</span> l, <span class="type">int</span> m, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> l, j = m + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> l; k &lt;= r; k++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &gt; m)                 dst[k] = src[j++];</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (j &gt; r)            dst[k] = src[i++];</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (src[i] &lt;= src[j]) dst[k] = src[i++];</span><br><span class="line">            <span class="keyword">else</span>                       dst[k] = src[j++];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-Bottom-up-Merge-Sort"><a href="#1-2-Bottom-up-Merge-Sort" class="headerlink" title="1.2 Bottom-up Merge Sort"></a>1.2 Bottom-up Merge Sort</h3><p>Bottom-up merge sort的思路为: 先合并所有单元素, 再合并包含两个元素的子数组, 依次类推. 该方法的代码量更小, 且无需递归.<br><img src="/images/Algorithm/merge-sort-bottom-up.png" alt="Bottom-up Merge Sort"></p>
+<p>以下是Bottom-up merge sort的Java实现:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[] sortArray(<span class="type">int</span>[] nums) &#123;</span><br><span class="line">        mergeSort(nums);</span><br><span class="line">        <span class="keyword">return</span> nums;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">mergeSort</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length;</span><br><span class="line">        <span class="type">int</span>[] aux = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> <span class="number">1</span>; len &lt; n; len &lt;&lt;= <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>; l &lt; n-len; l += len+len) &#123;</span><br><span class="line">                merge(nums, aux, l, l+len-<span class="number">1</span>, Math.min(l+len+len-<span class="number">1</span>, n-<span class="number">1</span>));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">merge</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span>[] aux, <span class="type">int</span> l, <span class="type">int</span> m, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        System.arraycopy(nums, l, aux, l, r - l + <span class="number">1</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> l, j = m + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> l; k &lt;= r; k++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &gt; m)                 nums[k] = aux[j++];</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (j &gt; r)            nums[k] = aux[i++];</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (aux[i] &lt;= aux[j]) nums[k] = aux[i++];</span><br><span class="line">            <span class="keyword">else</span>                       nums[k] = aux[j++];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="23-Merge-k-Sorted-Lists"><a href="#23-Merge-k-Sorted-Lists" class="headerlink" title="23. Merge k Sorted Lists"></a>23. Merge k Sorted Lists</h2><p>You are given an array of <code>k</code> linked-lists <code>lists</code>, each linked-list is sorted in ascending order.</p>
+<p>Merge all the linked-lists into one sorted linked-list and return it.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: lists = [[1,4,5],[1,3,4],[2,6]]</span><br><span class="line">Output: [1,1,2,3,4,4,5,6]</span><br><span class="line">Explanation: The linked-lists are:</span><br><span class="line">[</span><br><span class="line">  1-&gt;4-&gt;5,</span><br><span class="line">  1-&gt;3-&gt;4,</span><br><span class="line">  2-&gt;6</span><br><span class="line">]</span><br><span class="line">merging them into one sorted list:</span><br><span class="line">1-&gt;1-&gt;2-&gt;3-&gt;4-&gt;4-&gt;5-&gt;6</span><br></pre></td></tr></table></figure>
+
+<h3 id="Merge-Sort"><a href="#Merge-Sort" class="headerlink" title="Merge Sort"></a>Merge Sort</h3><p>假设链表的总长度为<code>n</code>, 合并两个链表(已排序)需遍历两个链表, 时间复杂度为O(n); 若存在<code>k</code>个链表, 每次只合并其中的两个链表, 则时间复杂度为$O(\sum^k_{i&#x3D;1}(i \times n)) &#x3D; O(\frac{(1+k) \times k}{2} \times n) &#x3D; O(k^2n)$. 因此可用merge sort的思想: 将k个链表合并为$\frac{k}{2}$个链表, 再将$\frac{k}{2}$合并为$\frac{k}{4}$个链表, 直到获得最终结果, 时间复杂度为$\sum^{\infty}_{i&#x3D;1}{\frac{k}{2^i} \times 2^i n} &#x3D; O(kn \times \log(k))$, 空间复杂度为$O(\log(k))$</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * public class ListNode &#123;</span></span><br><span class="line"><span class="comment"> *     int val;</span></span><br><span class="line"><span class="comment"> *     ListNode next;</span></span><br><span class="line"><span class="comment"> *     ListNode() &#123;&#125;</span></span><br><span class="line"><span class="comment"> *     ListNode(int val) &#123; this.val = val; &#125;</span></span><br><span class="line"><span class="comment"> *     ListNode(int val, ListNode next) &#123; this.val = val; this.next = next; &#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> ListNode <span class="title function_">mergeKLists</span><span class="params">(ListNode[] lists)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (lists.length == <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">return</span> mergeSort(lists, <span class="number">0</span>, lists.length-<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ListNode <span class="title function_">mergeSort</span><span class="params">(ListNode[] lists, <span class="type">int</span> l, <span class="type">int</span> r)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l &gt;= r) <span class="keyword">return</span> lists[l];</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="type">ListNode</span> <span class="variable">l1</span> <span class="operator">=</span> mergeSort(lists, l, m), l2 = mergeSort(lists, m+<span class="number">1</span>, r);</span><br><span class="line">        <span class="keyword">return</span> merge(l1, l2);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ListNode <span class="title function_">merge</span><span class="params">(ListNode l1, ListNode l2)</span> &#123;</span><br><span class="line">        <span class="type">ListNode</span> <span class="variable">dummy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ListNode</span>(), t = dummy;</span><br><span class="line">        <span class="keyword">while</span> (l1 != <span class="literal">null</span> &amp;&amp; l2 != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (l1.val &lt;= l2.val) &#123;</span><br><span class="line">                t.next = l1;</span><br><span class="line">                l1 = l1.next;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                t.next = l2;</span><br><span class="line">                l2 = l2.next;</span><br><span class="line">            &#125;</span><br><span class="line">            t = t.next;</span><br><span class="line">        &#125;</span><br><span class="line">        t.next = l1 == <span class="literal">null</span> ? l2 : l1;</span><br><span class="line">        <span class="keyword">return</span> dummy.next;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="315-Count-of-Smaller-Numbers-After-Self"><a href="#315-Count-of-Smaller-Numbers-After-Self" class="headerlink" title="315. Count of Smaller Numbers After Self"></a>315. Count of Smaller Numbers After Self</h2><p>Given an integer array <code>nums</code>, return an integer array <code>counts</code> where <code>counts[i]</code> is the number of smaller elements to the right of <code>nums[i]</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [5,2,6,1]</span><br><span class="line">Output: [2,1,1,0]</span><br><span class="line">Explanation:</span><br><span class="line">To the right of 5 there are 2 smaller elements (2 and 1).</span><br><span class="line">To the right of 2 there is only 1 smaller element (1).</span><br><span class="line">To the right of 6 there is 1 smaller element (1).</span><br><span class="line">To the right of 1 there is 0 smaller element.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Merge-Sort-1"><a href="#Merge-Sort-1" class="headerlink" title="Merge Sort"></a>Merge Sort</h3><p>Merge sort中, 每个元素都会和其右边的元素作对比, 例如, 索引<code>0</code>上的元素会先与索引<code>1</code>上的元素作对比, 再与索引<code>[2,3]</code>上的元素作对比, 依次类推. 假设合并时有两个子数组: 左子数组<code>a</code>和右子数组<code>b</code>, <code>a</code>中元素的index一定小于<code>b</code>的元素, 若取出<code>b</code>的元素, 则取出的元素一定小于<code>a</code>的首个元素(也意味着小于<code>a</code>的剩余所有元素), 满足题目要求. 因此下次取出<code>a</code>的元素时, 可将其加入<code>counts</code>中.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> List&lt;Integer&gt; <span class="title function_">countSmaller</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length;</span><br><span class="line">        <span class="type">int</span>[] src = <span class="keyword">new</span> <span class="title class_">int</span>[n]; <span class="comment">// index of nums</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; n; i++) &#123;</span><br><span class="line">            src[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span>[] count = <span class="keyword">new</span> <span class="title class_">int</span>[n], aux = Arrays.copyOf(src, n);</span><br><span class="line">        mergeSort(nums, aux, src, <span class="number">0</span>, n-<span class="number">1</span>, count);</span><br><span class="line">        List&lt;Integer&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> num: count) &#123;</span><br><span class="line">            res.add(num);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">mergeSort</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span>[] src, <span class="type">int</span>[] dst, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span>[] count)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l &gt;= r) <span class="keyword">return</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        mergeSort(nums, dst, src, l, m, count);</span><br><span class="line">        mergeSort(nums, dst, src, m+<span class="number">1</span>, r, count);</span><br><span class="line">        <span class="keyword">if</span> (nums[src[m]] &lt;= nums[src[m+<span class="number">1</span>]]) &#123;</span><br><span class="line">            System.arraycopy(src, l, dst, l, r-l+<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        merge(nums, src, dst, l, m, r, count);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">merge</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span>[] src, <span class="type">int</span>[] dst, <span class="type">int</span> l, <span class="type">int</span> m, <span class="type">int</span> r, <span class="type">int</span>[] count)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> l, j = m + <span class="number">1</span>, cnt = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> l; k &lt;= r; k++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &gt; m) &#123;</span><br><span class="line">                dst[k] = src[j++];</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (j &gt; r || nums[src[i]] &lt;= nums[src[j]]) &#123;</span><br><span class="line">                count[src[i]] += cnt; <span class="comment">// all numbers in right subarry which retrieved before nums[i]</span></span><br><span class="line">                dst[k] = src[i++];</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cnt++; <span class="comment">// nums[j] &lt; nums[i]</span></span><br><span class="line">                dst[k] = src[j++];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2426-Number-of-Pairs-Satisfying-Inequality"><a href="#2426-Number-of-Pairs-Satisfying-Inequality" class="headerlink" title="2426. Number of Pairs Satisfying Inequality"></a>2426. Number of Pairs Satisfying Inequality</h2><p>You are given two <strong>0-indexed</strong> integer arrays <code>nums1</code> and <code>nums2</code>, each of size n, and an integer <code>diff</code>. Find the number of <strong>pairs</strong> <code>(i, j)</code> such that:</p>
+<ul>
+<li><code>0 &lt;= i &lt; j &lt;= n - 1</code></li>
+<li><code>nums1[i] - nums1[j] &lt;= nums2[i] - nums2[j] + diff</code></li>
+</ul>
+<p>Return the <strong>number of pairs</strong> that satisfy the conditions.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums1 = [3,2,5], nums2 = [2,2,1], diff = 1</span><br><span class="line">Output: 3</span><br><span class="line">Explanation:</span><br><span class="line">There are 3 pairs that satisfy the conditions:</span><br><span class="line">1. i = 0, j = 1: 3 - 2 &lt;= 2 - 2 + 1. Since i &lt; j and 1 &lt;= 1, this pair satisfies the conditions.</span><br><span class="line">2. i = 0, j = 2: 3 - 5 &lt;= 2 - 1 + 1. Since i &lt; j and -2 &lt;= 2, this pair satisfies the conditions.</span><br><span class="line">3. i = 1, j = 2: 2 - 5 &lt;= 2 - 1 + 1. Since i &lt; j and -3 &lt;= 2, this pair satisfies the conditions.</span><br><span class="line">Therefore, we return 3.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Merge-Sort-Binary-Search"><a href="#Merge-Sort-Binary-Search" class="headerlink" title="Merge Sort + Binary Search"></a>Merge Sort + Binary Search</h3><p>假设nums1和nums2的长度为<code>n</code>, 题目中的不等式<code>nums1[i] - nums1[j] &lt;= nums2[i] - nums[j] + diff</code>可转换为<code>nums1[i] - nums2[i] - (nums1[j] - nums2[j]) &lt;= diff</code>, 假设数组<code>diff</code>表示长度为<code>n</code>的数组, <code>diff[i] = nums1[i] - nums2[i]</code>, 则上述不等式可改为<code>diff[i] - diff[j] &lt;= diff</code>, 也就是说, 在一个数组中找到两个值的差值在特定区间内.<br>Merge sort合并时, 假设左子数组为<code>a</code>, 右子数组为<code>b</code>, 每当取出<code>a</code>中的元素时, 可在<code>b</code>中二分查找<code>a[i] - diff &lt;= b[j]</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">long</span> <span class="title function_">numberOfPairs</span><span class="params">(<span class="type">int</span>[] nums1, <span class="type">int</span>[] nums2, <span class="type">int</span> diff)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums1.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            nums1[i] -= nums2[i];</span><br><span class="line">        &#125;</span><br><span class="line">        System.arraycopy(nums1, <span class="number">0</span>, nums2, <span class="number">0</span>, n);</span><br><span class="line">        <span class="keyword">return</span> mergeSort(nums1, nums2, <span class="number">0</span>, n-<span class="number">1</span>, diff);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> <span class="title function_">mergeSort</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span>[] aux, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> diff)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l &gt;= r) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> mergeSort(nums, aux, l, m, diff) </span><br><span class="line">            + mergeSort(nums, aux, m+<span class="number">1</span>, r, diff)</span><br><span class="line">            + merge(nums, aux, l, m, r, diff);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> <span class="title function_">merge</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span>[] aux, <span class="type">int</span> l, <span class="type">int</span> m, <span class="type">int</span> r, <span class="type">int</span> diff)</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> l, i = l, j = m + <span class="number">1</span>; k &lt;= r; k++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &gt; m) &#123;</span><br><span class="line">                aux[k] = nums[j++];</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (j &gt; r || nums[i] &lt;= nums[j]) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">t</span> <span class="operator">=</span> binarySearch(nums, m+<span class="number">1</span>, r, nums[i] - diff);</span><br><span class="line">                cnt += r - t + <span class="number">1</span>;</span><br><span class="line">                aux[k] = nums[i++];</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                aux[k] = nums[j++];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        System.arraycopy(aux, l, nums, l, r - l + <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> cnt;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">binarySearch</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (nums[m] &lt; target) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> l;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="327-Count-of-Range-Sum"><a href="#327-Count-of-Range-Sum" class="headerlink" title="327. Count of Range Sum"></a>327. Count of Range Sum</h2><p>Given an integer array <code>nums</code> and two integers <code>lower</code> and <code>upper</code>, return the number of range sums that lie in <code>[lower, upper]</code> inclusive.</p>
+<p>Range sum <code>S(i, j)</code> is defined as the sum of the elements in <code>nums</code> between indices <code>i</code> and <code>j</code> inclusive, where <code>i &lt;= j</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [-2,5,-1], lower = -2, upper = 2</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: The three ranges are: [0,0], [2,2], and [0,2] and their respective sums are: -2, -1, 2.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Presum-Merge-Sort-Binary-Search"><a href="#Presum-Merge-Sort-Binary-Search" class="headerlink" title="Presum + Merge Sort + Binary Search"></a>Presum + Merge Sort + Binary Search</h3><p>题目要求一段区间的元素之和满足特定上下限, 假设<code>nums</code>的前缀和数组为<code>presum</code>, 则<code>[i,j]</code>的元素之和等价为<code>presum[j] - presum[i-1]</code>, 因此问题转化为: 如何找到<code>presum</code>中两个元素的差值位于上下限内. 使用merge sort, 合并左子数组<code>a</code>和右子数组<code>b</code>时, 对于每一个<code>a[i]</code>, 找到符合条件的<code>b[j]</code>.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">countRangeSum</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> lower, <span class="type">int</span> upper)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> nums.length;</span><br><span class="line">        <span class="type">long</span>[] arr = <span class="keyword">new</span> <span class="title class_">long</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123; <span class="comment">// presum</span></span><br><span class="line">            arr[i] = nums[i] + (i &gt; <span class="number">0</span> ? arr[i-<span class="number">1</span>] : <span class="number">0</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> mergeSort(arr, Arrays.copyOf(arr, n), <span class="number">0</span>, n-<span class="number">1</span>, lower, upper);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">mergeSort</span><span class="params">(<span class="type">long</span>[] nums, <span class="type">long</span>[] aux, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">int</span> lo, <span class="type">int</span> up)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (l == r) &#123;</span><br><span class="line">            <span class="keyword">return</span> nums[l] &gt; up || nums[l] &lt; lo ? <span class="number">0</span> : <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> mergeSort(nums, aux, l, m, lo, up)</span><br><span class="line">            + mergeSort(nums, aux, m+<span class="number">1</span>, r, lo, up)</span><br><span class="line">            + merge(nums, aux, l, m, r, lo, up);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">merge</span><span class="params">(<span class="type">long</span>[] nums, <span class="type">long</span>[] aux, <span class="type">int</span> l, <span class="type">int</span> m, <span class="type">int</span> r, <span class="type">int</span> lo, <span class="type">int</span> up)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> l, i = l, j = m + <span class="number">1</span>; k &lt;= r; k++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &gt; m) &#123;</span><br><span class="line">                aux[k] = nums[j++];</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (j &gt; r || nums[i] &lt;= nums[j]) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">r1</span> <span class="operator">=</span> floor(nums, m+<span class="number">1</span>, r, nums[i]+lo), r2 = ceil(nums, m+<span class="number">1</span>, r, nums[i]+up);</span><br><span class="line">                cnt += r2 - r1 + <span class="number">1</span>;</span><br><span class="line">                aux[k] = nums[i++];</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                aux[k] = nums[j++];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        System.arraycopy(aux, l, nums, l, r - l + <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> cnt;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">ceil</span><span class="params">(<span class="type">long</span>[] nums, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">long</span> upper)</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (nums[m] &gt; upper) &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">floor</span><span class="params">(<span class="type">long</span>[] nums, <span class="type">int</span> l, <span class="type">int</span> r, <span class="type">long</span> lower)</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (nums[m] &lt; lower) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> l;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/c23.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Priority Queue</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/4181.html">
+        <span class="next-text nav-default">Bucket Sort</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/ab19.html';
+  var disqus_title = "Merge Sort";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

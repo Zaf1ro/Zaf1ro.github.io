@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Backtracking"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/9d13.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/9d13.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/9d13.html"/>
+
+
+<meta name="description" content="1. Introduction回溯算法是一种穷举式搜索算法, 在搜索过程中寻找问题的解. 若当前路线无法满足条件时, 会回退一步重新选择. 换句话说, 回溯算法的核心思想为走不通就回退, 因此回溯算法可采用递归实现. 回溯算法的递归函数会返回两种结果:  找到一个或多个满足条件的答案 尝试所有路线后仍没有找到答案  在思考回溯算法时, 不要考虑多层路线之间如何转换, 只需考虑边界条件和非边界条件的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Backtracking">
+<meta property="og:url" content="https://zaf1ro.github.io/p/9d13.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction回溯算法是一种穷举式搜索算法, 在搜索过程中寻找问题的解. 若当前路线无法满足条件时, 会回退一步重新选择. 换句话说, 回溯算法的核心思想为走不通就回退, 因此回溯算法可采用递归实现. 回溯算法的递归函数会返回两种结果:  找到一个或多个满足条件的答案 尝试所有路线后仍没有找到答案  在思考回溯算法时, 不要考虑多层路线之间如何转换, 只需考虑边界条件和非边界条件的">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-04-01T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.028Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Backtracking - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Subset"><span class="toc-text">2. Subset</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Introduction"><span class="toc-text">2.1 Introduction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Leetcode"><span class="toc-text">2.2 Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#78-Subsets"><span class="toc-text">78. Subsets</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#90-Subsets-II"><span class="toc-text">90. Subsets II</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#131-Palindrome-Partitioning"><span class="toc-text">131. Palindrome Partitioning</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Combination"><span class="toc-text">3. Combination</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Introduction"><span class="toc-text">3.1 Introduction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Leetcode"><span class="toc-text">3.2 Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#77-Combinations"><span class="toc-text">77. Combinations</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#39-Combination-Sum"><span class="toc-text">39. Combination Sum</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#40-Combination-Sum-II"><span class="toc-text">40. Combination Sum II</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#216-Combination-Sum-III"><span class="toc-text">216. Combination Sum III</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Permutation"><span class="toc-text">4. Permutation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Introduction"><span class="toc-text">4.1 Introduction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Leetcode"><span class="toc-text">4.2 Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#46-Permutations"><span class="toc-text">46. Permutations</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#47-Permutations-II"><span class="toc-text">47. Permutations II</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#51-N-Queens"><span class="toc-text">51. N-Queens</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Backtracking
+        
+      </h1>
+      <time class="post-time">
+          04/01/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>回溯算法是一种穷举式搜索算法, 在搜索过程中寻找问题的解. 若当前路线无法满足条件时, 会回退一步重新选择. 换句话说, 回溯算法的核心思想为<strong>走不通就回退</strong>, 因此回溯算法可采用<strong>递归</strong>实现. 回溯算法的递归函数会返回两种结果:</p>
+<ul>
+<li>找到一个或多个满足条件的答案</li>
+<li>尝试所有路线后仍没有找到答案</li>
+</ul>
+<p>在思考回溯算法时, 不要考虑多层路线之间如何转换, 只需考虑<strong>边界条件</strong>和<strong>非边界条件的逻辑</strong>, 剩下的交给数学归纳法. 回溯算法主要用于解决以下问题:</p>
+<ul>
+<li>Subset: 一个数组中<strong>任意数量</strong>元素组成的<strong>组合</strong>(不考虑元素顺序)</li>
+<li>Combination: 一个数组中<strong>固定数量</strong>元素组成的<strong>组合</strong>(不考虑元素顺序)</li>
+<li>Permutation: 一个数组中<strong>所有</strong>元素组成的<strong>排列</strong>(需考虑元素顺序)</li>
+</ul>
+<h2 id="2-Subset"><a href="#2-Subset" class="headerlink" title="2. Subset"></a>2. Subset</h2><h3 id="2-1-Introduction"><a href="#2-1-Introduction" class="headerlink" title="2.1 Introduction"></a>2.1 Introduction</h3><p>子集型回溯的题目通常要求返回一个元素数组中所有组合的结果, 组合的长度不同, 但不允许存在重复组合. 以下是两种解题模板:</p>
+<ul>
+<li>第一种模板: 对于每个元素只有两种操作: 选或不选. 因此可对数组中的每i个元素进行选和不选的两种操作, 接下来只需对$[i+1, n)$的数字中构造子集即可.</li>
+<li>第二种模板: 每次必须选择一个元素. 因此必须选择第i个元素, 并从$[i+1, n-1], [i+2, n-1]  \ldots  [n-1, n-1]$中构建子集.</li>
+</ul>
+<p>需要注意的是, 为了去除重复的组合, 需指定一个元素遍历的顺序, 也就是<strong>从左向右</strong>或<strong>从右向左</strong>依次遍历, 遍历过程中不可回头.</p>
+<h3 id="2-2-Leetcode"><a href="#2-2-Leetcode" class="headerlink" title="2.2 Leetcode"></a>2.2 Leetcode</h3><h4 id="78-Subsets"><a href="#78-Subsets" class="headerlink" title="78. Subsets"></a>78. Subsets</h4><h5 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Given an integer array nums of <strong>unique</strong> elements, return all possible subsets (the power set).<br>The solution set <strong>must not</strong> contain duplicate subsets. Return the solution in <strong>any order</strong>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,2,3]</span><br><span class="line">Output: [[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]]</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [0]</span><br><span class="line">Output: [[],[0]]</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution 1"></a>Solution 1</h5><p>每个元素采取选或不选两种方式, 并逐步递归.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">subsets</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        backtracking(nums, <span class="number">0</span>, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> i, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (i == nums.length) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// skip</span></span><br><span class="line">        backtracking(nums, i+<span class="number">1</span>, arr);</span><br><span class="line">        <span class="comment">// pick up</span></span><br><span class="line">        arr.add(nums[i]);</span><br><span class="line">        backtracking(nums, i+<span class="number">1</span>, arr);</span><br><span class="line">        arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution 2"></a>Solution 2</h5><p>必须选择当前元素, 并从之后的每个元素中递归.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">subsets</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        backtracking(nums, <span class="number">0</span>, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> start, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> start; i &lt; nums.length; i++) &#123;</span><br><span class="line">            <span class="comment">// pick up nums[i]</span></span><br><span class="line">            arr.add(nums[i]);</span><br><span class="line">            backtracking(nums, i+<span class="number">1</span>, arr);</span><br><span class="line">            arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="90-Subsets-II"><a href="#90-Subsets-II" class="headerlink" title="90. Subsets II"></a>90. Subsets II</h4><h5 id="Problem-Description-1"><a href="#Problem-Description-1" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Given an integer array nums that may contain <code>duplicates</code>, return all possible subsets (the power set).</p>
+<p>The solution set <code>must not</code> contain duplicate subsets. Return the solution in any order.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,2,2]</span><br><span class="line">Output: [[],[1],[1,2],[1,2,2],[2],[2,2]]</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [0]</span><br><span class="line">Output: [[],[0]]</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h5><p>由于数组中存在重复元素, 因此直接套用模板一和模板二都会导致重复组合. 假设数组为<code>[1,1,1]</code>:</p>
+<ul>
+<li>模板二: 先选择第一个1, 进入递归并退出递归后, 其实已经包含了所有组合, 因此第二个1和第三个1无需选择和进入递归. 若当前元素不是首个被选择的元素, 且与前一个元素相同(假设数组已排序), 那么上一个元素的递归结果已包含当前元素的递归结果, 跳过即可.</li>
+<li>模板一: 当进入下一次递归时, 当前递归并不知道上一个元素是否被选择, 因此无法知道是否应该跳过.</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">subsetsWithDup</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        Arrays.sort(nums);</span><br><span class="line">        backtracking(nums, <span class="number">0</span>, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">int</span> start, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> start; i &lt; nums.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &gt; start &amp;&amp; nums[i] == nums[i-<span class="number">1</span>]) <span class="keyword">continue</span>; <span class="comment">// skip if duplicate</span></span><br><span class="line">            arr.add(nums[i]);</span><br><span class="line">            backtracking(nums, i+<span class="number">1</span>, arr);</span><br><span class="line">            arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="131-Palindrome-Partitioning"><a href="#131-Palindrome-Partitioning" class="headerlink" title="131. Palindrome Partitioning"></a>131. Palindrome Partitioning</h4><h5 id="Problem-Description-2"><a href="#Problem-Description-2" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Given a string <code>s</code>, partition <code>s</code> such that every substring of the partition is a <strong>palindrome</strong>. Return all possible palindrome partitioning of <code>s</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;aab&quot;</span><br><span class="line">Output: [[&quot;a&quot;,&quot;a&quot;,&quot;b&quot;],[&quot;aa&quot;,&quot;b&quot;]]</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-Solution"><a href="#2-Solution" class="headerlink" title="2. Solution"></a>2. Solution</h5><p>该题使用模板一, 但该题无需跳过某个字符, 而是判断选择的子字符串是否为回文串.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;String&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;String&gt;&gt; <span class="title function_">partition</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        backtracking(s, <span class="number">0</span>, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(String s, <span class="type">int</span> i, List&lt;String&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (i == s.length()) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt;= s.length(); j++) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> s.substring(i, j), s2 = <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(s1).reverse().toString();</span><br><span class="line">            <span class="keyword">if</span> (s1.equals(s2)) &#123;</span><br><span class="line">                arr.add(s1);</span><br><span class="line">                backtracking(s, j, arr);</span><br><span class="line">                arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-Combination"><a href="#3-Combination" class="headerlink" title="3. Combination"></a>3. Combination</h2><h3 id="3-1-Introduction"><a href="#3-1-Introduction" class="headerlink" title="3.1 Introduction"></a>3.1 Introduction</h3><p>组合型回溯的题目通常要求一个元素数组中的相同长度的组合结果, 且组合不可重复. 由于子集型回溯包含所有组合结果, 因此组合型回溯的组合结果其实是子集型回溯结果的一个子集. 假设元素数组为<code>[1,2,3]</code>, 则子集型回溯的流程如下:</p>
+<ul>
+<li>选1, 组合为[1]<ul>
+<li>选2, 组合为[1,2]<ul>
+<li>选3, 组合为[1,2,3] -&gt; 结束</li>
+</ul>
+</li>
+<li>选3, 组合为[1,3] -&gt; 结束</li>
+</ul>
+</li>
+<li>选2, 组合为[2] <ul>
+<li>选3, 组合为[2,3] -&gt; 结束</li>
+</ul>
+</li>
+<li>选3, 组合为[3] -&gt; 结束</li>
+</ul>
+<p>若组合型回溯要求从<code>[1,2,3]</code>中选出所有长度为1的组合, 则为子集型回溯流程的第一列([1],[2],[3]); 若要求长度为2的组合, 则为子集型回溯流程中的第二列([1,2], [1,3], [2,3]). 因此可在子集型回溯的基础上做一些改动, 从而得到组合型回溯的结果: 假设当前数组的长度为m, 要求结果中的组合长度为k, 那么当前递归中还需<code>d = k - m</code>个数字, 假设从<code>[1, i]</code>中选择数字</p>
+<ul>
+<li>若<code>m = k</code>, 则当前数组为结果中的一种组合</li>
+<li>若<code>i &lt; d</code>, 则必然无法选出k个数, 无需继续递归</li>
+</ul>
+<h3 id="3-2-Leetcode"><a href="#3-2-Leetcode" class="headerlink" title="3.2 Leetcode"></a>3.2 Leetcode</h3><h4 id="77-Combinations"><a href="#77-Combinations" class="headerlink" title="77. Combinations"></a>77. Combinations</h4><h5 id="Problem-Description-3"><a href="#Problem-Description-3" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Given two integers <code>n</code> and <code>k</code>, return all possible combinations of <code>k</code> numbers chosen from the range <code>[1, n]</code>.<br>You may return the answer in <strong>any order</strong>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: n = 4, k = 2</span><br><span class="line">Output: [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]</span><br><span class="line">Explanation: There are 4 choose 2 = 6 total combinations.</span><br><span class="line">Note that combinations are unordered, i.e., [1,2] and [2,1] are considered to be the same combination.</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-1-1"><a href="#Solution-1-1" class="headerlink" title="Solution 1"></a>Solution 1</h5><p>对于每个元素只有两种情况: 选或不选. 选元素时需保证当前数组不超过k个元素, 不选时需检查之后的元素是否足够k个元素.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">combine</span><span class="params">(<span class="type">int</span> n, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        backtracking(n, k, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> k, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (arr.size() == k) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (i &gt; k - arr.size()) &#123;</span><br><span class="line">            backtracking(i-<span class="number">1</span>, k, arr);</span><br><span class="line">        &#125;</span><br><span class="line">        arr.add(i);</span><br><span class="line">        backtracking(i-<span class="number">1</span>, k, arr);</span><br><span class="line">        arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-2-1"><a href="#Solution-2-1" class="headerlink" title="Solution 2"></a>Solution 2</h5><p>若必须将当前元素放入数组中, 则需保证以下两点:</p>
+<ul>
+<li>当前数组的长度不可超过<code>k</code></li>
+<li><code>[i+1, n]</code>表示之后还可以添加的元素数量, <code>k - 当前数组长度</code>表示组合还需要几个元素, 因此需保证<code>len([i+1, n]) &gt;= k - len(arr)</code></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">combine</span><span class="params">(<span class="type">int</span> n, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        backtracking(n, k, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> k, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (i &lt; k - arr.size()) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">if</span> (arr.size() == k) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i; j &gt; <span class="number">0</span>; j--) &#123;</span><br><span class="line">            arr.add(j);</span><br><span class="line">            backtracking(j-<span class="number">1</span>, k, arr);</span><br><span class="line">            arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="39-Combination-Sum"><a href="#39-Combination-Sum" class="headerlink" title="39. Combination Sum"></a>39. Combination Sum</h4><h5 id="Problem-Description-4"><a href="#Problem-Description-4" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Given an array of <strong>distinct</strong> integers <code>candidates</code> and a target integer target, return a list of all <strong>unique combinations</strong> of <code>candidates</code> where the chosen numbers sum to <code>target</code>. You may return the combinations in <strong>any order</strong>.<br>The <strong>same</strong> number may be chosen from candidates an <strong>unlimited number of times</strong>. Two combinations are unique if the frequency of at least one of the chosen numbers is different.<br>The test cases are generated such that the number of unique combinations that sum up to <code>target</code> is less than <code>150</code> combinations for the given input.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: candidates = [2,3,6,7], target = 7</span><br><span class="line">Output: [[2,2,3],[7]]</span><br><span class="line">Explanation:</span><br><span class="line">2 and 3 are candidates, and 2 + 2 + 3 = 7. Note that 2 can be used multiple times.</span><br><span class="line">7 is a candidate, and 7 = 7.</span><br><span class="line">These are the only two combinations.</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-1-2"><a href="#Solution-1-2" class="headerlink" title="Solution 1"></a>Solution 1</h5><p>该题目需要注意两点:</p>
+<ul>
+<li>每个元素都可以被选择无数次</li>
+<li>没有要求组合的长度, 但要求当前数组的总和等于target, 因此需修改边界条件</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">combinationSum</span><span class="params">(<span class="type">int</span>[] candidates, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        Arrays.sort(candidates);</span><br><span class="line">        backtracking(candidates, <span class="number">0</span>, target, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] candidates, <span class="type">int</span> i, <span class="type">int</span> target, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (target == <span class="number">0</span>) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (i == candidates.length || target &lt; candidates[i]) <span class="keyword">return</span>;</span><br><span class="line">        <span class="comment">// skip</span></span><br><span class="line">        backtracking(candidates, i+<span class="number">1</span>, target, arr);</span><br><span class="line">        <span class="comment">// pick up</span></span><br><span class="line">        arr.add(candidates[i]);</span><br><span class="line">        backtracking(candidates, i, target-candidates[i], arr); <span class="comment">// i instead of i+1</span></span><br><span class="line">        arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-Solution-2"><a href="#3-Solution-2" class="headerlink" title="3. Solution 2"></a>3. Solution 2</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">combinationSum</span><span class="params">(<span class="type">int</span>[] candidates, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        Arrays.sort(candidates);</span><br><span class="line">        backtracking(candidates, <span class="number">0</span>, target, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] candidates, <span class="type">int</span> i, <span class="type">int</span> target, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (target == <span class="number">0</span>) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (i == candidates.length || target &lt; candidates[i]) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i; j &lt; candidates.length; j++) &#123;</span><br><span class="line">            arr.add(candidates[j]);</span><br><span class="line">            backtracking(candidates, j, target-candidates[j], arr); <span class="comment">// j instead of j+1</span></span><br><span class="line">            arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="40-Combination-Sum-II"><a href="#40-Combination-Sum-II" class="headerlink" title="40. Combination Sum II"></a>40. Combination Sum II</h4><h5 id="Problem-Description-5"><a href="#Problem-Description-5" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Given a collection of candidate numbers (<code>candidates</code>) and a target number (<code>target</code>), find all unique combinations in <code>candidates</code> where the candidate numbers sum to <code>target</code>.<br>Each number in <code>candidates</code> may only be used <strong>once</strong> in the combination.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: candidates = [10,1,2,7,6,1,5], target = 8</span><br><span class="line">Output: </span><br><span class="line">[</span><br><span class="line">    [1,1,6],</span><br><span class="line">    [1,2,5],</span><br><span class="line">    [1,7],</span><br><span class="line">    [2,6]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-Solution-1"><a href="#2-Solution-1" class="headerlink" title="2. Solution"></a>2. Solution</h5><p>该题需注意几个点:</p>
+<ul>
+<li>每个元素只能使用一次: 与传统的子集型回溯问题相同</li>
+<li>没有组合的长度要求, 而是求和要求: 与上一题相同</li>
+<li>组合不可重复: 与子集型回溯的Subset II问题相同</li>
+</ul>
+<p>因此可采用模板二, 并稍作修改:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">combinationSum2</span><span class="params">(<span class="type">int</span>[] candidates, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        Arrays.sort(candidates);</span><br><span class="line">        backtrack(candidates, <span class="number">0</span>, target, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtrack</span><span class="params">(<span class="type">int</span>[] candidates, <span class="type">int</span> i, <span class="type">int</span> target, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (target == <span class="number">0</span>) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (i == candidates.length || candidates[i] &gt; target) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i; j &lt; candidates.length; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (j &gt; i &amp;&amp; candidates[j-<span class="number">1</span>] == candidates[j]) <span class="keyword">continue</span>;</span><br><span class="line">            arr.add(candidates[j]);</span><br><span class="line">            backtrack(candidates, j+<span class="number">1</span>, target-candidates[j], arr);</span><br><span class="line">            arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="216-Combination-Sum-III"><a href="#216-Combination-Sum-III" class="headerlink" title="216. Combination Sum III"></a>216. Combination Sum III</h4><h5 id="Problem-Description-6"><a href="#Problem-Description-6" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Find all valid combinations of <code>k</code> numbers that sum up to n such that the following conditions are true:</p>
+<ul>
+<li>Only numbers <code>1</code> through <code>9</code> are used.</li>
+<li>Each number is used <strong>at most once</strong>.</li>
+</ul>
+<p>Return a list of all possible valid combinations. The list must not contain the same combination twice, and the combinations may be returned in any order.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: k = 3, n = 7</span><br><span class="line">Output: [[1,2,4]]</span><br><span class="line">Explanation:</span><br><span class="line">1 + 2 + 4 = 7</span><br><span class="line">There are no other valid combinations.</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-1-3"><a href="#Solution-1-3" class="headerlink" title="Solution 1"></a>Solution 1</h5><p>该题的要求如下:</p>
+<ul>
+<li><code>[1, 9]</code>中每个数字只能选择一个: 元素只能向一个方向移动, 不能原地踏步</li>
+<li>要求组合的长度: 边界条件中判断组合长度是否越界</li>
+<li>要求组合的总和: 边界条件中判断组合总和是否越界</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">combinationSum3</span><span class="params">(<span class="type">int</span> k, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        backtracking(k, n, <span class="number">1</span>, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span> k, <span class="type">int</span> n, <span class="type">int</span> i, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span> &amp;&amp; k == <span class="number">0</span>) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (i &gt; n || k == <span class="number">0</span> || i &gt; <span class="number">9</span>) <span class="keyword">return</span>; <span class="comment">// n cannot be negative, k cannot be negative, i cannot be bigger than 9</span></span><br><span class="line">        <span class="comment">// skip</span></span><br><span class="line">        backtracking(k, n, i+<span class="number">1</span>, arr);</span><br><span class="line">        <span class="comment">// pick up</span></span><br><span class="line">        arr.add(i);</span><br><span class="line">        backtracking(k-<span class="number">1</span>, n-i, i+<span class="number">1</span>, arr); <span class="comment">// i -&gt; i + 1, deduplicate</span></span><br><span class="line">        arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-2-2"><a href="#Solution-2-2" class="headerlink" title="Solution 2"></a>Solution 2</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">combinationSum3</span><span class="params">(<span class="type">int</span> k, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        backtracking(k, n, <span class="number">1</span>, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span> k, <span class="type">int</span> n, <span class="type">int</span> i, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span> &amp;&amp; k == <span class="number">0</span>) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (i &gt; n || k == <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i; j &lt;= <span class="number">9</span>; j++) &#123;</span><br><span class="line">            arr.add(j);</span><br><span class="line">            backtracking(k-<span class="number">1</span>, n-j, j+<span class="number">1</span>, arr); <span class="comment">// j -&gt; j + 1, deduplicate</span></span><br><span class="line">            arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-Permutation"><a href="#4-Permutation" class="headerlink" title="4. Permutation"></a>4. Permutation</h2><h3 id="4-1-Introduction"><a href="#4-1-Introduction" class="headerlink" title="4.1 Introduction"></a>4.1 Introduction</h3><p>排列型回溯的题目通常要求返回一个数组中所有元素的不同排列组合, 因此每个组合的长度与原数组相同, 组合的个数就是数组长度的阶乘, 假设数组为<code>[1,2,3]</code>, 则组合数为<code>3! = 1*2*3 = 6</code>. 相比于组合型回溯, 元素的顺序至关重要. 假设<code>path</code>表示已选元素的集合, <code>s</code>表示未选的元素, 回溯的整个流程如下:</p>
+<ul>
+<li>当前操作: 从<code>s</code>中枚举每个元素作为组合的第i个元素(<code>path[i]</code>), 并将该元素从<code>s</code>中移除</li>
+<li>子问题: 获得组合的第i+1个元素</li>
+<li>边界条件: 组合的长度等同于数组长度</li>
+</ul>
+<p>整个回溯可写作: <code>dfs(i, s) -&gt; dfs(i+1, s-&#123;x1&#125;), dfs(i+1, s-&#123;x2&#125;) ....</code></p>
+<h3 id="4-2-Leetcode"><a href="#4-2-Leetcode" class="headerlink" title="4.2 Leetcode"></a>4.2 Leetcode</h3><h4 id="46-Permutations"><a href="#46-Permutations" class="headerlink" title="46. Permutations"></a>46. Permutations</h4><h5 id="Problem-Description-7"><a href="#Problem-Description-7" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Given an array <code>nums</code> of distinct integers, return all the possible permutations. You can return the answer in <strong>any order</strong>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,2,3]</span><br><span class="line">Output: [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-1"><a href="#Solution-1" class="headerlink" title="Solution"></a>Solution</h5><p>当前操作: 从<code>nums</code>中枚举每个数字, 作为<code>arr</code>的第i个数字<br>子问题: 获得<code>arr</code>的第i+1个数字<br>边界条件: <code>i == nums.length</code>时, 可将<code>arr</code>作为结果之一</p>
+<p>需要注意的是, 当元素加入到<code>arr</code>时, 需从<code>nums</code>中移除该元素, 因此我们传入一个<code>isUsed</code>判断遍历的元素是否被采用.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">permute</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        backtracking(nums, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(), <span class="keyword">new</span> <span class="title class_">boolean</span>[nums.length]);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] nums, List&lt;Integer&gt; arr, <span class="type">boolean</span>[] isUsed)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (arr.size() == nums.length) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (isUsed[i]) <span class="keyword">continue</span>;</span><br><span class="line">            isUsed[i] = <span class="literal">true</span>;</span><br><span class="line">            arr.add(nums[i]);</span><br><span class="line">            backtracking(nums, arr, isUsed);</span><br><span class="line">            arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">            isUsed[i] = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="47-Permutations-II"><a href="#47-Permutations-II" class="headerlink" title="47. Permutations II"></a>47. Permutations II</h4><h5 id="Problem-Description-8"><a href="#Problem-Description-8" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>Given a collection of numbers, <code>nums</code>, that might contain duplicates, return all possible unique permutations <strong>in any order</strong>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums = [1,1,2]</span><br><span class="line">Output:</span><br><span class="line">[[1,1,2],</span><br><span class="line"> [1,2,1],</span><br><span class="line"> [2,1,1]]</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-2"><a href="#Solution-2" class="headerlink" title="Solution"></a>Solution</h5><p>该题与上一题基本相同, 唯一区别在于: 原数组中存在重复元素. 以<code>[1,1]</code>为例:<br>每次递归都枚举<code>nums</code>中的每个元素, 作为<code>arr</code>的第i个元素. 由于<code>nums[0] == nums[1]</code>, 因此, 当<code>nums[1]</code>作为<code>arr</code>的第一个元素时, 会与<code>nums[0]</code>作为<code>arr</code>的第一个元素产生的组合相同. 因此枚举当前元素时, 若满足以下两点, 则跳过当前元素:</p>
+<ul>
+<li>当前元素与上一个元素值相等</li>
+<li>上一个元素尚未作为组合中的元素</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;Integer&gt;&gt; <span class="title function_">permuteUnique</span><span class="params">(<span class="type">int</span>[] nums)</span> &#123;</span><br><span class="line">        Arrays.sort(nums);</span><br><span class="line">        backtracking(nums, <span class="keyword">new</span> <span class="title class_">boolean</span>[nums.length], <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] nums, <span class="type">boolean</span>[] isUsed, List&lt;Integer&gt; arr)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (arr.size() == nums.length) &#123;</span><br><span class="line">            res.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(arr));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (isUsed[i]) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; nums[i-<span class="number">1</span>] == nums[i] &amp;&amp; !isUsed[i-<span class="number">1</span>]) <span class="keyword">continue</span>;</span><br><span class="line">            isUsed[i] = <span class="literal">true</span>;</span><br><span class="line">            arr.add(nums[i]);</span><br><span class="line">            backtracking(nums, isUsed, arr);</span><br><span class="line">            arr.remove(arr.size()-<span class="number">1</span>);</span><br><span class="line">            isUsed[i] = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="51-N-Queens"><a href="#51-N-Queens" class="headerlink" title="51. N-Queens"></a>51. N-Queens</h4><h5 id="Problem-Description-9"><a href="#Problem-Description-9" class="headerlink" title="Problem Description"></a>Problem Description</h5><p>The <strong>n-queens</strong> puzzle is the problem of placing <code>n</code> queens on an <code>n x n</code> chessboard such that no two queens attack each other.<br>Given an integer <code>n</code>, return all distinct solutions to the <strong>n-queens puzzle</strong>. You may return the answer in <strong>any order</strong>.<br>Each solution contains a distinct board configuration of the n-queens&#39; placement, where <code>&#39;Q&#39;</code> and <code>&#39;.&#39;</code> both indicate a queen and an empty space, respectively.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: n = 4</span><br><span class="line">Output: [</span><br><span class="line">    [&quot;.Q..&quot;,</span><br><span class="line">     &quot;...Q&quot;,</span><br><span class="line">     &quot;Q...&quot;,</span><br><span class="line">     &quot;..Q.&quot;],</span><br><span class="line">    [&quot;..Q.&quot;,</span><br><span class="line">     &quot;Q...&quot;,</span><br><span class="line">     &quot;...Q&quot;,</span><br><span class="line">     &quot;.Q..&quot;]</span><br><span class="line">]</span><br><span class="line">Explanation: There exist two distinct solutions to the 4-queens puzzle as shown above</span><br></pre></td></tr></table></figure>
+
+<h5 id="Solution-3"><a href="#Solution-3" class="headerlink" title="Solution"></a>Solution</h5><p>该题要求在<code>n*n</code>的棋盘上放置<code>n</code>个皇后, 由于两个皇后无法同行同列, 因此每个行只有一个皇后, 每一列也只有一个皇后. 对于对角线, 通过观察<code>[0,0] -&gt; [n-1,n-1]</code>上的坐标, 可以发现该对角线上的行和列相减为<code>0</code>; 通过观察<code>[0,n-1] -&gt; [n-1,0]</code>上的坐标, 可以发现该对角线上的行和列之和为<code>n-1</code>. 假设现在我们有一个长度为<code>n</code>的数组:</p>
+<ul>
+<li>数组的坐标为皇后所在的行数</li>
+<li>数组上的值为皇后所在的列数</li>
+</ul>
+<p>假设数组上的值各不相同, 则该数组可看作<code>[0, n-1]</code>的全排列, 但排列组合还需要保证每个元素的<code>i + arr[i]</code>和<code>i - arr[i]</code>各不相同(对角线).</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;String&gt;&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> List&lt;List&lt;String&gt;&gt; <span class="title function_">solveNQueens</span><span class="params">(<span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="type">int</span>[] arr = <span class="keyword">new</span> <span class="title class_">int</span>[n];</span><br><span class="line">        backtracking(arr, <span class="number">0</span>, <span class="keyword">new</span> <span class="title class_">boolean</span>[n], <span class="keyword">new</span> <span class="title class_">boolean</span>[n*<span class="number">2</span>], <span class="keyword">new</span> <span class="title class_">boolean</span>[n*<span class="number">2</span>]);</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">backtracking</span><span class="params">(<span class="type">int</span>[] arr, <span class="type">int</span> i, <span class="type">boolean</span>[] cols, <span class="type">boolean</span>[] diag1, <span class="type">boolean</span>[] diag2)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (i == arr.length) &#123;</span><br><span class="line">            List&lt;String&gt; rows = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; arr.length; j++) &#123;</span><br><span class="line">                rows.add(<span class="keyword">new</span> <span class="title class_">StringBuilder</span>(<span class="string">&quot;.&quot;</span>.repeat(arr[j])).append(<span class="string">&quot;Q&quot;</span>).append(<span class="string">&quot;.&quot;</span>.repeat(arr.length-<span class="number">1</span>-arr[j])).toString());</span><br><span class="line">            &#125;</span><br><span class="line">            res.add(rows);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; arr.length; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cols[j] || diag1[i+j] || diag2[i-j+arr.length]) <span class="keyword">continue</span>;</span><br><span class="line">            cols[j] = diag1[i+j] = diag2[i-j+arr.length] = <span class="literal">true</span>;</span><br><span class="line">            arr[i] = j;</span><br><span class="line">            backtracking(arr, i+<span class="number">1</span>, cols, diag1, diag2);</span><br><span class="line">            cols[j] = diag1[i+j] = diag2[i-j+arr.length] = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/1614.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">DP (Dynamic Programming)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/eef.html">
+        <span class="next-text nav-default">Kafka Configuration</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/9d13.html';
+  var disqus_title = "Backtracking";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

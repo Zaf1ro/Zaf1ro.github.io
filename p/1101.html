@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Threads"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/1101.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/1101.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/1101.html"/>
+
+
+<meta name="description" content="1. Thread Concepts多线程让程序可在一个进程内执行多个事务, 每个线程负责一个事务, 这么做有以下好处:  简化异步事件代码: 由于每个线程处理一种事件类型, 因此每个线程内使用同步编程模型. 同步编程模型处理起来更简单. 共享数据: 多进程共享数据需要一些操作系统提供的工具, 如shared memory和file descriptor; 线程天生就共享同一内存地址空间和file">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Threads">
+<meta property="og:url" content="https://zaf1ro.github.io/p/1101.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Thread Concepts多线程让程序可在一个进程内执行多个事务, 每个线程负责一个事务, 这么做有以下好处:  简化异步事件代码: 由于每个线程处理一种事件类型, 因此每个线程内使用同步编程模型. 同步编程模型处理起来更简单. 共享数据: 多进程共享数据需要一些操作系统提供的工具, 如shared memory和file descriptor; 线程天生就共享同一内存地址空间和file">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/11-2-master-worker-thread.png">
+<meta property="article:published_time" content="2019-09-23T18:25:28.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.055Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/11-2-master-worker-thread.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Threads - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Thread-Concepts"><span class="toc-text">1. Thread Concepts</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Thread-Identification"><span class="toc-text">2. Thread Identification</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Thread-Creation"><span class="toc-text">3. Thread Creation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Thread-Termination"><span class="toc-text">4. Thread Termination</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Thread-Synchronization"><span class="toc-text">5. Thread Synchronization</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Mutexes"><span class="toc-text">5.1 Mutexes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Deadlock-Avoidance"><span class="toc-text">5.2 Deadlock Avoidance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-pthread-mutex-timedlock-Function"><span class="toc-text">5.3 pthread_mutex_timedlock Function</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Reader-Writer-Lock"><span class="toc-text">5.4 Reader-Writer Lock</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-Condition-Variable"><span class="toc-text">5.5 Condition Variable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-Spin-Locks"><span class="toc-text">5.6 Spin Locks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-7-Barriers"><span class="toc-text">5.7 Barriers</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Threads
+        
+      </h1>
+      <time class="post-time">
+          09/23/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Thread-Concepts"><a href="#1-Thread-Concepts" class="headerlink" title="1. Thread Concepts"></a>1. Thread Concepts</h2><p>多线程让程序可在一个进程内执行多个事务, 每个线程负责一个事务, 这么做有以下好处:</p>
+<ul>
+<li>简化异步事件代码: 由于每个线程处理一种事件类型, 因此每个线程内使用同步编程模型. 同步编程模型处理起来更简单.</li>
+<li>共享数据: 多进程共享数据需要一些操作系统提供的工具, 如shared memory和file descriptor; 线程天生就共享同一内存地址空间和file descriptor.</li>
+<li>提高吞吐量: 处理多个独立任务时, 可让每个线程负责一个任务, 以更好的利用多核CPU.</li>
+<li>交互式程序: 将程序拆分给多个线程, 每个线程独立处理用户的输入和输出, 当线程执行高延迟I&#x2F;O操作时, 可切换到其他线程并等待I&#x2F;O完成.</li>
+</ul>
+<p>多核或单核系统都能利用多线程的优势, 程序可使用任意数量的线程, 不必依照CPU的数量, 因此不会影响程序设计. 只要程序执行任务时会被阻塞, 就能让其他线程先执行, 从而提高单处理器上的响应时间和吞吐量.<br>线程由进程内的执行上下文所需的信息组成:</p>
+<ul>
+<li>Thread ID: 进程内的线程标识</li>
+<li>一组寄存器值</li>
+<li>Stack</li>
+<li>调度优先级和调度策略</li>
+<li>signal mask</li>
+<li>errno值</li>
+<li>线程特定数据</li>
+</ul>
+<p>以下是同一进程中不同线程共享的资源:</p>
+<ul>
+<li>text sement: 可执行程序代码</li>
+<li>data segment: 全局变量</li>
+<li>heap</li>
+<li>当前工作目录</li>
+<li>用户id和组id</li>
+<li>file descriptor</li>
+</ul>
+<p>以下是线程独占的资源:</p>
+<ul>
+<li>线程id</li>
+<li>context: 寄存器值, 包括程序计数器(PC), 栈指针寄存器(SP)</li>
+<li>stack</li>
+<li>errno值</li>
+<li>signal mask</li>
+<li>调度优先级</li>
+</ul>
+<h2 id="2-Thread-Identification"><a href="#2-Thread-Identification" class="headerlink" title="2. Thread Identification"></a>2. Thread Identification</h2><p>进程的PID在整个系统中唯一, 但thread ID不同: thread ID只在单个进程内唯一, 线程结束后会回收thread ID.<br>Thread ID以<code>pthread_t</code>类型标识, 由于POSIX.1没有规定<code>pthread_t</code>的实现, 因此为了程序的可移植性, 不能把<code>pthread_t</code>当做integer, 也不能用<code>==</code>判断两个thread ID是否相等:</p>
+<ul>
+<li>Linux 3.2.0使用unsigned long integer表示<code>pthread_t</code></li>
+<li>FreeBSD 8.0和Mac OS X 10.6.8使用指向<code>pthread</code> struct的指针表示<code>pthread_t</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the thread ID of the calling thread</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">pthread_t</span> <span class="title function_">pthread_self</span><span class="params">(<span class="type">void</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief compares two thread identifiers</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_equal</span><span class="params">(<span class="type">pthread_t</span> tid1, <span class="type">pthread_t</span> tid2)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>pthread_equal()</code>的主要用途: 让线程识别一个data structure内附带的thread ID. 例如: 一个master thread将任务放入队列, 线程池内的worker thread从队列中取出任务. Master会在每个任务内放入一个thread ID, 因此每个任务只会被特定worker执行:<br><img src="/images/UNIX/11-2-master-worker-thread.png" alt="master thread and worker thread"></p>
+<h2 id="3-Thread-Creation"><a href="#3-Thread-Creation" class="headerlink" title="3. Thread Creation"></a>3. Thread Creation</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create a new thread with attributes specified by </span></span><br><span class="line"><span class="comment"> *        attr within a process. The new thread starts </span></span><br><span class="line"><span class="comment"> *        execution by invoking  start_rtn() with sole </span></span><br><span class="line"><span class="comment"> *        argument arg</span></span><br><span class="line"><span class="comment"> * @param tidp: the thread ID of the newly created thread</span></span><br><span class="line"><span class="comment"> * @param attr: if null, the thread is created with default </span></span><br><span class="line"><span class="comment"> *        attribute</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error and the </span></span><br><span class="line"><span class="comment"> *         content of tidp is undefined</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_create</span><span class="params">(<span class="type">pthread_t</span> *tidp, <span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, </span></span><br><span class="line"><span class="params">                   <span class="type">void</span> *(*start_rtn)(<span class="type">void</span> *), <span class="type">void</span> *arg)</span>;</span><br></pre></td></tr></table></figure>
+<p>UNIX不保证被创建的线程和当前线程之间的运行顺序. 虽然新建的线程会继承当前线程的signal mask, 但所有pending signal都会被清理.<br>UNIX中每个线程都拥有各自的errno, 但pthread functions不会使用到. 因为errno是为线程内运行的程序使用, pthread functions使用return value告知caller是否调用成功.</p>
+<h2 id="4-Thread-Termination"><a href="#4-Thread-Termination" class="headerlink" title="4. Thread Termination"></a>4. Thread Termination</h2><p>线程内调用<code>exit()</code>, <code>_Exit()</code>, <code>_exit()</code>会导致整个进程终止运行. 若只想终止单个线程, 可使用以下方法:</p>
+<ol>
+<li>call return from the start routine, the return value is the thread&#39;s exit code</li>
+<li>cancelled by another thread in the same process</li>
+<li>call pthread_exit()</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief terminate the calling thread and return a value </span></span><br><span class="line"><span class="comment"> *        via retval that is available to another thread </span></span><br><span class="line"><span class="comment"> *        that calls pthread_join(). Any clean-up handlers </span></span><br><span class="line"><span class="comment"> *        established by pthread_cleanup_push() that have </span></span><br><span class="line"><span class="comment"> *        not been popped are popped and executed. All the </span></span><br><span class="line"><span class="comment"> *        thread-specific data will be destoried after </span></span><br><span class="line"><span class="comment"> *        clean-up handlers in an unspecified order</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">pthread_exit</span><span class="params">(<span class="type">void</span> *retval)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief wait for the thread specified by thread to </span></span><br><span class="line"><span class="comment"> *        terminate. If thread has already terminated, then </span></span><br><span class="line"><span class="comment"> *        returns immediately</span></span><br><span class="line"><span class="comment"> * @param retval: if not null, the copies the exit status </span></span><br><span class="line"><span class="comment"> *        of target thread into the location pointed to by </span></span><br><span class="line"><span class="comment"> *        retval. If target thread was cancelled, </span></span><br><span class="line"><span class="comment"> *        PTHREAD_CANCELED is placed to retval</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_join</span><span class="params">(<span class="type">pthread_t</span> thread, <span class="type">void</span> **retval)</span>;</span><br></pre></td></tr></table></figure>
+<p>由于retval的类型为无类型指针, 所以可以传入一个structure. 但需要注意: 若retval指向的变量位于stack(临时变量), 线程调用<code>pthread_exit()</code>后销毁所有线程内的数据, 导致<code>pthread_join()</code>中retval获取的数据为无效数据. 因此应使用global variable或调用<code>malloc()</code>将数据创建在heap上.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief send a cancellation request to the thread tid. </span></span><br><span class="line"><span class="comment"> *        Thread can call pthread_exit() with an argument </span></span><br><span class="line"><span class="comment"> *        of PTHREAD_CANCELED to terminate itself; Or a   </span></span><br><span class="line"><span class="comment"> *        thread can elect to ignore or control how it is </span></span><br><span class="line"><span class="comment"> *        cancelled</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cancel</span><span class="params">(<span class="type">pthread_t</span> tid)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief push rtn onto the top of the stack of clean-up </span></span><br><span class="line"><span class="comment"> *        handlers</span></span><br><span class="line"><span class="comment"> * @param arg: the argument of rtn</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">pthread_cleanup_push</span><span class="params">(<span class="type">void</span> (*rtn)(<span class="type">void</span> *), <span class="type">void</span> *arg)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief remove the routine at the top od the stack of </span></span><br><span class="line"><span class="comment"> *        clean-up handlers, and execute is if execute is </span></span><br><span class="line"><span class="comment"> *        nonzero</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">pthread_cleanup_pop</span><span class="params">(<span class="type">int</span> execute)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>pthread_cleanup_pop()</code>会在以下三种情况下弹出clean-up handler并执行该handler:</p>
+<ol>
+<li>thread is cancelled</li>
+<li>thread terminates itself by calling pthread_exit()</li>
+<li>thread calls pthread_cleanup_pop() with a nonzero execute argument</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief mark the thread identified by tid as detached. </span></span><br><span class="line"><span class="comment"> *        When a detached thread terminates, its resources </span></span><br><span class="line"><span class="comment"> *        are automatically released back to system</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on errpr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_detach</span><span class="params">(<span class="type">pthread_t</span> tid)</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="5-Thread-Synchronization"><a href="#5-Thread-Synchronization" class="headerlink" title="5. Thread Synchronization"></a>5. Thread Synchronization</h2><p>由于thread之间共享内存, 所以需要确保数据一致性. 若每个线程不对其他线程的变量进行修改, 则不存在数据一致性问题. 当一个线程会修改其他线程可能读取或修改的变量时, 就需要采取策略来实现数据一致性.<br>若修改数据的操作是原子性的, 则不存在<strong>竞争</strong>, 因而不存在数据一致性问题. 而现在计算机系统都有多核处理器, 导致每个CPU会有cache来缓存数据, 也会导致数据不一致问题依然存在.</p>
+<h3 id="5-1-Mutexes"><a href="#5-1-Mutexes" class="headerlink" title="5.1 Mutexes"></a>5.1 Mutexes</h3><p>为保证数据在某一时间只被一个thread访问, 可采用pthread mutual-exclusion interface. Mutex作为一种锁, 可保证共享数据被访问前后都有锁保护. 若其他thread想获取mutex, 则thread被block. </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize the mutex referenced by mutex with </span></span><br><span class="line"><span class="comment"> *        attributes specified by attr</span></span><br><span class="line"><span class="comment"> * @param attr: if null, the default mutex attributes are </span></span><br><span class="line"><span class="comment"> *        used</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_init</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex, </span></span><br><span class="line"><span class="params">                       <span class="type">const</span> <span class="type">pthread_mutexattr_t</span> *attr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Destroy the mutex object referenced by mutex</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_destroy</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br></pre></td></tr></table></figure>
+<p>PTHREAD_MUTEX_INITIALIZER会创建静态mutex object, <code>pthread_mutex_init()</code>则会创建动态mutex object(调用<code>malloc()</code>创造, 需要调用<code>pthread_mutex_destroy()</code>销毁).</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief The mutex object referenced by mutex shall be </span></span><br><span class="line"><span class="comment"> *        locked. If the mutex is already locked, the call </span></span><br><span class="line"><span class="comment"> *        will block until the mutex is unlocked.</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_lock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief equal to pthread_mutex_lock(), except that if the </span></span><br><span class="line"><span class="comment"> *        mutex object referenced by mutex is currently </span></span><br><span class="line"><span class="comment"> *        locked, the call shall return immediately</span></span><br><span class="line"><span class="comment"> * @return same as pthread_mutex_lock()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_trylock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief unlock the mutex object referenced by mutex</span></span><br><span class="line"><span class="comment"> * @return same as pthread_mutex_lock()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_unlock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-Deadlock-Avoidance"><a href="#5-2-Deadlock-Avoidance" class="headerlink" title="5.2 Deadlock Avoidance"></a>5.2 Deadlock Avoidance</h3><p>单个锁造成死锁的可能性不大, 除非thread在获得mutex后继续尝试获取该mutex. 若锁的数量大于1个后, 死锁的可能性就变得很大, 例如: thread 1和thread 2都需要获取mutex A和mutex B. Thread 1已获取mutex A, 尝试获取mutex B; Thread 2已获取mutex B, 尝试获取mutex A. 若thread 1或thread 2都不打算释放已获取的mutex, 则两个thread都陷入死锁并一直等待.<br>避免死锁的方法之一: 控制获取锁的顺序. 若thread 1和thread 2必须在获取mutex A后才能获取mutex B, 则死锁永远不会发生. 但程序随体积变大, 锁的获取顺序不再容易控制, 这时可采用另一种策略: 若当前无法获取mutex, 则等待一段时间后再尝试获取(调用<code>pthread_mutex_trylock()</code>防止阻塞该thread).</p>
+<h3 id="5-3-pthread-mutex-timedlock-Function"><a href="#5-3-pthread-mutex-timedlock-Function" class="headerlink" title="5.3 pthread_mutex_timedlock Function"></a>5.3 pthread_mutex_timedlock Function</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief lock the mutex object referenced by mutex. If the </span></span><br><span class="line"><span class="comment"> *        mutex is already locked, the calling thread shall </span></span><br><span class="line"><span class="comment"> *        block until the mutex becomes available. This wait</span></span><br><span class="line"><span class="comment"> *        shall be terminated when specified timeout tsptr </span></span><br><span class="line"><span class="comment"> *        expires</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_timedlock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex, </span></span><br><span class="line"><span class="params">                            <span class="type">const</span> <span class="keyword">struct</span> timespec *tsptr)</span>;</span><br></pre></td></tr></table></figure>
+<p>若函数超时但依然没有获得锁, 则返回ETIMEDOUT error number. </p>
+<h3 id="5-4-Reader-Writer-Lock"><a href="#5-4-Reader-Writer-Lock" class="headerlink" title="5.4 Reader-Writer Lock"></a>5.4 Reader-Writer Lock</h3><p>Reader-writer lock与mutex相似, 但提供了更好的并发性. Mutex让资源在某一时刻有且只有一个thread能够访问; Read-writer lock则允许多个reader threads同时访问资源, 但有且只有一个writer可以写入.<br>虽然Reader-writer lock的实现多种多样, 但当writer试图获取锁时, 都会屏蔽新来reader获取锁的请求. 若不屏蔽新来reader的锁请求, writer可能陷入饥饿而长期无法获取资源的使用权.<br>Reader-writer lock适用于大量读取但写入频率较低的情况. Reader-writer lock也被称为shared–exclusive lock, 因为reader共享资源访问, 而writer则不允许资源被其他writer或reader访问. </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate any resources required to use the read-</span></span><br><span class="line"><span class="comment"> *        write lock referenced by rwlock and initialize </span></span><br><span class="line"><span class="comment"> *        the lock to an unlocked state with attributes </span></span><br><span class="line"><span class="comment"> *        referenced by attr</span></span><br><span class="line"><span class="comment"> * @param attr: if null, the default read-write lock </span></span><br><span class="line"><span class="comment"> *        attributes shall be used</span></span><br><span class="line"><span class="comment"> * @return 0 on success; error number on error</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_init</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock, </span></span><br><span class="line"><span class="params">                        <span class="type">const</span> <span class="type">pthread_rwlockattr_t</span> *attr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief destroy the read-write lock object referenced by </span></span><br><span class="line"><span class="comment"> *        rwlock and release any resources used by the lock</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_destroy</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br></pre></td></tr></table></figure>
+<p>与mutex相同, Single UNIX Specification定义了一个宏定义: PTHREAD_RWLOCK_INITIALIZER用于创建静态的rwlock.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief apply a read lock to the read-write lock </span></span><br><span class="line"><span class="comment"> *        referenced by rwlock. If there&#x27;s no writer hold </span></span><br><span class="line"><span class="comment"> *        the lock and no writer blocked on the lock, the </span></span><br><span class="line"><span class="comment"> *        calling thread acquires the read lock</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_rdlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief apply a write lock to the read-write lock </span></span><br><span class="line"><span class="comment"> *        referenced by rwlock. If there&#x27;s no reader and </span></span><br><span class="line"><span class="comment"> *        writer holds the lock, the calling thread acquires</span></span><br><span class="line"><span class="comment"> *        the writer lock</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_wrlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief release a lock held on the read-write lock object </span></span><br><span class="line"><span class="comment"> *        referenced by rwlock. </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_unlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br></pre></td></tr></table></figure>
+<p>Single UNIX Specification还定义了以下函数用于防止死锁发生:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief apply a read lock but never block</span></span><br><span class="line"><span class="comment"> * @return 0 on success; EBUSY if a writer holds the lock </span></span><br><span class="line"><span class="comment"> *         or a writer blocked on it</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_tryrdlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief apply a write lock but never block</span></span><br><span class="line"><span class="comment"> * @return same as pthread_rwlock_tryrdlock()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_trywrlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br></pre></td></tr></table></figure>
+<p>Single UNIX Specification还提供了带超时功能的reader-writer locks, 可用于防止为了获取rwlock而陷入无限的阻塞</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief apply a read lock to the read-write lock </span></span><br><span class="line"><span class="comment"> *        referenced by rwlock. If the lock cannot be </span></span><br><span class="line"><span class="comment"> *        acquire, this wait shall be terminated when the </span></span><br><span class="line"><span class="comment"> *        specified timeout tsptr expires.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_timedrdlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock, </span></span><br><span class="line"><span class="params">                               <span class="type">const</span> <span class="keyword">struct</span> timespec *tsptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief apply a write lock to the read-write lock </span></span><br><span class="line"><span class="comment"> *        referenced by rwlock. If the lock cannot be </span></span><br><span class="line"><span class="comment"> *        acquired, this wait shall be terminated when the </span></span><br><span class="line"><span class="comment"> *        specified timeout expires</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_timedwrlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock, </span></span><br><span class="line"><span class="params">                               <span class="type">const</span> <span class="keyword">struct</span> timespec *tsptr)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-5-Condition-Variable"><a href="#5-5-Condition-Variable" class="headerlink" title="5.5 Condition Variable"></a>5.5 Condition Variable</h3><p>Mutex虽然解决了安全访问共有资源问题, 但没有解决线程之间的状态同步问题: 当某一线程想要保持阻塞, 直到某一事件发生时再运行, 那么就需要一个variable来提醒该线程.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* in thread 1 */</span></span><br><span class="line">pthread_mutex_lock(mx); <span class="comment">/* protecting state access */</span></span><br><span class="line"><span class="keyword">while</span> (state != GOOD) &#123;</span><br><span class="line">  pthread_mutex_unlock(mx);</span><br><span class="line">  wait_for_event();</span><br><span class="line">  pthread_mutex_lock(mx);</span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_unlock(mx);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* in thread 2 */</span></span><br><span class="line">pthread_mutex_lock(mx); <span class="comment">/* protecting state access */</span></span><br><span class="line">state = GOOD;</span><br><span class="line">pthread_mutex_unlock(mx);</span><br><span class="line">signal_event(); <span class="comment">/* expecting to wake thread 1 up */</span></span><br></pre></td></tr></table></figure>
+<p>上述代码看似解决了状态同步问题, 但存在一个bug: 当thread 1执行完<code>pthread_mutex_unlock()</code>后, CPU的执行权可能转移到thread 2. Thread 2在执行完后再次回到thread 1, 而这时thread 1调用<code>wait_for_event()</code>并陷入永久的睡眠. 问题的关键在于无法实现原子性的unlock和wait连续操作.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* in thread 1 */</span></span><br><span class="line">pthread_mutex_lock(mx); <span class="comment">/* protecting state access */</span></span><br><span class="line"><span class="keyword">while</span> (state != GOOD) &#123;</span><br><span class="line">  pthread_cond_wait(cond, mx); <span class="comment">/* unlocks the mutex and sleeps, then locks it back */</span></span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_unlock(mx);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* in thread 2 */</span></span><br><span class="line">pthread_mutex_lock(mx); <span class="comment">/* protecting state access */</span></span><br><span class="line">state = GOOD;</span><br><span class="line">pthread_cond_signal(cond); <span class="comment">/* expecting to wake thread 1 up */</span></span><br><span class="line">pthread_mutex_unlock(mx);</span><br></pre></td></tr></table></figure>
+<p>Conditional variable则很好的实现了这一功能.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief initialize the condition variable referenced by </span></span><br><span class="line"><span class="comment"> *        cond with attributes referenced by attr</span></span><br><span class="line"><span class="comment"> * @param attr: if null, the default condition shall be used</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_init</span><span class="params">(<span class="type">pthread_cond_t</span> *cond, </span></span><br><span class="line"><span class="params">                      <span class="type">const</span> <span class="type">pthread_condattr_t</span> *attr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief destroy the given condition variable specified by </span></span><br><span class="line"><span class="comment"> *        cond</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_destroy</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief block on a condition variable</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_wait</span><span class="params">(<span class="type">pthread_cond_t</span> *cond, </span></span><br><span class="line"><span class="params">                      <span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief same as pthread_cond_wait(), except that an error </span></span><br><span class="line"><span class="comment"> *        is returned if the absolute time specified by</span></span><br><span class="line"><span class="comment"> *        tsptr passes</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_timedwait</span><span class="params">(<span class="type">pthread_cond_t</span> *cond, </span></span><br><span class="line"><span class="params">                           <span class="type">pthread_mutex_t</span> *mutex, </span></span><br><span class="line"><span class="params">                           <span class="type">const</span> <span class="keyword">struct</span> timespec *tsptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief unblock at least one of the threads that are </span></span><br><span class="line"><span class="comment"> *        blocked on the specified condition variable cond</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_signal</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief unblock all threads currently blocked on the </span></span><br><span class="line"><span class="comment"> *        specified condition variable cond</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_broadcast</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-6-Spin-Locks"><a href="#5-6-Spin-Locks" class="headerlink" title="5.6 Spin Locks"></a>5.6 Spin Locks</h3><p>Spin Lock功能上与mutex相同, 都是控制公共资源的访问. 但与mutex不同的是, thread无法获得spin lock时会不断尝试获取, CPU不断运转来保证thread一直尝试获取spin lock; 而无法获取mutex时会thread被阻塞, thread会让出CPU让其他thread运行.<br>Spin lock之所以这样设计是因为context switch的时间过长, 每次获取mutex失败后都要经历阻塞thread, 载入其他线程等操作. Lock mutex与unlock mutex之间的实际运行代码长度过短时, CPU的大部分时间都会浪费在context switch. 这时spin lock的优势就展现出来: 无需处理context switch.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate any resources required to use the spin </span></span><br><span class="line"><span class="comment"> *        lock referenced by lock and initialize the lock </span></span><br><span class="line"><span class="comment"> *        to an unlocked state</span></span><br><span class="line"><span class="comment"> * @param pshared: the process-shared attribute</span></span><br><span class="line"><span class="comment"> *        1. PTHREAD_PROCESS_SHARED: permit the spin lock </span></span><br><span class="line"><span class="comment"> *           to be operated by any thread in any other </span></span><br><span class="line"><span class="comment"> *           processes</span></span><br><span class="line"><span class="comment"> *        2. PTHREAD_PROCESS_PRIVATE: only be operated by </span></span><br><span class="line"><span class="comment"> *           threads created within the same process</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_spin_init</span><span class="params">(<span class="type">pthread_spinlock_t</span> *lock, <span class="type">int</span> pshared)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief destroy the spin lock referenced by lock and </span></span><br><span class="line"><span class="comment"> *        release any resources used by the lock</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_spin_destroy</span><span class="params">(<span class="type">pthread_spinlock_t</span> *lock)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief lock the spin lock referenced by lock if it is </span></span><br><span class="line"><span class="comment"> *        not held by any thread. Otherwise, the thread </span></span><br><span class="line"><span class="comment"> *        shall spin until the lock becomes available</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_spin_lock</span><span class="params">(<span class="type">pthread_spinlock_t</span> *lock)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief lock the spin lock referenced by lock if it is </span></span><br><span class="line"><span class="comment"> *        not held by any thread. Otherwise, the function </span></span><br><span class="line"><span class="comment"> *        shall fail</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_spin_trylock</span><span class="params">(<span class="type">pthread_spinlock_t</span> *lock)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief elease the spin lock referenced by lock</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_spin_unlock</span><span class="params">(<span class="type">pthread_spinlock_t</span> *lock)</span>;</span><br></pre></td></tr></table></figure>
+<p>虽然spin lock有一定好处, 但实际使用情况却十分有限, 原因如下:</p>
+<ol>
+<li>现代处理器context switch所需时间越来越短</li>
+<li>mutex实现加入了spin lock思想: mutex获取失败后不会立刻阻塞, 而是再尝试一定次数. 若这之后依旧没有获得mutex, 则陷入阻塞</li>
+</ol>
+<h3 id="5-7-Barriers"><a href="#5-7-Barriers" class="headerlink" title="5.7 Barriers"></a>5.7 Barriers</h3><p>Barriers作为同步机制之一, 可让多个并发运行的threads协同工作. Thread到达barrier后会进行等待, 直到指定数量的线程到达该barrier后再一起恢复运行.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief allocate any resources required to use the barrier</span></span><br><span class="line"><span class="comment"> *        referenced by barrier and initialize the barrier </span></span><br><span class="line"><span class="comment"> *        with attributes referenced by attr</span></span><br><span class="line"><span class="comment"> * @param count: the number of threads before any of them </span></span><br><span class="line"><span class="comment"> *        successfully return from the call</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_barrier_init</span><span class="params">(<span class="type">pthread_barrier_t</span> *barrier, </span></span><br><span class="line"><span class="params">                         <span class="type">const</span> <span class="type">pthread_barrierattr_t</span> *attr, </span></span><br><span class="line"><span class="params">                         <span class="type">unsigned</span> <span class="type">int</span> count)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief destroy the barrier referenced by barrier and </span></span><br><span class="line"><span class="comment"> *        release any resources used by the barrier</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_barrier_destroy</span><span class="params">(<span class="type">pthread_barrier_t</span> *barrier)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief synchronize participating threads at the barrier </span></span><br><span class="line"><span class="comment"> *        referenced by barrier. The calling thread shall </span></span><br><span class="line"><span class="comment"> *        block until the required number of threads have </span></span><br><span class="line"><span class="comment"> *        called pthread_barrier_wait() specifying the </span></span><br><span class="line"><span class="comment"> *        barrier</span></span><br><span class="line"><span class="comment"> * @return one thread receives PTHREAD_BARRIER_SERIAL_THREAD</span></span><br><span class="line"><span class="comment"> *         the other threads receive 0. This allows one </span></span><br><span class="line"><span class="comment"> *         thread to continue as the master to act on the </span></span><br><span class="line"><span class="comment"> *         results of the work done by all threads</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_barrier_wait</span><span class="params">(<span class="type">pthread_barrier_t</span> *barrier)</span>;</span><br></pre></td></tr></table></figure>
+<p>barrier在使用中不能修改count. 若想重置count, 必须调用<code>pthread_barrier_destroy()</code>和<code>pthread_barrier_init()</code>重新设置count.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/7793.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Thread Control</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/277e.html">
+        <span class="next-text nav-default">Signals</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/1101.html';
+  var disqus_title = "Threads";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

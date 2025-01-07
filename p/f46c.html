@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - News Feed"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/f46c.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/f46c.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/f46c.html"/>
+
+
+<meta name="description" content="1. Understand the problem and establish design scope Is this a mobile app or a web app: Both What are the important features: A user can publish a post and see her friends&#39; posts on the news feed">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - News Feed">
+<meta property="og:url" content="https://zaf1ro.github.io/p/f46c.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Understand the problem and establish design scope Is this a mobile app or a web app: Both What are the important features: A user can publish a post and see her friends&#39; posts on the news feed">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/11-feed-publishing.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/11-newsfeed-building.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/11-feed-publishing-deep-dive.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/11-fanout-service-workflow.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/11-newsfeed-retrieval-deep-dive.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/11-cache-architecture.jpg">
+<meta property="article:published_time" content="2024-04-17T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.052Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/11-feed-publishing.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - News Feed - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understand-the-problem-and-establish-design-scope"><span class="toc-text">1. Understand the problem and establish design scope</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Propose-high-level-design-and-get-buy-in"><span class="toc-text">2. Propose high-level design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Newsfeed-APIs"><span class="toc-text">2.1 Newsfeed APIs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Feed-publishing"><span class="toc-text">2.2 Feed publishing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Newsfeed-building"><span class="toc-text">2.3 Newsfeed building</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Design-deep-dive"><span class="toc-text">3. Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Feed-publishing-deep-dive"><span class="toc-text">3.1 Feed publishing deep dive</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Fanout-on-write"><span class="toc-text">3.2 Fanout on write</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Fanout-on-read"><span class="toc-text">3.3 Fanout on read</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-The-fanout-service-workflow"><span class="toc-text">3.4 The fanout service workflow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Newsfeed-retrieval-deep-dive"><span class="toc-text">3.5 Newsfeed retrieval deep dive</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-Cache-architecture"><span class="toc-text">3.6 Cache architecture</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Wrap-up"><span class="toc-text">4. Wrap up</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - News Feed
+        
+      </h1>
+      <time class="post-time">
+          04/17/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Understand-the-problem-and-establish-design-scope"><a href="#1-Understand-the-problem-and-establish-design-scope" class="headerlink" title="1. Understand the problem and establish design scope"></a>1. Understand the problem and establish design scope</h2><ul>
+<li>Is this a mobile app or a web app: Both</li>
+<li>What are the important features: A user can publish a post and see her friends&#39; posts on the news feed page</li>
+<li>Is the news feed sorted by reverse chronological order or any particular order: the feed is sorted by reverse chronological order</li>
+<li>How many friends can a user have: 5000</li>
+<li>What is the traffic volume: 10 million DAU</li>
+<li>Can feed contain images, videos, or just text: It can contain media files, including both images and videos.</li>
+</ul>
+<h2 id="2-Propose-high-level-design-and-get-buy-in"><a href="#2-Propose-high-level-design-and-get-buy-in" class="headerlink" title="2. Propose high-level design and get buy-in"></a>2. Propose high-level design and get buy-in</h2><p>The design is divided into two flows:</p>
+<ul>
+<li>Feed publishing: when a user publishes a post, data is written into cache and database. A post is populated to her friends&#39; news feed.</li>
+<li>Newsfeed building: the news feed is built by aggregating friends&#39; posts in reverse chronological order</li>
+</ul>
+<h3 id="2-1-Newsfeed-APIs"><a href="#2-1-Newsfeed-APIs" class="headerlink" title="2.1 Newsfeed APIs"></a>2.1 Newsfeed APIs</h3><ul>
+<li>Feed publishing API: client sends a HTTP POST request to the server to publish a post. For example: <code>POST /v1/me/feed</code>, params:<ul>
+<li>content: content is the text of the post</li>
+<li>auth_token: it is used to authenticate API request</li>
+</ul>
+</li>
+<li>Newsfeed retrieval API: client sends a HTTP GET request to the server to retrieve news feed. For example: <code>GET /v1/me/feed</code>, params:<ul>
+<li>auth_token: it is used to authenticate API requests</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-2-Feed-publishing"><a href="#2-2-Feed-publishing" class="headerlink" title="2.2 Feed publishing"></a>2.2 Feed publishing</h3><p><img src="/images/System-Design/Interview/11-feed-publishing.jpg" alt="Feed Publishing"></p>
+<ul>
+<li>User: user can view news feeds on a browser or mobile app</li>
+<li>Load balancer: distribute traffic to web servers</li>
+<li>Web servers: redirect traffic to different internal services</li>
+<li>Post service: persist post in the database and cache</li>
+<li>Fanout service: push new content to friends&#39; news feed. Newsfeed data is stored in the cache for fast retrieval</li>
+<li>Notification service: inform friends that new content is available and send out push notifications</li>
+</ul>
+<h3 id="2-3-Newsfeed-building"><a href="#2-3-Newsfeed-building" class="headerlink" title="2.3 Newsfeed building"></a>2.3 Newsfeed building</h3><p><img src="/images/System-Design/Interview/11-newsfeed-building.jpg" alt="Newsfeed Building"></p>
+<ul>
+<li>User: send a request to retrieve her news feed</li>
+<li>Load balancer: distribute traffic to web servers</li>
+<li>Web servers: redirect requests to newsfeed service</li>
+<li>Newsfeed service: fetch news feed from the cache</li>
+<li>Newsfeed cache: store news feed IDs needed to render the news feed</li>
+</ul>
+<h2 id="3-Design-deep-dive"><a href="#3-Design-deep-dive" class="headerlink" title="3. Design deep dive"></a>3. Design deep dive</h2><p>The high-level design briefly covered two flows: feed publishing and news feed building.</p>
+<h3 id="3-1-Feed-publishing-deep-dive"><a href="#3-1-Feed-publishing-deep-dive" class="headerlink" title="3.1 Feed publishing deep dive"></a>3.1 Feed publishing deep dive</h3><p><img src="/images/System-Design/Interview/11-feed-publishing-deep-dive.jpg" alt="Feed Publishing Deep Dive"></p>
+<p>We will focus on two components:</p>
+<ul>
+<li>Web servers: only users signed in with valid <code>auth_token</code> are allowed to make posts. The system limits the number of posts a user can make within a certain period, prevent spam and abusive content</li>
+<li>fanout service: Fanout is the process of delivering a post to all friends. Two types of fanout models: fanout on write (also called push model) and fanout on read (also called pull model)</li>
+</ul>
+<h3 id="3-2-Fanout-on-write"><a href="#3-2-Fanout-on-write" class="headerlink" title="3.2 Fanout on write"></a>3.2 Fanout on write</h3><p>News feed is pre-computed during write time. A new post is delivered to friends&#39; cache immediately after it is published.</p>
+<ul>
+<li>Pros: <ul>
+<li>The news feed can be pushed to friends immediately</li>
+<li>Fetching news feed is fast because the news feed is pre-computed</li>
+</ul>
+</li>
+<li>Cons: <ul>
+<li>If a user has many friends, fetching the friend list and generating news feeds for all of them are slow</li>
+<li>For inactive users or those rarely log in, pre-computing news feeds waste computing resources</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-3-Fanout-on-read"><a href="#3-3-Fanout-on-read" class="headerlink" title="3.3 Fanout on read"></a>3.3 Fanout on read</h3><p>The news feed is generated during read time. Recent posts are pulled when a user loads her home page.</p>
+<ul>
+<li>Pros:<ul>
+<li>For inactive users or those who rarely log in, fanout on read works better</li>
+<li>Data is not pushed to friends so there is no hotkey problem</li>
+</ul>
+</li>
+<li>Cons:<ul>
+<li>Fetching the news feed becomes slow</li>
+</ul>
+</li>
+</ul>
+<p>We adopt a hybrid approach to get benefits of both approaches and avoid pitfalls in them.</p>
+<ul>
+<li>For the majority of users: use a push model </li>
+<li>For users who have many friends&#x2F;followers: let friends&#x2F;followers pull news content to avoid system overload</li>
+</ul>
+<h3 id="3-4-The-fanout-service-workflow"><a href="#3-4-The-fanout-service-workflow" class="headerlink" title="3.4 The fanout service workflow"></a>3.4 The fanout service workflow</h3><p><img src="/images/System-Design/Interview/11-fanout-service-workflow.jpg" alt="Fanout Service Workflow"></p>
+<ol>
+<li>Fetch friend IDs from the graph database. Graph databases are suited for managing friend relationship and friend recommendations. </li>
+<li>Get friends info from the user cache: filter out friends based on user settings<ul>
+<li>If user mutes someone, user&#39;s posts will not show up on their news feed</li>
+<li>User could selectively share information with specific friends</li>
+</ul>
+</li>
+<li>Send friends list and new post ID to the message queue</li>
+<li>Fanout workers fetch data from the message queue and store news feed data in the news feed cache</li>
+<li>Store <code>&lt;post_id, user_id&gt;</code> in news feed cache</li>
+</ol>
+<h3 id="3-5-Newsfeed-retrieval-deep-dive"><a href="#3-5-Newsfeed-retrieval-deep-dive" class="headerlink" title="3.5 Newsfeed retrieval deep dive"></a>3.5 Newsfeed retrieval deep dive</h3><p><img src="/images/System-Design/Interview/11-newsfeed-retrieval-deep-dive.jpg" alt="Newsfeed Retrieval Deep Dive"></p>
+<p>Media content (images, videos, etc.) are stored in CDN for fast retrieval. Below is how a client retrieves news feed:</p>
+<ol>
+<li>A user sends a request to retrieve her news feed</li>
+<li>The load balancer distributes requests to web servers</li>
+<li>Web servers call the news feed service to fetch news feeds</li>
+<li>News feed service gets a list post IDs from the news feed cache</li>
+<li>A user&#39;s news feed is more than just a list of feed IDs. It contains username, profile picture, post content, post image, etc.</li>
+<li>The fully hydrated news feed is returned in JSON format back to the client for rendering</li>
+</ol>
+<h3 id="3-6-Cache-architecture"><a href="#3-6-Cache-architecture" class="headerlink" title="3.6 Cache architecture"></a>3.6 Cache architecture</h3><p><img src="/images/System-Design/Interview/11-cache-architecture.jpg" alt="Cache Architecture"></p>
+<p>We divide the cache tier into 5 layers:</p>
+<ul>
+<li>News Feed: store IDs of news feeds</li>
+<li>Content: store every post data</li>
+<li>Social Graph: store user relationship data</li>
+<li>Action: store info about whether a user liked a post, replied a post, or took other actions on a post</li>
+<li>Counters: store counters for like, reply, follower, following, etc</li>
+</ul>
+<h2 id="4-Wrap-up"><a href="#4-Wrap-up" class="headerlink" title="4. Wrap up"></a>4. Wrap up</h2><p>Scaling the database:</p>
+<ul>
+<li>Vertical scaling vs Horizontal scaling</li>
+<li>SQL vs NoSQL</li>
+<li>Master-slave replication</li>
+<li>Read replicas</li>
+<li>Consistency models</li>
+<li>Database sharding</li>
+</ul>
+<p>Other talking points:</p>
+<ul>
+<li>Keep web tier stateless</li>
+<li>Cache data as much as you can</li>
+<li>Support multiple data centers</li>
+<li>Lose couple components with message queues</li>
+<li>Monitor key metrics. For instance, QPS during peak</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/601d.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - Chat System</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/9f54.html">
+        <span class="next-text nav-default">System Design - Notification System</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/f46c.html';
+  var disqus_title = "System Design - News Feed";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Hardware"/>
+
+
+
+
+  <meta name="keywords" content="Concurrency," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/aba0.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/aba0.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/aba0.html"/>
+
+
+<meta name="description" content="1. PipelinedCPU通常需要五步来执行指令:  Fetch(从register取出一个32位的指令) Decode(指令解码) Execute(执行指令) Memory Access(需要访问内存时使用, 例如load&#x2F;store指令) Write-back(将运算结果写回register)  为提高CPU的throughput(吞吐量), 运用instruction pipe">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hardware">
+<meta property="og:url" content="https://zaf1ro.github.io/p/aba0.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. PipelinedCPU通常需要五步来执行指令:  Fetch(从register取出一个32位的指令) Decode(指令解码) Execute(执行指令) Memory Access(需要访问内存时使用, 例如load&#x2F;store指令) Write-back(将运算结果写回register)  为提高CPU的throughput(吞吐量), 运用instruction pipe">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/hardware-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/hardware-2.png">
+<meta property="article:published_time" content="2019-05-20T18:36:15.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.032Z">
+<meta property="article:tag" content="Concurrency">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/multithreading/Basic/hardware-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Hardware - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Pipelined"><span class="toc-text">1. Pipelined</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Memory-Reference"><span class="toc-text">2. Memory Reference</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Atomic-Operations"><span class="toc-text">3. Atomic Operations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Memory-Barrier"><span class="toc-text">4. Memory Barrier</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Cache-Miss"><span class="toc-text">5. Cache Miss</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-I-O-Operations"><span class="toc-text">6. I&#x2F;O Operations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Costs-of-Operations"><span class="toc-text">7. Costs of Operations</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Hardware
+        
+      </h1>
+      <time class="post-time">
+          05/20/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Pipelined"><a href="#1-Pipelined" class="headerlink" title="1. Pipelined"></a>1. Pipelined</h2><p>CPU通常需要五步来执行指令:</p>
+<ol>
+<li>Fetch(从register取出一个32位的指令)</li>
+<li>Decode(指令解码)</li>
+<li>Execute(执行指令)</li>
+<li>Memory Access(需要访问内存时使用, 例如load&#x2F;store指令)</li>
+<li>Write-back(将运算结果写回register)</li>
+</ol>
+<p>为提高CPU的throughput(吞吐量), 运用instruction pipelining(指令管道化)技术来实现instruction-level的平行化. 通过将连续的instruction切分成多个部分来保证CPU的每个部分都在不断运行.<br><img src="/images/multithreading/Basic/hardware-1.png" alt="Basic five-stage pipeline"></p>
+<p>使用instruction pipelining技术通常需要高度可预测的指令流, 例如多次循环和矩阵中的算术运算. 但当指令流无法准确预测时, CPU就需要等待pipeline flush(重新加载新的指令), 例如C++中virtual object所指向的real object就无法预测. 频繁的pipeline flush会极大影响CPU性能.</p>
+<h2 id="2-Memory-Reference"><a href="#2-Memory-Reference" class="headerlink" title="2. Memory Reference"></a>2. Memory Reference</h2><p>1980年的CPU从memory读取数据所需时间比处理一条指令时间短, 但如今CPU从内存读取数据所需时间是执行一条指令时间的几千倍, 这得益于<strong>Moore&#39;s Law</strong>(摩尔定律)下CPU性能的指数级提升. 基于<strong>Principle of Locality</strong>(局部性原理, CPU在一小段时间内倾向于访问一小块内存空间), CPU使用多级cache(体积更小, 访问速度更快的缓存)来减少内存访问的延迟.</p>
+<h2 id="3-Atomic-Operations"><a href="#3-Atomic-Operations" class="headerlink" title="3. Atomic Operations"></a>3. Atomic Operations</h2><p>有时thread需要执行一个操作, 该操作在其他thread眼中是瞬间完成的, 不可分割的, 这种操作称为atomic operation(原子操作). atomic operation的优缺点如下:</p>
+<ul>
+<li>优点:<ul>
+<li>耗时比锁机制短</li>
+<li>不会出现Dead Lock(死锁)和Lock Convey(锁封护)</li>
+</ul>
+</li>
+<li>缺点:<ul>
+<li>只支持部分操作</li>
+</ul>
+</li>
+</ul>
+<p>但从原理来说, atomic operation与CPU pipeline矛盾. 即使一些看似很简单的操作, 其实也无法通过多个指令完成, 例如:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">uint64_t</span> sharedValue = <span class="number">0</span>;</span><br><span class="line">sharedValue = <span class="number">0x100000002</span>; <span class="comment">/* mov DWORD PTR sharedValue, 2</span></span><br><span class="line"><span class="comment">                            * mov DWORD PTR sharedValue+4, 1</span></span><br><span class="line"><span class="comment">                            */</span></span><br></pre></td></tr></table></figure>
+<p>所以为实现atomic operation, 需要pipeline delayed或pipeline flush, 从而造成CPU性能下降.</p>
+<h2 id="4-Memory-Barrier"><a href="#4-Memory-Barrier" class="headerlink" title="4. Memory Barrier"></a>4. Memory Barrier</h2><p>由于CPU的性能优化会导致<strong>out-of-order execution</strong>(指令乱序执行), 这会导致多线程的并发编程出现意外结果, 例如:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Processor 1</span></span><br><span class="line"><span class="keyword">while</span> (f == <span class="number">0</span>);</span><br><span class="line">print x;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Processor 2</span></span><br><span class="line">x = <span class="number">42</span>;</span><br><span class="line">f = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>x和f的assignment operation乱序执行会导致print的结果不同, 这时需要memory barrier(内存屏障)来保证CPU按照某种顺序执行, 也必然导致CPU性能下降.</p>
+<h2 id="5-Cache-Miss"><a href="#5-Cache-Miss" class="headerlink" title="5. Cache Miss"></a>5. Cache Miss</h2><p>对于单个CPU来说, cache极大地降低了访问内存延迟. 但对于多个CPU来说, 由于每个CPU都有各自的cache, 某个CPU访问的变量可能在其他CPU的cache中, 发生cache miss. 例如:<br><img src="/images/multithreading/Basic/hardware-2.png" alt="Basic five-stage pipeline"></p>
+<p>当CPU0想要对CPU7中cache的数据进行CAS operation(compare and swap)时, 必须进行以下步骤:</p>
+<ol>
+<li>CPU0检查自身的cache, 没有找到数据</li>
+<li>请求被发送到CPU0和CPU1的interconnect, 并未在CPU1的cache中找到数据</li>
+<li>请求被发送到system interconnect并检查了其他三组CPU, 得知数据在CPU6和CPU7的cache中</li>
+<li>请求被发送到CPU6和CPU7的interconnect, 得知数据在CPU7的cache中</li>
+<li>CPU7把数据发送给直连的interconnect, 并清除自身数据</li>
+<li>CPU6和CPU7的interconnect将数据传给system interconnect</li>
+<li>System interconnect将数据传给CPU0和CPU1的interconnect</li>
+<li>CPU0和CPU1的interconnect将数据传给CPU0的cache</li>
+<li>CPU0执行CAS操作</li>
+</ol>
+<h2 id="6-I-O-Operations"><a href="#6-I-O-Operations" class="headerlink" title="6. I&#x2F;O Operations"></a>6. I&#x2F;O Operations</h2><p>I&#x2F;O operations包括网络, 大容量存储器或人的操作. 这些操作的延迟性也会造成CPU效率降低.</p>
+<h2 id="7-Costs-of-Operations"><a href="#7-Costs-of-Operations" class="headerlink" title="7. Costs of Operations"></a>7. Costs of Operations</h2><p>假设system clock(系统时钟)的周期为0.6ns, 各项操作的开销如下:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Operation</th>
+<th align="center">Cost(ns)</th>
+<th align="center">Ratio(cost&#x2F;clock)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Clock period</td>
+<td align="center">0.6</td>
+<td align="center">1.0</td>
+</tr>
+<tr>
+<td align="center">Best-case CAS</td>
+<td align="center">37.9</td>
+<td align="center">63.2</td>
+</tr>
+<tr>
+<td align="center">Best-case lock</td>
+<td align="center">65.6</td>
+<td align="center">109.3</td>
+</tr>
+<tr>
+<td align="center">Single cache miss</td>
+<td align="center">139.5</td>
+<td align="center">232.5</td>
+</tr>
+<tr>
+<td align="center">CAS cache miss</td>
+<td align="center">306.0</td>
+<td align="center">510.0</td>
+</tr>
+<tr>
+<td align="center">Comms Fabric</td>
+<td align="center">5,000.0</td>
+<td align="center">8,330.0</td>
+</tr>
+<tr>
+<td align="center">Global Comms</td>
+<td align="center">195,000,000.0</td>
+<td align="center">325,000,000.0</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Best-case CAS: CPU不需要从其他CPU的cache获取数据, 可直接从自身的cache获得数据并进行CAS operation</li>
+<li>Best-case lock: 代表lock的数据结构已经在CPU的cache中, 不会发生cache miss.</li>
+<li>Comms Fabric: 一套系统中不同部件之间的数据交换, 例如infiniband</li>
+<li>Global Comms: 以太网上的数据交换, 更远的物理距离和协议解析</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Concurrency/">Concurrency</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/d031.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Tools of Parallel-Programming Trade</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2c50cec5.html">
+        <span class="next-text nav-default">C++ 11</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/aba0.html';
+  var disqus_title = "Hardware";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="C++ Concurrency"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/412a.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/412a.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/412a.html"/>
+
+
+<meta name="description" content="1. 进程并发和线程并发的比较进程的缺点:  进程之间的沟通十分复杂并且速度慢 分配多进程需要占更多的资源  进程的优点:  操作系统会给予进程很多保护, 例如保护数据不被其他数据修改 线程的优点: 轻量级, 不需要太多资源 共享全局资源和内存   线程的缺点 缺少保护数据的机制    总结: 虽然线程并发需要程序员自己统筹数据的一致性, 但它的优点也是很突出. 所以大部分语言都选用线程作为并发单">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ Concurrency">
+<meta property="og:url" content="https://zaf1ro.github.io/p/412a.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 进程并发和线程并发的比较进程的缺点:  进程之间的沟通十分复杂并且速度慢 分配多进程需要占更多的资源  进程的优点:  操作系统会给予进程很多保护, 例如保护数据不被其他数据修改 线程的优点: 轻量级, 不需要太多资源 共享全局资源和内存   线程的缺点 缺少保护数据的机制    总结: 虽然线程并发需要程序员自己统筹数据的一致性, 但它的优点也是很突出. 所以大部分语言都选用线程作为并发单">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-11-03T18:52:55.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.048Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+C++ Concurrency - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%BF%9B%E7%A8%8B%E5%B9%B6%E5%8F%91%E5%92%8C%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-text">1. 进程并发和线程并发的比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E5%B9%B6%E5%8F%91"><span class="toc-text">2. 为什么使用并发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BD%95%E6%97%B6%E4%B8%8D%E8%A6%81%E4%BD%BF%E7%94%A8%E5%B9%B6%E5%8F%91"><span class="toc-text">3. 何时不要使用并发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-thread-object%E7%94%9F%E6%88%90"><span class="toc-text">4. thread object生成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E7%BA%BF%E7%A8%8B%E6%9C%AA%E5%90%AF%E5%8A%A8"><span class="toc-text">5. 如何防止线程未启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-thread%E4%BC%A0%E5%8F%82"><span class="toc-text">6. thread传参</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E8%B0%83%E7%94%A8%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0"><span class="toc-text">7. 调用成员函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E8%BD%AC%E7%A7%BBthread%E7%9A%84ownership"><span class="toc-text">8. 转移thread的ownership</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          C++ Concurrency
+        
+      </h1>
+      <time class="post-time">
+          11/03/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-进程并发和线程并发的比较"><a href="#1-进程并发和线程并发的比较" class="headerlink" title="1. 进程并发和线程并发的比较"></a>1. 进程并发和线程并发的比较</h2><p>进程的缺点:</p>
+<ol>
+<li>进程之间的沟通十分复杂并且速度慢</li>
+<li>分配多进程需要占更多的资源</li>
+</ol>
+<p>进程的优点:</p>
+<ol>
+<li>操作系统会给予进程很多保护, 例如保护数据不被其他数据修改</li>
+<li>线程的优点:<ol>
+<li>轻量级, 不需要太多资源</li>
+<li>共享全局资源和内存</li>
+</ol>
+</li>
+<li>线程的缺点<ol>
+<li>缺少保护数据的机制</li>
+</ol>
+</li>
+</ol>
+<p>总结: 虽然线程并发需要程序员自己统筹数据的一致性, 但它的优点也是很突出. 所以大部分语言都选用线程作为并发单位, 并且C++不提供内嵌的进程并发支持, 所以如果使用C++进行进程并发, 需要依赖平台特定的API.</p>
+<h2 id="2-为什么使用并发"><a href="#2-为什么使用并发" class="headerlink" title="2. 为什么使用并发"></a>2. 为什么使用并发</h2><ol>
+<li>开发工作的分离: 例如, 开发界面的工作可以和后端的工作分来处理, 并放入各自线程就好.</li>
+<li>运行速度的提升: 由于单一芯片速度的提升遇到瓶颈(摩尔定律失效), 多核更成为了趋势, 因此并发编程成为提高运行速度的首选. 并发提高运行速度有两种方法:<ol>
+<li>将单一task分成多个模块并平行运行</li>
+<li>不分解task, 而是同时处理多个task</li>
+</ol>
+</li>
+</ol>
+<h2 id="3-何时不要使用并发"><a href="#3-何时不要使用并发" class="headerlink" title="3. 何时不要使用并发"></a>3. 何时不要使用并发</h2><ol>
+<li>开发时间过长: 过长时间的并发开发使得并发带来的性能提升不值一提</li>
+<li>线程运行时间过短: 每次线程切换时, 操作系统都要进行内核资源分配, 栈空间分配并添加新线程的调度器. 如果单个线程执行时间过短, 会导致频繁的线程切换. 这使得并发节省的运行时间小于切换线程的用时</li>
+<li>线程数量过多: 虽然线程是轻量级的进程, 但每个线程还是会占用一定的栈空间. Java中单个线程占512KB, 所以过多的线程会消耗过多栈空间. 如果线程数量太多, 可考虑使用threadpool</li>
+<li>代码复杂化: 如果并发导致bug大量增加, 代码逻辑混乱. 那么如果不那么重视运行效率的情况下, 可以不使用并发</li>
+</ol>
+<h2 id="4-thread-object生成"><a href="#4-thread-object生成" class="headerlink" title="4. thread object生成"></a>4. thread object生成</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">()</span></span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Hello, World!\n&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">std::thread <span class="title">t1</span><span class="params">(func)</span></span>;</span><br><span class="line">    <span class="comment">// std::thread t2(func());  // 会被误认为是函数声明</span></span><br><span class="line">    t<span class="number">1.</span><span class="built_in">join</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-如何防止线程未启动"><a href="#5-如何防止线程未启动" class="headerlink" title="5. 如何防止线程未启动"></a>5. 如何防止线程未启动</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 第一种方法: </span></span><br><span class="line"><span class="comment"> * 使用try/catch block来防止异常导致的thread未启动</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">func</span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> some_local_state=<span class="number">0</span>;</span><br><span class="line">    <span class="function">func <span class="title">my_func</span><span class="params">(some_local_state)</span></span>;</span><br><span class="line">    <span class="function">std::thread <span class="title">t</span><span class="params">(my_func)</span></span>;</span><br><span class="line">    <span class="keyword">try</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">do_something_in_current_thread</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">catch</span>(...)</span><br><span class="line">    &#123;</span><br><span class="line">        t.<span class="built_in">join</span>();</span><br><span class="line">        <span class="keyword">throw</span>;</span><br><span class="line">    &#125;</span><br><span class="line">t.<span class="built_in">join</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 第二种方法:</span></span><br><span class="line"><span class="comment">* 使用class的destructor来自动启动thread</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">guard</span>&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    thread&amp; t;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">guard</span><span class="params">(std::thread&amp; t)</span>: t(t)&#123;</span>&#125;</span><br><span class="line">    ~<span class="built_in">guard</span>()&#123;</span><br><span class="line">        <span class="keyword">if</span>(t.<span class="built_in">joinable</span>())&#123; t.<span class="built_in">join</span>(); &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">guard</span>(guard <span class="type">const</span>&amp;)=<span class="keyword">delete</span>;</span><br><span class="line">    guard&amp; <span class="keyword">operator</span>=(guard <span class="type">const</span>&amp;)=<span class="keyword">delete</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">func</span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> some_local_state=<span class="number">0</span>;</span><br><span class="line">    <span class="function">func <span class="title">my_func</span><span class="params">(some_local_state)</span></span>;</span><br><span class="line">    <span class="function">std::thread <span class="title">t</span><span class="params">(my_func)</span></span>;</span><br><span class="line">    <span class="function">guard <span class="title">g</span><span class="params">(t)</span></span>;</span><br><span class="line">    <span class="built_in">do_something_in_current_thread</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-thread传参"><a href="#6-thread传参" class="headerlink" title="6. thread传参"></a>6. thread传参</h2><p>thread中直接添加参数即可</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(<span class="type">int</span> i,std::string <span class="type">const</span>&amp; s)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">oops</span><span class="params">(<span class="type">int</span> some_param)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">char</span> buffer[<span class="number">1024</span>];</span><br><span class="line">    <span class="built_in">sprintf</span>(buffer, <span class="string">&quot;%i&quot;</span>,some_param);</span><br><span class="line">    <span class="function">std::thread <span class="title">t</span><span class="params">(f,<span class="number">3</span>,buffer)</span></span>;</span><br><span class="line">    t.<span class="built_in">detach</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但上述传参会将buffer传递给thread t过去, 而t可能在oops运行完之前还未结束线程, 这会导致buffer处于未定义行为中. 解决方案就是传递一份copy给thread t</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(<span class="type">int</span> i,std::string <span class="type">const</span>&amp; s)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">not_oops</span><span class="params">(<span class="type">int</span> some_param)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">char</span> buffer[<span class="number">1024</span>];</span><br><span class="line">    <span class="built_in">sprintf</span>(buffer,<span class="string">&quot;%i&quot;</span>,some_param);</span><br><span class="line">    <span class="function">std::thread <span class="title">t</span><span class="params">(f,<span class="number">3</span>,std::string(buffer))</span></span>; <span class="comment">// 传递一份string, 这样就不影响buffer</span></span><br><span class="line">    t.<span class="built_in">detach</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当然也可能是你想传递一份引用或指针给thread, 但却传递了一个copy</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">update_data_for_widget</span><span class="params">(widget_id w,widget_data data)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">oops_again</span><span class="params">(widget_id w)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    widget_data data;</span><br><span class="line">    <span class="function">std::thread <span class="title">t</span><span class="params">(update_data_for_widget,w,data)</span></span>;   <span class="comment">// thread t无法改变data</span></span><br><span class="line">    <span class="built_in">display_status</span>();</span><br><span class="line">    t.<span class="built_in">join</span>();</span><br><span class="line">    <span class="built_in">process_widget_data</span>(data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这时需要传递一个引用来改变data</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">update_data_for_widget</span><span class="params">(widget_id w,widget_data&amp; data)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">oops_again</span><span class="params">(widget_id w)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    widget_data data;</span><br><span class="line">    <span class="function">std::thread <span class="title">t</span><span class="params">(update_data_for_widget,w,ref(data))</span></span>;</span><br><span class="line">    <span class="built_in">display_status</span>();</span><br><span class="line">    t.<span class="built_in">join</span>();</span><br><span class="line">    <span class="built_in">process_widget_data</span>(data);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-调用成员函数"><a href="#7-调用成员函数" class="headerlink" title="7. 调用成员函数"></a>7. 调用成员函数</h2><p>thread通过输入成员函数的地址和类对象地址来操作成员函数</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span>&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> a;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">X</span>(<span class="type">int</span> a)&#123; <span class="keyword">this</span>-&gt;a = a; &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">do_something</span><span class="params">(<span class="type">int</span> a)</span></span>&#123; <span class="keyword">this</span>-&gt;a = a; &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">show</span><span class="params">()</span></span>&#123; cout&lt;&lt;a&lt;&lt;endl; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line">    <span class="function">X <span class="title">my_x</span><span class="params">(<span class="number">-1</span>)</span></span>;</span><br><span class="line">    my_x.<span class="built_in">show</span>();    <span class="comment">// -1</span></span><br><span class="line">    <span class="function">thread <span class="title">t</span><span class="params">(&amp;X::do_something, &amp;my_x, a)</span></span>;</span><br><span class="line">    t.<span class="built_in">join</span>();</span><br><span class="line">    my_x.<span class="built_in">show</span>();    <span class="comment">// 1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-转移thread的ownership"><a href="#8-转移thread的ownership" class="headerlink" title="8. 转移thread的ownership"></a>8. 转移thread的ownership</h2><p>thread和std::unique_ptr一样, 是movable但不是copyable. 只能讲thread of execution转移到某个thread实例中, 而不能直接复制thread of execution.<br>但有以下几点需要注意:</p>
+<ol>
+<li>thread转移ownership有两种方式:<ol>
+<li>explicit转移: 用于thread对象之间的ownership转移</li>
+<li>implicit转移: 用于初始化thread对象时转移临时thread实例的ownership</li>
+</ol>
+</li>
+<li>thread对象的ownership被转移后不能使用, 否则报错</li>
+<li>被转移ownership的对象可被赋予新的ownership</li>
+<li>已有ownership的thread不能被赋予新的ownership, 否则报错. 但可在运行后再被赋予新的ownership</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">()</span></span>&#123; cout&lt;&lt;<span class="number">1</span>&lt;&lt;endl; &#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">another_func</span><span class="params">()</span></span>&#123; cout&lt;&lt;<span class="number">2</span>&lt;&lt;endl; &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">thread <span class="title">t1</span><span class="params">(func)</span></span>;</span><br><span class="line">    t<span class="number">1.</span><span class="built_in">join</span>();                  <span class="comment">// run thread</span></span><br><span class="line">    t1 = <span class="built_in">thread</span>(another_func);  <span class="comment">// implicit move</span></span><br><span class="line">    thread t2 = <span class="built_in">move</span>(t1);       <span class="comment">// explicit move</span></span><br><span class="line">    <span class="comment">// thread t3 = move(t1);    // error, t1 has no ownership to transfer</span></span><br><span class="line">    <span class="comment">// t1.join();               // error, t1 cannot run</span></span><br><span class="line">    <span class="function">thread <span class="title">t3</span><span class="params">(func)</span></span>;</span><br><span class="line">    <span class="comment">// t2 = move(t1);           // error, t2 has an execution of thread</span></span><br><span class="line">    t<span class="number">3.</span><span class="built_in">join</span>();</span><br><span class="line">    t<span class="number">2.</span><span class="built_in">join</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于thread对象是movable, 所以thread可作为函数的参数类型和返回类型.</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">scoped_thread</span></span><br><span class="line">&#123;</span><br><span class="line">    std::thread t;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">scoped_thread</span><span class="params">(std::thread t_)</span>: t(std::move(t_)) &#123;</span></span><br><span class="line">        <span class="keyword">if</span>(!t.<span class="built_in">joinable</span>())</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">logic_error</span>(<span class="string">&quot;No thread&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~<span class="built_in">scoped_thread</span>()&#123; t.<span class="built_in">join</span>(); &#125;   <span class="comment">// 输出-1</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">scoped_thread</span>(scoped_thread <span class="type">const</span>&amp;)=<span class="keyword">delete</span>;</span><br><span class="line">    scoped_thread&amp; <span class="keyword">operator</span>=(scoped_thread <span class="type">const</span>&amp;)=<span class="keyword">delete</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(<span class="type">int</span> state)</span></span>&#123;</span><br><span class="line">    cout&lt;&lt;state&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> some_local_state = <span class="number">-1</span>;</span><br><span class="line">    <span class="function">scoped_thread <span class="title">t</span><span class="params">(std::thread(func, some_local_state))</span></span>;</span><br><span class="line">    <span class="comment">// do_something_in_current_thread();</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/f4a1.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">JVM (1)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2092.html">
+        <span class="next-text nav-default">Java Basic (3)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/412a.html';
+  var disqus_title = "C++ Concurrency";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="TCP Congestion Control"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/9637.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/9637.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/9637.html"/>
+
+
+<meta name="description" content="1. Definitions SEGMENT: TCP&#x2F;IP的一个数据包或确认包 SENDER MAXIMUM SEGMENT SIZE (SMSS): sender所能传输的最大segment大小. 这一个值基于网络中的最大传输单元, path MTU discovery algorithm, RMSS或其他因素. SMSS不包含TCP&#x2F;IP header和options R">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP Congestion Control">
+<meta property="og:url" content="https://zaf1ro.github.io/p/9637.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Definitions SEGMENT: TCP&#x2F;IP的一个数据包或确认包 SENDER MAXIMUM SEGMENT SIZE (SMSS): sender所能传输的最大segment大小. 这一个值基于网络中的最大传输单元, path MTU discovery algorithm, RMSS或其他因素. SMSS不包含TCP&#x2F;IP header和options R">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-06-14T01:37:08.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.041Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+TCP Congestion Control - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Definitions"><span class="toc-text">1. Definitions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Congestion-Control-Algorithms"><span class="toc-text">2. Congestion Control Algorithms</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Slow-Start-and-Congestion-Avoidance"><span class="toc-text">2.1 Slow Start and Congestion Avoidance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-ssthreth-%E6%85%A2%E5%90%AF%E5%8A%A8%E9%98%80%E5%80%BC-slow-start-threshold"><span class="toc-text">2.2 ssthreth(慢启动阀值, slow start threshold)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-IW"><span class="toc-text">2.2 IW</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Slow-Start"><span class="toc-text">2.4 Slow Start</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Congestion-Avoidance"><span class="toc-text">2.5 Congestion Avoidance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-ssthresh"><span class="toc-text">3.6 ssthresh</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          TCP Congestion Control
+        
+      </h1>
+      <time class="post-time">
+          06/13/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Definitions"><a href="#1-Definitions" class="headerlink" title="1. Definitions"></a>1. Definitions</h2><ol>
+<li>SEGMENT: TCP&#x2F;IP的一个数据包或确认包</li>
+<li>SENDER MAXIMUM SEGMENT SIZE (SMSS): sender所能传输的最大segment大小. 这一个值基于网络中的最大传输单元, path MTU discovery algorithm, RMSS或其他因素. SMSS不包含TCP&#x2F;IP header和options</li>
+<li>RECEIVER MAXIMUM SEGMENT SIZE (RMSS): receiver能够接受的最大segment大小. 该值在设置在TCP handshanke中的MSS option中. 若没有设置MSS option, 那就为536 bytes. RMSS不包含TCP&#x2F;IP header和options</li>
+<li>FULL-SIZED SEGMENT: 一个segment能包含的最大数据字节数</li>
+<li>RECEIVER WINDOW (rwnd): 表示所能接收的最大数据量</li>
+<li>CONGESTION WINDOWS (cwnd): 表示所能发送的最大数据量. 在任何时刻, TCP中segment的sequence number必须遵循: TCP发送的segment中<strong>sequence number</strong>不能大于 已接收的<strong>acknowledged number</strong>中的最大值 与 <strong>cwnd</strong>和<strong>rwnd</strong>中的最小值 之和. 公式表示: $tcp.seq \leq max(ack.seq) + min(cwnd, rwnd)$</li>
+<li>INITIAL WINDOW(IW): 表示TCP three-way handshake后sender的congestion window大小</li>
+<li>LOSS WINDOW(LW): 表示TCP sender的重传计时器检测到丢包后的cwnd大小</li>
+<li>RESTART WINDOW(RW): 表示TCP重传后的cwnd大小</li>
+<li>FLIGHT SIZE: 表示已经发出但还未被ACK确认的data数量</li>
+<li>DUPLICATE ACKNOWLEDGMENT: 当一个ACK满足以下4个条件才能算作&quot;重复的&quot;:<ul>
+<li>接收到ACK的一端有未发送的数据</li>
+<li>将要到来的ACK没有携带任何数据</li>
+<li>未设置SYN和FIN bits</li>
+<li>ACK中的acknowledgment number与当前连接中已接收到的当前最大acknowledgment number相同</li>
+</ul>
+</li>
+</ol>
+<h2 id="2-Congestion-Control-Algorithms"><a href="#2-Congestion-Control-Algorithms" class="headerlink" title="2. Congestion Control Algorithms"></a>2. Congestion Control Algorithms</h2><p>以下是4种congestion control algorithms:</p>
+<ul>
+<li>slow start (慢启动)</li>
+<li>congestion avoidance (拥塞避免)</li>
+<li>fast retransmit (快速重传)</li>
+<li>fast recovery (快速恢复)</li>
+</ul>
+<p>TCP sender可以在congestion control algorithm的基础上更加保守, 但不能更加激进.</p>
+<h3 id="2-1-Slow-Start-and-Congestion-Avoidance"><a href="#2-1-Slow-Start-and-Congestion-Avoidance" class="headerlink" title="2.1 Slow Start and Congestion Avoidance"></a>2.1 Slow Start and Congestion Avoidance</h3><p>Slow start和congestion avoidance由sender实现, 用于控制发出的数据量. 为实现算法, 需为每个TCP connection添加两个变量: </p>
+<ol>
+<li>cwnd(congestion window): sender在接收到ACK前所能发出的最大数据量</li>
+<li>rwnd(receiver window): receiver所能接受的最大数据量</li>
+</ol>
+<p>min(cwnd, rwnd)控制了该connection中的数据传输传输速率上限. <strong>ssthresh</strong>变量用于判断connection处于slow start还是congestion avoidance. </p>
+<p>在一个未知的网络发送数据时, 为避免突然传入大量数据导致的网络拥塞, 需要TCP不断探测网络的传输空间. slow start应用于传输的初始阶段, 和retransmission timer检测到丢包后的恢复阶段. slow start还会启动<strong>ACK clock</strong>, 这样TCP sender就可以在slow start, congestion avoidance和loss recovery中发送数据.</p>
+<h3 id="2-2-ssthreth-慢启动阀值-slow-start-threshold"><a href="#2-2-ssthreth-慢启动阀值-slow-start-threshold" class="headerlink" title="2.2 ssthreth(慢启动阀值, slow start threshold)"></a>2.2 ssthreth(慢启动阀值, slow start threshold)</h3><p>它被用来决定是否启动慢启动或拥塞控制算法来控制数据传输.(例如:增加到advertised window的最大值)ssthresh的初始化值应设置的非常高, 但ssthresh必须在拥塞时减少. 在网络条件允许的情况下可以将ssthresh设置的尽量高, 而不是受某些主机的限制, 因为这样可以控制发送速率. 在终端系统对网络情况有详细了解的情况下, 更加仔细地设置ssthresh有很多好处.(例如, 终端主机没有在沿路造成拥塞).</p>
+<h3 id="2-2-IW"><a href="#2-2-IW" class="headerlink" title="2.2 IW"></a>2.2 IW</h3><p>IW作为cwnd的初始值, 必须遵循以下规则:<br>$$<br>IW &#x3D;<br>\begin{cases}<br>\text{2SMSS and &lt;&#x3D; 2segments}, \ \text{SMSS &gt; 2190 bytes} \\[2ex]<br>\text{3SMSS and &lt;&#x3D; 3segments}, \ \text{SMSS &gt; 1095 bytes and SMSS &lt;&#x3D; 2190 bytes} \\[2ex]<br>\text{4SMSS and &lt;&#x3D; 4segments}, \ \text{SMSS &lt;&#x3D; 1095 bytes}<br>\end{cases}<br>$$</p>
+<p>TCP通常都会将IW设置为4个分片或4KB, 因为大多数WEB会话都会短时间维持. IW决定了TCP流多快能够完成. 虽然全球的网速每年不断提升, 但IW大小一直没改变过.<br>RFC3390文档中提到, SYN&#x2F;ACK和SYN&#x2F;ACK的确认报文都不能提高cwnd. 进一步来说, 如果SYN或SYN&#x2F;ACK丢失了, 那么在正确重传了SYN报文后, IW会设置为一个segment大小, 包含大约SMSS个字节.<br>当超过一个segemnt大小的IW用于Path MTU Discovery时, 发现MSS过大. 这时应减小cwnd以防止大量更小的分片涌入网络(因为SMSS大于MSS的情况下, 会对数据包进行拆分, 造成很多小segment). cwnd应以旧片段大小和新片段大小的比例进行减少. </p>
+<h3 id="2-4-Slow-Start"><a href="#2-4-Slow-Start" class="headerlink" title="2.4 Slow Start"></a>2.4 Slow Start</h3><p>当$cwnd &lt; ssthresh$时, 使用slow start; 当$cwnd &gt; ssthresh$时, 使用congestion avoidance. 当$cwnd &#x3D;&#x3D; sshthresh$, sender可以使用slow start或congestion avoidance.<br>slow start阶段中, 每收到一个ACK, 就可以将cwnd增加至多一个SMSS字节大小, 当cwnd超过sshthresh或发生拥塞时结束. cwnd增加的规则可以遵循: $cwnd +&#x3D; min(N, SMSS)$, N表示刚刚被ACK确认的字节数. 这种修正作为<strong>Appropriate Byte Counting</strong>的一部分收录在RFC3465文档中, 用于防止receiver端估计拆分ACK导致sender端的cwnd迅速扩大问题(ACK Division).</p>
+<h3 id="2-5-Congestion-Avoidance"><a href="#2-5-Congestion-Avoidance" class="headerlink" title="2.5 Congestion Avoidance"></a>2.5 Congestion Avoidance</h3><p>Congestion avoidance阶段中, cwnd会每隔一个RTT(round-trip time)增加一个segment大小, 直到检测到拥塞发生. 以下是congestion avoidance增加cwnd的规则:</p>
+<ol>
+<li>cwnd可以增加一个SMSS字节数</li>
+<li>每个RTT后都应增加cwnd</li>
+<li>cwnd每次增量不得超过一个SMSS字节数</li>
+</ol>
+<p>推荐方法: congestion avoidance期间, cwnd每次的增加量应为被ACK确认的字节数. 当ACK确认的data字节数达到cwnd大小时, 就可以将cwnd增加SMSS个字节. 需要注意, cwnd不能在一个RTT后增加超过SMSS个字节, 这种方法还解决了两个问题:</p>
+<ul>
+<li>Delayed ACK</li>
+<li>ACK Division导致cwnd增长过快</li>
+</ul>
+<p>另一个congestion avoidance中增加cwnd的公式: $\text{cwnd +&#x3D; SMSS * SMSS &#x2F; cwnd}$. 这种cwnd增加只针对收到ACK的情况, 相当于一个&quot;每隔一个RTT就增加一个segment大小&quot;. 由于TCP中都是整数计算, 所以当$\text{cwnd &gt; SMSS * SMSS}$时, 理论上不会增加cwnd, 但实现中hi增加1 byte. 某些实现中会为该公式增加一个常量参数, 但由于影响性能, 所以在RFC2525被明确指出不应添加常量.<br>某些实现会将byte作为cwnd的最小单元; 另一些实现将segment作为cwnd的最小单元. 对于不同的cwnd单元, 会采用不同的cwnd增加公式.</p>
+<h3 id="3-6-ssthresh"><a href="#3-6-ssthresh" class="headerlink" title="3.6 ssthresh"></a>3.6 ssthresh</h3><p>当TCP sender的retransmission timer检测到丢包, 并且该segment还未重传时, ssthresh遵循以下规则: $\text{ssthresh &#x3D; max(FlightSize &#x2F; 2, 2 * SMSS)}$<br>FlightSize就是没有ACK确认字节总数. 另一方面, 当sender的重传计时器检测到分片丢失, 并将指定分片已经重传至少一次后, ssthresh将变为常量.<br>一个很容易犯的错误就是一味地使用cwnd而不使用FlightSize, 因为在某些实现中, Flight Size增加远远多于rwnd.<br>此外, 如果发生超时, cwnd的大小就不能大于丢失窗口(LW)的大小, 也就是一个full-sized segment大小. 因此, 在重传那些丢失的segment之后, sender使用慢启动算法将cnwd大小提升到新的ssthresh值, 并接着使用拥塞避免继续工作.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/5730.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">SACK</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/599f.html">
+        <span class="next-text nav-default">Diamond Inheritance</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/9637.html';
+  var disqus_title = "TCP Congestion Control";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

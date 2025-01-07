@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Sockets Introduction"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/2e41.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/2e41.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/2e41.html"/>
+
+
+<meta name="description" content="1. Socket Address Structure绝大多数socket function都需要一个指向socket address structure的指针作为参数. 所有socket address structure都以sockaddr_作为开头. 1.1 IPv4 Socket Address StructureIPv4 Socket Address Structure定义在&lt;ne">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sockets Introduction">
+<meta property="og:url" content="https://zaf1ro.github.io/p/2e41.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Socket Address Structure绝大多数socket function都需要一个指向socket address structure的指针作为参数. 所有socket address structure都以sockaddr_作为开头. 1.1 IPv4 Socket Address StructureIPv4 Socket Address Structure定义在&lt;ne">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/3-1-sock-addr-structs.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/3-2-sock-addr-struct-from-proc-to-kernel.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/3-2-sock-addr-struct-from-kernel-to-proc.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/3-3-little-and-big-endian-byte-order.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/3-5-addr-conv-func.gif">
+<meta property="article:published_time" content="2019-11-16T01:37:28.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.043Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/3-1-sock-addr-structs.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Sockets Introduction - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Socket-Address-Structure"><span class="toc-text">1. Socket Address Structure</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-IPv4-Socket-Address-Structure"><span class="toc-text">1.1 IPv4 Socket Address Structure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Generic-Socket-Address-Structure"><span class="toc-text">1.2 Generic Socket Address Structure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-IPv6-Socket-Address-Structure"><span class="toc-text">1.3 IPv6 Socket Address Structure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-New-Generic-Socket-Address-Structure"><span class="toc-text">1.4 New Generic Socket Address Structure</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-Comparison-of-Socket-Address-Structures"><span class="toc-text">1.5 Comparison of Socket Address Structures</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Value-Result-Arguments"><span class="toc-text">2. Value-Result Arguments</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-From-Process-to-Kernel"><span class="toc-text">2.1 From Process to Kernel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-From-Kernel-to-Process"><span class="toc-text">2.2 From Kernel to Process:</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Byte-Ordering-Functions"><span class="toc-text">3. Byte Ordering Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Byte-Manipulation-Functions"><span class="toc-text">4. Byte Manipulation Functions</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Functions-Whose-Names-Begin-with-b"><span class="toc-text">4.1 Functions Whose Names Begin with b</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Functions-Whose-Names-Begin-with-mem"><span class="toc-text">4.2 Functions Whose Names Begin with mem</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Address-Conversion-Functions"><span class="toc-text">5. Address Conversion Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-readn-writen-and-readline-Functions"><span class="toc-text">6. readn, writen and readline Functions</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Sockets Introduction
+        
+      </h1>
+      <time class="post-time">
+          11/15/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Socket-Address-Structure"><a href="#1-Socket-Address-Structure" class="headerlink" title="1. Socket Address Structure"></a>1. Socket Address Structure</h2><p>绝大多数socket function都需要一个指向socket address structure的指针作为参数. 所有socket address structure都以<code>sockaddr_</code>作为开头.</p>
+<h3 id="1-1-IPv4-Socket-Address-Structure"><a href="#1-1-IPv4-Socket-Address-Structure" class="headerlink" title="1.1 IPv4 Socket Address Structure"></a>1.1 IPv4 Socket Address Structure</h3><p>IPv4 Socket Address Structure定义在<code>&lt;netinet/in.h&gt;</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span>&#123;</span></span><br><span class="line">  <span class="type">in_addr_t</span> s_addr; <span class="comment">/* 32-bit IPv4 Address */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> &#123;</span></span><br><span class="line">  <span class="type">uint8_t</span>        sin_len      <span class="comment">/* length of structure (16) */</span></span><br><span class="line">  <span class="type">sa_family_t</span>    sin_family;  <span class="comment">/* AF_INET */</span></span><br><span class="line">  <span class="type">in_port_t</span>      sin_port;    <span class="comment">/* 16-bit TCP or UDP port number */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">sin_addr</span>;</span>    <span class="comment">/* 32-bit IPv4 address */</span></span><br><span class="line">  <span class="type">char</span>           sin_zero[<span class="number">8</span>]; <span class="comment">/* unused */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>补充:</p>
+<ul>
+<li>4.3BSD-Reno发布时为支持OSI, 将<code>sin_len</code>加入到<code>sockaddr_in</code>中; 在这之前第一个成员变量为<code>sa_family</code>, 其类型<code>uint8_t</code>是POSIX.1中规定的数据类型, 以下是所有POSIX-compliant系统提供的数据类型:<ol>
+<li><code>int8_t</code>: Signed 8-bit integer</li>
+<li><code>uint8_t</code>: Unsigned 8-bit integer</li>
+<li><code>int16_t</code>: Signed 16-bit integer</li>
+<li><code>uint16_t</code>: Unsigned 16-bit integer</li>
+<li><code>int32_t</code>: Signed 32-bit integer</li>
+<li><code>uint32_t</code>: Unsigned 32-bit integer</li>
+<li><code>sa_family_t</code>: Address family of socket address structure</li>
+<li><code>socklen_t</code>: Length of socket address structure, <code>uint32_t</code></li>
+<li><code>in_addr_t</code>: IPv4 address, <code>uint32_t</code></li>
+<li><code>in_port_t</code>: TCP or UDP port, <code>uint16_t</code></li>
+</ol>
+</li>
+<li>用户不需要设置<code>sin_len</code>, 只有kernel接触该域: <code>bind()</code>, <code>connect()</code>, <code>sentto()</code>, <code>sendmsg()</code>这四个函数将socket address structure从进程传入kernel时, 都会经过<code>sockargs()</code>, 该函数负责填充<code>sin_len</code>; <code>accept()</code>, <code>recvfrom()</code>, <code>recvmsg()</code>, <code>getpeername()</code>, <code>getsockname()</code>这五个函数从kernel中取回到进程时, 会设置<code>sin_len</code>域.</li>
+<li>The POSIX specification只要求用户填写三个域: <code>sin_family</code>, <code>sin_addr``和sin_port</code>. <code>sin_zero</code>为填充位, 用来保证socket address structure至少16 bytes大小.</li>
+<li><code>sa_family_t</code>为无符号整数类型, <code>in_port_t</code>至少16位无符号整数, <code>in_addr_t</code>至少32位无符号整数</li>
+<li>TCP和UDP port number都以network byte order(网络字节序)存储. </li>
+<li>两种访问<code>sockaddr_in</code>中32-bit IPv4 address的方式: 假设现在有一个名为<code>serv</code>的<code>sockaddr_in</code>结构体, 其中<code>serv.sin_addr</code>代表<code>in_addr struct</code>; <code>ser.sin_addr.s_addr</code>代表<code>in_addr_t</code>(an unsigned 32-bit integer)</li>
+<li><code>sin_zero</code>不可用, 一般置为0. 通常先将整个socket address structure置0, 再填写其他域.</li>
+<li>Socket address structure只放置在主机中用于协助通信, 并不传输到网络中.</li>
+</ul>
+<h3 id="1-2-Generic-Socket-Address-Structure"><a href="#1-2-Generic-Socket-Address-Structure" class="headerlink" title="1.2 Generic Socket Address Structure"></a>1.2 Generic Socket Address Structure</h3><p>不同协议使用不同的socket address structure, socket function会接收并处理指向socket address structure的指针. 但如何将不同的socket address structure作为参数传入socket function成了一个问题: ANSI C提出<code>void *</code>作为接收不同指针类型的参数类型, 但socket function的出现早于ANSI C, 导致无法使用<code>void *</code>. 因此提出generic socket address structure作为解决方案.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 定义在&lt;sys/socket.h&gt; */</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr</span> &#123;</span></span><br><span class="line">  <span class="type">uint8_t</span>     sa_len;</span><br><span class="line">  <span class="type">sa_family_t</span> sa_family;   <span class="comment">/* address family: AF_xxx value */</span></span><br><span class="line">  <span class="type">char</span>        sa_data[<span class="number">14</span>]; <span class="comment">/* protocol-specific address */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以socket function只需要以<code>sockaddr</code>指针作为参数即可接受所有socket address structure. 以<code>bind()</code>为例:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">bind</span><span class="params">(<span class="type">int</span>, <span class="keyword">struct</span> sockaddr *, <span class="type">socklen_t</span>)</span>;</span><br></pre></td></tr></table></figure>
+<p>可将目标socket address structure强制转换为<code>sockaddr</code>指针, 再将<code>sockaddr</code>指针和长度传入<code>bind()</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv</span>;</span></span><br><span class="line">bind(sockfd, (<span class="keyword">struct</span> sockaddr*)&amp;serv, <span class="keyword">sizeof</span>(serv));</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-IPv6-Socket-Address-Structure"><a href="#1-3-IPv6-Socket-Address-Structure" class="headerlink" title="1.3 IPv6 Socket Address Structure"></a>1.3 IPv6 Socket Address Structure</h3><p>IPv6 socket address structure定义在<code>&lt;netinet/in.h&gt;</code>中.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">in6_addr</span> &#123;</span></span><br><span class="line">  <span class="type">uint8_t</span> s6_addr[<span class="number">16</span>]; <span class="comment">/* 128-bit IPv6 address */</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SIN6_LEN <span class="comment">/* required for compile-time tests */</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in6</span> &#123;</span></span><br><span class="line">  <span class="type">uint8_t</span>         sin6_len;      <span class="comment">/* length of this struct (28) */</span></span><br><span class="line">  <span class="type">sa_family_t</span>     sin6_family;   <span class="comment">/* AF_INET6 */</span></span><br><span class="line">  <span class="type">in_port_t</span>       sin6_port;     <span class="comment">/* transport layer port */</span></span><br><span class="line">  <span class="type">uint32_t</span>        sin6_flowinfo; <span class="comment">/* flow information, undefined */</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">in6_addr</span> <span class="title">sin6_addr</span>;</span>     <span class="comment">/* IPv6 address */</span></span><br><span class="line">  <span class="type">uint32_t</span>        sin6_scope_id; <span class="comment">/* set of interfaces for a scope */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>补充:</p>
+<ul>
+<li>若系统支持socket address structure中的长度成员, 则必须定义<code>SIN6_LEN</code>常量</li>
+<li>IPv6 family为<code>AF_INET6</code>, IPv4 family为<code>AF_INET</code></li>
+<li><code>sin6_flowinfo</code>分为两个字段: 低字节的20位为flow label, 高字节的12位为保留位</li>
+</ul>
+<ol start="2">
+<li><code>sin6_scope_id</code>用于标示scope zone, 常用于link-local address的接口索引</li>
+</ol>
+<h3 id="1-4-New-Generic-Socket-Address-Structure"><a href="#1-4-New-Generic-Socket-Address-Structure" class="headerlink" title="1.4 New Generic Socket Address Structure"></a>1.4 New Generic Socket Address Structure</h3><p>sockaddr_storage可放置任何大小的socket address, 定义在&lt;netinet&#x2F;in.h&gt;:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_storage</span> &#123;</span></span><br><span class="line">  <span class="type">uint8_t</span>     ss_len;    <span class="comment">/* length of this struct */</span></span><br><span class="line">  <span class="type">sa_family_t</span> ss_family; <span class="comment">/* address family: AF_xxx value */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>与sockaddr的差别:</p>
+<ol>
+<li><code>sockaddr_storage</code>提供最严格的的对齐要求</li>
+<li><code>sockaddr_storage</code>可容纳任何大小的socket address structure</li>
+</ol>
+<h3 id="1-5-Comparison-of-Socket-Address-Structures"><a href="#1-5-Comparison-of-Socket-Address-Structures" class="headerlink" title="1.5 Comparison of Socket Address Structures"></a>1.5 Comparison of Socket Address Structures</h3><p><img src="/images/Network/UNP/3-1-sock-addr-structs.gif" alt="Comparison of various socket address structures"></p>
+<h2 id="2-Value-Result-Arguments"><a href="#2-Value-Result-Arguments" class="headerlink" title="2. Value-Result Arguments"></a>2. Value-Result Arguments</h2><p>所有socket function都会接收两个参数: socket address structure和其长度. 根据socket address structure传输的方向不同, 长度的传参方式也不同.</p>
+<h3 id="2-1-From-Process-to-Kernel"><a href="#2-1-From-Process-to-Kernel" class="headerlink" title="2.1 From Process to Kernel"></a>2.1 From Process to Kernel</h3><p><code>bind()</code>, <code>connect()</code>, 和<code>sendto()</code>会将指向socket address structure的指针和length作为参数. 以<code>connect()</code>为例:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv</span>;</span></span><br><span class="line">connect(sockfd, (SA *)&amp;serv, <span class="keyword">sizeof</span>(serv));</span><br></pre></td></tr></table></figure>
+<p>结果如下:<br><img src="/images/Network/UNP/3-2-sock-addr-struct-from-proc-to-kernel.gif" alt="Socket address structure passed from process to kernel"></p>
+<h3 id="2-2-From-Kernel-to-Process"><a href="#2-2-From-Kernel-to-Process" class="headerlink" title="2.2 From Kernel to Process:"></a>2.2 From Kernel to Process:</h3><p><code>accept()</code>, <code>recvfrom()</code>, <code>getsockname()</code>, 和<code>getpeername()</code>这四个函数将指向socket address structure的指针和指向length的指针作为参数, 以<code>getpeername()</code>为例:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">cli</span>;</span></span><br><span class="line"><span class="type">socklen_t</span> len;</span><br><span class="line"></span><br><span class="line">len = <span class="keyword">sizeof</span>(cli);</span><br><span class="line">getpeername(UNIXfd. (SA *)&amp;cli, &amp;len);</span><br></pre></td></tr></table></figure>
+<p>结果如下:<br><img src="/images/Network/UNP/3-2-sock-addr-struct-from-kernel-to-proc.gif" alt="Socket address structure passed from kernel to process"></p>
+<h2 id="3-Byte-Ordering-Functions"><a href="#3-Byte-Ordering-Functions" class="headerlink" title="3. Byte Ordering Functions"></a>3. Byte Ordering Functions</h2><p>内存中有两种存储字节的方式: 以低序字节开头的little-endian byte order(小端字节序)和以高序字节开头的big-endian byte order(大端字节序). 以16-bit integer为例:<br><img src="/images/Network/UNP/3-3-little-and-big-endian-byte-order.gif" alt="Little-endian byte order and big-endian byte order for a 16-bit integer"></p>
+<p>不同的系统使用不同的字节序, 统称为host byte order(主机字节序). 但对于网络的发送方和接收方, 它们可能使用不同的字节序, 从而导致数据解析错误. 为此, 在发送和接收任何数据前都必须将系统中的host byte order转换为network byte order(网络字节序). network byte order采用big-endian byte order, 为方便byte order的转换, The POSIX Specification提供了以下函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* host byte order to network byte order(short or long) */</span></span><br><span class="line"><span class="type">uint16_t</span> <span class="title function_">htons</span><span class="params">(<span class="type">uint16_t</span> host16bitvalue)</span>;</span><br><span class="line"><span class="type">uint32_t</span> <span class="title function_">htonl</span><span class="params">(<span class="type">uint32_t</span> host32bitvalue)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* network byte order to host byte order(short or long) */</span></span><br><span class="line"><span class="type">uint16_t</span> <span class="title function_">ntohs</span><span class="params">(<span class="type">uint16_t</span> net16bitvalue)</span>;</span><br><span class="line"><span class="type">uint32_t</span> <span class="title function_">ntohl</span><span class="params">(<span class="type">uint32_t</span> net32birvalue)</span>;</span><br></pre></td></tr></table></figure>
+<p>其中, <strong>h</strong>表示host, <strong>n</strong>表示network, <strong>s</strong>表示short(16-bit), <strong>l</strong>表示long(32-bit).  </p>
+<h2 id="4-Byte-Manipulation-Functions"><a href="#4-Byte-Manipulation-Functions" class="headerlink" title="4. Byte Manipulation Functions"></a>4. Byte Manipulation Functions</h2><p>操纵多字节字段的函数有两组: <strong>b</strong>开头的函数组和<strong>mem</strong>开头的函数组</p>
+<h3 id="4-1-Functions-Whose-Names-Begin-with-b"><a href="#4-1-Functions-Whose-Names-Begin-with-b" class="headerlink" title="4.1 Functions Whose Names Begin with b"></a>4.1 Functions Whose Names Begin with b</h3><p>自4.2BSD起, 几乎所有遵循POSIX.1的UNIX系统都包含以下函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Write nbytes number of bytes to 0 at dest */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">bzero</span><span class="params">(<span class="type">void</span>* dest, <span class="type">size_t</span> nbytes)</span>;    </span><br><span class="line"></span><br><span class="line"><span class="comment">/* Copy nbytes bytes from src to dest */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">bcopy</span><span class="params">(<span class="type">const</span> <span class="type">void</span>* src, <span class="type">void</span>* dest, <span class="type">size_t</span> nbytes)</span>;    </span><br><span class="line"></span><br><span class="line"><span class="comment">/* Compare the two byte sequences p1 and p2 of nbytes bytes,</span></span><br><span class="line"><span class="comment"> * If they are equal or nbytes is zero, returns 0;</span></span><br><span class="line"><span class="comment"> * Otherwise, return non-zero.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">bcmp</span><span class="params">(<span class="type">const</span> <span class="type">void</span>* p1, <span class="type">const</span> <span class="type">void</span>* p2, <span class="type">size_t</span> nbytes)</span>;  </span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-Functions-Whose-Names-Begin-with-mem"><a href="#4-2-Functions-Whose-Names-Begin-with-mem" class="headerlink" title="4.2 Functions Whose Names Begin with mem"></a>4.2 Functions Whose Names Begin with mem</h3><p>mem开头的函数来自ANSI C standard, 所有支持ANSI C library的系统都可用以下函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Set the len number of bytes to the value c at dest */</span></span><br><span class="line"><span class="type">void</span>* <span class="title function_">memset</span><span class="params">(<span class="type">void</span>* dest, <span class="type">int</span> c, <span class="type">size_t</span> len)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Copy bytes number of bytes from src to dest */</span></span><br><span class="line"><span class="type">void</span>* <span class="title function_">memcpy</span><span class="params">(<span class="type">void</span>* dest, <span class="type">const</span> <span class="type">void</span>* src, <span class="type">size_t</span> nbytes)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Compare the first nbytes bytes of ptr1 to ptr2,</span></span><br><span class="line"><span class="comment"> * If they match, return 0; otherwise return non-zero</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">memcmp</span><span class="params">(<span class="type">const</span> <span class="type">void</span>* p1, <span class="type">const</span> <span class="type">void</span>* p2, <span class="type">size_t</span> nbytes)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>memcmp()</code>对比的数据单位为unsigned char. 当p1的某个unsigned char比p2对应的unsigned char大, 则返回值大于0; 否则返回值小于0.</p>
+<h2 id="5-Address-Conversion-Functions"><a href="#5-Address-Conversion-Functions" class="headerlink" title="5. Address Conversion Functions"></a>5. Address Conversion Functions</h2><p>UNIX提供了两组函数负责将Internet address在ASCII string和network byte order value之间转换:</p>
+<ol>
+<li><code>inet_aton()</code>, <code>inet_ntoa()</code>, <code>inet_addr()</code>: 负责IPv4地址在dotted-decimal string(例如: <code>206.168.112.96</code>)和32-bit network byte order value之间的转换.<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Convert the character string pointed to by strptr </span></span><br><span class="line"><span class="comment"> * into 32-bit network byte ordered value </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">inet_aton</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* strptr, <span class="keyword">struct</span> in_addr* addrptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Same as inet_aton(), return the 32-bit network byte ordered value */</span></span><br><span class="line"><span class="type">int_addr_t</span> <span class="title function_">inet_addr</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* strptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Convert the 32-bit network byte ordered value to character string */</span></span><br><span class="line"><span class="type">char</span>* <span class="title function_">inet_ntoa</span><span class="params">(<span class="keyword">struct</span> in_addr inaddr)</span>;</span><br></pre></td></tr></table></figure></li>
+<li><code>inet_pton()</code>, <code>inet_ntop()</code>: 负责IPv4和IPv6地址在ASCII string和network byte ordered value之间转换.<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Convert the presentation of address pointed to by strptr </span></span><br><span class="line"><span class="comment"> * to the numeric address addrptr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">inet_pton</span><span class="params">(<span class="type">int</span> family, <span class="type">const</span> <span class="type">char</span>* strptr, <span class="type">void</span>* addrptr)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Convert the numeric address addrptr to the presentation of </span></span><br><span class="line"><span class="comment"> * address pointed to by strptr</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">const</span> <span class="type">char</span>* <span class="title function_">inet_ntop</span><span class="params">(<span class="type">int</span> family, <span class="type">const</span> <span class="type">void</span>* addrptr, <span class="type">char</span>* strptr, <span class="type">size_t</span> len)</span>;</span><br></pre></td></tr></table></figure>
+其中, <strong>p</strong>表示presentation, <strong>n</strong>表示numeric. <strong>family</strong>支持<code>AF_INET</code>(IPv4)和<code>AF_INET6</code>(IPv6), 若family无法识别, 则返回报错且将<code>errno</code>置为<code>EAFNOSUPPORT</code>. <code>inet_ntop()</code>中的len参数表示strptr的长度, 若len过小, 则将<code>errno</code>置为<code>ENOSPC</code>.<br><img src="/images/Network/UNP/3-5-addr-conv-func.gif" alt="Summary of address conversion functions"></li>
+</ol>
+<h2 id="6-readn-writen-and-readline-Functions"><a href="#6-readn-writen-and-readline-Functions" class="headerlink" title="6. readn, writen and readline Functions"></a>6. readn, writen and readline Functions</h2><p>Stream socket(例如: TCP socket)拥有<code>read()</code>和<code>write()</code>函数, 用于接收和发送数据. 不同于文件I&#x2F;O的read和write, stream socket的read和write可能会接收或发出比目标要求少的数据, 因为kernel中的buffer存在上限. 这就需要多次调用read和nonblocking write(blocking write不会出现这种情况). 以下函数会不断读取或写入数据, 直到数据被读取或写入完毕.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">ssize_t</span> <span class="title function_">readn</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *ptr, <span class="type">size_t</span> n)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">size_t</span>  nleft;</span><br><span class="line">  <span class="type">ssize_t</span> nread;</span><br><span class="line"></span><br><span class="line">  nleft = n;</span><br><span class="line">  <span class="keyword">while</span> (nleft &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> ((nread = read(fd, ptr, nleft)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (nleft == n) <span class="keyword">return</span>(<span class="number">-1</span>); <span class="comment">/* error, return -1 */</span></span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">break</span>; <span class="comment">/* error, return amount read so far */</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nread == <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">break</span>; <span class="comment">/* EOF */</span></span><br><span class="line">    &#125;</span><br><span class="line">    nleft -= nread;</span><br><span class="line">    ptr += nread;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span>(n - nleft); <span class="comment">/* return &gt;= 0 */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">writen</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">void</span> *ptr, <span class="type">size_t</span> n)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">size_t</span>  nleft;</span><br><span class="line">  <span class="type">ssize_t</span> nwritten;</span><br><span class="line"></span><br><span class="line">  nleft = n;</span><br><span class="line">  <span class="keyword">while</span> (nleft &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> ((nwritten = write(fd, ptr, nleft)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (nleft == n) <span class="keyword">return</span>(<span class="number">-1</span>); <span class="comment">/* error, return -1 */</span></span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">break</span>; <span class="comment">/* error, return amount written so far */</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (nwritten == <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">break</span>; <span class="comment">/* EOF */</span> </span><br><span class="line">    &#125;</span><br><span class="line">    nleft -= nwritten;</span><br><span class="line">    ptr   += nwritten;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span>(n - nleft); <span class="comment">/* return &gt;= 0 */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">readline</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *vptr, <span class="type">size_t</span> maxlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">ssize_t</span> n, rc;</span><br><span class="line">  <span class="type">char</span>    c, *ptr;</span><br><span class="line"></span><br><span class="line">  ptr = vptr;</span><br><span class="line">  <span class="keyword">for</span> (n = <span class="number">1</span>; n &lt; maxlen; n++) &#123;</span><br><span class="line">again:</span><br><span class="line">    <span class="keyword">if</span> ((rc = read(fd, &amp;c, <span class="number">1</span>)) == <span class="number">1</span>) &#123;</span><br><span class="line">      *ptr++ = c;</span><br><span class="line">      <span class="keyword">if</span> (c == <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">        <span class="keyword">break</span>; <span class="comment">/* newline is stored, like fgets() */</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (rc == <span class="number">0</span>) &#123;</span><br><span class="line">      *ptr = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">return</span>(n - <span class="number">1</span>); <span class="comment">/* EOF, n - 1 bytes were read */</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">        <span class="keyword">goto</span> again;</span><br><span class="line">      <span class="keyword">return</span>(<span class="number">-1</span>);  <span class="comment">/* error, errno set by read() */</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  *ptr = <span class="number">0</span>; <span class="comment">/* null terminate like fgets() */</span></span><br><span class="line">  <span class="keyword">return</span>(n);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* end readline */</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>上述<code>readline()</code>每次都需调用<code>read()</code>读取单个字节, 导致效率低下. 修改后的<code>readline()</code>如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span>  read_cnt;</span><br><span class="line"><span class="type">static</span> <span class="type">char</span> *read_ptr;</span><br><span class="line"><span class="type">static</span> <span class="type">char</span> read_buf[MAXLINE];</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">ssize_t</span> <span class="title function_">my_read</span><span class="params">(<span class="type">int</span> fd, <span class="type">char</span> *ptr)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (read_cnt &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">again:</span><br><span class="line">    <span class="keyword">if</span> ( (read_cnt = read(fd, read_buf, <span class="keyword">sizeof</span>(read_buf))) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">        <span class="keyword">goto</span> again;</span><br><span class="line">      <span class="keyword">return</span>(<span class="number">-1</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (read_cnt == <span class="number">0</span>)</span><br><span class="line">      <span class="keyword">return</span>(<span class="number">0</span>);</span><br><span class="line">    read_ptr = read_buf;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  read_cnt--;</span><br><span class="line">  *ptr = *read_ptr++;</span><br><span class="line">  <span class="keyword">return</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">readline</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *vptr, <span class="type">size_t</span> maxlen)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">ssize_t</span> n, rc;</span><br><span class="line">  <span class="type">char</span>    c, *ptr;</span><br><span class="line"></span><br><span class="line">  ptr = vptr;</span><br><span class="line">  <span class="keyword">for</span> (n = <span class="number">1</span>; n &lt; maxlen; n++) &#123;</span><br><span class="line">    <span class="keyword">if</span> ( (rc = my_read(fd, &amp;c)) == <span class="number">1</span>) &#123;</span><br><span class="line">      *ptr++ = c;</span><br><span class="line">      <span class="keyword">if</span> (c == <span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">        <span class="keyword">break</span>; <span class="comment">/* newline is stored, like fgets() */</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (rc == <span class="number">0</span>) &#123;</span><br><span class="line">      *ptr = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">return</span>(n - <span class="number">1</span>); <span class="comment">/* EOF, n - 1 bytes were read */</span></span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">      <span class="keyword">return</span>(<span class="number">-1</span>); <span class="comment">/* error, errno set by read() */</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  *ptr = <span class="number">0</span>; <span class="comment">/* null terminate like fgets() */</span></span><br><span class="line">  <span class="keyword">return</span>(n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述<code>readline()</code>一次读取<code>MAXLINE</code>个字节, 因而效率提高.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/d1c8.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Elementary TCP Sockets</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/b4dd.html">
+        <span class="next-text nav-default">The Transport Layer</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/2e41.html';
+  var disqus_title = "Sockets Introduction";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

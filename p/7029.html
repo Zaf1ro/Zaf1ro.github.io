@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Hash Function"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/7029.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/7029.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/7029.html"/>
+
+
+<meta name="description" content="1. IntroductionHash function用于将任意大小的数据映射为一个等长值, 理想的hash function遵循以下条件:  若两次输入相同, 则返回值相同 若两次输入不同, 则返回值不同  所有hash function一定满足第一个条件, 也就是说, hash function中不存在随机因素(deterministic); 但第二个条件理论上是无法满足: 输入为无穷集合,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hash Function">
+<meta property="og:url" content="https://zaf1ro.github.io/p/7029.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionHash function用于将任意大小的数据映射为一个等长值, 理想的hash function遵循以下条件:  若两次输入相同, 则返回值相同 若两次输入不同, 则返回值不同  所有hash function一定满足第一个条件, 也就是说, hash function中不存在随机因素(deterministic); 但第二个条件理论上是无法满足: 输入为无穷集合,">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/hash-function/client-vs-implementer.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/hash-function/separate-chaining.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/hash-function/open-addressing.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Algorithm/hash-function/bloom-filter.png">
+<meta property="article:published_time" content="2023-04-21T20:23:36.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.027Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Algorithm/hash-function/client-vs-implementer.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Hash Function - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Client-vs-implementer"><span class="toc-text">1.1 Client vs. implementer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Designing-a-hash-function"><span class="toc-text">1.2 Designing a hash function</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-String-Hashing"><span class="toc-text">1.3 String Hashing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-Collision-Resolution"><span class="toc-text">1.4 Collision Resolution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Rolling-Hash"><span class="toc-text">2. Rolling Hash</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Bloom-Filter"><span class="toc-text">3. Bloom Filter</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#187-Repeated-DNA-Sequences"><span class="toc-text">187. Repeated DNA Sequences</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Rolling-Hash-Double-Hashing"><span class="toc-text">Rolling Hash + Double Hashing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#718-Maximum-Length-of-Repeated-Subarray"><span class="toc-text">718. Maximum Length of Repeated Subarray</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Binary-Search-Rolling-Hash"><span class="toc-text">Binary Search + Rolling Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#214-Shortest-Palindrome"><span class="toc-text">214. Shortest Palindrome</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Rolling-Hash"><span class="toc-text">Rolling Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1044-Longest-Duplicate-Substring"><span class="toc-text">1044. Longest Duplicate Substring</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Binary-Search-Rolling-Hash-1"><span class="toc-text">Binary Search + Rolling Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1316-Distinct-Echo-Substrings"><span class="toc-text">1316. Distinct Echo Substrings</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Presum-Rolling-Hash"><span class="toc-text">Presum + Rolling Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1147-Longest-Chunked-Palindrome-Decomposition"><span class="toc-text">1147. Longest Chunked Palindrome Decomposition</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Greedy-Two-Pointers-Rolling-Hash"><span class="toc-text">Greedy + Two Pointers + Rolling Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1923-Longest-Common-Subpath"><span class="toc-text">1923. Longest Common Subpath</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Binary-Search-Rolling-Hash-Double-Hash"><span class="toc-text">Binary Search + Rolling Hash + Double Hash</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Hash Function
+        
+      </h1>
+      <time class="post-time">
+          04/21/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Hash function用于将任意大小的数据映射为一个等长值, 理想的hash function遵循以下条件:</p>
+<ul>
+<li>若两次输入相同, 则返回值相同</li>
+<li>若两次输入不同, 则返回值不同</li>
+</ul>
+<p>所有hash function一定满足第一个条件, 也就是说, hash function中不存在随机因素(deterministic); 但第二个条件理论上是无法满足: 输入为无穷集合, 输出为有限集合, 因此一定存在两个输入返回同一输出, 也称为<strong>collision</strong>(碰撞).<br>Hash function的返回值称为<strong>hash value</strong>(或简称为hash), 通常作为hash table的索引值(bucket index). 实现一个搜索key对应value的结构体可采用以下方式:</p>
+<ul>
+<li>unordered array: <code>$O(N)$</code></li>
+<li>BST: <code>$O(1.39\log(N))$</code></li>
+<li>Red-Black Tree: <code>$O(\log(N))$)</code></li>
+</ul>
+<p>Hash table则可在常数时间内查找key对应的value.</p>
+<h3 id="1-1-Client-vs-implementer"><a href="#1-1-Client-vs-implementer" class="headerlink" title="1.1 Client vs. implementer"></a>1.1 Client vs. implementer</h3><p>简单来说, hash function负责将<strong>key</strong>转换为<strong>bucket index</strong>, 这样就能将key类型的任意值保存到bucket中, 方便以后查找数据. Hash function可分为两部分:</p>
+<ul>
+<li>client提供的$h_\text{client}$函数: 将key转换为一个整数类型的hash code</li>
+<li>implementer提供的$h_\text{impl}$函数: 将hash code转换为一个bucket index</li>
+</ul>
+<p>由于implementer只负责维护bucket, 并不了解key类型, 因此client负责将key类型的值转换为一个整数值(hash code); 由于client不了解implememter拥有多少bucket, 因此implementer负责将hash code转换为bucket index.<br><img src="/images/Algorithm/hash-function/client-vs-implementer.gif" alt="Binary Heap"></p>
+<p>因此, hash function为$h_\text{client} \cdot h_\text{impl}$. 以Java为例, 通常Object的hash code为其内存地址, 若用hash code对bucket数量取模来获取bucket index, 由于内存地址通常是16的倍数, 因此只会使用到1&#x2F;16的bucket.</p>
+<h3 id="1-2-Designing-a-hash-function"><a href="#1-2-Designing-a-hash-function" class="headerlink" title="1.2 Designing a hash function"></a>1.2 Designing a hash function</h3><p>一个hash function应具备以下属性:</p>
+<ul>
+<li>Injection: 若$k_1 \ne k_2$, 则$h(k_1) \ne h(k_2)$的概率应为$m-1&#x2F;m$</li>
+<li>Diffusion: 若$k_1 \ne k_2$, 则$h(k_1)$不会提供$h(k_2)$的相关信息. 例如, $k_1$与$k_2$只差一个bit, 则$h(k_1)$的每个bit都有1&#x2F;2的概率与$h(k_2)$不同.</li>
+</ul>
+<p>我们可将hash function的设计拆为三个步骤:</p>
+<ol>
+<li>Serialization: 将key转换为包含key所有信息的byte stream(字节流). 以string为例, 其字节流为字符组成的字符串. 若$k_1 &#x3D; k_2$, 则$h(k_1) &#x3D; h(k_2)$.</li>
+<li>Diffusion: 将字节流转换为一个大整数x, 让字节流中的每个改动都能随机影响x的字节. </li>
+<li>计算bucket index, 例如: $x\ mod\ m$</li>
+</ol>
+<p>对于Serialization, 需保证key的所有信息都包含在字节流中, 以Java 1.1的<code>hashCode()</code>为例:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="variable">hash</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">skip</span> <span class="operator">=</span> Math.max(<span class="number">1</span>, length() / <span class="number">8</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; length(); i += skip)</span><br><span class="line">  hash = (<span class="number">37</span> * hash) + s[i];</span><br><span class="line"><span class="keyword">return</span> hash;</span><br></pre></td></tr></table></figure>
+<p>虽然这种实现会加快字节流的计算过程, 但丢失了string的大量信息.<br>通常来说, client负责serialization和diffusion, hash table负责将hash code转换为bucket index. 有些hash table默认client生成的hash code十分随机, 因此直接将hash code的部分字节作为bucket index(hash table维持$2^n$的bucket个数); 另一些hash table额外执行一个integer hash function, 以提供更多diffusion, 因此client无需提供很好的hash code.</p>
+<h3 id="1-3-String-Hashing"><a href="#1-3-String-Hashing" class="headerlink" title="1.3 String Hashing"></a>1.3 String Hashing</h3><p>对于长度为<code>l</code>的字符串<code>s</code>, <code>h(s)</code>负责将<code>s</code>转换为<code>[0, M]</code>范围内的hash code, 则<code>$h(s) = \sum^&#123;l&#125;_&#123;i=1&#125; s[i] \times b^&#123;l-i&#125;(\text&#123;mod M&#125;)$</code>, 例如, 对于字符串&quot;xyz&quot;, 其hash code为<code>$xb^2 + yb + z$</code>.<br>该hash code计算方法可理解为: 将字符串<code>s</code>转换为一个b进制数. 假设字符串<code>s</code>与<code>t</code>发生哈希碰撞, 则<code>$h(s) = h(t)$</code>, 因此<code>$\sum^&#123;l&#125;_&#123;i=1&#125;(s[i] - t[i])b^&#123;l-i&#125;(\text&#123;mod M&#125;)$</code>, 由于其在<code>$\mathbb&#123;Z&#125;[x]$</code>最多有<code>l - 1</code>个根, 若保证b从<code>[0, M]</code>之间均匀随机选取, 则可保证<code>$h(s)$</code>与<code>$h(t)$</code>的碰撞概率为<code>$\frac&#123;l-1&#125;&#123;M&#125;$</code>.</p>
+<h3 id="1-4-Collision-Resolution"><a href="#1-4-Collision-Resolution" class="headerlink" title="1.4 Collision Resolution"></a>1.4 Collision Resolution</h3><p>概率论中, birthday problem(生日问题)要求在一组随机选择的人群中, 找到至少有两个人生日相同(同月同日)的概率, 其结果是违背直觉的: 当人数达到23时, 至少两人生日相同的概率超过50%. 对于hash table, 这意味着若我们想要避免碰撞出现, 则bucket需要极大内存空间. 既然碰撞在所难免, 不如思考当碰撞发生时, 如何高效地处理该情况.</p>
+<ul>
+<li>Separate chaining: 将冲突的key放入与bucket index关联的链表中.<br><img src="/images/Algorithm/hash-function/separate-chaining.png" alt="Separate chaining"></li>
+<li>Open addressing: 若key发生冲突, 则查询下一个空的bucket<br><img src="/images/Algorithm/hash-function/open-addressing.png" alt="Open addressing"></li>
+</ul>
+<p>假设向hash table中插入<code>n</code>个key-value pair, hash table中的bucket数为<code>m</code>:</p>
+<ul>
+<li>Separate chaining: 每个bucket的平均链表长度为<code>$\frac&#123;n&#125;&#123;m&#125;$</code>. 若m过小, 则链表过长, 导致查询性能下降; 若m过大, 则有大量bucket不包含任何数据, 浪费内存, 因此一般保持<code>$\frac&#123;n&#125;&#123;m&#125; \approx 10$</code>. 当<code>$\frac&#123;n&#125;&#123;m&#125; \gg 10$</code>时, 则需重新计算所有key的hash value(无需新的hash code, 只需hash table计算新的bucket index), 以增大bucket数量.</li>
+<li>Open addressing: 该方法有很多种探测下一个空bucket的算法, 上图为linear probing. Linear probing运行时会出现一段连续使用的bucket, 称为<strong>clustering</strong>, 导致插入key时, 该key落在clustering之后bucket的概率比其他bucket大, 因此clustering的长度决定了hash table的插入和查询速度. 假设<code>$\alpha = \frac&#123;n&#125;&#123;m&#125;$</code>, 则查询指定key所需的平均操作数为<code>$\frac&#123;1&#125;&#123;2&#125;(1+\frac&#123;1&#125;&#123;(1-\alpha)&#125;)$</code>, 插入指定key所需的平均操作数为<code>$\frac&#123;1&#125;&#123;2&#125;(1+\frac&#123;1&#125;&#123;(1-\alpha)^2&#125;)$</code>, 若保持<code>$\frac&#123;n&#125;&#123;m&#125; = \frac&#123;1&#125;&#123;2&#125;$</code>, 则查询需访问$\frac{3}{2}$个bucket, 插入需访问$\frac{5}{2}$个bucket. 若$\frac{n}{m} \gg \frac{1}{2}$, 与separate chaining相同, 仍需重新计算所有key的hash value, 以增大bucket数量.</li>
+</ul>
+<h2 id="2-Rolling-Hash"><a href="#2-Rolling-Hash" class="headerlink" title="2. Rolling Hash"></a>2. Rolling Hash</h2><p>对于<strong>在长度为N的字符串a中查找长度为M的字符串b</strong>(通常$N \gg M$)问题, 目前存在四种主流方法:</p>
+<ul>
+<li>Brute Force</li>
+<li>KMP</li>
+<li>Boyer-Moore</li>
+<li>Rabin-Karp</li>
+</ul>
+<p>其中Rabin-Karp采用一种rolling hash的方式计算字符串a中每个长度为M的子字符串的hash value, 并对比字符串b的hash value, 算法步骤如下:</p>
+<ol>
+<li>计算字符串b的hash value, 记为<code>$h_b$</code></li>
+<li>遍历a中每一个坐标<code>i</code>, 计算<code>$a[i, i+M-1]$</code>的hash value, 记为<code>$h_&#123;pat&#125;$</code></li>
+<li>对比<code>$h_b$</code>与<code>$h_&#123;pat&#125;$</code>是否相等</li>
+</ol>
+<p>采用modular hash function计算字符串的hash value时, 若字符串a中第i个字符为<code>$t_i$</code>, 则以$t_i$为起点, 长度为M的字符串的hash value <code>$x_i$</code>为<code>$t_&#123;i&#125;R^&#123;M-1&#125; + t_&#123;i-1&#125;R^&#123;M-2&#125; + \ldots + t_&#123;i+M-1&#125;R^0 \text&#123; (mod Q)&#125;$</code>, 而<code>$x_&#123;i+1&#125; = t_&#123;i+1&#125; R^&#123;M-1&#125; + t_i R^&#123;M-2&#125; + \ldots + t_&#123;i+M&#125; R^0$</code>, 若已知$x_i$, 则可直接计算$x_{i+1}$: <code>$x_&#123;i+1&#125; = (x_&#123;i&#125; - t_&#123;i&#125;R^&#123;M-1&#125;)R + t_&#123;i+M&#125;$</code>.</p>
+<h2 id="3-Bloom-Filter"><a href="#3-Bloom-Filter" class="headerlink" title="3. Bloom Filter"></a>3. Bloom Filter</h2><p>假设hash set的数组长度为q, 已插入n个元素, 若使用separate chaining解决collision, 则每个数组元素的链表约为<code>$\frac&#123;n&#125;&#123;q&#125;$</code>, 称为<code>$\alpha$</code>, 因此hash set添加或查找元素的时间复杂度为<code>$O(1+\alpha)$</code>, 其空间复杂度为<code>O(mn)</code>, 其中<code>m</code>为元素所占bit数. 假设在hash set中存放10亿个整数, 则至少需要40亿字节, 也就是4TB内存; 若存放网页URL, 由于单个URL所占字节数远超单个整数, 会需要更大的内存空间.<br>可以发现, hash set为了解决collision, 需在hash set中保留每个元素副本; 但若业务允许一定的<strong>失误率</strong>, 则可以大幅减少内存需求, 如bloom filter.<br>Bloom filter需创建一个长度为<code>q</code>的bit array, 全部初始化为0, 并创建<code>k</code>个hash function($k_1, k_2, \ldots, h_k$), 这些hash function产生的hash value位于<code>[0, q-1]</code>区间:</p>
+<ul>
+<li>插入元素时: 每个hash function产生一个hash value, 并将bit array坐标对应值置为1</li>
+<li>查找元素时: 每个hash function产生一个hash value:<ul>
+<li>若bit array中所有坐标对应值均为1, 则元素极大概率存在</li>
+<li>若bit array中其中一个坐标对应值为0, 则元素一定不存在</li>
+</ul>
+</li>
+</ul>
+<p>若bloom filter中存放10亿个整数, 则需10亿bit的内存空间, 也就是125GB; 若元素类型改为字符串, 内存需求仍不变: bloom filter的内存需求只与元素个数有关, 与元素类型无关. 但代价是error rate: bloom filter的错误率只与<code>q</code>和<code>k</code>有关.</p>
+<p><img src="/images/Algorithm/hash-function/bloom-filter.png" alt="Bloom Filter"></p>
+<p>上图中, 横轴为hash function的数量(k), 纵轴为error rate(f, 元素实际不存在, 但误报存在的概率), 多条曲线表示元素数量(n)确定的情况下, bit array长度(m)对error rate的影响. 可以发现:</p>
+<ul>
+<li>m越大, 失误率越低</li>
+<li>p呈现抛物线, 因此, 在m和n确定的情况下, 可计算出最佳p值</li>
+</ul>
+<p>设计bloom filter时, 先根据失误率f(业务可接受的最高失误率)和元素数量n(业务中的元素数量上限)确定bit array长度m, 再根据m和n确定hash function数量p.</p>
+<h2 id="187-Repeated-DNA-Sequences"><a href="#187-Repeated-DNA-Sequences" class="headerlink" title="187. Repeated DNA Sequences"></a>187. Repeated DNA Sequences</h2><p>The <strong>DNA sequence</strong> is composed of a series of nucleotides abbreviated as <code>&#39;A&#39;</code>, <code>&#39;C&#39;</code>, <code>&#39;G&#39;</code>, and <code>&#39;T&#39;</code>.</p>
+<ul>
+<li>For example, <code>&quot;ACGAATTCCG&quot;</code> is a <strong>DNA sequence</strong>.</li>
+</ul>
+<p>When studying <strong>DNA</strong>, it is useful to identify repeated sequences within the DNA.<br>Given a string <code>s</code> that represents a <strong>DNA sequence</strong>, return all the <strong>10-letter-long</strong> sequences (substrings) that occur more than once in a DNA molecule. You may return the answer in <strong>any order</strong>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;AAAAACCCCCAAAAACCCCCCAAAAAGGGTTT&quot;</span><br><span class="line">Output: [&quot;AAAAACCCCC&quot;,&quot;CCCCCAAAAA&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;AAAAAAAAAAAAA&quot;</span><br><span class="line">Output: [&quot;AAAAAAAAAA&quot;]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Rolling-Hash-Double-Hashing"><a href="#Rolling-Hash-Double-Hashing" class="headerlink" title="Rolling Hash + Double Hashing"></a>Rolling Hash + Double Hashing</h3><p>计算字符串内所有长度为10的子字符串的hash value, 若存在相同hash value, 则认为DNA序列重复, 需注意以下几点:</p>
+<ul>
+<li>重复的DNA序列只添加一次, 因此需hashset过滤</li>
+<li>若输入字符串过长, 则容易发生collision, 因此采用double hashing</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> List&lt;String&gt; <span class="title function_">findRepeatedDnaSequences</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.length() &lt; <span class="number">10</span>) <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        <span class="type">Random</span> <span class="variable">rand</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">        <span class="type">int</span> <span class="variable">K1</span> <span class="operator">=</span> <span class="number">26</span> + rand.nextInt(<span class="number">78</span>), K2 = <span class="number">26</span> + rand.nextInt(<span class="number">78</span>);</span><br><span class="line">        <span class="type">long</span> <span class="variable">M1</span> <span class="operator">=</span> <span class="number">1000000009</span>, M2 = <span class="number">1000000007</span>, R1 = <span class="number">1</span>, R2 = <span class="number">1</span>, h1 = <span class="number">0</span>, h2 = <span class="number">0</span>;</span><br><span class="line">        <span class="type">char</span>[] arr = s.toCharArray();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            arr[i] -= <span class="string">&#x27;A&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            R1 = (R1 * K1) % M1;</span><br><span class="line">            R2 = (R2 * K2) % M2;</span><br><span class="line">            h1 = (h1 * K1 + arr[i]) % M1;</span><br><span class="line">            h2 = (h2 * K2 + arr[i]) % M2;</span><br><span class="line">        &#125;</span><br><span class="line">        Set&lt;Long&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        Set&lt;String&gt; res = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        set.add(h1 * M2 + h2);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">10</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            h1 = (h1 * K1 + arr[i] + M1 - (arr[i-<span class="number">10</span>] * R1) % M1) % M1;</span><br><span class="line">            h2 = (h2 * K2 + arr[i] + M2 - (arr[i-<span class="number">10</span>] * R2) % M2) % M2;</span><br><span class="line">            <span class="keyword">if</span> (!set.add(h1 * M2 + h2)) &#123;</span><br><span class="line">                res.add(s.substring(i-<span class="number">9</span>, i+<span class="number">1</span>));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(res);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="718-Maximum-Length-of-Repeated-Subarray"><a href="#718-Maximum-Length-of-Repeated-Subarray" class="headerlink" title="718. Maximum Length of Repeated Subarray"></a>718. Maximum Length of Repeated Subarray</h2><p>Given two integer arrays nums1 and nums2, return the maximum length of a subarray that appears in both arrays.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: nums1 = [1,2,3,2,1], nums2 = [3,2,1,4,7]</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: The repeated subarray with maximum length is [3,2,1].</span><br></pre></td></tr></table></figure>
+
+<h3 id="Binary-Search-Rolling-Hash"><a href="#Binary-Search-Rolling-Hash" class="headerlink" title="Binary Search + Rolling Hash"></a>Binary Search + Rolling Hash</h3><p>若nums1和nums2存在一个长度为k的公共子数组, 则一定存在长度为$j &lt;&#x3D; k$的公共子数组, 因此可使用binary search查找最大k. 最长公共子数组的长度范围为<code>[0, min(|nums1|, |nums2|)]</code>, 取长度m, 分为两种情况:</p>
+<ul>
+<li>无法找到长度为m的公共子数组: 继续查找<code>[0, m-1]</code>范围</li>
+<li>找到长度为m的公共子数组: 查找查找<code>[m+1, min(|nums1|, |nums2|)]</code>范围</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">lass Solution &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">Random</span> <span class="variable">rand</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">K</span> <span class="operator">=</span> <span class="number">100</span> + rand.nextInt(<span class="number">300</span>);</span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span> <span class="variable">M</span> <span class="operator">=</span> <span class="number">1000000007</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">findLength</span><span class="params">(<span class="type">int</span>[] nums1, <span class="type">int</span>[] nums2)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">1</span>, r = Math.min(nums1.length, nums2.length);</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (check(nums1, nums2, m)) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">check</span><span class="params">(<span class="type">int</span>[] nums1, <span class="type">int</span>[] nums2, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        Set&lt;Long&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        <span class="type">long</span> <span class="variable">h1</span> <span class="operator">=</span> <span class="number">0</span>, h2 = <span class="number">0</span>, R = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            h1 = (h1 * K + nums1[i]) % M;</span><br><span class="line">            h2 = (h2 * K + nums2[i]) % M;</span><br><span class="line">            R = (R * K) % M;</span><br><span class="line">        &#125;</span><br><span class="line">        set.add(h1);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> n; i &lt; nums1.length; i++) &#123;</span><br><span class="line">            h1 = (h1 * K + nums1[i] + M - (nums1[i-n] * R) % M) % M;</span><br><span class="line">            set.add(h1);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (set.contains(h2)) <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> n; i &lt; nums2.length; i++) &#123;</span><br><span class="line">            h2 = (h2 * K + nums2[i] + M - (nums2[i-n] * R) % M) % M;</span><br><span class="line">            <span class="keyword">if</span> (set.contains(h2)) <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="214-Shortest-Palindrome"><a href="#214-Shortest-Palindrome" class="headerlink" title="214. Shortest Palindrome"></a>214. Shortest Palindrome</h2><p>You are given a string <code>s</code>. You can convert <code>s</code> to a palindrome by adding characters in front of it.<br>Return the shortest palindrome you can find by performing this transformation.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;aacecaaa&quot;</span><br><span class="line">Output: &quot;aaacecaaa&quot;</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;abcd&quot;</span><br><span class="line">Output: &quot;dcbabcd&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Rolling-Hash"><a href="#Rolling-Hash" class="headerlink" title="Rolling Hash"></a>Rolling Hash</h3><p>题目要求在字符串s前添加最短字符串$s&#39;$, 使得$s+s&#39;$成为回文字符串. 假设s的长度为n, 最差情况时, $s&#39;$的长度为n-1(s第一个字符之后的其他字符), 因此$|s&#39;| &lt; |s|$. 由于$s + s&#39;$是一个回文字符串, 因此s可分为两部分:</p>
+<ul>
+<li>s1: 自身为一个回文字符串</li>
+<li>s2: 与$s&#39;$互为回文</li>
+</ul>
+<p>若想要$s&#39;$最短, 则需找到最长s1, 因此题目可替换为: 如何在s中找到以0坐标为起点的最长回文字符串: 若子字符串的正序hash value与反序hash value相等, 则说明该子字符串为回文字符串.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">shortestPalindrome</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (s.length() &lt; <span class="number">2</span>) <span class="keyword">return</span> s;</span><br><span class="line">        <span class="type">Random</span> <span class="variable">rand</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">        <span class="type">long</span> <span class="variable">M</span> <span class="operator">=</span> <span class="number">1000000007</span>, h1 = <span class="number">0</span>, h2 = <span class="number">0</span>, r = <span class="number">1</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">K</span> <span class="operator">=</span> <span class="number">26</span> + rand.nextInt(<span class="number">78</span>), j = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s.length(); i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">c</span> <span class="operator">=</span> s.charAt(i) - <span class="string">&#x27;a&#x27;</span>;</span><br><span class="line">            h1 = (h1 * K + c) % M;</span><br><span class="line">            h2 = (h2 + r * c) % M;</span><br><span class="line">            r = (r * K) % M;</span><br><span class="line">            <span class="keyword">if</span> (h1 == h2) j = i;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(s.substring(j+<span class="number">1</span>)).reverse().append(s).toString();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="1044-Longest-Duplicate-Substring"><a href="#1044-Longest-Duplicate-Substring" class="headerlink" title="1044. Longest Duplicate Substring"></a>1044. Longest Duplicate Substring</h2><p>Given a string <code>s</code>, consider all duplicated substrings: (contiguous) substrings of s that occur 2 or more times. The occurrences may overlap.</p>
+<p>Return <strong>any</strong> duplicated substring that has the longest possible length. If <code>s</code> does not have a duplicated substring, the answer is <code>&quot;&quot;</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;banana&quot;</span><br><span class="line">Output: &quot;ana&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Binary-Search-Rolling-Hash-1"><a href="#Binary-Search-Rolling-Hash-1" class="headerlink" title="Binary Search + Rolling Hash"></a>Binary Search + Rolling Hash</h3><p>假设字符串s的长度为n, 则重复的子字符串的长度范围为<code>[0, n-1]</code>, 若存在长度为L的重复子字符串, 则一定存在长度为L-1的重复子字符串, 因此可使用binary search查找最长重复子字符串.<br>计算s中每个长度为L的子字符串的hash value, 若存在相同hash value, 则说明存在重复的子字符串, 因此使用rolling hash计算.<br>需要注意的是, 若s过长, 会出现collision, 可使用double hash避免collision.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">Random</span> <span class="variable">rand</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">K1</span> <span class="operator">=</span> <span class="number">26</span> + rand.nextInt(<span class="number">78</span>), K2 = <span class="number">26</span> + rand.nextInt(<span class="number">78</span>);</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">M1</span> <span class="operator">=</span> <span class="number">1000000007</span>, M2 = <span class="number">1000000009</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">longestDupSubstring</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> s.length(), l = <span class="number">1</span>, r = n - <span class="number">1</span>;</span><br><span class="line">        <span class="type">char</span>[] arr = s.toCharArray();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            arr[i] -= <span class="string">&#x27;a&#x27;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">String</span> <span class="variable">res</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="type">String</span> <span class="variable">t</span> <span class="operator">=</span> findDuplicate(s, arr, m);</span><br><span class="line">            <span class="keyword">if</span> (t == <span class="literal">null</span>) &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                res = t;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String <span class="title function_">findDuplicate</span><span class="params">(String s, <span class="type">char</span>[] arr, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        Set&lt;Long&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        <span class="type">long</span> <span class="variable">R1</span> <span class="operator">=</span> <span class="number">1</span>, R2 = <span class="number">1</span>, h1 = <span class="number">0</span>, h2 = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            R1 = (R1 * K1) % M1;</span><br><span class="line">            R2 = (R2 * K2) % M2;</span><br><span class="line">            h1 = ((h1 * K1) + arr[i]) % M1;</span><br><span class="line">            h2 = ((h2 * K2) + arr[i]) % M2;</span><br><span class="line">        &#125;</span><br><span class="line">        set.add(h1 * M2 + h2);</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> n; i &lt; arr.length; i++) &#123;</span><br><span class="line">            h1 = (h1 * K1 + arr[i] + M1 - (arr[i-n] * R1) % M1) % M1;</span><br><span class="line">            h2 = (h2 * K2 + arr[i] + M2 - (arr[i-n] * R2) % M2) % M2;</span><br><span class="line">            <span class="keyword">if</span> (!set.add(h1 * M2 + h2)) &#123;</span><br><span class="line">                <span class="keyword">return</span> s.substring(i-n+<span class="number">1</span>, i+<span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="1316-Distinct-Echo-Substrings"><a href="#1316-Distinct-Echo-Substrings" class="headerlink" title="1316. Distinct Echo Substrings"></a>1316. Distinct Echo Substrings</h2><p>Return the number of <strong>distinct</strong> non-empty substrings of <code>text</code> that can be written as the concatenation of some string with itself (i.e. it can be written as <code>a + a</code> where <code>a</code> is some string).</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: text = &quot;abcabcabc&quot;</span><br><span class="line">Output: 3</span><br><span class="line">Explanation: The 3 substrings are &quot;abcabc&quot;, &quot;bcabca&quot; and &quot;cabcab&quot;.</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: text = &quot;leetcodeleetcode&quot;</span><br><span class="line">Output: 2</span><br><span class="line">Explanation: The 2 substrings are &quot;ee&quot; and &quot;leetcodeleetcode&quot;.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Presum-Rolling-Hash"><a href="#Presum-Rolling-Hash" class="headerlink" title="Presum + Rolling Hash"></a>Presum + Rolling Hash</h3><p>题目要求找到所有<code>a + a</code>模式的子字符串, 假设子字符串s符合规则, 则s的长度必为偶数, 由字符串s1和s2组成, 且<code>s1 = s2</code>. 由于s1(或s2)的长度范围为$(2, 4, 6, 8, \ldots, \frac{|s|}{2})$, 因此可遍历所有可能长度, 并比较s1和s2是否相同. 实现时需注意以下几点:</p>
+<ul>
+<li>题目要求不同的子字符串, 因此需要hash set去重</li>
+<li>若将<code>[a, z]</code>映射为<code>[0, 25]</code>, 会导致<code>a</code>与<code>aa</code>的hash value同为0, 因此可映射为<code>[1, 26]</code></li>
+<li>每个长度都需对字符串执行一遍rolling hash, 该过程可使用presum加速: 假设<code>h[i:j]</code>表示<code>text[i:j]</code>的hash value, 可遍历text并使用rolling hash计算所有前缀和<code>h[0,i]</code>, 当需要获得某段子字符串的hash value时, 可执行$h[i:j] &#x3D; h[0,j] - h[0,i-1] * K^{j-i}$.</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">distinctEchoSubstrings</span><span class="params">(String text)</span> &#123;</span><br><span class="line">        <span class="type">Random</span> <span class="variable">rand</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">        <span class="keyword">final</span> <span class="type">long</span> <span class="variable">M</span> <span class="operator">=</span> <span class="number">1000000007</span>, K = <span class="number">26</span> + rand.nextInt(<span class="number">78</span>);</span><br><span class="line">        <span class="type">int</span> <span class="variable">n</span> <span class="operator">=</span> text.length();</span><br><span class="line">        <span class="type">long</span>[] hs = <span class="keyword">new</span> <span class="title class_">long</span>[n+<span class="number">1</span>], rs = <span class="keyword">new</span> <span class="title class_">long</span>[n+<span class="number">1</span>];</span><br><span class="line">        rs[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            hs[i+<span class="number">1</span>] = (hs[i] * K + text.charAt(i) - <span class="string">&#x27;a&#x27;</span> + <span class="number">1</span>) % M;</span><br><span class="line">            rs[i+<span class="number">1</span>] = (rs[i] * K) % M; </span><br><span class="line">        &#125;</span><br><span class="line">        Set&lt;Long&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> <span class="number">1</span>; m &lt;= n/<span class="number">2</span>; m++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i+<span class="number">2</span>*m &lt;= n; i++) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i + m, k = i + <span class="number">2</span> * m;</span><br><span class="line">                <span class="type">long</span> <span class="variable">h1</span> <span class="operator">=</span> (hs[j] + M - (hs[i] * rs[m]) % M) % M;</span><br><span class="line">                <span class="type">long</span> <span class="variable">h2</span> <span class="operator">=</span> (hs[k] + M - (hs[j] * rs[m]) % M) % M;</span><br><span class="line">                <span class="keyword">if</span> (h1 == h2) set.add(h1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> set.size();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="1147-Longest-Chunked-Palindrome-Decomposition"><a href="#1147-Longest-Chunked-Palindrome-Decomposition" class="headerlink" title="1147. Longest Chunked Palindrome Decomposition"></a>1147. Longest Chunked Palindrome Decomposition</h2><p>You are given a string text. You should split it to k substrings <code>$(\text&#123;subtext&#125;_1, \text&#123;subtext&#125;_2, \ldots, \text&#123;subtext&#125;_k)$</code> such that:</p>
+<ul>
+<li><code>$\text&#123;subtext&#125;_i$</code> is a non-empty string.</li>
+<li>The concatenation of all the substrings is equal to <code>text</code> (i.e., <code>$\text&#123;subtext&#125;_1 + \text&#123;subtext&#125;_2 + \ldots + \text&#123;subtext&#125;_k == \text&#123;text&#125;$</code>).</li>
+<li><code>$\text&#123;subtext&#125;_i == \text&#123;subtext&#125;_&#123;k-i+1&#125;$</code> for all valid values of <code>i</code> (i.e., <code>$1 \le i \le k$</code>).</li>
+</ul>
+<p>Return the largest possible value of <code>k</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: text = &quot;ghiabcdefhelloadamhelloabcdefghi&quot;</span><br><span class="line">Output: 7</span><br><span class="line">Explanation: We can split the string on &quot;(ghi)(abcdef)(hello)(adam)(hello)(abcdef)(ghi)&quot;.</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: text = &quot;merchant&quot;</span><br><span class="line">Output: 1</span><br><span class="line">Explanation: We can split the string on &quot;(merchant)&quot;.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Greedy-Two-Pointers-Rolling-Hash"><a href="#Greedy-Two-Pointers-Rolling-Hash" class="headerlink" title="Greedy + Two Pointers + Rolling Hash"></a>Greedy + Two Pointers + Rolling Hash</h3><p>题目要求返回subtext的最大数量, 因此应保证每段subtext尽量短. 对于<code>subtext[i]</code>和<code>subtext[k-i+1]</code>, 存在以下情况:</p>
+<ul>
+<li>若<code>subtext[i] == subtext[k-i+1]</code>: k +&#x3D; 2</li>
+<li>若<code>i &lt; k-i+1</code>且<code>subtext[i] != subtext[k-i+1]</code>: i++</li>
+<li>若<code>i &gt;= k-i+1</code>: 存在以下两种可能:<ul>
+<li>未找到互为镜像的subtext, 如<code>AXA</code>, <code>X</code>不存在镜像, k++</li>
+<li><code>text</code>不存在单独的subtext, 如<code>ABBA</code>, k不变</li>
+</ul>
+</li>
+</ul>
+<p>判断<code>subtext[i]</code>和<code>subtext[k-i+1]</code>是否相同可通过rolling hash实现.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">longestDecomposition</span><span class="params">(String text)</span> &#123;</span><br><span class="line">        <span class="type">char</span>[] arr = text.toCharArray();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            arr[i] -= <span class="string">&#x27;a&#x27;</span> - <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>, j = arr.length-<span class="number">1</span>, res = <span class="number">0</span>;</span><br><span class="line">        <span class="type">Random</span> <span class="variable">rand</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">        <span class="type">long</span> <span class="variable">M</span> <span class="operator">=</span> <span class="number">1000000007</span>, K = <span class="number">26</span> + rand.nextInt(<span class="number">78</span>), h1 = <span class="number">0</span>, h2 = <span class="number">0</span>, r = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (i &lt; j) &#123;</span><br><span class="line">            h1 = (h1 * K + arr[i++]) % M;</span><br><span class="line">            h2 = (h2 + r * arr[j--]) % M;</span><br><span class="line">            r = (r * K) % M;</span><br><span class="line">            <span class="keyword">if</span> (h1 == h2) &#123;</span><br><span class="line">                res += <span class="number">2</span>;</span><br><span class="line">                h1 = h2 = <span class="number">0</span>;</span><br><span class="line">                r = <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res + (i != j &amp;&amp; h1 == <span class="number">0</span> ? <span class="number">0</span> : <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="1923-Longest-Common-Subpath"><a href="#1923-Longest-Common-Subpath" class="headerlink" title="1923. Longest Common Subpath"></a>1923. Longest Common Subpath</h2><p>There is a country of <code>n</code> cities numbered from <code>0</code> to <code>n - 1</code>. In this country, there is a road connecting <strong>every pair</strong> of cities.</p>
+<p>There are <code>m</code> friends numbered from <code>0</code> to <code>m - 1</code> who are traveling through the country. Each one of them will take a path consisting of some cities. Each path is represented by an integer array that contains the visited cities in order. The path may contain a city <strong>more than once</strong>, but the same city will not be listed consecutively.</p>
+<p>Given an integer <code>n</code> and a 2D integer array <code>paths</code> where <code>paths[i]</code> is an integer array representing the path of the <code>$i^&#123;th&#125;$</code> friend, return the length of the <strong>longest common subpath</strong> that is shared by <strong>every</strong> friend&#39;s path, or <code>0</code> if there is no common subpath at all.</p>
+<p>A <strong>subpath</strong> of a path is a contiguous sequence of cities within that path.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: n = 5, paths = $[[0,1,\underline&#123;2,3&#125;,4]$,</span><br><span class="line">                      $[\underline&#123;2,3&#125;,4]$,</span><br><span class="line">                      $[4,0,1,\underline&#123;2,3&#125;]]$</span><br><span class="line">Output: 2</span><br><span class="line">Explanation: The longest common subpath is [2,3].</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: n = 3, paths = [[0],[1],[2]]</span><br><span class="line">Output: 0</span><br><span class="line">Explanation: There is no common subpath shared by the three paths.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Binary-Search-Rolling-Hash-Double-Hash"><a href="#Binary-Search-Rolling-Hash-Double-Hash" class="headerlink" title="Binary Search + Rolling Hash + Double Hash"></a>Binary Search + Rolling Hash + Double Hash</h3><p>假设m个数组中, 最长公共子数组的长度为len, 则:</p>
+<ul>
+<li>一定存在长度为<code>$\text&#123;len&#125;&#39; \le \text&#123;len&#125;$</code>的公共子数组</li>
+<li>一定不存在长度为<code>$\text&#123;len&#125;&#39; \gt \text&#123;len&#125;$</code>的公共子数组</li>
+</ul>
+<p>因此可使用binary search查找len, 上限为m个数组的最短数组长度, 下限为1. 对于任意长度n, 需判断是否所有数组都存在长度为n的公共子数组, 因此可使用rolling hash计算每个数组中长度为n的子数组的hash value, 并判断是否全部数组都包含该hash value.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">M1</span> <span class="operator">=</span> <span class="number">1000000007</span>, M2 = <span class="number">1000000009</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">longestCommonSubpath</span><span class="params">(<span class="type">int</span> n, <span class="type">int</span>[][] paths)</span> &#123;</span><br><span class="line">        <span class="type">Random</span> <span class="variable">rand</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Random</span>();</span><br><span class="line">        <span class="keyword">final</span> <span class="type">int</span> <span class="variable">K1</span> <span class="operator">=</span> n + rand.nextInt(<span class="number">3</span>*n), K2 = n + rand.nextInt(<span class="number">3</span>*n);</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">1</span>, r = Integer.MAX_VALUE;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] p: paths) &#123;</span><br><span class="line">            r = Math.min(r, p.length);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">long</span>[] R1 = <span class="keyword">new</span> <span class="title class_">long</span>[r+<span class="number">1</span>], R2 = <span class="keyword">new</span> <span class="title class_">long</span>[r+<span class="number">1</span>];</span><br><span class="line">        R1[<span class="number">0</span>] = R2[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; r; i++) &#123;</span><br><span class="line">            R1[i+<span class="number">1</span>] = (R1[i] * K1) % M1;</span><br><span class="line">            R2[i+<span class="number">1</span>] = (R2[i] * K2) % M2;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> l + ((r - l) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">            <span class="keyword">if</span> (check(paths, m, K1, K2, R1[m], R2[m])) &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> r;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">check</span><span class="params">(<span class="type">int</span>[][] paths, <span class="type">int</span> m, <span class="type">int</span> K1, <span class="type">int</span> K2, <span class="type">long</span> R1, <span class="type">long</span> R2)</span> &#123;</span><br><span class="line">        Set&lt;Long&gt; dup = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] path: paths) &#123;</span><br><span class="line">            <span class="type">long</span> <span class="variable">h1</span> <span class="operator">=</span> <span class="number">0</span>, h2 = <span class="number">0</span>;</span><br><span class="line">            Set&lt;Long&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">                h1 = (h1 * K1 + path[i]) % M1;</span><br><span class="line">                h2 = (h2 * K2 + path[i]) % M2;</span><br><span class="line">            &#125;</span><br><span class="line">            set.add(h1 * M2 + h2);</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> m; i &lt; path.length; i++) &#123;</span><br><span class="line">                h1 = (h1 * K1 + path[i] + M1 - (R1 * path[i-m]) % M1) % M1;</span><br><span class="line">                h2 = (h2 * K2 + path[i] + M2 - (R2 * path[i-m]) % M2) % M2;</span><br><span class="line">                set.add(h1 * M2 + h2);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (dup == <span class="literal">null</span>) &#123;</span><br><span class="line">                dup = set;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                dup.retainAll(set);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (dup.isEmpty()) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/de17.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Pattern Matching</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/f015.html">
+        <span class="next-text nav-default">Binary Search</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/7029.html';
+  var disqus_title = "Hash Function";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

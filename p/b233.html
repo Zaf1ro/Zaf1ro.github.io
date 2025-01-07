@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="DP - Group Knapsack Problem"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/b233.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/b233.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/b233.html"/>
+
+
+<meta name="description" content="1. Introduction分组背包问题: 有$n$组物品和一个容量为$c$的背包, 第i组物品有$g[i]$个物品, 第i组物品的第j个物品的体积为$w[i][j]$, 价值为$v[i][j]$, 在不超过背包容量上限的前提下, 放入背包的物品的最大价值之和. 该题目有以下几点需要考虑:  每组物品只能选择一个放入背包, 也可以跳过 背包有容量限制, 因此无法将所有物品放入背包 将物品放入背包">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DP - Group Knapsack Problem">
+<meta property="og:url" content="https://zaf1ro.github.io/p/b233.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction分组背包问题: 有$n$组物品和一个容量为$c$的背包, 第i组物品有$g[i]$个物品, 第i组物品的第j个物品的体积为$w[i][j]$, 价值为$v[i][j]$, 在不超过背包容量上限的前提下, 放入背包的物品的最大价值之和. 该题目有以下几点需要考虑:  每组物品只能选择一个放入背包, 也可以跳过 背包有容量限制, 因此无法将所有物品放入背包 将物品放入背包">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-04-21T15:31:25.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.024Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+DP - Group Knapsack Problem - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Dynamic-Programming"><span class="toc-text">2. Dynamic Programming</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Optimization"><span class="toc-text">3. Optimization</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Leetcode"><span class="toc-text">4. Leetcode</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1155-Number-of-Dice-Rolls-With-Target-Sum"><span class="toc-text">1155. Number of Dice Rolls With Target Sum</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Problem-Description"><span class="toc-text">Problem Description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          DP - Group Knapsack Problem
+        
+      </h1>
+      <time class="post-time">
+          04/21/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>分组背包问题: 有$n$组物品和一个容量为$c$的背包, 第i组物品有$g[i]$个物品, 第i组物品的第j个物品的体积为$w[i][j]$, 价值为$v[i][j]$, 在不超过背包容量上限的前提下, 放入背包的物品的最大价值之和. 该题目有以下几点需要考虑:</p>
+<ul>
+<li>每组物品只能选择一个放入背包, 也可以跳过</li>
+<li>背包有容量限制, 因此无法将所有物品放入背包</li>
+<li>将物品放入背包时, 背包的价值增加, 但剩余容量下降, 选择哪些物品可最大化背包价值</li>
+</ul>
+<h2 id="2-Dynamic-Programming"><a href="#2-Dynamic-Programming" class="headerlink" title="2. Dynamic Programming"></a>2. Dynamic Programming</h2><p>动态规划解决该问题可分为以下几步:</p>
+<ol>
+<li><p>划分阶段: 按照物品组号和背包剩余容量进行阶段划分</p>
+</li>
+<li><p>定义状态: 物品组号$i$和背包剩余容量$c_i$, 定义一个二维数组$dp[i][c_i]$, 表示前i组物品放入一个容量为$c_i$的背包时可获得的最大价值</p>
+</li>
+<li><p>状态转移方程: 对于第i-1组物品, 我们有很多选择:</p>
+<ul>
+<li>不选择第$i-1$组中的任何物品, 可获得价值为$dp[i-1][c_i]$</li>
+<li>选择第$i-1$组中的第1件物品, 可获得价值为$dp[i-1][c_i - w[i-1][0]] + v[i-1][0]$</li>
+<li>选择第$i-1$组中的第2件物品, 可获得价值为$dp[i-1][c_i - w[i-1][1]] + v[i-1][1]$</li>
+<li>$\cdots \cdots$</li>
+</ul>
+<p> 以此类推, 状态转移方程可写作:<br> $$<br> dp[i][c_i] &#x3D; max(dp[i-1][c_i], dp[i-1][c_i - w[i-1][k]] + v[i-1][k]), 0 \le k \lt g[i-1]<br> $$</p>
+</li>
+<li><p>初始条件:</p>
+<ul>
+<li>若$c_i &#x3D; 0$, 则背包无法放入任何物品, 价值为0, 即$dp[i][0] &#x3D; 0, 0 \le i \le n$</li>
+<li>若$i &#x3D; 0$, 则没有任何物品可以放入背包, 价值为0, 即$dp[0][c_i] &#x3D; 0, 0 \le c_i \le c$</li>
+</ul>
+</li>
+<li><p>最终结果: 根据状态定义, $dp[n][c]$表示<code>前i组物品放入一个容量为c的背包可获得的最大价值</code>, 即为答案</p>
+</li>
+</ol>
+<p>时间复杂度为$O(n \times W \times c)$, $n$为物品的组数, $W$为每组物品的数量, $c$为背包容量. 空间复杂度为$O(c * \sum_{i&#x3D;0}^{n-1}{g[i]})$</p>
+<h2 id="3-Optimization"><a href="#3-Optimization" class="headerlink" title="3. Optimization"></a>3. Optimization</h2><p>由于$dp[i][c_i]$只与$dp[i-1][c_i]$和$dp[i-1][c_i - w[i-1][k]]$有关, 因此可使用<strong>滚动数组</strong>将空间复杂度优化到$O(c)$.</p>
+<h2 id="4-Leetcode"><a href="#4-Leetcode" class="headerlink" title="4. Leetcode"></a>4. Leetcode</h2><h3 id="1155-Number-of-Dice-Rolls-With-Target-Sum"><a href="#1155-Number-of-Dice-Rolls-With-Target-Sum" class="headerlink" title="1155. Number of Dice Rolls With Target Sum"></a>1155. Number of Dice Rolls With Target Sum</h3><h4 id="Problem-Description"><a href="#Problem-Description" class="headerlink" title="Problem Description"></a>Problem Description</h4><p>You have <code>n</code> dice, and each dice has k faces numbered from <code>1</code> to <code>k</code>.<br>Given three integers <code>n</code>, <code>k</code>, and <code>target</code>, return the number of possible ways (out of the <code>$k^n$</code> total ways) to roll the dice, so the sum of the face-up numbers equals <code>target</code>. Since the answer may be too large, return it <strong>modulo</strong> <code>$&#123;10&#125;^9 + 7$</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: n = 1, k = 6, target = 3</span><br><span class="line">Output: 1</span><br><span class="line">Explanation: You throw one die with 6 faces.</span><br><span class="line">There is only one way to get a sum of 3.</span><br></pre></td></tr></table></figure>
+
+<h4 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">numRollsToTarget</span><span class="params">(<span class="type">int</span> n, <span class="type">int</span> k, <span class="type">int</span> target)</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MOD</span> <span class="operator">=</span> (<span class="type">int</span>)(<span class="number">1e9</span> + <span class="number">7</span>);</span><br><span class="line">        <span class="type">int</span>[][] dp = <span class="keyword">new</span> <span class="title class_">int</span>[n+<span class="number">1</span>][target+<span class="number">1</span>];</span><br><span class="line">        dp[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">1</span>; j &lt;= target; j++) &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> <span class="number">1</span>; m &lt;= j &amp;&amp; m &lt;= k; m++) &#123;</span><br><span class="line">                    dp[i+<span class="number">1</span>][j] = (dp[i+<span class="number">1</span>][j] + dp[i][j-m]) % MOD;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> dp[n][target];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/4c52.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - Google Drive</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/241d.html">
+        <span class="next-text nav-default">System Design - Youtube</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/b233.html';
+  var disqus_title = "DP - Group Knapsack Problem";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

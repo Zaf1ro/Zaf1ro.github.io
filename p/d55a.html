@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="SQLite Write-ahead Logging"/>
+
+
+
+
+  <meta name="keywords" content="Database," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/d55a.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/d55a.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/d55a.html"/>
+
+
+<meta name="description" content="1. 概述默认模式下SQLite使用回滚日志来实现原子提交和回滚. 从3.7.0版本开始, 可以使用&quot;预写式日志&quot;(WAL)选项.比起回滚日志, WAL有一些好处:  在大多数情况下WAL速度更快 提供并发性, 读和写不会互相阻塞 IO操作变得更有序 更少的使用fsync(), 这样当fsync()不能正常使用时可避免一些错误  WAL也有一些缺点:  虚拟文件系统(VFS)必">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLite Write-ahead Logging">
+<meta property="og:url" content="https://zaf1ro.github.io/p/d55a.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 概述默认模式下SQLite使用回滚日志来实现原子提交和回滚. 从3.7.0版本开始, 可以使用&quot;预写式日志&quot;(WAL)选项.比起回滚日志, WAL有一些好处:  在大多数情况下WAL速度更快 提供并发性, 读和写不会互相阻塞 IO操作变得更有序 更少的使用fsync(), 这样当fsync()不能正常使用时可避免一些错误  WAL也有一些缺点:  虚拟文件系统(VFS)必">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-01-11T15:46:00.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.035Z">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+SQLite Write-ahead Logging - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="toc-text">1. 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-WAL%E5%A6%82%E4%BD%95%E5%B7%A5%E4%BD%9C"><span class="toc-text">2. WAL如何工作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%A3%80%E9%AA%8C%E6%8C%87%E7%A4%BA-Checkpointing"><span class="toc-text">2.1 检验指示(Checkpointing)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%B9%B6%E5%8F%91%E6%80%A7-Concurrency"><span class="toc-text">2.2 并发性(Concurrency)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%80%A7%E8%83%BD%E8%80%83%E8%99%91-Performance-Considerations"><span class="toc-text">2.3 性能考虑(Performance Considerations)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%BF%80%E6%B4%BB%E5%B9%B6%E9%85%8D%E7%BD%AEWAL%E6%A8%A1%E5%BC%8F"><span class="toc-text">3. 激活并配置WAL模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E8%87%AA%E5%8A%A8checkpoint"><span class="toc-text">3.1 自动checkpoint</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%BA%94%E7%94%A8%E5%BC%80%E5%A7%8B%E7%9A%84checkpoint"><span class="toc-text">3.2 应用开始的checkpoint</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-WAL%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%8C%81%E4%B9%85%E6%80%A7"><span class="toc-text">3.3 WAL模式的持久性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%8F%AA%E8%AF%BB%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-text">4. 只读数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E9%81%BF%E5%85%8D%E8%BF%87%E5%A4%A7%E7%9A%84WAL%E6%96%87%E4%BB%B6"><span class="toc-text">5. 避免过大的WAL文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-WAL%E7%B4%A2%E5%BC%95%E7%9A%84%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%BA%94%E7%94%A8"><span class="toc-text">6. WAL索引的共享内存应用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E4%B8%8D%E7%94%A8%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98%E5%AE%9E%E7%8E%B0WAL"><span class="toc-text">7. 不用共享内存实现WAL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E5%90%91%E5%90%8E%E5%85%BC%E5%AE%B9%E6%80%A7"><span class="toc-text">8. 向后兼容性</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          SQLite Write-ahead Logging
+        
+      </h1>
+      <time class="post-time">
+          01/11/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><p>默认模式下SQLite使用回滚日志来实现原子提交和回滚. 从3.7.0版本开始, 可以使用&quot;预写式日志&quot;(WAL)选项.<br>比起回滚日志, WAL有一些好处:</p>
+<ul>
+<li>在大多数情况下WAL速度更快</li>
+<li>提供并发性, 读和写不会互相阻塞</li>
+<li>IO操作变得更有序</li>
+<li>更少的使用fsync(), 这样当fsync()不能正常使用时可避免一些错误</li>
+</ul>
+<p>WAL也有一些缺点:</p>
+<ul>
+<li>虚拟文件系统(VFS)必须支持共享内存技术, UNIX和Windows自带的VFS支持这种技术, 但定制系统的第三方VFS可能不支持. </li>
+<li>使用该数据库的进程必须在一台主机中, WAL不支持网络文件系统</li>
+<li>ATTACH的事务对于单个数据库是原子性的, 但对于多个数据库来说不是原子性的</li>
+<li>进入WAL模式后不能改变数据库页面大小, 即使是在一个空数据库、使用VACCUM或从备份中恢复数据. 必须从回滚日志模式中修改页面大小. </li>
+<li>不能打开只读WAL数据库, 只有对该数据库相关的&quot;-shm&quot;WAL索引共享内存文件有写入权限才能执行打开操作. 否则只有&quot;-shm&quot;文件不存在才能打开该数据库. </li>
+<li>如果频繁使用读操作很少使用写操作, WAL可能比回滚日志方法慢一点点(大概百分之一二)</li>
+<li>每个数据库都会有对应的&quot;-WAL&quot;和&quot;-shm&quot;共享内存文件, 这使得SQLite不能像一个应用文件格式一样使用. </li>
+<li>需要额外进行checkpointing操作, 模式是自动执行的. 有时应用开发者需要注意这些. </li>
+<li>WAL能更好的处理小事务, 对大的事务处理的并不好. 对于大于100M的事务, 传统的回滚日志模式处理的更快. 对于大于G的事务操作, WAL模式会报I&#x2F;O错误. 所以建议使用回滚日志模式来处理上几十M的事务.</li>
+</ul>
+<h2 id="2-WAL如何工作"><a href="#2-WAL如何工作" class="headerlink" title="2. WAL如何工作"></a>2. WAL如何工作</h2><p>传统回滚日志通过将还未改变的数据库部分内容写入一个独立的回滚日志文件中, 并将修改的信息直接谢日数据库文件中. 在回滚中, 回滚日中的原始内容将会被写入数据库中间中, 并将数据库还原回原始状态. 当回滚日志被删除时COMMIT执行.<br>WAL颠倒了这个过程. 原始数据被保存在数据库文件中并将改变信息放在一个单独的WAL文件中. 因此一次COMMIT可能不会修改原始数据库, 这使得读者可以在修改提交到WAL文件的同时继续对未修改的数据库操作. 多个事务可以追加到单个WAL文件尾部. </p>
+<h3 id="2-1-检验指示-Checkpointing"><a href="#2-1-检验指示-Checkpointing" class="headerlink" title="2.1 检验指示(Checkpointing)"></a>2.1 检验指示(Checkpointing)</h3><p>如果想将WAL中所有事务修改的内容都写入原始数据库, 这个转移就叫做&quot;检查点&quot;(checkpoint)<br>回滚日志和预写式日志的另一个区别在于, 回滚日志方法中有两个主要操作: 读和写;然而预写式日志有三个主要操作: 读, 写和checkpointing.<br>默认情况下, 当WAL文件到达1000页面大小时会自动进行checkpointing(SQLITE_DEFAULT_WAL_AUTOCHECKPOINT编译时选项可用于修改默认值). 使用WAL技术的应用不需要对此做任何额外工作, 但可以修改checkpoint的临界值;也可以关闭自动checkpoint并在空闲时间主动进行checkpointing. </p>
+<h3 id="2-2-并发性-Concurrency"><a href="#2-2-并发性-Concurrency" class="headerlink" title="2.2 并发性(Concurrency)"></a>2.2 并发性(Concurrency)</h3><p>当对于一个WAL模式下的数据库进行读操作时, 它将会找到WAL中的最后一个提交记录的位置, 叫做&quot;结束标记&quot;(end mark). 由于WAL会不断增长, 并且其他进程进行读连接时也会产生新的提交, 所以每个读进程都有各自的结束标记. 但对于单个读进程来说, 结束标记在整个事务中是不会变的, 因此可以确保单个读事务中只能看到某个时刻的数据库内容.<br>当读者需要一个页面的内容时, 首先需要检查WAL文件中是够存在该页面, 并取出WAL中的最新页面. 如果WAL中没有所需的页面, 将会直接从原始数据库中提取页面. 读者可位于一个单独的进程中, 这样可以避免每个读者都扫描完整的WAL(根据checkpoint的周期时间, WAL文件可能长到几十上百M), &quot;WAL索引&quot;这种数据结构保留在共享内存中, 它可以帮助读者通过更少的IO操作定位WAL中页面的位置.  WAL索引极大地提升读取性能, 但共享内存的使用意味着读者必须都在一个机器上. 这就是为什么预写式日志不能用于网络文件系统.<br>写入者仅仅是将新的内容追加在WAL文件尾部, 因为写入者与读者不会有什么交集, 写入者和读者可以同时运行. 由于只有一个WAL文件, 所以同一时间只能有一个写入者.<br>checkpoint使得WAL文件中的内容写入原始数据库. checkpoint可以和读操作同时运行, 然而当checkpoint遇到当前读者所阅读的页面时就必须停止, 因为对这些页面的修改会重写读者正在读的内容. checkpoint会记录它进行到了哪里, 并在下一次调用时从上次结束点开始写入.<br>因此一个持续的读事务会阻断checkpoint, 但读操作终会结束, 所以checkpoint总会重新继续写入.<br>当写入操作发生时, 写入者会查看checkpoint进行了多少. 如果所有WAL都被写入并同步到数据库, 并且没有读者在使用WAL文件, 那么写入者将会将WAL初始化并将新的事务放在WAL头部. 这一机制能够防止WAL文件过大. </p>
+<h3 id="2-3-性能考虑-Performance-Considerations"><a href="#2-3-性能考虑-Performance-Considerations" class="headerlink" title="2.3 性能考虑(Performance Considerations)"></a>2.3 性能考虑(Performance Considerations)</h3><p>由于写操作是序列化的, 并且只需要写入内容一次(回滚日志事务需要写入两次), 所以写入事务很快. 只要应用愿意在断电或重启后牺牲持久性, 内容就不需要同步. (如果将PRAGMA的synchronous设置为FULL, 写入者会在每次事务结束后同步提交的内容, 如果设置为NORMAL就会忽略同步)<br>另一方面, 由于每个读者都需要先从WAL文件中查找, 而且查找消耗的时间与WAL文件的大小成正比, 所以随着WAL文件体积的增加, 读操作性能会不断降低. WAL索引会提升查找内容的性能, 但依然会随着WAL提交的增加而不断变慢. 所以在间隙中运行checkpoint来减少WAL文件大小对于读取性能提升是很有必要的.<br>Checkpointing要求同步操作, 为了避免由于断电或系统崩溃导致的数据库崩溃. 在将WAL文件中的内容写入数据库之前, 必须先将WAL同步到硬盘中;在重置WAL之前, 必须先同步数据库文件. Checkpoint在将序列化页面写入数据库时需要进行查询操作(WAL页面以升序写入数据库). 即使这样, 在写入页面期间也要进行多次查询操作. 以上原因导致checkpoint比写入事务要慢.<br>默认的策略是不断写入来增加WAL文件, 直到到达1000页面终止写入. 然后对每一个子COMMIT运行checkpoint操作, 直到WAL小于1000页面. 默认情况下, 将COMMIT的内容写入WAL的线程也会自动运行checkpoint, 这就是COMMIT操作变得十分快速的原因, 但部分COMMIT也会变慢(因为触发了checkpoint). 如果不想自动checkpoint, 也可以关闭自动checkpoint并改为周期性checkpoint.<br>注意, PRAGMA synchronous设为NORMAL时, checkpoint或sync(UNIX的fsync()或Windows上的FlushFileBuffers())是唯一的I&#x2F;O障碍. 如果一个线程或进程运行了checkpoint, 那么主线程或主进程上query或update不会阻塞. 这有助于在频繁I&#x2F;O操作中防止应用中的&quot;闭锁&quot;(latch-up). 这种配置的缺点在于事务不再具有持久性, 断电或系统崩溃后不能回滚.<br>还需要注意要权衡读和写性能, 为了最大化读操作性能, 需要将WAL文件保持的尽量小, 这样可以频繁的checkpoint, 可能与COMMIT一样频繁. 为了最大化写操作性能, 需要将每一次checkpoint的损耗分摊在每一次写操作中, 这意味着不能频繁的进行checkpoint, 并且让WAL文件在checkpoint前增加到尽量大. 因此, 多久进行一次checkpoint取决于不同的应用对读写性能的要求. 默认策略是在WAL文件到达1000页面大小时进行checkpoint, 并且这个策略在测试应用和工作站中都表现不错;但根据不同平台和不同工作量, 其他策略可能运行的更好. </p>
+<h2 id="3-激活并配置WAL模式"><a href="#3-激活并配置WAL模式" class="headerlink" title="3. 激活并配置WAL模式"></a>3. 激活并配置WAL模式</h2><p>SQLite数据库连接默认为journal_mode&#x3D;DELETE, 为了切换到WAL模式, 使用以下pragma: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA journal_mode=WAL;</span><br></pre></td></tr></table></figure>
+<p>journal_mode将返回一个字符串, 它代表一种新的日志模式. 如果操作成功, pragma返回&quot;WAL&quot;;如果没能转换成WAL模式(例如, VFS不支持共享内存技术), 那么不会改变日志模式. 将会返回之前的日志模式的字符串. </p>
+<h3 id="3-1-自动checkpoint"><a href="#3-1-自动checkpoint" class="headerlink" title="3.1 自动checkpoint"></a>3.1 自动checkpoint</h3><p>SQLite默认会在WAL文件到达1000页面或更多页面时进行自动的checkpoint, 或数据库文件上的最后一个数据库连接断开. 对于大多数应用来说, 默认配置工作的很不错. 但如果应用想控制checkpoint可以使用WAL_checkpoint pragma或调用sqlite3_WAL_checkpoint()接口. 自动checkpoint的临界值可被修改数值, 也可以使用WAL_autocheckpoint pragma或sqlite3_WAL_autocheckpoint()接口彻底禁止checkpoint. 也可以使用注册一个回调, 这样每次事务提交都能调用这个回调函数. 这个回调函数可以在任何它认为合适的情况下调用sqlite3_WAL_checkpoint()或sqlite3_WAL_checkpoint_v2(). (自动checkpoint机制就是凭借sqlite3_WAL_hook()来实现)</p>
+<h3 id="3-2-应用开始的checkpoint"><a href="#3-2-应用开始的checkpoint" class="headerlink" title="3.2 应用开始的checkpoint"></a>3.2 应用开始的checkpoint</h3><p>当使用可写的数据库连接时, 可调用sqlite3_WAL_checkpoint()或sqlite3_WAL_checkpoint_v2()来开始一个checkpoint. 根据checkpoint的主动性可分为三种子类型: PASSIVE、FULL和RESTART. 默认是PASSIVE, 会在不干扰其他数据库连接的基础上尽可能多的checkpoint, 如果有同时发生的读者或写入者, 那么不会checkpoint会终止. 所有的checkpoint都由sqlite3_WAL_checkpoint()初始化, 并且自动checkpoint机制就是PASSIVE模式. FULL和RESTART模式的checkpoint会尝试完整地checkpoint, 并且只能通过sqlite3_WAL_checkpoint_v2()来初始化. 关于FULL和RESET的更多信息可以查看sqlite3_WAL_checkpoint_v2()</p>
+<h3 id="3-3-WAL模式的持久性"><a href="#3-3-WAL模式的持久性" class="headerlink" title="3.3 WAL模式的持久性"></a>3.3 WAL模式的持久性</h3><p>不同于其他日志模式, PRAGMA journal_mode&#x3D;WAL是持久的. 如果一个进程设为WAL模式, 然后关闭并重启数据库, 数据库还是WAL模式. 而如果设为PRAGMA journal_mode&#x3D;TRUNCATE, 然后关闭并重启, 那么会恢复到默认的DELETE回滚模式.<br>WAL模式的持久性意味着应用可以在不改变的情况下使用WAL模式. 仅仅可以使用shell命令行的&quot;PRAGMA journal_mode&#x3D;WAL;&quot;然后重启应用, 就可以切换到WAL模式. </p>
+<h2 id="4-只读数据库"><a href="#4-只读数据库" class="headerlink" title="4. 只读数据库"></a>4. 只读数据库</h2><p>如果数据库位于一个只读媒介中, 并且需要恢复, 那么该数据库就没法读取了. 举个例子, 如果应用崩溃, 数据库会留一个热日志(hot journal), 除非进程又写权限, 否则没法打开数据库, 也没法打开热日志文件. 这是因为在读取数据库前由于崩溃导致数据库需要回滚, 而回滚需要对该文件夹下的文件具有写权限才可以.<br>WAL模式下的数据库在只读媒介下没法读取, 因为即使是读取操作也需要checkpoint, 所以还需要写权限.<br>WAL读操作算法的高效实现要求共享内存中有一个hash表存放WAL文件的内容, 这个hash表叫做WAL索引. 共享内存中的WAL索引在主计算机文件系统中没有一个名字. 自定义的VFS可以自由的使用共享内存;但内置的SQLite通过UNIX和Windows驱动来实现共享内存, 使用以&quot;-shm&quot;为后缀的mmaped文件, 该文件与数据库位于同一文件夹中. 为了开启WAL数据库, 必须有对&quot;-shm&quot;后缀的共享内存文件的写权限;并且需要对数据库所在的文件夹具有写权限, 因为需要在WAL索引不存在时创建它. WAL索引必须在第一次访问时重建, 即使访问者是读者. 这会让默认的UNIX和Windows在只读媒介上不能访问WAL数据库, 但这并不排除自定义VFS实现的共享内存能实现访问只读WAL数据库,<br>因此, SQLite数据库应在导入只读媒介前切换为PRAGMA journal_mode&#x3D;DELETE.<br>如果多个进程访问WAL模式的数据库, 那么基于用户或组ID的所有进程都会被赋予写权限, 权限覆盖数据库文件、WAL文件、共享内存的&quot;-shm&quot;文件和所位于的文件夹. </p>
+<h2 id="5-避免过大的WAL文件"><a href="#5-避免过大的WAL文件" class="headerlink" title="5. 避免过大的WAL文件"></a>5. 避免过大的WAL文件</h2><p>WAL文件会一直追加新的内容, 直到WAL文件到达1000页面(大约4MB), 达到临界值后会自动checkpoint并循环使用WAL文件. checkpoint通常不会截断WAL文件(除非设置了journal_size_limit), 相反的, checkpoint只会再次从WAL文件头部开始使用. 因为重写比追加要快. 当数据库没有连接时会删除WAL和它的共享内存文件.<br>所以大多数情况下, 应用不需要在意WAL文件, SQLite会自动处理它们. 但也存在着可能使得WAL文件不断增长, 甚至超过硬盘额度并减慢查询速度. 下面列举了一些可能出现的情况和如何避免它们:  </p>
+<ol>
+<li>关闭了自动checkpoint机制<br>默认情况下, SQLite会在WAL文件超过1000页面时进行checkpoint. 编译时和运行时可选项会推迟或关闭自动checkpoint. 如果应用关闭了自动checkpoint, 那WAL文件注定会越来越大. </li>
+<li>checkpoint饥饿<br>如果没有进程连接着数据库, checkpoint只能去完成并重置WAL文件. 如果有一个读事务连接到了数据库, 那么checkpoint会终止重置工作, 因为重置需要从WAL文件中删除一些内容. checkpoint只能在没有读者烦扰的情况下尽量多的工作. checkpoint会在下一次写事务结束后再次开启, 直到checkpoint完成了整个工作.<br>如果有多个读者不断访问数据库, 而且某一时刻总有一个活跃的读者, 那么checkpoint总不能完成任务, 因此WAL文件将不断增加.<br>这种情况可通过确保存在&quot;读者间隙&quot;来解决这个问题: 确保读者不会不间断地读取数据库, 这样就能使用间隙时间来checkpoint. 如果一个应用有多个同时存在的读者, 那么需要使用SQLITE_CHECKPOINT_RESTART或SQLITE_CHECKPOINT_TRUNCATE来手动checkpoint. 这些选项优点在于可以完整的checkpoint, 缺点在于会阻塞读者来完成checkpoint. </li>
+<li>大面积的写事务<br>checkpoint只能在没有其他事务运行时进行, 这意味着WAL文件不能在写事务进行时重置. 所以一次较大的写事务可能导致WAL文件变得很大. WAL文件可能在写事务完成后进行checkpoint(假设没有读者进行阻塞), 但在写入时WAL文件会不断增大.<br>注意到有时数据库的单个页面可能在一次事务中写入WAL文件多次, 因此WAL文件最后可能比原始数据库大好几倍. 当缓存大小小于数据库页面数量时, 会在事务进行中发生这种情况. 当对一个页面进行多次更改时, 这些更改会一直留在内存中, 直到事务结束时它们会被修WAL文件. 但如果在事务结束前缓存填满了, 那么可能会溢出某些页面. 如果有多个相同的页面多次改变, 它们必须都写入WAL文件中. 对于一个很大的事务和很小的缓存, 相同的页面有可能多次移出并多次写入WAL文件.</li>
+</ol>
+<p>解决方案包含: </p>
+<ul>
+<li>对于大的更新操作, 可以切换到回滚日志模式</li>
+<li>确保缓存大小足够大, 这样可以存储事务更新的内容</li>
+<li>通过拆分事务来保持更改页面的数量</li>
+<li>在进行一次大规模插入前删除索引, 并在事务完成后重新创建索引</li>
+</ul>
+<h2 id="6-WAL索引的共享内存应用"><a href="#6-WAL索引的共享内存应用" class="headerlink" title="6. WAL索引的共享内存应用"></a>6. WAL索引的共享内存应用</h2><p>WAL索引使用一个普通的文件来实现稳健性. WAL模式的早期实现将WAL索引放置在不稳定的共享内存中, 比如Linux上创建的&#x2F;dev&#x2F;shm或UNIX系统上的&#x2F;tmp. 这种方法的缺点在于, 如果进程位于不同的根目录, 那么他们使用的是不同的共享内存空间, 这将导致数据库崩溃. 另一种方法就是创建无名共享内存区间, 但他们无法再众多UNIX系统中移植, 并且我们无法再Windows系统中创建无名共享内存区间. 但我们还有唯一一种方法确保所有进程都访问同一数据库文件: 在数据库所在的文件夹中通过映射一个文件来创建共享内存.<br>使用一个普通的硬盘文件来创建共享内存有一个缺点: 为了将共享内存中数据写入硬盘, 需要进行不必要的I&#x2F;O操作. 但开发者并不认为这是个大问题, 因为WAL索引很少超过32KB, 也不会同步. 此外, WAL索引文件将会在最后的数据库连接断开时被删除, 这使得I&#x2F;O操作几乎不大会发生.<br>对于某些应用, 默认的共享内存实现不能使用, 可以使用可选的方法来实现一个定制的VFS. 举个例子, 如果已知一个特定的数据库, 它仅能通过单个进程中的线程访问, WAL索引可通过堆内存来实现, 而不是共享内存. </p>
+<h2 id="7-不用共享内存实现WAL"><a href="#7-不用共享内存实现WAL" class="headerlink" title="7. 不用共享内存实现WAL"></a>7. 不用共享内存实现WAL</h2><p>SQLite3.7.4版本开始, 只要在第一次访问之前将lock_mode设为EXCLUSIVE, 即使不能使用共享内存也能使用WAL模式. 换句话说, 如果同一时间只能有一个进程访问数据库, 那么就可以实现不使用共享内存来使用WAL模式. 这一特性可以让那些没有&quot;第二版&quot;共享内存方法xShmMap、xShmLock、xShmVarrier和xShmUnmap的VFS使用WAL模式来读写.<br>如果lcoking_mode在第一次访问前设为EXCLUSIVE, 那么SQLite不会调用共享内存方法, 因此不会创建共享内存的WAL索引. 在这种情况下, 只要日志模式为WAL, 那么数据库连接就会一直保持EXCLUSIVE模式. 无法使用&quot;PRAGMA locking_mode&#x3D;NORMAL;&quot;来改变锁模式. 如果想改变EXCLUSIVE模式就必须先改变WAL日志模式. 如果第一次WAL模式的数据库访问是NORMAL锁模式, 那么就会创建共享内存中的WAL索引. 这意味着底层的VFS必须支持&quot;第二版&quot;共享内存. 如果VFS不支持共享内存方法, 并且尝试以WAL模式开启数据库或转换为WAL模式, 操作将会失败. 只有数据库连接使用共享内存中的WAL索引, 锁模式才能在NORMAL和EXCLUSIVE之间自由转换. 只要锁模式在第一次访问前设为EXCLUSIVE, 那么就会忽略共享内存的WAL索引, 并且锁模式会锁定在EXCLUSIVE且不可改变. </p>
+<h2 id="8-向后兼容性"><a href="#8-向后兼容性" class="headerlink" title="8. 向后兼容性"></a>8. 向后兼容性</h2><p>WAL模式下的数据库格式没有变化, 但对于旧版SQLite来说WAL文件和WAL索引是全新的概念, 所以旧版SQlite无法对WAL模式下SQLite的进行恢复. 为了防止旧版SQLite对WAL模式的数据库进行恢复, 数据库文件格式的版本号从1提升到2. 因此如果旧版的SQLite连接到该数据库时提示&quot;文件被加密或不是一个数据库&quot;.<br>使用以下pragma可以抹去WAL模式的改变: </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PRAGMA journal_mode=DELETE</span><br></pre></td></tr></table></figure>
+<p>将数据库文件格式的版本号改回1时必须要谨慎, 因为这样旧版SQLite就能访问数据库文件了. </p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Database/">Database</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/7f56.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">BitTorrent Protocol Specification</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/f7d.html">
+        <span class="next-text nav-default">SQLite Temporary Files</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/d55a.html';
+  var disqus_title = "SQLite Write-ahead Logging";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Longest Palindromic Substring"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/3b44.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/3b44.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/3b44.html"/>
+
+
+<meta name="description" content="1. IntroductionLongest palindromic substring(最长回文子串)问题可描述为: 如何在给定字符串中寻找最大长度的连续回文子串. 假设回文子串的正序为$s_1$, 倒序为$s_2$, 则$s_1 &#x3D; s_2$. 例如, bananas的最长回文子串为anana, apple的最长回文子串为pp. 2. Brute Force最简单的实现方式是遍历所有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Longest Palindromic Substring">
+<meta property="og:url" content="https://zaf1ro.github.io/p/3b44.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionLongest palindromic substring(最长回文子串)问题可描述为: 如何在给定字符串中寻找最大长度的连续回文子串. 假设回文子串的正序为$s_1$, 倒序为$s_2$, 则$s_1 &#x3D; s_2$. 例如, bananas的最长回文子串为anana, apple的最长回文子串为pp. 2. Brute Force最简单的实现方式是遍历所有">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-05-18T19:14:50.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.027Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Longest Palindromic Substring - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Brute-Force"><span class="toc-text">2. Brute Force</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Manacher-s-Algorithm"><span class="toc-text">3. Manacher&#39;s Algorithm</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-i-r"><span class="toc-text">3.1 $i &gt; r$</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-i-le-r"><span class="toc-text">3.2 $i \le r$</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Implementation-of-Manacher"><span class="toc-text">4. Implementation of Manacher</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Longest Palindromic Substring
+        
+      </h1>
+      <time class="post-time">
+          05/18/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p><strong>Longest palindromic substring</strong>(最长回文子串)问题可描述为: 如何在给定字符串中寻找最大长度的连续回文子串. 假设回文子串的正序为$s_1$, 倒序为$s_2$, 则$s_1 &#x3D; s_2$. 例如, <code>bananas</code>的最长回文子串为<code>anana</code>, <code>apple</code>的最长回文子串为<code>pp</code>.</p>
+<h2 id="2-Brute-Force"><a href="#2-Brute-Force" class="headerlink" title="2. Brute Force"></a>2. Brute Force</h2><p>最简单的实现方式是遍历所有字符, 将每个字符视为一个回文子串的中心, 然后以该中心点向外拓展, 直到不满足回文条件. 需要注意的是, 由于回文子串的长度可为偶数, 意味着中心点并不一定是单个字符, 因此需修改原字符串, 假设原字符串为<code>book</code>, 长度为4, 修改后为<code>#b#o#o#k#</code>, 长度为9; 假设原字符串长度为<code>N</code>, 则修改后长度为<code>2N+1</code>, 从而保证字符串的长度永远为奇数.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">char</span>[] preprocess(String s) &#123;</span><br><span class="line">    <span class="type">char</span>[] arr = <span class="keyword">new</span> <span class="title class_">char</span>[<span class="number">2</span> * s.length() + <span class="number">1</span>];</span><br><span class="line">    arr[<span class="number">0</span>] = <span class="string">&#x27;#&#x27;</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s.length(); i++) &#123;</span><br><span class="line">        arr[<span class="number">2</span> * i + <span class="number">1</span>] = s.charAt(i);</span><br><span class="line">        arr[<span class="number">2</span> * i + <span class="number">2</span>] = <span class="string">&#x27;#&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">longestPalSubstring</span><span class="params">(String s)</span> &#123;</span><br><span class="line">    <span class="type">char</span>[] arr = preprocess(s);</span><br><span class="line">    <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">l</span> <span class="operator">=</span> i - <span class="number">1</span>, r = i + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (l &gt; -<span class="number">1</span> &amp;&amp; r &lt; arr.length &amp;&amp; arr[l] == arr[r]) &#123;</span><br><span class="line">            l--;</span><br><span class="line">            r++;</span><br><span class="line">        &#125;</span><br><span class="line">        res = Math.max(res, (r - l - <span class="number">1</span>) / <span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该算法的时间复杂度为$O(N^2)$(原字符串的长度为$N$).</p>
+<h2 id="3-Manacher-s-Algorithm"><a href="#3-Manacher-s-Algorithm" class="headerlink" title="3. Manacher&#39;s Algorithm"></a>3. Manacher&#39;s Algorithm</h2><p>Brute force的问题在于, 从左向右遍历字符时, 当前字符没有利用之前找到的回文子串信息. 假设原字符串为<code>s</code>, 预处理后的字符串为<code>S</code>, 若当前字符($S[i]$)位于之前某个字符($S[j]$, $j &lt; i$)为中心点的回文子串范围内, 则可找到以$S[j]$为中心, $S[i]$的镜像字符$S[i&#39;]$.<br>$$<br>\overbrace{S[l] \ldots S_{i&#39;} \ldots S_{j} \ldots S_i \ldots S[r]}^{\text{palindrome}}<br>$$</p>
+<p>介绍Manacher算法前, 需引入三个变量:</p>
+<ul>
+<li>最右边界<code>r</code>: 已遍历的字符中, 其回文子串所能抵达的最大边界</li>
+<li>中心点<code>c</code>: 最右边界<code>r</code>所在的回文子串的中心点位置</li>
+<li>数组<code>p</code>, 其包含每个字符向外拓展所得的回文子串的半径: 该数组长度为$|S|$, 每处理一个字符, 将其回文子串的半径放入<code>p</code>中</li>
+</ul>
+<p>以字符串<code>book</code>为例, 预处理后<code>S</code>为<code>$#b#o#o#k#@</code>, <code>S</code>的首字符为<code>$</code>, 尾字符为<code>@</code>, 这两个字符使得中心点向外拓展时无需检查边界. 数组<code>p</code>与<code>S</code>中每个字符的对应如下:</p>
+<table>
+<thead>
+<tr>
+<th align="center">index</th>
+<th align="center">character in S</th>
+<th align="center">radius of palindromic substring</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">0</td>
+<td align="center">$</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center">1</td>
+<td align="center">#</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">b</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">#</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">o</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">#</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">o</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">7</td>
+<td align="center">#</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center">8</td>
+<td align="center">k</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">9</td>
+<td align="center">#</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center">10</td>
+<td align="center">@</td>
+<td align="center">0</td>
+</tr>
+</tbody></table>
+<p>Manacher算法遍历字符时, 不处理<code>$</code>和<code>@</code>, 因此遍历范围为$[1,|S|-1]$. 假设当前遍历到坐标<code>i</code>, 可能遇到以下情况:</p>
+<h3 id="3-1-i-r"><a href="#3-1-i-r" class="headerlink" title="3.1 $i &gt; r$"></a>3.1 $i &gt; r$</h3><p>若$i &gt; r$, 则中心点$c$与$S[i]$的位置关系如下:<br>$$<br>\overbrace{S[l] \ldots S_{c} \ldots S[r]}^{\text{palindrome}} \ldots S[i]<br>$$<br>$S[l]$表示中心点$c$所在回文子串的左边界. 由于$S[i]$没有位于任何先前遍历字符所在回文子串内, 因此无法使用回文字符串的对称性推断$S[i]$的情况, 只能采用brute force方式向左右拓展, 直到字符不匹配, 并更新最右边界$r$和中心点$c$.</p>
+<h3 id="3-2-i-le-r"><a href="#3-2-i-le-r" class="headerlink" title="3.2 $i \le r$"></a>3.2 $i \le r$</h3><p>若$i \le r$, 则$S[i]$以$c$为轴, 可以找到镜像坐标<code>$i&#39;$</code>($i - c &#x3D; c - i&#39;$):<br>$$<br>\overbrace{S[l] \ldots S[i&#39;] \ldots S_{c} \ldots S[i] \ldots S[r]}^{\text{palindrome}}<br>$$<br>假设$S[i&#39;]$的半径为<code>k</code>, 存在以下几种情况:</p>
+<ol>
+<li><p><code>$i&#39;-k &gt; l$</code>: $S[i&#39;]$所在回文子串的左边界未超出$c$所在回文子串的左边界, 字符串如下:<br> $$<br> \overbrace{S[l] \ldots \underbrace{S[i&#39;-k] \ldots S[i&#39;] \ldots S[i&#39;+k]}_{\text{palindrome}} \ldots S_{c} \ldots S[i] \ldots S[r]}^{\text{palindrome}}<br> $$</p>
+<p> 上图可得出以下结论:</p>
+<ul>
+<li>由于$S[l:r]$为回文字符串, 且$S[i&#39;-k:i&#39;+k]$为回文字符串, 因此$S[i-k:i+k]$为回文字符串</li>
+<li>由于$S[i&#39;]$所在的回文子串的半径为<code>k</code>, 因此$S[i&#39;-k-1] \ne S[i&#39;+k+1] &#x3D; S[i-k-1]$</li>
+<li>由于$S[l:r]$为回文字符串, 且$i&#39;-k &gt; l$, 因此$S[i&#39;-k-1] &#x3D; S[i+k+1]$</li>
+</ul>
+<p> 综上所述, $S[i+k+1] &#x3D; S[i&#39;-k-1] \ne S[i&#39;+k+1] &#x3D; S[i-k-1]$, 因此$S[i]$所在回文子串的半径为<code>k</code>.</p>
+</li>
+<li><p><code>$i&#39;-k = l$</code>: $S[i&#39;]$所在回文子串的左边界等同<code>c</code>所在回文子串的左边界, 字符串如下:<br> $$<br> S[l-1] \quad \overbrace{\underbrace{S[l] (S[i&#39;-k]) \ldots S[i&#39;] \ldots S[i&#39;+k]}_{\text{palindrome}} \ldots S_{c} \ldots S[i] \ldots S[r] (S[i+k])}^{\text{palindrome}} \quad S[r+1]<br> $$</p>
+<p> 上图可得出以下结论:</p>
+<ul>
+<li>由于$S[l:r]$为回文字符串, 且$S[i&#39;-k:i&#39;+k]$为回文字符串, 因此$S[i-k:i+k]$为回文字符串</li>
+<li>由于$S[i&#39;]$所在回文子串的半径为<code>k</code>, 因此$S[i&#39;-k-1] \ne S[i&#39;+k+1] &#x3D; S[i-k-1]$</li>
+<li>由于$l &#x3D; i&#39;-k-1$, 因此$S[i&#39;-k-1]$与$S[i+k+1]$的关系不确定</li>
+</ul>
+<p> 因此$S[i-k-1]$与$S[i+k+1]$的关系无法确定, 但$S[i]$所在回文子串的长度至少为<code>k</code>.</p>
+</li>
+<li><p><code>$i-k &lt; l$</code>: $S[i&#39;]$所在回文子串的左边界超出<code>c</code>所在回文子串的左边界, 字符串如下:<br> $$<br> \rlap{\underbrace{\phantom{S[i&#39;-k] \ldots S[l] \ldots S[i&#39;] \ldots S[i&#39;+k]}}_{\text{palindrome}}}<br> S[i&#39;-k] \ldots \overbrace{S[l] \ldots S[i&#39;] \ldots S[i&#39;+k] \ldots S_{c} \ldots S[i] \ldots S[r]}^{\text{palindrome}}<br> $$</p>
+<p> 该情况与第二种情况相同: $S[i]$所在回文子串的半径至少为<code>k</code>.</p>
+</li>
+</ol>
+<h2 id="4-Implementation-of-Manacher"><a href="#4-Implementation-of-Manacher" class="headerlink" title="4. Implementation of Manacher"></a>4. Implementation of Manacher</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="type">char</span>[] preprocess(String s) &#123;</span><br><span class="line">    <span class="type">char</span>[] t = <span class="keyword">new</span> <span class="title class_">char</span>[s.length()*<span class="number">2</span> + <span class="number">3</span>];</span><br><span class="line">    t[<span class="number">0</span>] = <span class="string">&#x27;$&#x27;</span>;</span><br><span class="line">    t[s.length()*<span class="number">2</span> + <span class="number">2</span>] = <span class="string">&#x27;@&#x27;</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s.length(); i++) &#123;</span><br><span class="line">        t[<span class="number">2</span>*i + <span class="number">1</span>] = <span class="string">&#x27;#&#x27;</span>;</span><br><span class="line">        t[<span class="number">2</span>*i + <span class="number">2</span>] = s.charAt(i);</span><br><span class="line">    &#125;</span><br><span class="line">    t[s.length()*<span class="number">2</span> + <span class="number">1</span>] = <span class="string">&#x27;#&#x27;</span>;</span><br><span class="line">    <span class="keyword">return</span> t;</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"><span class="type">int</span>[] Manacher(String s) &#123;</span><br><span class="line">    <span class="type">char</span>[] t = preprocess(s);</span><br><span class="line">    <span class="type">int</span>[] p = <span class="keyword">new</span> <span class="title class_">int</span>[t.length];</span><br><span class="line">    <span class="type">int</span> <span class="variable">center</span> <span class="operator">=</span> <span class="number">0</span>, right = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; t.length-<span class="number">1</span>; i++) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">mirror</span> <span class="operator">=</span> <span class="number">2</span>*center - i;</span><br><span class="line">        <span class="keyword">if</span> (right &gt; i) &#123;</span><br><span class="line">            p[i] = Math.min(right - i, p[mirror]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (t[i + (<span class="number">1</span> + p[i])] == t[i - (<span class="number">1</span> + p[i])]) &#123;</span><br><span class="line">            p[i]++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (i + p[i] &gt; right) &#123;</span><br><span class="line">            center = i;</span><br><span class="line">            right = i + p[i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码中, <code>Manacher()</code>返回数组<code>p</code>, 若需要最长回文子串的长度, 可遍历<code>p</code>并找到最大值; 若需要最长回文子串, 可调用以下函数:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String <span class="title function_">longestPalindromicSubstring</span><span class="params">(String s, <span class="type">int</span>[] p)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> <span class="number">0</span>, c = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; p.length-<span class="number">1</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (p[i] &gt; len) &#123;</span><br><span class="line">            len = p[i];</span><br><span class="line">            c = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> s.substring((c - <span class="number">1</span> - len) / <span class="number">2</span>, (c - <span class="number">1</span> + len) / <span class="number">2</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/261c.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Monotonic Stack</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/de17.html">
+        <span class="next-text nav-default">Pattern Matching</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/3b44.html';
+  var disqus_title = "Longest Palindromic Substring";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

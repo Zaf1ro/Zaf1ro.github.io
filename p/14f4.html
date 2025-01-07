@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="UNIX Domain Protocols"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/14f4.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/14f4.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/14f4.html"/>
+
+
+<meta name="description" content="1. IntroductionUNIX domain protocols并不是真正的protocol suite, 而是在同一host实现client&#x2F;server通信的方式. UNIX domain protocols可作为IPC(interprocess communication)的替代方案, 并提供了两种socket类型: stream socket和datagram socke">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UNIX Domain Protocols">
+<meta property="og:url" content="https://zaf1ro.github.io/p/14f4.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionUNIX domain protocols并不是真正的protocol suite, 而是在同一host实现client&#x2F;server通信的方式. UNIX domain protocols可作为IPC(interprocess communication)的替代方案, 并提供了两种socket类型: stream socket和datagram socke">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/15-7-socketpair-create-stream-pipe.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/15-7-invoke-openfile-program.gif">
+<meta property="article:published_time" content="2020-01-13T13:52:08.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.042Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/15-7-socketpair-create-stream-pipe.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+UNIX Domain Protocols - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-UNIX-Domain-Socket-Address-Structure"><span class="toc-text">2. UNIX Domain Socket Address Structure</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-socketpair-Function"><span class="toc-text">3. socketpair Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Socket-Functions"><span class="toc-text">4. Socket Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-UNIX-Domain-Stream-Client-Server"><span class="toc-text">5. UNIX Domain Stream Client&#x2F;Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-UNIX-Domain-Datagram-Client-Server"><span class="toc-text">6. UNIX Domain Datagram Client&#x2F;Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Passing-Descriptors"><span class="toc-text">7. Passing Descriptors</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Receive-Sender-Credentials"><span class="toc-text">8. Receive Sender Credentials</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          UNIX Domain Protocols
+        
+      </h1>
+      <time class="post-time">
+          01/13/20
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>UNIX domain protocols并不是真正的protocol suite, 而是在同一host实现client&#x2F;server通信的方式. UNIX domain protocols可作为IPC(interprocess communication)的替代方案, 并提供了两种socket类型: stream socket和datagram socket. 虽然也提供了raw socket, 但其使用方法并没有文档记录, 且没有收录在POSIX中.<br>以下是使用UNIX domain socket的三个原因:</p>
+<ol>
+<li>Berkeley-derived系统中, UNIX domain socket是TCP socket的两倍速度</li>
+<li>UNIX domain socket可被用于在同一host的进程之间传输descriptor</li>
+<li>一些UNIX domain socket支持将client的user ID和group ID传输给server</li>
+</ol>
+<p>UNIX domain中使用pathname作为client和server的potocol address, 而不是IPv4或IPv6 address. pathname指向的文件并不是普通的UNIX文件: 除了pathname绑定的UNIX domain socket, 其他用户无法访问该文件</p>
+<h2 id="2-UNIX-Domain-Socket-Address-Structure"><a href="#2-UNIX-Domain-Socket-Address-Structure" class="headerlink" title="2. UNIX Domain Socket Address Structure"></a>2. UNIX Domain Socket Address Structure</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/un.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief return the sum of the size of the sun_family and the </span></span><br><span class="line"><span class="comment"> *        string length of the file name string</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">SUN_LEN</span> <span class="params">(<span class="keyword">struct</span> sockaddr_un *p)</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> &#123;</span></span><br><span class="line">  <span class="type">sa_family_t</span> sun_family; <span class="comment">/* AF_LOCAL */</span></span><br><span class="line">  <span class="type">char</span> sun_path[<span class="number">104</span>];     <span class="comment">/* null-terminated pathname */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>由于历史原因, POSIX specification没有规定<code>sun_path</code>的长度, 一般来说, pathname的长度区间为$[92, 108]$, 且<code>sun_path</code>中的pathname必须以NULL结尾. 若<code>sunpath[0]</code>为0, 相当于IPv4的<code>INADDR_ANY</code>, 或IPv6的<code>IN6ADDR_ANY_INIT</code>.<br>POSIX将UNIX domain protocols重命名为<strong>local IPC</strong>, 以移除对于UNIX系统的依赖, <code>AF_UNIX</code>改为<code>AF_LOCAL</code>. 以下是UNIX domain socket绑定pathname的例子:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> sockfd;</span><br><span class="line">  <span class="type">socklen_t</span> len;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">addr1</span>, <span class="title">addr2</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (argc != <span class="number">2</span>)</span><br><span class="line">    err_quit(<span class="string">&quot;usage: UNIXbind &lt;pathname&gt;&quot;</span>);</span><br><span class="line"></span><br><span class="line">  sockfd = Socket(AF_LOCAL, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* delete the pathname if it already exists */</span></span><br><span class="line">  unlink(argv[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">  bzero(&amp;addr1, <span class="keyword">sizeof</span>(addr1));</span><br><span class="line">  addr1.sun_family = AF_LOCAL;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* avoid overflow if the pathname is too long */</span></span><br><span class="line">  <span class="built_in">strncpy</span>(addr1.sun_path, argv[<span class="number">1</span>], <span class="keyword">sizeof</span>(addr1.sun_path)<span class="number">-1</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* bind() will fail if the pathname already exists */</span></span><br><span class="line">  Bind(sockfd, (SA *) &amp;addr1, SUN_LEN(&amp;addr1));</span><br><span class="line"></span><br><span class="line">  len = <span class="keyword">sizeof</span>(addr2);</span><br><span class="line">  Getsockname(sockfd, (SA *) &amp;addr2, &amp;len);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;bound name = %s, returned len = %d\n&quot;</span>, addr2.sun_path, len);</span><br><span class="line">  </span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是程序运行结果:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">% UNIXbind /tmp/moose</span><br><span class="line">bound name = /tmp/moose, returned len = 13</span><br></pre></td></tr></table></figure>
+<p>可以看到, sockaddr_un structure的长度为13, 其中sun_family为2 bytes, pathname为11 bytes(包括最后的terminating null). </p>
+<h2 id="3-socketpair-Function"><a href="#3-socketpair-Function" class="headerlink" title="3. socketpair Function"></a>3. socketpair Function</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief create an unnamed pair of connected sockets in</span></span><br><span class="line"><span class="comment"> *        the specified domain of the specified type</span></span><br><span class="line"><span class="comment"> * @return return 0 on success; -1 on error, errno is set</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">socketpair</span><span class="params">(<span class="type">int</span> family, <span class="type">int</span> type, <span class="type">int</span> protocol, <span class="type">int</span> sockfd[<span class="number">2</span>])</span>;</span><br></pre></td></tr></table></figure>
+<p>其中, family必须为<code>AF_LOCAL</code>, protocol必须为0, type可以为<code>SOCK_STREAM</code>或<code>SOCK_DGRAM</code>, 返回的两个socket descriptors将存放于<code>sockfd[0]</code>和<code>sockfd[1]</code>. <code>socketpair()</code>和UNIX的<code>pipe()</code>相似: 返回两个file descriptor, 两个file descriptor相互连接. type为<code>SOCK_STREAM</code>的socket pair称为stream pipe, 与UNIX piipe相似, 但是是full-duplex(两个descriptors都可读可写)</p>
+<h2 id="4-Socket-Functions"><a href="#4-Socket-Functions" class="headerlink" title="4. Socket Functions"></a>4. Socket Functions</h2><p>UNIX domain socket与其他socket function有很多不同之处, 以下是POSIX规定中的不同:</p>
+<ol>
+<li><code>bind()</code>中的pathname的文件访问权限应为0777(read, execute by user, group, and other), 由当前umask值修改</li>
+<li>pathname应是一个absolute pathname(绝对路径), 而不是relative pathname(相对路径). 当调用者处于不同的工作路径时, relative pathname会导致使用的pathname各不相同. 如果需要使用relative pathname, 则需要将client和server放置在同一目录下</li>
+<li><code>connect()</code>中的pathname应为土匪同类型的UNIX domain socket, 以下是可能遇到的错误:</li>
+<li>pathname存在但不是socket</li>
+<li>pathname存在且为socket, 但没有绑定任何socket descriptor</li>
+<li>pathname存在且为socket, 但类型错误</li>
+<li><code>connect()</code>对UNIX domain socket进行权限测试, 相当于<code>open()</code>以write-only方式打开pathname</li>
+<li>UNIX domain stream socket与TCP socket相同, 都提供了byte stream interface</li>
+<li>若<code>connect()</code>为UNIX domain stream socket创建连接, 且listening socket queue已满, <code>connect()</code>立即返回<code>ECONNREFUSED</code>. 但与TCP socket不同, 若listening socket queue已满, TCP server会无视SYN, TCP client会再次发送SYN</li>
+<li>UNIX domain datagram socket与UDP socket类似: 都提供了非可靠的datagram serivce</li>
+<li>对于UNIX domain datagram socket, 若没有绑定某个pathname就发送数据, kernel不会自动为socket绑定某个pathname. 但对于UDP socket, kernel会在发送数据时自动为socket分配一个port number. 这也意味着, 若sender在没有绑定pathname的情况下发送数据, receiver无法回复, 因为无法获知sender的pathname</li>
+</ol>
+<h2 id="5-UNIX-Domain-Stream-Client-Server"><a href="#5-UNIX-Domain-Stream-Client-Server" class="headerlink" title="5. UNIX Domain Stream Client&#x2F;Server"></a>5. UNIX Domain Stream Client&#x2F;Server</h2><p>以下是UNIX domain stream server:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span>  UNIXSTR_PATH <span class="string">&quot;/tmp/UNIX.str&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> listenfd, connfd;</span><br><span class="line">  <span class="type">pid_t</span> childpid;</span><br><span class="line">  <span class="type">socklen_t</span> clilen;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line">  <span class="type">void</span> <span class="title function_">sig_chld</span><span class="params">(<span class="type">int</span>)</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* create a UNIX domain stream socket */</span></span><br><span class="line">  listenfd = Socket(AF_LOCAL, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  unlink(UNIXSTR_PATH); <span class="comment">/* remove the pathname if it exists */</span></span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sun_family = AF_LOCAL;</span><br><span class="line">  <span class="built_in">strcpy</span>(servaddr.sun_path, UNIXSTR_PATH);</span><br><span class="line"></span><br><span class="line">  Bind(listenfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  Listen(listenfd, LISTENQ);</span><br><span class="line"></span><br><span class="line">  Signal(SIGCHLD, sig_chld);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">    clilen = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">    <span class="keyword">if</span> ((connfd = accept(listenfd, (SA *) &amp;cliaddr, &amp;clilen)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">        <span class="keyword">continue</span>; <span class="comment">/* back to for() */</span></span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        err_sys(<span class="string">&quot;accept error&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((childpid = Fork()) == <span class="number">0</span>) &#123; <span class="comment">/* child process */</span></span><br><span class="line">      Close(listenfd); <span class="comment">/* close listening socket */</span></span><br><span class="line">      str_echo(connfd); <span class="comment">/* process request */</span></span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    Close(connfd); <span class="comment">/* parent closes connected socket */</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以下是UNIX domain stream client:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> sockfd;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  sockfd = Socket(AF_LOCAL, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sun_family = AF_LOCAL;</span><br><span class="line">  <span class="built_in">strcpy</span>(servaddr.sun_path, UNIXSTR_PATH);</span><br><span class="line"></span><br><span class="line">  Connect(sockfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  str_cli(<span class="built_in">stdin</span>, sockfd);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-UNIX-Domain-Datagram-Client-Server"><a href="#6-UNIX-Domain-Datagram-Client-Server" class="headerlink" title="6. UNIX Domain Datagram Client&#x2F;Server"></a>6. UNIX Domain Datagram Client&#x2F;Server</h2><p>以下是UNIX domain datagram server:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span>  UNIXDG_PATH <span class="string">&quot;/tmp/UNIX.dg&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> sockfd;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">servaddr</span>, <span class="title">cliaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* create a UNIX domain datagram socket */</span></span><br><span class="line">  sockfd = Socket(AF_LOCAL, SOCK_DGRAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  unlink(UNIXDG_PATH);</span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">  servaddr.sun_family = AF_LOCAL;</span><br><span class="line">  <span class="built_in">strcpy</span>(servaddr.sun_path, UNIXDG_PATH);</span><br><span class="line"></span><br><span class="line">  Bind(sockfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  dg_echo(sockfd, (SA *) &amp;cliaddr, <span class="keyword">sizeof</span>(cliaddr));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是UNIX domain datagram client:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> sockfd;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_un</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">  sockfd = Socket(AF_LOCAL, SOCK_DGRAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  bzero(&amp;cliaddr, <span class="keyword">sizeof</span>(cliaddr)); <span class="comment">/* bind an address for us */</span></span><br><span class="line">  cliaddr.sun_family = AF_LOCAL;</span><br><span class="line">  <span class="built_in">strcpy</span>(cliaddr.sun_path, tmpnam(<span class="literal">NULL</span>));</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* unlike UDP client, must bind a pathname to socket */</span></span><br><span class="line">  Bind(sockfd, (SA *) &amp;cliaddr, <span class="keyword">sizeof</span>(cliaddr));</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* fill in server&#x27;s address */</span></span><br><span class="line">  bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr)); </span><br><span class="line">  servaddr.sun_family = AF_LOCAL;</span><br><span class="line">  <span class="built_in">strcpy</span>(servaddr.sun_path, UNIXDG_PATH);</span><br><span class="line"></span><br><span class="line">  dg_cli(<span class="built_in">stdin</span>, sockfd, (SA *) &amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意: 若client中不调用<code>bind()</code>绑定pathname, 则server的<code>recvfrom()</code>返回null pathname, 导致server调用<code>sendto()</code>时发生错误</p>
+<h2 id="7-Passing-Descriptors"><a href="#7-Passing-Descriptors" class="headerlink" title="7. Passing Descriptors"></a>7. Passing Descriptors</h2><p>当提到在进程之间传输descriptor时, 一般会想到:</p>
+<ul>
+<li>父进程调用<code>fork()</code>后, 其子进程与其共享descriptor</li>
+<li>子进程执行<code>exec()</code>后, 其仍保留descriptor</li>
+</ul>
+<p>父进程调用<code>fork()</code>后, 对descriptor调用<code>close()</code>, 其子进程仍保留这些descriptor, 相当于父进程将descriptor传递给其子进程. UNIX系统提供了另一种传递descriptor的方式: 该方法不需要两个进程之间存在任何关系, 只需要双方创建UNIX domain socket, 并通过<code>sendmsg()</code>传输descriptor.<br>以下是两个进程之间传输descriptor的步骤:</p>
+<ol>
+<li>创建一个UNIX domain socket, 可以使stream socket, 也可以是datagram socket</li>
+</ol>
+<ul>
+<li>若想让子进程将descriptor传递给父进程, 则父进程可调用<code>socketpair()</code>创建一个stream pipe来交换descriptor</li>
+<li>若进程之间并无关系, 则server需要创建一个UNIX domain stream socket并绑定pathname, 允许client调用<code>connect()</code>发起连接; client可向server请求某些descriptor, server可通过socket回应.</li>
+</ul>
+<ol start="2">
+<li>调用<code>open()</code>, <code>pipe()</code>, <code>mkfifo()</code>, <code>socket()</code>, 或<code>accept()</code>返回descriptor, 该方法支持任何类型的descriptor.</li>
+<li>sending process可创建一个<code>msghdr struct</code>, 其中包含descriptor. POSIX.1中规定, descriptor作为ancillary data传输. 若sending process调用<code>sendmsg()</code>, 会将descriptor reference加一, 因此, 即使sending process关闭descriptor, descriptor也不会真正关闭.</li>
+<li>receiving process调用<code>recvmsg()</code>接收descriptor. 接收到的descriptor number会与之前不同, 因为receiving process会通过file table entry重新创建一个descriptor.</li>
+</ol>
+<p>若receiver调用<code>recvmsg()</code>时没有为ancillar data分配足够空间, 则descriptor会被自动关闭; 若receiver接收到的descriptor超过进程最大descriptor数量, 也会自动关闭descriptor.<br>假设有一个名为mycat的程序, 负责从command-line argument中获取pathname, 打开文件并将文件内容输出到stdout. 但不直接调用<code>open()</code>打开文件, 而是创建stream pipe, 调用<code>fork()</code>生成子进程, 让子进程打开文件并将file descriptor传回父进程, 最后由父进程打开并输出. 调用<code>socketpair()</code>创建stream pipe后如下图:<br><img src="/images/Network/UNP/15-7-socketpair-create-stream-pipe.gif" alt="mycat program after creating stream pipe using socketpair"></p>
+<p>之后进程调用<code>fork()</code>, 并让子进程调用<code>exec()</code>运行openfile程序, 父进程关闭<code>[1]</code> descriptor, 子进程关闭<code>[0]</code> descriptor, 如下图:<br><img src="/images/Network/UNP/15-7-invoke-openfile-program.gif" alt="mycat program after invoking openfile program"></p>
+<p>其中, 父进程需要通过<code>exec()</code>传给子进程(openfile程序)三个信息: </p>
+<ul>
+<li>文件pathname</li>
+<li>open mode</li>
+<li>对端stream pipe的descriptor number(本例中为<code>[1]</code>)</li>
+</ul>
+<p>openfile程序将descriptor传回父进程后终止运行, 父进程可通过exit status得知文件是否被打开. 使用另一个程序打开文件有一个好处: 可通过设置<strong>set-user-ID</strong>获取临时root权限, 可让进程打开一些本无权限打开的文件. 以下是mycat程序:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">my_open</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">int</span> mode)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>   fd, sockfd[<span class="number">2</span>], status;</span><br><span class="line">  <span class="type">pid_t</span> childpid;</span><br><span class="line">  <span class="type">char</span>  c, argsockfd[<span class="number">10</span>], argmode[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* create a stream pipe*/</span></span><br><span class="line">  Socketpair(AF_LOCAL, SOCK_STREAM, <span class="number">0</span>, sockfd);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((childpid = Fork()) == <span class="number">0</span>) &#123; <span class="comment">/* child process */</span></span><br><span class="line">    Close(sockfd[<span class="number">0</span>]);</span><br><span class="line">    <span class="built_in">snprintf</span>(argsockfd, <span class="keyword">sizeof</span>(argsockfd), <span class="string">&quot;%d&quot;</span>, sockfd[<span class="number">1</span>]);</span><br><span class="line">    <span class="built_in">snprintf</span>(argmode, <span class="keyword">sizeof</span>(argmode), <span class="string">&quot;%d&quot;</span>, mode);</span><br><span class="line">    execl(<span class="string">&quot;./openfile&quot;</span>, <span class="string">&quot;openfile&quot;</span>, argsockfd, pathname, argmode, (<span class="type">char</span> *)<span class="literal">NULL</span>);</span><br><span class="line">    err_sys(<span class="string">&quot;execl error&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* parent process - wait for the child to terminate */</span></span><br><span class="line">  Close(sockfd[<span class="number">1</span>]); <span class="comment">/* close the end we don&#x27;t use */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/* wait for the child to terminate */</span></span><br><span class="line">  Waitpid(childpid, &amp;status, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* WIFEXITED convert termination status into exit signal */</span></span><br><span class="line">  <span class="keyword">if</span> (WIFEXITED(status) == <span class="number">0</span>) </span><br><span class="line">    err_quit(<span class="string">&quot;child did not terminate&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ((status = WEXITSTATUS(status)) == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">/* receive descriptor across a stream pipe */</span></span><br><span class="line">    Read_fd(sockfd[<span class="number">0</span>], &amp;c, <span class="number">1</span>, &amp;w); </span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    errno = status; <span class="comment">/* set errno value from child&#x27;s status */</span></span><br><span class="line">    fd = <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Close(sockfd[<span class="number">0</span>]);</span><br><span class="line">  <span class="keyword">return</span>(fd);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span>  fd, n;</span><br><span class="line">  <span class="type">char</span> buff[BUFFSIZE];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (argc != <span class="number">2</span>)</span><br><span class="line">    err_quit(<span class="string">&quot;usage: mycat &lt;pathname&gt;&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((fd = my_open(argv[<span class="number">1</span>], O_RDONLY)) &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;cannot open %s&quot;</span>, argv[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> ((n = Read(fd, buff, BUFFSIZE)) &gt; <span class="number">0</span>)</span><br><span class="line">    Write(STDOUT_FILENO, buff, n);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是<code>read_fd()</code>函数, 包含两种模式: <code>msg_control</code>和<code>msg_accrights</code></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">ssize_t</span> <span class="title function_">read_fd</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *ptr, <span class="type">size_t</span> nbytes, <span class="type">int</span> *recvfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> <span class="title">msg</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> <span class="title">iov</span>[1];</span></span><br><span class="line">  <span class="type">ssize_t</span> n;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> HAVE_MSGHDR_MSG_CONTROL</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> <span class="title">cm</span>;</span></span><br><span class="line">    <span class="type">char</span> control[CMSG_SPACE(<span class="keyword">sizeof</span>(<span class="type">int</span>))];</span><br><span class="line">  &#125; control_un;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> *<span class="title">cmptr</span>;</span></span><br><span class="line"></span><br><span class="line">  msg.msg_control = control_un.control;</span><br><span class="line">  msg.msg_controllen = <span class="keyword">sizeof</span>(control_un.control);</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">  <span class="type">int</span> newfd;</span><br><span class="line">  msg.msg_accrights = (<span class="type">caddr_t</span>) &amp;newfd;</span><br><span class="line">  msg.msg_accrightslen = <span class="keyword">sizeof</span>(<span class="type">int</span>);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  msg.msg_name = <span class="literal">NULL</span>;</span><br><span class="line">  msg.msg_namelen = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  iov[<span class="number">0</span>].iov_base = ptr;</span><br><span class="line">  iov[<span class="number">0</span>].iov_len = nbytes;</span><br><span class="line">  msg.msg_iov = iov;</span><br><span class="line">  msg.msg_iovlen = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((n = recvmsg(fd, &amp;msg, <span class="number">0</span>)) &lt;= <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span>(n);</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> HAVE_MSGHDR_MSG_CONTROL</span></span><br><span class="line">  <span class="keyword">if</span> ((cmptr = CMSG_FIRSTHDR(&amp;msg)) != <span class="literal">NULL</span> &amp;&amp;</span><br><span class="line">      cmptr-&gt;cmsg_len == CMSG_LEN(<span class="keyword">sizeof</span>(<span class="type">int</span>))) &#123;</span><br><span class="line">    <span class="keyword">if</span> (cmptr-&gt;cmsg_level != SOL_SOCKET)</span><br><span class="line">      err_quit(<span class="string">&quot;control level != SOL_SOCKET&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (cmptr-&gt;cmsg_type != SCM_RIGHTS)</span><br><span class="line">      err_quit(<span class="string">&quot;control type != SCM_RIGHTS&quot;</span>);</span><br><span class="line">    <span class="comment">/* return the pointer to the ancillary data */</span> </span><br><span class="line">    *recvfd = *((<span class="type">int</span> *) CMSG_DATA(cmptr));</span><br><span class="line">  &#125; <span class="keyword">else</span></span><br><span class="line">    *recvfd = <span class="number">-1</span>; <span class="comment">/* descriptor was not passed */</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">  <span class="keyword">if</span> (msg.msg_accrightslen == <span class="keyword">sizeof</span>(<span class="type">int</span>))</span><br><span class="line">    *recvfd = newfd; <span class="comment">/* return the newly created descriptor */</span></span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    *recvfd = <span class="number">-1</span>; <span class="comment">/* descriptor was not passed */</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span>(n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是openfile程序:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">ssize_t</span> <span class="title function_">write_fd</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *ptr, <span class="type">size_t</span> nbytes, <span class="type">int</span> sendfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> <span class="title">msg</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> <span class="title">iov</span>[1];</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> HAVE_MSGHDR_MSG_CONTROL</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> <span class="title">cm</span>;</span></span><br><span class="line">    <span class="type">char</span> control[CMSG_SPACE(<span class="keyword">sizeof</span>(<span class="type">int</span>))];</span><br><span class="line">  &#125; control_un;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> *<span class="title">cmptr</span>;</span></span><br><span class="line"></span><br><span class="line">  msg.msg_control = control_un.control;</span><br><span class="line">  msg.msg_controllen = <span class="keyword">sizeof</span>(control_un.control);</span><br><span class="line"></span><br><span class="line">  cmptr = CMSG_FIRSTHDR(&amp;msg);</span><br><span class="line">  cmptr-&gt;cmsg_len = CMSG_LEN(<span class="keyword">sizeof</span>(<span class="type">int</span>));</span><br><span class="line">  cmptr-&gt;cmsg_level = SOL_SOCKET;</span><br><span class="line">  cmptr-&gt;cmsg_type = SCM_RIGHTS;</span><br><span class="line">  *((<span class="type">int</span> *) CMSG_DATA(cmptr)) = sendfd;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">  msg.msg_accrights = (<span class="type">caddr_t</span>) &amp;sendfd;</span><br><span class="line">  msg.msg_accrightslen = <span class="keyword">sizeof</span>(<span class="type">int</span>);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  msg.msg_name = <span class="literal">NULL</span>;</span><br><span class="line">  msg.msg_namelen = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  iov[<span class="number">0</span>].iov_base = ptr;</span><br><span class="line">  iov[<span class="number">0</span>].iov_len = nbytes;</span><br><span class="line">  msg.msg_iov = iov;</span><br><span class="line">  msg.msg_iovlen = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span>(sendmsg(fd, &amp;msg, <span class="number">0</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> fd;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (argc != <span class="number">4</span>)</span><br><span class="line">    err_quit(<span class="string">&quot;openfile &lt;sockfd#&gt; &lt;filename&gt; &lt;mode&gt;&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* open the file by pathname */</span></span><br><span class="line">  <span class="keyword">if</span> ((fd = open(argv[<span class="number">2</span>], atoi(argv[<span class="number">3</span>]))) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="built_in">exit</span>((errno &gt; <span class="number">0</span>) ? errno : <span class="number">255</span> );</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* send the descriptor across a UNIX domain socket */</span></span><br><span class="line">  <span class="keyword">if</span> (write_fd(atoi(argv[<span class="number">1</span>]), <span class="string">&quot;&quot;</span>, <span class="number">1</span>, fd) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="built_in">exit</span>((errno &gt; <span class="number">0</span>) ? errno : <span class="number">255</span> );</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-Receive-Sender-Credentials"><a href="#8-Receive-Sender-Credentials" class="headerlink" title="8. Receive Sender Credentials"></a>8. Receive Sender Credentials</h2><p>UNIX domain socket可使用ancillary data传输user credentials. 当client与server通信时, server需要知道client是否拥有权限来执行服务. FreeBSD中通过<code>cmsgcred struct</code>来传输credentials:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">truct cmsgcred &#123;</span><br><span class="line">  <span class="type">pid_t</span> cmcred_pid;     <span class="comment">/* PID of sending process */</span></span><br><span class="line">  <span class="type">uid_t</span> cmcred_uid;     <span class="comment">/* real UID of sending process */</span></span><br><span class="line">  <span class="type">uid_t</span> cmcred_euid;    <span class="comment">/* effective UID of sending process */</span></span><br><span class="line">  <span class="type">gid_t</span> cmcred_gid;     <span class="comment">/* real GID of sending process */</span></span><br><span class="line">  <span class="type">short</span> cmcred_ngroups; <span class="comment">/* number of groups */</span></span><br><span class="line">  <span class="type">gid_t</span> cmcred_groups[CMGROUP_MAX]; <span class="comment">/* groups */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>通常<code>CMGROUP_MAX</code>为16, <code>cmcred_ngroups</code>至少为1, <code>cmcred_groups</code>的第一个元素为effective group ID. 不同UNIX系统对于发送credentials有不同的要求: FreeBSD不要求receiver做任何特殊处理, 调用<code>recvmsg()</code>就可通过ancillart data接收credentials, 但sender调用<code>sendmsg()</code>时必须添加<code>cmsgcred struct</code>, 该结构体由kernel填充. 这使得server可通过UNIX domain socket验证client的身份.<br>以下例子中, server请求credentials, client发送自身的credentials. sender端代码如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> CONTROL_LEN (sizeof(struct cmsghdr) + sizeof(struct cmsgcred))</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* read client&#x27;s credentials into cmsgcredptr */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">read_cred</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *ptr, <span class="type">size_t</span> nbytes, <span class="keyword">struct</span> cmsgcred *cmsgcredptr)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">msghdr</span> <span class="title">msg</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">iovec</span> <span class="title">iov</span>[1];</span></span><br><span class="line">  <span class="type">char</span> control[CONTROL_LEN];</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line"></span><br><span class="line">  msg.msg_name = <span class="literal">NULL</span>;</span><br><span class="line">  msg.msg_namelen = <span class="number">0</span>;</span><br><span class="line">  iov[<span class="number">0</span>].iov_base = ptr;</span><br><span class="line">  iov[<span class="number">0</span>].iov_len = nbytes;</span><br><span class="line">  msg.msg_iov = iov;</span><br><span class="line">  msg.msg_iovlen = <span class="number">1</span>;</span><br><span class="line">  msg.msg_control = control;</span><br><span class="line">  msg.msg_controllen = <span class="keyword">sizeof</span>(control);</span><br><span class="line">  msg.msg_flags = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((n = recvmsg(fd, &amp;msg, <span class="number">0</span>)) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span>(n);</span><br><span class="line"></span><br><span class="line">  cmsgcredptr-&gt;cmcred_ngroups = <span class="number">0</span>; <span class="comment">/* indicates no credentials returned */</span></span><br><span class="line">  <span class="keyword">if</span> (cmsgcredptr &amp;&amp; msg.msg_controllen &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">cmsghdr</span> *<span class="title">cmptr</span> =</span> (<span class="keyword">struct</span> cmsghdr *) control;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (cmptr-&gt;cmsg_len &lt; CONTROL_LEN)</span><br><span class="line">      err_quit(<span class="string">&quot;control length = %d&quot;</span>, cmptr-&gt;cmsg_len);</span><br><span class="line">    <span class="keyword">if</span> (cmptr-&gt;cmsg_level != SOL_SOCKET)</span><br><span class="line">      err_quit(<span class="string">&quot;control level != SOL_SOCKET&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (cmptr-&gt;cmsg_type != SCM_CREDS)</span><br><span class="line">      err_quit(<span class="string">&quot;control type != SCM_CREDS&quot;</span>);</span><br><span class="line">    <span class="built_in">memcpy</span>(cmsgcredptr, CMSG_DATA(cmptr), <span class="keyword">sizeof</span>(<span class="keyword">struct</span> cmsgcred));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span>(n);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* print the credentials from client socket: sockfd */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">str_echo</span><span class="params">(<span class="type">int</span> sockfd)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">ssize_t</span> n;</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line">  <span class="type">char</span> buf[MAXLINE];</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">cmsgcred</span> <span class="title">cred</span>;</span></span><br><span class="line"></span><br><span class="line">again:</span><br><span class="line">  <span class="comment">/* read credentials from ancillary data */</span></span><br><span class="line">  <span class="keyword">while</span> ((n = read_cred(sockfd, buf, MAXLINE, &amp;cred)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (cred.cmcred_ngroups == <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;(no credentials returned)\n&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;PID of sender = %d\n&quot;</span>, cred.cmcred_pid);</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;real user ID = %d\n&quot;</span>, cred.cmcred_uid);</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;real group ID = %d\n&quot;</span>, cred.cmcred_gid);</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;effective user ID = %d\n&quot;</span>, cred.cmcred_euid);</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;%d groups:&quot;</span>, cred.cmcred_ngroups - <span class="number">1</span>);</span><br><span class="line">      <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; cred.cmcred_ngroups; i++)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot; %d&quot;</span>, cred.cmcred_groups[i]);</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    Writen(sockfd, buf, n);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (n &lt; <span class="number">0</span> &amp;&amp; errno == EINTR)</span><br><span class="line">    <span class="keyword">goto</span> again;</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (n &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;str_echo: read error&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/96d1.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Nonblocking I/O</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/e76b.html">
+        <span class="next-text nav-default">Advanced I/O Functions</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/14f4.html';
+  var disqus_title = "UNIX Domain Protocols";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

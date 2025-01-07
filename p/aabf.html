@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="File I/O"/>
+
+
+
+
+  <meta name="keywords" content="Unix," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/aabf.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/aabf.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/aabf.html"/>
+
+
+<meta name="description" content="1. File Descriptors 所有正在使用的文件都有一个或多个file descriptor File descriptor为正整数 File descriptor的数量由系统决定(整数的内存大小)  1.1 open and openat#include &lt;fcntl.h&gt;&#x2F;**  * @brief Opens the file specified by pathname,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="File I&#x2F;O">
+<meta property="og:url" content="https://zaf1ro.github.io/p/aabf.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. File Descriptors 所有正在使用的文件都有一个或多个file descriptor File descriptor为正整数 File descriptor的数量由系统决定(整数的内存大小)  1.1 open and openat#include &lt;fcntl.h&gt;&#x2F;**  * @brief Opens the file specified by pathname,">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/UNIX/APUE/3-3-process-table-entry.png">
+<meta property="article:published_time" content="2019-07-29T21:39:17.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.056Z">
+<meta property="article:tag" content="Unix">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/UNIX/APUE/3-3-process-table-entry.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+File I/O - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-File-Descriptors"><span class="toc-text">1. File Descriptors</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-open-and-openat"><span class="toc-text">1.1 open and openat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-creat"><span class="toc-text">1.2 creat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-close"><span class="toc-text">1.3 close</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-lseek"><span class="toc-text">1.4 lseek</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-read"><span class="toc-text">1.5 read</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-write"><span class="toc-text">1.6 write</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-I-0-Efficiency"><span class="toc-text">2. I&#x2F;0 Efficiency</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-File-Sharing"><span class="toc-text">3. File Sharing</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Atomic-Operations"><span class="toc-text">4. Atomic Operations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-dup-and-dup2"><span class="toc-text">5. dup and dup2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-sync-fsync-fdatasync"><span class="toc-text">6. sync, fsync, fdatasync</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-fcntl"><span class="toc-text">7. fcntl</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Duplicate-a-file-descriptor"><span class="toc-text">7.1 Duplicate a file descriptor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-File-Descriptor-Flags"><span class="toc-text">7.2 File Descriptor Flags</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-File-Status-Flags"><span class="toc-text">7.2 File Status Flags</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-Advisory-Record-Lock"><span class="toc-text">7.3 Advisory Record Lock</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-Open-File-Description-Locks"><span class="toc-text">7.4 Open File Description Locks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-Manage-signals"><span class="toc-text">7.5 Manage signals</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-ioctl"><span class="toc-text">8. ioctl</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          File I/O
+        
+      </h1>
+      <time class="post-time">
+          07/29/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-File-Descriptors"><a href="#1-File-Descriptors" class="headerlink" title="1. File Descriptors"></a>1. File Descriptors</h2><ul>
+<li>所有正在使用的文件都有一个或多个file descriptor</li>
+<li>File descriptor为正整数</li>
+<li>File descriptor的数量由系统决定(整数的内存大小)</li>
+</ul>
+<h3 id="1-1-open-and-openat"><a href="#1-1-open-and-openat" class="headerlink" title="1.1 open and openat"></a>1.1 open and openat</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment"> * @brief Opens the file specified by pathname, if file does </span></span><br><span class="line"><span class="comment"> *        not exist, it may optionally be created (if O_CREAT </span></span><br><span class="line"><span class="comment"> *        in flags).</span></span><br><span class="line"><span class="comment"> * @return A file descriptor, a nonnegative integer used for </span></span><br><span class="line"><span class="comment"> *         other system call. On error, -1 is returned and </span></span><br><span class="line"><span class="comment"> *         errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">open</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">int</span> flags)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">open</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">int</span> flags, <span class="type">mode_t</span> mode)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Same as open(). If the pathname given in pathname is </span></span><br><span class="line"><span class="comment"> *        relative, then it is interpreted relative to the </span></span><br><span class="line"><span class="comment"> *        directory referred to by the file descriptor `dirfd`</span></span><br><span class="line"><span class="comment"> * @return Same as open().</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">openat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">int</span> flags)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">openat</span><span class="params">(<span class="type">int</span> dirfd, <span class="type">const</span> <span class="type">char</span> *pathname, <span class="type">int</span> flags, <span class="type">mode_t</span> mode)</span>;</span><br></pre></td></tr></table></figure>
+<p>flags全称为<strong>File Status Flag</strong>(文件状态标志), 可由一个或多个常量通过<strong>或操作</strong>(OR)组成, 分为以下三类:</p>
+<ul>
+<li>File Access mode: <ul>
+<li>O_RDONLY: 打开文件以进行读取</li>
+<li>O_WRONLY: 打开文件以进行写入</li>
+<li>O_RDWR: 打开文件以进行读取和写入</li>
+<li>O_PATH: 获得文件的file descriptor, 但不打开文件以读取或写入</li>
+<li>O_ACCMODE: file access mode的mask, 对flag使用mask可获取对应的file access mode</li>
+</ul>
+</li>
+<li>Open-Time Flags: 指定<code>open()</code>的行为方式<ul>
+<li>O_CREAT: 若path指定的文件不存在, 则创建新文件</li>
+<li>O_EXEC: 与O_CREAT共用, 表示创建的文件不能重名, 否则创建失败</li>
+<li>O_DIRECTORY: 若已设置O_CREAT, 则报错. 用于确保path为一个文件夹, 而不是文件</li>
+<li>O_NOFOLLOW: 若path指向一个symbolic link(也称为soft link), 则报错</li>
+<li>O_TMPFILE: 创建一个无名的临时文件</li>
+<li>O_NOCTTY: 若path指向一个terminal device, 则不会让该文件成为当前进程的controlling terminal(控制终端)</li>
+<li>O_IGNORE_CTTY: 不将目标文件作为controlling terminal</li>
+<li>O_NOLINK: 若目标文件为symbolic link, 则打开link本身, 不打开其指向的文件</li>
+<li>O_NOTRANS: 不对目标文件进行translate</li>
+<li>O_TRUNC: 若文件存在, 允许写入, 且不为FIFO或terminal device, 则文件长度会被截断为零</li>
+<li>O_SHLOCK: 自动为目标文件获取shared lock</li>
+<li>O_EXLOCK: 自动为目标文件获取exclusive lock</li>
+</ul>
+</li>
+<li>I&#x2F;O Operating Modes: 如何输入和输出<ul>
+<li>O_APPEND: 将file offset移至文件最后</li>
+<li>O_NONBLOCK: 以非阻塞模式打开文件</li>
+<li>O_ASYNC: 启动异步输入模式</li>
+<li>O_FSYNC: 启动同步写入模式, 确保<code>write()</code>将数据刷入磁盘中</li>
+<li>O_SYNC: 与<code>O_SYNC</code>相同</li>
+<li>O_NOATIME: <code>read()</code>不会更新文件的access times</li>
+</ul>
+</li>
+</ul>
+<p>需要注意的是, POSIX中<strong>Synchronized I&#x2F;O</strong>还定义了<code>O_RSYNC</code> flag, 但通常不会实现该flag.</p>
+<p>mode作为<code>open()</code>和<code>openat()</code>的参数, 表示创建新文件时的文件权限:</p>
+<ul>
+<li>S_IRWXU: 00700, user(file owner)拥有read, write, and execute权限</li>
+<li>S_IRUSR: 00400, user拥有read权限</li>
+<li>S_IWUSR: 00200, user拥有write权限</li>
+<li>S_IXUSR: 00100, user拥有execute权限</li>
+<li>S_IRWXG: 00070, group拥有read, write, execute权限</li>
+<li>S_IRGRP: 00040, group拥有read权限</li>
+<li>S_IWGRP: 00020, group拥有write权限</li>
+<li>S_IXGRP: 00010, group拥有execute权限</li>
+<li>S_IRWXO: 00007, others拥有read, write, execute权限</li>
+<li>S_IROTH: 00004, others拥有read权限</li>
+<li>S_IWOTH: 00002, others拥有write权限</li>
+<li>S_IXOTH: 00001, others拥有execute权限</li>
+</ul>
+<h3 id="1-2-creat"><a href="#1-2-creat" class="headerlink" title="1.2 creat"></a>1.2 creat</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Create a new file or rewrite an existing one.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">creat</span><span class="params">(<span class="type">const</span> <span class="type">char</span> *path, <span class="type">mode_t</span> mode)</span>;</span><br></pre></td></tr></table></figure>
+<p><code>creat()</code>与以下函数拥有同样功能:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Write-Only */</span></span><br><span class="line">open(path, O_WRONLY | O_CREAT | O_TRUNC, mode);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Read-and-Write */</span></span><br><span class="line">open(path, O_RDWR | O_CREAT | O_TRUNC, mode);</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-close"><a href="#1-3-close" class="headerlink" title="1.3 close"></a>1.3 close</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Closes a file descriptor. Any record locks owned by </span></span><br><span class="line"><span class="comment"> *        the process are removed.</span></span><br><span class="line"><span class="comment"> * @return 0 for success; -1 for error, and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">close</span><span class="params">(<span class="type">int</span> fd)</span>;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>调用<code>close()</code>并不代表数据刷入磁盘, kernel一般会滞后flush操作, 只有调用<code>fsync()</code>才能确保数据被刷入磁盘. </li>
+<li>调用<code>close()</code>时需确保当前进程下的其他线程没有使用该文件. 假设某进程拥有两个线程, 并进行如下操作:</li>
+</ol>
+<ul>
+<li>线程1被文件I&#x2F;O系统调用阻塞, 例如, 调用<code>write()</code>时pipe已满, 或从socket读取数据</li>
+<li>线程2关闭文件, 有些操作系统会向线程1抛出异常, 有些则成功写入或读取数据</li>
+</ul>
+<ol start="3">
+<li>进程退出时, 所关联的file descriptor会自动关闭, 因此并不需要显式调用<code>close()</code></li>
+</ol>
+<h3 id="1-4-lseek"><a href="#1-4-lseek" class="headerlink" title="1.4 lseek"></a>1.4 lseek</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief reposition read/write file offset</span></span><br><span class="line"><span class="comment"> * @return resulting offset for success; -1 for error and </span></span><br><span class="line"><span class="comment"> *         errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">off_t</span> <span class="title function_">lseek</span><span class="params">(<span class="type">int</span> fd, <span class="type">off_t</span> offset, <span class="type">int</span> whence)</span>;</span><br></pre></td></tr></table></figure>
+<p>whence决定了offset的方向, 有三个选项:</p>
+<ul>
+<li>SEEK_SET: 将文件的offset设置为<code>ofst</code>, <code>new ofst = ofst</code></li>
+<li>SEEK_CUR: 文件原有offset加上<code>ofst</code>, <code>new ofst = old ofst + ofst</code></li>
+<li>SEEK_END: 文件大小加上<code>ofst</code>, <code>new ofst = file size + ofst</code></li>
+<li>SEEK_DATA: 若ofst指向的是非零数据, 则将offset设置为ofst; 若不是(hole), 则将offset设置为大于或等于ofst且数据非零的第一个地址.</li>
+<li>SEEK_HOLE: 与SEEK_DATA相反, 将offset设置为第一个数据为零的地址, 若ofst指向的数据为零, 则将offset设置为ofst</li>
+</ul>
+<p>需要注意两点:</p>
+<ol>
+<li>由于lseek允许<code>offset &gt; file size</code>, 所以写入时, 文件末尾和offset之间的用null byte(<code>\0</code>)填充.</li>
+<li>新的offset必须大于等于0, 否则不会覆盖文件原本的offset(除非fd为特定device).</li>
+</ol>
+<h3 id="1-5-read"><a href="#1-5-read" class="headerlink" title="1.5 read"></a>1.5 read</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Reads up to nbytes bytes from file descriptor fd into</span></span><br><span class="line"><span class="comment"> *        the buffer starting at buf.</span></span><br><span class="line"><span class="comment"> * @return number of bytes read for success; 0 indicates end </span></span><br><span class="line"><span class="comment"> *         of file; -1 for error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">read</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *buf, <span class="type">size_t</span> nbytes)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>read()</code>会从offset的位置开始读取, 并将offset更新为<code>old offset + nbytes</code>. 若offset处于文件末尾, 则直接返回0.</li>
+<li>若nbytes为0, 可能导致read()报错, 也可能返回0</li>
+<li>若nbytes大于<code>SSIZE_MAX</code>, 结果以操作系统的实现为准.</li>
+</ul>
+<h3 id="1-6-write"><a href="#1-6-write" class="headerlink" title="1.6 write"></a>1.6 write</h3><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/** </span></span><br><span class="line"><span class="comment"> * @brief Writes up to nbytes from the buffer start at buf to </span></span><br><span class="line"><span class="comment"> *        the file referred to by the file decriptor fd.</span></span><br><span class="line"><span class="comment"> * @return The number of bytes written is returned for success. </span></span><br><span class="line"><span class="comment"> *         -1 for error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">write</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">void</span> *buf, <span class="type">size_t</span> nbytes)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下情况会导致<code>write()</code>返回值小于nbytes:</p>
+<ul>
+<li>磁盘无法容纳nbytes</li>
+<li>达到单个文件的最大容量<code>RLIMIT_FSIZE</code></li>
+<li>被signal handler终端</li>
+</ul>
+<p>offset也会影响<code>write()</code>的写入结果:</p>
+<ul>
+<li><code>write()</code>会从最新的offset写入数据, 写入后更新offset为<code>old offset + nbytes</code></li>
+<li>若以<code>O_APPEND</code>模式的打开文件, offset会设置为文件末尾, 写入数据会追加在文件末尾</li>
+<li>修改offset和写入操作可视为一个原子操作</li>
+</ul>
+<h2 id="2-I-0-Efficiency"><a href="#2-I-0-Efficiency" class="headerlink" title="2. I&#x2F;0 Efficiency"></a>2. I&#x2F;0 Efficiency</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> BUFFSIZE 4096</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> n;</span><br><span class="line">  <span class="type">char</span> buf[BUFFSIZE];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> ((n = read(STDIN_FILENO, buf, BUFFSIZE)) &gt; <span class="number">0</span>)</span><br><span class="line">  <span class="keyword">if</span> (write(STDOUT_FILENO, buf, n) != n)</span><br><span class="line">    err_sys(<span class="string">&quot;write error&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (n &lt; <span class="number">0</span>)</span><br><span class="line">    err_sys(<span class="string">&quot;read error&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在不同的<code>BUFFSIZE</code>数值下, 读取速度也会变得不同:</p>
+<table>
+<thead>
+<tr>
+<th align="center">BUFFSIZE</th>
+<th align="center">User CPU (sec)</th>
+<th align="center">System CPU (sec)</th>
+<th align="center">Clock time (sec)</th>
+<th align="center">loops</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">124.89</td>
+<td align="center">161.65</td>
+<td align="center">288.64</td>
+<td align="center">103,316,352</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">63.10</td>
+<td align="center">80.96</td>
+<td align="center">145.81</td>
+<td align="center">51,658,176</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">31.84</td>
+<td align="center">40.00</td>
+<td align="center">72.75</td>
+<td align="center">25,829,088</td>
+</tr>
+<tr>
+<td align="center">8</td>
+<td align="center">15.17</td>
+<td align="center">21.01</td>
+<td align="center">36.85</td>
+<td align="center">12,914,544</td>
+</tr>
+<tr>
+<td align="center">16</td>
+<td align="center">7.86</td>
+<td align="center">10.27</td>
+<td align="center">18.76</td>
+<td align="center">6,457,272</td>
+</tr>
+<tr>
+<td align="center">32</td>
+<td align="center">4.13</td>
+<td align="center">5.01</td>
+<td align="center">9.76</td>
+<td align="center">3,228,636</td>
+</tr>
+<tr>
+<td align="center">64</td>
+<td align="center">2.11</td>
+<td align="center">2.48</td>
+<td align="center">6.76</td>
+<td align="center">1,614,318</td>
+</tr>
+<tr>
+<td align="center">128</td>
+<td align="center">1.01</td>
+<td align="center">1.27</td>
+<td align="center">6.82</td>
+<td align="center">807,159</td>
+</tr>
+<tr>
+<td align="center">256</td>
+<td align="center">0.56</td>
+<td align="center">0.62</td>
+<td align="center">6.80</td>
+<td align="center">403,579</td>
+</tr>
+<tr>
+<td align="center">512</td>
+<td align="center">0.27</td>
+<td align="center">0.41</td>
+<td align="center">7.03</td>
+<td align="center">201,789</td>
+</tr>
+<tr>
+<td align="center">1,024</td>
+<td align="center">0.17</td>
+<td align="center">0.23</td>
+<td align="center">7.84</td>
+<td align="center">100,894</td>
+</tr>
+<tr>
+<td align="center">2,048</td>
+<td align="center">0.05</td>
+<td align="center">0.19</td>
+<td align="center">6.82</td>
+<td align="center">50,447</td>
+</tr>
+<tr>
+<td align="center">4,096</td>
+<td align="center">0.03</td>
+<td align="center">0.16</td>
+<td align="center">6.86</td>
+<td align="center">25,223</td>
+</tr>
+<tr>
+<td align="center">8,192</td>
+<td align="center">0.01</td>
+<td align="center">0.18</td>
+<td align="center">6.67</td>
+<td align="center">12,611</td>
+</tr>
+<tr>
+<td align="center">16,384</td>
+<td align="center">0.02</td>
+<td align="center">0.18</td>
+<td align="center">6.87</td>
+<td align="center">6,305</td>
+</tr>
+<tr>
+<td align="center">32,768</td>
+<td align="center">0.00</td>
+<td align="center">0.16</td>
+<td align="center">6.70</td>
+<td align="center">3,152</td>
+</tr>
+<tr>
+<td align="center">65,536</td>
+<td align="center">0.02</td>
+<td align="center">0.19</td>
+<td align="center">6.92</td>
+<td align="center">1,576</td>
+</tr>
+<tr>
+<td align="center">131,072</td>
+<td align="center">0.00</td>
+<td align="center">0.16</td>
+<td align="center">6.84</td>
+<td align="center">788</td>
+</tr>
+<tr>
+<td align="center">262,144</td>
+<td align="center">0.01</td>
+<td align="center">0.25</td>
+<td align="center">7.30</td>
+<td align="center">394</td>
+</tr>
+<tr>
+<td align="center">524,288</td>
+<td align="center">0.00</td>
+<td align="center">0.22</td>
+<td align="center">7.35</td>
+<td align="center">198</td>
+</tr>
+</tbody></table>
+<p>可以发现:</p>
+<ul>
+<li>$\text{BUFFSIZE} \lt \text{4096 bytes}$: 读取速度与BUFFSIZE成正比</li>
+<li>$\text{BUFFSIZE} \gt \text{4096 bytes}$: 读取速度没有明显提升, 因为ext4的文件系统中, 一个inode为256字节, 一个block为4096字节</li>
+</ul>
+<h2 id="3-File-Sharing"><a href="#3-File-Sharing" class="headerlink" title="3. File Sharing"></a>3. File Sharing</h2><p>UNIX支持多个进程操作不同或相同的文件.<br><img src="/images/UNIX/APUE/3-3-process-table-entry.png" alt="All Installation Items"></p>
+<p>进程操作文件时涉及以下几个结构体:</p>
+<ol>
+<li>Process table: kernel为每个进程创造一个process table, 里面除了进程的pid外, 还以<code>&lt;key, value&gt;</code>的形式存放进程操作的所有file decriptor以及对应的file table</li>
+<li>File table: kernel将为每一个进程正在使用的文件创造一个table, 其中包含三个entry:</li>
+</ol>
+<ul>
+<li>File Status Flags</li>
+<li>Current file offset</li>
+<li>Pointer to the v-node table</li>
+</ul>
+<ol start="3">
+<li>v-node table: kenerl为每一个打开的文件创建一个table, 其中包含文件类型, 操作文件的函数指针, 指向i-node的指针, 以及指向该table的file table数量.</li>
+</ol>
+<p>总结一下, 一个进程只有一个process table, 但可以有多个file table; 一个被打开的文件只有一个v-node table, 但可以有多个file table指向同一个v-node table. 因此:</p>
+<ul>
+<li>一个进程可打开多个文件</li>
+<li>两个进程可打开同一文件, 且拥有不同的offset</li>
+<li>同一文件可存在多个file table, 但都指向同一个v-node table</li>
+</ul>
+<h2 id="4-Atomic-Operations"><a href="#4-Atomic-Operations" class="headerlink" title="4. Atomic Operations"></a>4. Atomic Operations</h2><p>由于旧版本UNIX不支持<code>O_APPEND</code>选项, 所以追加文件时, 需先调用<code>lseek</code>, 再调用<code>write</code>, 导致追加文件成为一个非原子操作, 可能导致数据丢失. 只有使用<code>O_APPEND</code>后写入时才能保证并发安全.<br>UNIX提供了两个函数, 保证进程可以原子地指定offset并进行I&#x2F;O操作.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Reads from a file descriptor at a given offset</span></span><br><span class="line"><span class="comment"> * @return Number of bytes read for success; -1 for error and</span></span><br><span class="line"><span class="comment"> *         errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">pread</span><span class="params">(<span class="type">int</span> fd, <span class="type">void</span> *buf, <span class="type">size_t</span> nbytes, <span class="type">off_t</span> offset)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Write to a file descriptor at a given offset</span></span><br><span class="line"><span class="comment"> * @return Number of bytes for written for success; -1 for </span></span><br><span class="line"><span class="comment"> *         error and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">ssize_t</span> <span class="title function_">pwrite</span><span class="params">(<span class="type">int</span> fd, <span class="type">const</span> <span class="type">void</span> *buf, <span class="type">size_t</span> nbytes, <span class="type">off_t</span> offset)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-dup-and-dup2"><a href="#5-dup-and-dup2" class="headerlink" title="5. dup and dup2"></a>5. dup and dup2</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Creates a copy of the file descriptor oldfd, using </span></span><br><span class="line"><span class="comment"> *        the lowest-numbered unused file descriptor</span></span><br><span class="line"><span class="comment"> * @return The new file descriptor for success; -1 for error </span></span><br><span class="line"><span class="comment"> *         and errno is set.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">dup</span><span class="params">(<span class="type">int</span> oldfd)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Creates a copy of the file descriptor oldfd, using </span></span><br><span class="line"><span class="comment"> *        the file descriptor number specified in newfd</span></span><br><span class="line"><span class="comment"> * @return Same as dup()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">dup2</span><span class="params">(<span class="type">int</span> oldfd, <span class="type">int</span> newfd)</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>dup()</code>的返回值一定是数值最小且当前进程中未使用的file descriptor</li>
+<li>假设<code>dup()</code>返回的file descriptor为newfd, 则newfd与oldfd共享offset和file status flag. 因此, <code>lseek()</code>修改newfd的offset时, oldfd的offset也会被修改</li>
+<li><code>dup2()</code>不会使用数值最小的file descriptor, 而是使用newfd</li>
+<li>若newfd之前被打开过, <code>dup2()</code>会在重用newfd前自动关闭该文件, 并且, <strong>关闭</strong>和<strong>重用</strong>是一个原子操作, 可避免race condition</li>
+</ul>
+<h2 id="6-sync-fsync-fdatasync"><a href="#6-sync-fsync-fdatasync" class="headerlink" title="6. sync, fsync, fdatasync"></a>6. sync, fsync, fdatasync</h2><p>UNIX会在kernel中创建一个cache, 用于存放I&#x2F;O操作的修改内容. 写入数据时, 数据并不会直接写入磁盘, 而是保存在cache中, 等待kernel将其写入磁盘. 为防止数据滞留在buffer中, 可使用sync函数:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Flush all modified data specified by the file</span></span><br><span class="line"><span class="comment"> *        descriptor fd to disk. The writing is complete</span></span><br><span class="line"><span class="comment"> *        when the fsync() call returns.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fsync</span><span class="params">(<span class="type">int</span> fd)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Same as fsync(), but does not flush modified metadata </span></span><br><span class="line"><span class="comment"> *        unless that metadata is needed in order to allow a </span></span><br><span class="line"><span class="comment"> *        subsequent data retrieval to be correctly handled.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fdatasync</span><span class="params">(<span class="type">int</span> fd)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Schedule all modified data for writing to disk. The </span></span><br><span class="line"><span class="comment"> *        writing is not necessarily complete when the sync() </span></span><br><span class="line"><span class="comment"> *        call returns.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">sync</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="7-fcntl"><a href="#7-fcntl" class="headerlink" title="7. fcntl"></a>7. fcntl</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Change the properties of a file that is opened.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, ... <span class="comment">/* int arg */</span> )</span>;</span><br></pre></td></tr></table></figure>
+<p>fctnl可修改file descriptor, 其必须接收两个参数: file descriptor, cmd, 第三个参数arg为可选项, 取决于cmd是否需要, 若不需要, 则为void. 以下是fctnl的参数(<code>F_XXX</code>表示cmd, 括号内表示arg).</p>
+<h3 id="7-1-Duplicate-a-file-descriptor"><a href="#7-1-Duplicate-a-file-descriptor" class="headerlink" title="7.1 Duplicate a file descriptor"></a>7.1 Duplicate a file descriptor</h3><ul>
+<li>F_DUPFD(int): 复制file descriptor, 返回一个大于等于<code>arg</code>且可用的file descriptor</li>
+<li>F_DUPFD_CLOEXEC(int): 功能与F_DUPFD相同, 但会在复制的file descriptor上添加<code>close-on-exec</code> flag(成功执行exec后自动关闭文件)</li>
+</ul>
+<h3 id="7-2-File-Descriptor-Flags"><a href="#7-2-File-Descriptor-Flags" class="headerlink" title="7.2 File Descriptor Flags"></a>7.2 File Descriptor Flags</h3><ul>
+<li>F_GETFD(void): 返回file descriptor flags</li>
+<li>F_SETFD(int): 将file descriptor flags设置为arg</li>
+</ul>
+<p>需要注意的是, 当前file descriptor flag只有一个参数: <code>FD_CLOEXEC</code></p>
+<h3 id="7-2-File-Status-Flags"><a href="#7-2-File-Status-Flags" class="headerlink" title="7.2 File Status Flags"></a>7.2 File Status Flags</h3><ul>
+<li>F_GETFL(void): 返回file status flags</li>
+<li>F_SETFL(int): 将file status flags设置为arg</li>
+</ul>
+<h3 id="7-3-Advisory-Record-Lock"><a href="#7-3-Advisory-Record-Lock" class="headerlink" title="7.3 Advisory Record Lock"></a>7.3 Advisory Record Lock</h3><p>该类别下的cmd可为文件中的一段区域添加锁, 因此arg需为一个lock pointer, lock的定义如下:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">flock</span> &#123;</span></span><br><span class="line">  <span class="comment">/* ... */</span></span><br><span class="line">  <span class="type">short</span> l_type;   <span class="comment">/* Type of lock: F_RDLCK, F_WRLCK, F_UNLCK */</span></span><br><span class="line">  <span class="type">short</span> l_whence; <span class="comment">/* How to interpret l_start: SEEK_SET, SEEK_CUR, SEEK_END */</span></span><br><span class="line">  <span class="type">off_t</span> l_start;  <span class="comment">/* Starting offset for lock */</span></span><br><span class="line">  <span class="type">off_t</span> l_len;    <span class="comment">/* Number of bytes to lock */</span></span><br><span class="line">  <span class="type">pid_t</span> l_pid;    <span class="comment">/* PID of process blocking our lock (set by F_GETLK and F_OFD_GETLK) */</span></span><br><span class="line">  <span class="comment">/* ... */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>F_GETLK(<code>struct flock *</code>): 尝试为目标文件上锁, 但不会真正上锁. 若可以上锁, 则返回<code>F_UNLCK</code>; 若不能, 则返回冲突的锁的详细信息.</li>
+<li>F_SETLK(<code>struct flock *</code>): 为目标文件获取(<code>l_type</code>为<code>F_RDLCK</code>或<code>F_WRLCK</code>)或释放(<code>l_type</code>为<code>F_UNLCK</code>)锁; 若与其他进程发送锁冲突, 返回-1.</li>
+<li>F_SETLKW(<code>struct flock *</code>): 功能与<code>F_SETLK</code>相同, 但若目标文件存在冲突锁, 则阻塞并等待冲突锁释放.</li>
+</ul>
+<h3 id="7-4-Open-File-Description-Locks"><a href="#7-4-Open-File-Description-Locks" class="headerlink" title="7.4 Open File Description Locks"></a>7.4 Open File Description Locks</h3><p>Advisory Record Lock由进程拥有, 因此不同进程可拥有同一文件中不同区域锁, 但存在一个问题: 同一进程的多个线程会共享lock, 一个线程无法阻塞其他线程访问同一文件, 因此UNIX引入了Open File Description Lock, 该类锁不与进程挂钩, 只与文件关联.</p>
+<ul>
+<li>F_OFD_SETLK(<code>struct flock *</code>): 获取或释放一个open file description lock</li>
+<li>F_OFD_SETLKW(<code>struct flock *</code>): 与<code>F_OFD_SETLK</code>相同, 但若目标文件存在冲突锁, 则阻塞并等待冲突锁释放</li>
+<li>F_OFD_GETLK(<code>struct flock *</code>): 尝试为目标文件上锁, 但不会真正上锁</li>
+</ul>
+<h3 id="7-5-Manage-signals"><a href="#7-5-Manage-signals" class="headerlink" title="7.5 Manage signals"></a>7.5 Manage signals</h3><ul>
+<li>F_GETOWN(void): 在目标文件上执行IO操作时, 会产生SIGIO信号, 该cmd接收到信号的进程ID</li>
+<li>F_SETOWN(int): 为了接收到目标文件执行IO操作产生的SIGIO信号, 该cmd会将信号转交给arg对应的进程</li>
+</ul>
+<h2 id="8-ioctl"><a href="#8-ioctl" class="headerlink" title="8. ioctl"></a>8. ioctl</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/ioctl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief Anything that couldn’t be expressed using one of the </span></span><br><span class="line"><span class="comment"> *        other functions in this chapter usually ended up being</span></span><br><span class="line"><span class="comment"> *        specified with this function.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ioctl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> request, ...)</span>;</span><br></pre></td></tr></table></figure>
+<p>一种获得设备信息和向设备发送控制参数的方法.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Unix/">Unix</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/49f7.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Files and Directories</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/de50.html">
+        <span class="next-text nav-default">RCU</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/aabf.html';
+  var disqus_title = "File I/O";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

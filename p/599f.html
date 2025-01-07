@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Diamond Inheritance"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/599f.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/599f.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/599f.html"/>
+
+
+<meta name="description" content="1. 多继承继承的概念已经融入了面向对象编程理念之中, 所有面向对象的编程语言都希望程序员灵活运用类和继承. 但多继承却被很多现代编程语言所禁止, 如Java, C#, Ruby, 这不是没有缘由的, 因为多继承会增加程序的复杂性和含糊性即便有这么多缺陷, 但还是有一些编程语言允许程序员进行多继承, 如C++和Python.本文主要讲解多继承中的钻石问题(diamond inheritance).">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Diamond Inheritance">
+<meta property="og:url" content="https://zaf1ro.github.io/p/599f.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. 多继承继承的概念已经融入了面向对象编程理念之中, 所有面向对象的编程语言都希望程序员灵活运用类和继承. 但多继承却被很多现代编程语言所禁止, 如Java, C#, Ruby, 这不是没有缘由的, 因为多继承会增加程序的复杂性和含糊性即便有这么多缺陷, 但还是有一些编程语言允许程序员进行多继承, 如C++和Python.本文主要讲解多继承中的钻石问题(diamond inheritance).">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Python/cpp-diamond-inheritance.jpg">
+<meta property="article:published_time" content="2016-06-07T01:23:50.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.050Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Python/cpp-diamond-inheritance.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Diamond Inheritance - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%A4%9A%E7%BB%A7%E6%89%BF"><span class="toc-text">1. 多继承</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-C-%E9%92%BB%E7%9F%B3%E9%97%AE%E9%A2%98"><span class="toc-text">2. C++钻石问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%94%99%E8%AF%AF%E7%A4%BA%E4%BE%8B"><span class="toc-text">2.1 错误示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%AD%A3%E7%A1%AE%E7%A4%BA%E4%BE%8B"><span class="toc-text">2.2 正确示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Python%E9%92%BB%E7%9F%B3%E9%97%AE%E9%A2%98"><span class="toc-text">3. Python钻石问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%94%99%E8%AF%AF%E7%A4%BA%E4%BE%8B"><span class="toc-text">3.1 错误示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%AD%A3%E7%A1%AE%E7%A4%BA%E4%BE%8B"><span class="toc-text">3.2 正确示例</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Diamond Inheritance
+        
+      </h1>
+      <time class="post-time">
+          06/06/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-多继承"><a href="#1-多继承" class="headerlink" title="1. 多继承"></a>1. 多继承</h2><p>继承的概念已经融入了面向对象编程理念之中, 所有面向对象的编程语言都希望程序员灵活运用类和继承. 但多继承却被很多现代编程语言所禁止, 如Java, C#, Ruby, 这不是没有缘由的, 因为多继承会增加程序的复杂性和含糊性<br>即便有这么多缺陷, 但还是有一些编程语言允许程序员进行多继承, 如C++和Python.<br>本文主要讲解多继承中的钻石问题(diamond inheritance).</p>
+<h2 id="2-C-钻石问题"><a href="#2-C-钻石问题" class="headerlink" title="2. C++钻石问题"></a>2. C++钻石问题</h2><p><img src="/images/Python/cpp-diamond-inheritance.jpg" alt="C++ Diamond Inheritance"></p>
+<h3 id="2-1-错误示例"><a href="#2-1-错误示例" class="headerlink" title="2.1 错误示例"></a>2.1 错误示例</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> p = <span class="number">100</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">getParam</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> p; &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>: <span class="keyword">public</span> Base</span><br><span class="line">&#123; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span>: <span class="keyword">public</span> Base</span><br><span class="line">&#123; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AB</span>: <span class="keyword">public</span> A, <span class="keyword">public</span> B</span><br><span class="line">&#123; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  AB ab;</span><br><span class="line">  <span class="type">int</span> p = ab.<span class="built_in">getParam</span>();  <span class="comment">// 编译错误, 因为不能确定使用Tiger或Lion中的getWeight()函数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从代码中我们可以清楚的看出问题: 当我们实例化AB类时, 所调用的函数getParam()是模糊的, 不确定调用A还是B的函数. 针对这个问题, C++给出了解决方案: 使用virtual(虚基类)</p>
+<h3 id="2-2-正确示例"><a href="#2-2-正确示例" class="headerlink" title="2.2 正确示例"></a>2.2 正确示例</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> p = <span class="number">100</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">getParam</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> p; &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>: <span class="keyword">virtual</span> <span class="keyword">public</span> Base</span><br><span class="line">&#123; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span>: <span class="keyword">virtual</span> <span class="keyword">public</span> Base</span><br><span class="line">&#123; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AB</span>: <span class="keyword">public</span> A, <span class="keyword">public</span> B</span><br><span class="line">&#123; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  AB ab;</span><br><span class="line">  <span class="type">int</span> p = ab.<span class="built_in">getParam</span>(); <span class="comment">// 编译成功, virtual能保证只有一个Animal子类被创建</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="3-Python钻石问题"><a href="#3-Python钻石问题" class="headerlink" title="3. Python钻石问题"></a>3. Python钻石问题</h2><h3 id="3-1-错误示例"><a href="#3-1-错误示例" class="headerlink" title="3.1 错误示例"></a>3.1 错误示例</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;Base&#x27;</span></span><br><span class="line">    <span class="variable language_">self</span>.p = <span class="number">100</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">getParam</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">print</span> <span class="variable language_">self</span>.p</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>(<span class="title class_ inherited__">Base</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">    Base.__init__(<span class="variable language_">self</span>)</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;A&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span>(<span class="title class_ inherited__">Base</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">    Base.__init__(<span class="variable language_">self</span>)</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;B&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AB</span>(A, B):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">    A.__init__(<span class="variable language_">self</span>)</span><br><span class="line">    B.__init__(<span class="variable language_">self</span>)</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;AB&#x27;</span></span><br><span class="line"></span><br><span class="line">ab = AB()</span><br><span class="line"><span class="built_in">print</span> AB.mro()</span><br><span class="line">ab.getParam()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如下为输出, 可以发现, Base类初始化了两次</span></span><br><span class="line"><span class="comment"># Base</span></span><br><span class="line"><span class="comment"># A</span></span><br><span class="line"><span class="comment"># Base</span></span><br><span class="line"><span class="comment"># B</span></span><br><span class="line"><span class="comment"># AB</span></span><br><span class="line"><span class="comment"># [&lt;class &#x27;__main__.AB&#x27;&gt;, &lt;class &#x27;__main__.A&#x27;&gt;, &lt;class &#x27;__main__.B&#x27;&gt;, &lt;class &#x27;__main__.Base&#x27;&gt;, &lt;type &#x27;object&#x27;&gt;]</span></span><br><span class="line"><span class="comment"># 100</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Python将多继承的图结构转化成list的顺序结构</span></span><br></pre></td></tr></table></figure>
+<p>从代码结果我们可以发现, Base的初始化函数运行了两遍, 这可能会引起程序的错误.<br>Pyhton给出的结果方案是使用super来避开初始Base两次.</p>
+<h3 id="3-2-正确示例"><a href="#3-2-正确示例" class="headerlink" title="3.2 正确示例"></a>3.2 正确示例</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;Base&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>(<span class="title class_ inherited__">Base</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">super</span>(A, <span class="variable language_">self</span>).__init__()</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;A&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span>(<span class="title class_ inherited__">Base</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">super</span>(B, <span class="variable language_">self</span>).__init__()</span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;B&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AB</span>(A, B):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">    <span class="built_in">super</span>(AB, <span class="variable language_">self</span>).__init__() </span><br><span class="line">    <span class="built_in">print</span> <span class="string">&#x27;AB&#x27;</span></span><br><span class="line"></span><br><span class="line">ab = AB()</span><br><span class="line"><span class="built_in">print</span> AB.mro()</span><br><span class="line"></span><br><span class="line"><span class="comment"># Base</span></span><br><span class="line"><span class="comment"># B</span></span><br><span class="line"><span class="comment"># A</span></span><br><span class="line"><span class="comment"># AB</span></span><br><span class="line"><span class="comment"># [&lt;class &#x27;__main__.AB&#x27;&gt;, &lt;class &#x27;__main__.A&#x27;&gt;, &lt;class &#x27;__main__.B&#x27;&gt;, &lt;class &#x27;__main__.Base&#x27;&gt;, &lt;type &#x27;object&#x27;&gt;]</span></span><br></pre></td></tr></table></figure>
+<p>当我们在运行<code>super(AB, self).__init__()</code>时, 首先获取self的mro并从左往右开始依次寻找<code>__init__</code>, 找到A并将A的<code>__init__</code>绑定到self对象中. 而A的<code>__init__</code>又是Base的<code>__init__</code>.<br>当初始化B类时, 不会再初始化Base, 因为super中的mro只会运行一次.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/9637.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">TCP Congestion Control</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/33da.html">
+        <span class="next-text nav-default">TOS and DS</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/599f.html';
+  var disqus_title = "Diamond Inheritance";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="TOS and DS"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/33da.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/33da.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/33da.html"/>
+
+
+<meta name="description" content="1. TOS简介:Internet中提供的服务质量天差地别, 有的需要可靠的服务, 有的需要低延迟. 但总是要作出权衡的: 最高吞吐量的路线可能不是延迟最低或最廉价的路线. 需要根据不同应用的需求进行调节.由于Internet自身无法优化应用的路线, 所以IP协议提供了一个简单的方式帮助Internet处理特定packet, 该方法称为Type of Service(TOS). 2. TOS结构:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TOS and DS">
+<meta property="og:url" content="https://zaf1ro.github.io/p/33da.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. TOS简介:Internet中提供的服务质量天差地别, 有的需要可靠的服务, 有的需要低延迟. 但总是要作出权衡的: 最高吞吐量的路线可能不是延迟最低或最廉价的路线. 需要根据不同应用的需求进行调节.由于Internet自身无法优化应用的路线, 所以IP协议提供了一个简单的方式帮助Internet处理特定packet, 该方法称为Type of Service(TOS). 2. TOS结构:">
+<meta property="og:locale">
+<meta property="article:published_time" content="2016-06-01T02:52:12.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.045Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+TOS and DS - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-TOS%E7%AE%80%E4%BB%8B"><span class="toc-text">1. TOS简介:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-TOS%E7%BB%93%E6%9E%84"><span class="toc-text">2. TOS结构:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-PRECEDENCE-%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-text">2.1 PRECEDENCE(优先级)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-TOS-%E6%9C%8D%E5%8A%A1%E7%B1%BB%E5%9E%8B"><span class="toc-text">2.2 TOS(服务类型)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-MBZ"><span class="toc-text">2.3 MBZ</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%8F%98%E6%9B%B4"><span class="toc-text">2.4 变更</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-DS-Differentiated-Services-%E5%B7%AE%E5%88%86%E6%9C%8D%E5%8A%A1"><span class="toc-text">3. DS(Differentiated Services, 差分服务)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-DSCP-Differentiated-Services-Codepoint-%E5%8C%BA%E5%88%86%E6%9C%8D%E5%8A%A1%E4%BB%A3%E7%A0%81%E7%82%B9"><span class="toc-text">3.1 DSCP(Differentiated Services Codepoint, 区分服务代码点)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">3.1.1 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-%E5%88%86%E7%B1%BB"><span class="toc-text">3.1.2 分类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-%E5%85%B7%E4%BD%93%E5%BA%94%E7%94%A8"><span class="toc-text">3.1.3 具体应用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-CU-currently-unused"><span class="toc-text">3.2 CU(currently unused)</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          TOS and DS
+        
+      </h1>
+      <time class="post-time">
+          05/31/16
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-TOS简介"><a href="#1-TOS简介" class="headerlink" title="1. TOS简介:"></a>1. TOS简介:</h2><p>Internet中提供的服务质量天差地别, 有的需要可靠的服务, 有的需要低延迟. 但总是要作出权衡的: 最高吞吐量的路线可能不是延迟最低或最廉价的路线. 需要根据不同应用的需求进行调节.<br>由于Internet自身无法优化应用的路线, 所以IP协议提供了一个简单的方式帮助Internet处理特定packet, 该方法称为<strong>Type of Service</strong>(TOS).</p>
+<h2 id="2-TOS结构"><a href="#2-TOS结构" class="headerlink" title="2. TOS结构:"></a>2. TOS结构:</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">   0     1     2     3     4     5     6     7</span><br><span class="line">+-----+-----+-----+-----+-----+-----+-----+-----+</span><br><span class="line">|                 |                       |     |</span><br><span class="line">|   PRECEDENCE    |          TOS          | MBZ |</span><br><span class="line">|                 |                       |     |</span><br><span class="line">+-----+-----+-----+-----+-----+-----+-----+-----+</span><br></pre></td></tr></table></figure>
+<p>TOS包括三个部分, 长度为8 bits:</p>
+<ul>
+<li>PRECEDENCE</li>
+<li>TOS</li>
+<li>MBZ</li>
+</ul>
+<h3 id="2-1-PRECEDENCE-优先级"><a href="#2-1-PRECEDENCE-优先级" class="headerlink" title="2.1 PRECEDENCE(优先级)"></a>2.1 PRECEDENCE(优先级)</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">   0     1     2   </span><br><span class="line">+-----+-----+-----+</span><br><span class="line">|                 |</span><br><span class="line">|   PRECEDENCE    |</span><br><span class="line">|                 |</span><br><span class="line">+-----+-----+-----+</span><br></pre></td></tr></table></figure>
+<p><strong>PRECEDENCE</strong>表示数据包的优先级. 若路由器进入拥塞状态, 会优先丢弃优先级较低的packet. Precedence数值越大, 则IP packet越重要. </p>
+<table>
+<thead>
+<tr>
+<th>二进制</th>
+<th>英文</th>
+<th>中文</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>000</td>
+<td>Routine</td>
+<td>普通</td>
+</tr>
+<tr>
+<td>001</td>
+<td>Priority</td>
+<td>有限的</td>
+</tr>
+<tr>
+<td>010</td>
+<td>Immediate</td>
+<td>立即的</td>
+</tr>
+<tr>
+<td>011</td>
+<td>Flash</td>
+<td>闪电般的</td>
+</tr>
+<tr>
+<td>100</td>
+<td>Flash Override</td>
+<td>比闪电般还快的</td>
+</tr>
+<tr>
+<td>101</td>
+<td>Critical</td>
+<td>极重要的</td>
+</tr>
+<tr>
+<td>110</td>
+<td>Internetwork Control</td>
+<td>网间控制</td>
+</tr>
+<tr>
+<td>111</td>
+<td>Network Control</td>
+<td>网络控制</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-TOS-服务类型"><a href="#2-2-TOS-服务类型" class="headerlink" title="2.2 TOS(服务类型)"></a>2.2 TOS(服务类型)</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">      0           1           2           3</span><br><span class="line">+-----------+-----------+-----------+-----------+</span><br><span class="line">|           |           |           |           |</span><br><span class="line">|   Delay   |Throughput |Reliability|    Cost   |</span><br><span class="line">|           |           |           |           |</span><br><span class="line">+-----------+-----------+-----------+-----------+</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>类型名称</th>
+<th>0</th>
+<th>1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Delay</td>
+<td>normal(普通)</td>
+<td>low(低延迟)</td>
+</tr>
+<tr>
+<td>Throughtput</td>
+<td>normal(普通)</td>
+<td>high(高吞吐量)</td>
+</tr>
+<tr>
+<td>Reliability</td>
+<td>normal(普通)</td>
+<td>high(高可靠性)</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>normal(普通)</td>
+<td>low(低花费)</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-MBZ"><a href="#2-3-MBZ" class="headerlink" title="2.3 MBZ"></a>2.3 MBZ</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">      0</span><br><span class="line">+-----------+</span><br><span class="line">|           |</span><br><span class="line">|    MBZ    |</span><br><span class="line">|           |</span><br><span class="line">+-----------+</span><br></pre></td></tr></table></figure>
+<p>未使用, 必须为0(除非在Internet协议实验中会有使用到这一bit), 路由器会忽略MBZ.</p>
+<h3 id="2-4-变更"><a href="#2-4-变更" class="headerlink" title="2.4 变更"></a>2.4 变更</h3><table>
+<thead>
+<tr>
+<th>RFC文档编号</th>
+<th>更改内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RFC-791</td>
+<td>引入Delay, Throughput, 和Reliability(简称: DTR).</td>
+</tr>
+<tr>
+<td>RFC-1349</td>
+<td>引入Lowcost</td>
+</tr>
+<tr>
+<td>RFC-2474</td>
+<td>重新定义TOS为DS Field(Differentiated Services), 且8 bits都被重新定义</td>
+</tr>
+</tbody></table>
+<h2 id="3-DS-Differentiated-Services-差分服务"><a href="#3-DS-Differentiated-Services-差分服务" class="headerlink" title="3. DS(Differentiated Services, 差分服务)"></a>3. DS(Differentiated Services, 差分服务)</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">   0     1     2     3     4     5     6     7</span><br><span class="line">+-----+-----+-----+-----+-----+-----+-----+-----+</span><br><span class="line">|                                   |           |</span><br><span class="line">|                DSCP               |    CU     |</span><br><span class="line">|                                   |           |</span><br><span class="line">+-----+-----+-----+-----+-----+-----+-----+-----+</span><br></pre></td></tr></table></figure>
+<p>包含二个field, 总长为8bit:</p>
+<ul>
+<li>DSCP</li>
+<li>CU</li>
+</ul>
+<h3 id="3-1-DSCP-Differentiated-Services-Codepoint-区分服务代码点"><a href="#3-1-DSCP-Differentiated-Services-Codepoint-区分服务代码点" class="headerlink" title="3.1 DSCP(Differentiated Services Codepoint, 区分服务代码点)"></a>3.1 DSCP(Differentiated Services Codepoint, 区分服务代码点)</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">   0     1     2     3     4     5 </span><br><span class="line">+-----+-----+-----+-----+-----+-----+</span><br><span class="line">|                                   |</span><br><span class="line">|                DSCP               |</span><br><span class="line">|                                   |</span><br><span class="line">+-----+-----+-----+-----+-----+-----+</span><br></pre></td></tr></table></figure>
+<h4 id="3-1-1-概述"><a href="#3-1-1-概述" class="headerlink" title="3.1.1 概述"></a>3.1.1 概述</h4><p>虽然是一个新的field, 但网络中仍然有很多不兼容DS field的设备, 并且precedenhce对于PHB(Per-hob Behaviour)来说已经有大量应用, 所以向前兼容是不可避免的. 我们希望DS能在兼容DS的节点中仍然使用. 因此使用codepoint对应TOS中的precedence, codepoint也称为DSCP值.<br>理论上我们使用DSCP时可以设计出64种(2^6)通讯类型, 但实际网络中我们通常将PHB总结为以下4种类型:</p>
+<h4 id="3-1-2-分类"><a href="#3-1-2-分类" class="headerlink" title="3.1.2 分类"></a>3.1.2 分类</h4><ol>
+<li><p>CS(Class Selector, 类加速器): 与IP的precedence field保持兼容性, 格式为<code>xxx 000</code>.</p>
+<table>
+<thead>
+<tr>
+<th align="center">DSCP</th>
+<th align="center">Binary</th>
+<th align="center">Hex</th>
+<th align="center">Decimal</th>
+<th align="center">Typical application</th>
+<th align="center">Examples</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">CS0</td>
+<td align="center">000 000</td>
+<td align="center">0x00</td>
+<td align="center">0</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">CS1</td>
+<td align="center">001 000</td>
+<td align="center">0x08</td>
+<td align="center">8</td>
+<td align="center">Scavenger</td>
+<td align="center">YouTube, Gaming, P2P</td>
+</tr>
+<tr>
+<td align="center">CS2</td>
+<td align="center">010 000</td>
+<td align="center">0x10</td>
+<td align="center">16</td>
+<td align="center">OAM</td>
+<td align="center">SNMP,SSH,Syslog</td>
+</tr>
+<tr>
+<td align="center">CS3</td>
+<td align="center">011 000</td>
+<td align="center">0x18</td>
+<td align="center">24</td>
+<td align="center">Signaling</td>
+<td align="center">SCCP,SIP,H.323</td>
+</tr>
+<tr>
+<td align="center">CS4</td>
+<td align="center">100 000</td>
+<td align="center">0x20</td>
+<td align="center">32</td>
+<td align="center">Realtime</td>
+<td align="center">TelePresence</td>
+</tr>
+<tr>
+<td align="center">CS5</td>
+<td align="center">101 000</td>
+<td align="center">0x28</td>
+<td align="center">40</td>
+<td align="center">Broadcast video</td>
+<td align="center">Cisco IPVS</td>
+</tr>
+<tr>
+<td align="center">CS6</td>
+<td align="center">110 000</td>
+<td align="center">0x30</td>
+<td align="center">48</td>
+<td align="center">Network control</td>
+<td align="center">EIGRP,OSPF,HSRP,IKE</td>
+</tr>
+<tr>
+<td align="center">CS7</td>
+<td align="center">111 000</td>
+<td align="center">0x38</td>
+<td align="center">56</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+</li>
+<li><p>EF(Expedited Forwarding, 加速转发): 确保PHB低延迟(low delay)和低丢包率(low loss)和尽量少的抖动(low jitter), 格式为<code>101 110</code>. 这些属性适合于声音, 视频和其他实时服务. EF总是被给予更高的优先权.</p>
+</li>
+<li><p>AF(Assured Forwarding, 确保转发): 在规定的条件下确保传递成功, 格式为<code>xxx yy0</code>, x表示丢包可能性从小到大, y表示三个级别, y值越小丢包率越小, 反之亦然.</p>
+<table>
+<thead>
+<tr>
+<th align="center">级别</th>
+<th align="center">低</th>
+<th align="center">中</th>
+<th align="center">高</th>
+<th align="center">极高</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">低丢包可能性</td>
+<td align="center">AF11 (001 010)</td>
+<td align="center">AF21 (010 010)</td>
+<td align="center">AF31 (011 010)</td>
+<td align="center">AF41 (100 010)</td>
+</tr>
+<tr>
+<td align="center">中丢包可能性</td>
+<td align="center">AF12 (001 100)</td>
+<td align="center">AF22 (010 100)</td>
+<td align="center">AF32 (011 100)</td>
+<td align="center">AF42 (100 100)</td>
+</tr>
+<tr>
+<td align="center">高丢包可能性</td>
+<td align="center">AF13 (001 110)</td>
+<td align="center">AF23 (010 110)</td>
+<td align="center">AF33 (011 110)</td>
+<td align="center">AF43 (100 110)</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>DF(Default Forwarding, 默认): 尽最大努力型的通讯, 格式为<code>000 000</code></p>
+</li>
+</ol>
+<h4 id="3-1-3-具体应用"><a href="#3-1-3-具体应用" class="headerlink" title="3.1.3 具体应用"></a>3.1.3 具体应用</h4><ul>
+<li>CS6和CS7默认用于协议报文, 因为如果这些报文无法接收的话会引起协议中断, 而且是大多数厂商硬件队列里最高优先级的报文.</li>
+<li>EF用于承载语音的流量, 因为语音要求低延迟, 低抖动, 低丢包率, 是仅次于协议报文的最重要的报文.</li>
+<li>AF4用来承载语音的信令流量, 这里大家可能会有疑问为什么这里语音要优先于信令呢? 其实是这样的, 这里的信令是电话的呼叫控制, 你是可以忍受在接通的时候等待几秒钟的, 但是绝对不能允许在通话的时候的中断. 所以语音要优先于信令.</li>
+<li>AF3可以用来承载IPTV的直播流量, 直播的实时性很强需要连续性和大吞吐量的保证.</li>
+<li>AF2可以用来承载VOD的流量, 相对于直播VOD要求实时性不是很强, 允许有时延或者缓冲.</li>
+<li>AF1可以承载不是很重要的专线业务, 因为专线业务相对于IPTV和VOICE来讲,IPTV和VOICE是运营商最关键的业务, 需要最优先来保证. 当然面向银行之类需要钻石级保证的业务来讲, 可以安排为AF4甚至为EF</li>
+<li>最不重要的业务是Internet业务, 可以放在BE模型来传输. 这也是我们为什么老抱怨网络不好<br>可以说, 有了DSCP, 就初步实现了通讯业务中的时间管理, 我们日常的通讯业务才能保质保量地高效运行</li>
+</ul>
+<h3 id="3-2-CU-currently-unused"><a href="#3-2-CU-currently-unused" class="headerlink" title="3.2 CU(currently unused)"></a>3.2 CU(currently unused)</h3><p>保留位, 一般兼容DS的设备会忽略这个field. 现在作为ECN(Explicit Congestion Notification, 显式拥塞通知)位.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/599f.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Diamond Inheritance</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/3759.html">
+        <span class="next-text nav-default">Evolution of HTTP</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/33da.html';
+  var disqus_title = "TOS and DS";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

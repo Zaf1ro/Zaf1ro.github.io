@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="BFS for Graph"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/9bcb.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/9bcb.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/9bcb.html"/>
+
+
+<meta name="description" content="542. 01 MatrixGiven an m x n binary matrix mat, return the distance of the nearest 0 for each cell.The distance between two adjacent cells is 1. Example 1: Input: mat &#x3D; [[0,0,0],[0,1,0],[0,0,0]]Output">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BFS for Graph">
+<meta property="og:url" content="https://zaf1ro.github.io/p/9bcb.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="542. 01 MatrixGiven an m x n binary matrix mat, return the distance of the nearest 0 for each cell.The distance between two adjacent cells is 1. Example 1: Input: mat &#x3D; [[0,0,0],[0,1,0],[0,0,0]]Output">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-03-06T16:58:37.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.025Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+BFS for Graph - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#542-01-Matrix"><span class="toc-text">542. 01 Matrix</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Solution"><span class="toc-text">1. Solution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Solution-2"><span class="toc-text">2. Solution 2</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#934-Shortest-Bridge"><span class="toc-text">934. Shortest Bridge</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Solution-1"><span class="toc-text">1. Solution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#127-Word-Ladder"><span class="toc-text">127. Word Ladder</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Solution-2"><span class="toc-text">1. Solution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Solution"><span class="toc-text">2. Solution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#854-K-Similar-Strings"><span class="toc-text">854. K-Similar Strings</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Solution-3"><span class="toc-text">1. Solution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Solution-1"><span class="toc-text">2. Solution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#301-Remove-Invalid-Parentheses"><span class="toc-text">301. Remove Invalid Parentheses</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Solution"><span class="toc-text">Solution</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          BFS for Graph
+        
+      </h1>
+      <time class="post-time">
+          03/06/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="542-01-Matrix"><a href="#542-01-Matrix" class="headerlink" title="542. 01 Matrix"></a>542. 01 Matrix</h2><p>Given an <code>m x n</code> binary matrix <code>mat</code>, return the distance of the nearest <code>0</code> for each cell.<br>The distance between two adjacent cells is <code>1</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: mat = [[0,0,0],[0,1,0],[0,0,0]]</span><br><span class="line">Output: [[0,0,0],[0,1,0],[0,0,0]]</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: mat = [[0,0,0],[0,1,0],[1,1,1]]</span><br><span class="line">Output: [[0,0,0],[0,1,0],[1,2,1]]</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-Solution"><a href="#1-Solution" class="headerlink" title="1. Solution"></a>1. Solution</h3><p>从每个值为0的格子出发, BFS扫描整个matrix, 并更新距离. 单次扫描matrix的时间复杂度为<code>O(mn)</code>(m为matrix的行数, n为matrix的列数), 因此该算法的时间复杂度为<code>O(mn * mn)</code>.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> x;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> y;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> dist;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y, <span class="type">int</span> dist)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.x = x;</span><br><span class="line">            <span class="built_in">this</span>.y = y;</span><br><span class="line">            <span class="built_in">this</span>.dist = dist;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[][] dirs = &#123;&#123;<span class="number">0</span>,<span class="number">1</span>&#125;, &#123;<span class="number">1</span>,<span class="number">0</span>&#125;, &#123;<span class="number">0</span>,-<span class="number">1</span>&#125;, &#123;-<span class="number">1</span>,<span class="number">0</span>&#125;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[][] updateMatrix(<span class="type">int</span>[][] mat) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> mat.length, n = mat[<span class="number">0</span>].length;</span><br><span class="line">        <span class="type">int</span>[][] res = <span class="keyword">new</span> <span class="title class_">int</span>[m][n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            Arrays.fill(res[i], Integer.MAX_VALUE);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (mat[i][j] == <span class="number">0</span>) bfs(mat, res, i, j, m, n);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">bfs</span><span class="params">(<span class="type">int</span>[][] mat, <span class="type">int</span>[][] res, <span class="type">int</span> i, <span class="type">int</span> j, <span class="type">int</span> m, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        res[i][j] = <span class="number">0</span>;</span><br><span class="line">        Queue&lt;Node&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        q.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(i, j, <span class="number">0</span>));</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> q.poll();</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span>[] dir: dirs) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> node.x+dir[<span class="number">0</span>], y = node.y+dir[<span class="number">1</span>], d = node.dist+<span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span> (x &lt; <span class="number">0</span> || x &gt;= m || y &lt; <span class="number">0</span> || y &gt;= n || d &gt;= res[x][y]) <span class="keyword">continue</span>;</span><br><span class="line">                res[x][y] = d;</span><br><span class="line">                q.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(x, y, d));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-Solution-2"><a href="#2-Solution-2" class="headerlink" title="2. Solution 2"></a>2. Solution 2</h3><p>方法1的核心思路是从每个0出发, 遍历整个表, 若整个表大部分为0, 则会不断更新0上的距离值, 从而导致时间复杂度偏高; 可将所有值为0的格子放入queue, 不断逼近1所在的格子, 可避免重复访问值为0的格子, 时间复杂度为<code>O(mn)</code>.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> x;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> y;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.x = x;</span><br><span class="line">            <span class="built_in">this</span>.y = y;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[][] dirs = &#123;&#123;<span class="number">0</span>,<span class="number">1</span>&#125;, &#123;<span class="number">1</span>,<span class="number">0</span>&#125;, &#123;<span class="number">0</span>,-<span class="number">1</span>&#125;, &#123;-<span class="number">1</span>,<span class="number">0</span>&#125;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[][] updateMatrix(<span class="type">int</span>[][] mat) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> mat.length, n = mat[<span class="number">0</span>].length;</span><br><span class="line">        <span class="type">int</span>[][] res = <span class="keyword">new</span> <span class="title class_">int</span>[m][n];</span><br><span class="line">        <span class="type">boolean</span>[][] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[m][n];</span><br><span class="line">        Queue&lt;Node&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (mat[i][j] == <span class="number">0</span>) q.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(i, j)); <span class="comment">// add all </span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">dist</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> q.size();</span><br><span class="line">            <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> q.poll();</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span>[] dir: dirs) &#123;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> node.x + dir[<span class="number">0</span>], y = node.y + dir[<span class="number">1</span>];</span><br><span class="line">                    <span class="keyword">if</span> (x &lt; <span class="number">0</span> || x &gt;= m || y &lt; <span class="number">0</span> || y &gt;= n || visited[x][y]) <span class="keyword">continue</span>;</span><br><span class="line">                    <span class="keyword">if</span> (mat[x][y] == <span class="number">1</span>) res[x][y] = dist; <span class="comment">// set value at the first time, must be the shortest distance</span></span><br><span class="line">                    visited[x][y] = <span class="literal">true</span>;</span><br><span class="line">                    q.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(x, y));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            ++dist; <span class="comment">// increase distance for each circle</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="934-Shortest-Bridge"><a href="#934-Shortest-Bridge" class="headerlink" title="934. Shortest Bridge"></a>934. Shortest Bridge</h2><p>You are given an <code>n x n</code> binary matrix <code>grid</code> where <code>1</code> represents land and <code>0</code> represents water.<br>An island is a 4-directionally connected group of <code>1</code>&#39;s not connected to any other <code>1</code>&#39;s. There are <strong>exactly two islands</strong> in <code>grid</code>.<br>You may change <code>0</code>&#39;s to <code>1</code>&#39;s to connect the two islands to form one island.<br>Return the smallest number of <code>0</code>&#39;s you must flip to connect the two islands.</p>
+<h3 id="1-Solution-1"><a href="#1-Solution-1" class="headerlink" title="1. Solution"></a>1. Solution</h3><p>与上题相同, 先将第一个岛屿的所有格子加入queue, 再BFS搜索第二个岛屿, 返回首次抵达第二个岛屿的距离.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> x, y;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.x = x;</span><br><span class="line">            <span class="built_in">this</span>.y = y;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span>[][] dirs = &#123;&#123;<span class="number">1</span>,<span class="number">0</span>&#125;, &#123;<span class="number">0</span>,<span class="number">1</span>&#125;, &#123;-<span class="number">1</span>,<span class="number">0</span>&#125;, &#123;<span class="number">0</span>,-<span class="number">1</span>&#125;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">shortestBridge</span><span class="params">(<span class="type">int</span>[][] grid)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> grid.length, n = grid[<span class="number">0</span>].length;</span><br><span class="line">        Queue&lt;Node&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        <span class="type">boolean</span>[][] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[m][n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (grid[i][j] == <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">                dfs(grid, visited, q, i, j, m, n);</span><br><span class="line">                i = m;</span><br><span class="line">                j = n;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> q.size();</span><br><span class="line">            <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> q.poll();</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span>[] dir: dirs) &#123;</span><br><span class="line">                    <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> node.x + dir[<span class="number">0</span>], y = node.y + dir[<span class="number">1</span>];</span><br><span class="line">                    <span class="keyword">if</span> (x &lt; <span class="number">0</span> || x &gt;= m || y &lt; <span class="number">0</span> || y &gt;= n || visited[x][y]) <span class="keyword">continue</span>;</span><br><span class="line">                    <span class="keyword">if</span> (grid[x][y] == <span class="number">1</span>) <span class="keyword">return</span> res;</span><br><span class="line">                    visited[x][y] = <span class="literal">true</span>;</span><br><span class="line">                    q.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(x, y));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            res++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">dfs</span><span class="params">(<span class="type">int</span>[][] grid, <span class="type">boolean</span>[][] visited, Queue&lt;Node&gt; q, <span class="type">int</span> i, <span class="type">int</span> j, <span class="type">int</span> m, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (i &lt; <span class="number">0</span> || i &gt;= m || j &lt; <span class="number">0</span> || j &gt;= n || visited[i][j] || grid[i][j] == <span class="number">0</span>) <span class="keyword">return</span>;</span><br><span class="line">        q.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(i, j));</span><br><span class="line">        visited[i][j] = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] dir: dirs) &#123;</span><br><span class="line">            dfs(grid, visited, q, i+dir[<span class="number">0</span>], j+dir[<span class="number">1</span>], m, n);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="127-Word-Ladder"><a href="#127-Word-Ladder" class="headerlink" title="127. Word Ladder"></a>127. Word Ladder</h2><p>A <strong>transformation sequence</strong> from word beginWord to word endWord using a dictionary wordList is a sequence of words $\text{beginWord} \rightarrow s_1 \rightarrow s_2 \rightarrow \cdots \rightarrow s_k$ such that:</p>
+<ul>
+<li>Every adjacent pair of words differs by a single letter.</li>
+<li>Every $s_i$ for $1 \le i \le k$ is in <code>wordList</code>. Note that <code>beginWord</code> does not need to be in <code>wordList</code>.</li>
+<li>$s_k &#x3D;&#x3D; \text{endWord}$</li>
+</ul>
+<p>Given two words, <code>beginWord</code> and <code>endWord</code>, and a dictionary <code>wordList</code>, return the <strong>number of words</strong> in the <strong>shortest transformation sequence</strong> from <code>beginWord</code> to <code>endWord</code>, or <code>0</code> if no such sequence exists.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: beginWord = &quot;hit&quot;, endWord = &quot;cog&quot;, wordList = [&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;lot&quot;,&quot;log&quot;,&quot;cog&quot;]</span><br><span class="line">Output: 5</span><br><span class="line">Explanation: One shortest transformation sequence is &quot;hit&quot; -&gt; &quot;hot&quot; -&gt; &quot;dot&quot; -&gt; &quot;dog&quot; -&gt; cog&quot;, which is 5 words long.</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: beginWord = &quot;hit&quot;, endWord = &quot;cog&quot;, wordList = [&quot;hot&quot;,&quot;dot&quot;,&quot;dog&quot;,&quot;lot&quot;,&quot;log&quot;]</span><br><span class="line">Output: 0</span><br><span class="line">Explanation: The endWord &quot;cog&quot; is not in wordList, therefore there is no valid transformation sequence.</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-Solution-2"><a href="#1-Solution-2" class="headerlink" title="1. Solution"></a>1. Solution</h3><p>将每个单词看作graph中的node, 则<strong>one letter change</strong>为node间的edge. 先建立graph, 从beginWord出发, BFS搜索endWord. 算法复杂度为<code>$O(n^2 * c)$</code>(n为单词个数, c为一个单词的长度).</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">ladderLength</span><span class="params">(String beginWord, String endWord, List&lt;String&gt; wordList)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!wordList.contains(endWord)) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="comment">// construct graph</span></span><br><span class="line">        wordList.add(beginWord);</span><br><span class="line">        Map&lt;String, List&lt;String&gt;&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (String word: wordList) &#123;</span><br><span class="line">            map.put(word, <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; wordList.size(); i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; wordList.size(); j++) &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">s1</span> <span class="operator">=</span> wordList.get(i), s2 = wordList.get(j);</span><br><span class="line">                <span class="keyword">if</span> (isOneLetterChange(s1, s2)) &#123;</span><br><span class="line">                    map.get(s1).add(s2);</span><br><span class="line">                    map.get(s2).add(s1);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// bfs</span></span><br><span class="line">        Set&lt;String&gt; visited = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        Queue&lt;String&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        q.offer(beginWord);</span><br><span class="line">        visited.add(beginWord);</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> q.size();</span><br><span class="line">            ++res;</span><br><span class="line">            <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">s</span> <span class="operator">=</span> q.poll();</span><br><span class="line">                List&lt;String&gt; arr = map.get(s);</span><br><span class="line">                <span class="keyword">if</span> (arr == <span class="literal">null</span>) <span class="keyword">continue</span>;</span><br><span class="line">                <span class="keyword">for</span> (String t: arr) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (visited.contains(t)) <span class="keyword">continue</span>;</span><br><span class="line">                    <span class="keyword">if</span> (t.equals(endWord)) <span class="keyword">return</span> res;</span><br><span class="line">                    q.offer(t);</span><br><span class="line">                    visited.add(t);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isOneLetterChange</span><span class="params">(String s1, String s2)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s1.length(); i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s1.charAt(i) != s2.charAt(i)) res++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res == <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-Solution"><a href="#2-Solution" class="headerlink" title="2. Solution"></a>2. Solution</h3><p>上述解法需两两对比wordList中的单词, 因此时间复杂度为$O(n^2)$级别, 可换一种思路: 将一个单词的每个字母替换为一个通用字符, 如<code>abc</code>, 可生成<code>*bc</code>, <code>a*c</code>, <code>ab*</code>三个单词, 可将这三个单词看作graph中<code>abc</code>节点的edge, 若两个单词相差一个字符, 则会共享一个edge, 从而避免两两对比字符串. 算法的时间复杂度为<code>$O(n * c)$</code>.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Integer&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="variable">idx</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> List&lt;List&lt;Integer&gt;&gt; edges = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">ladderLength</span><span class="params">(String beginWord, String endWord, List&lt;String&gt; wordList)</span> &#123;</span><br><span class="line">        <span class="comment">// connect all words</span></span><br><span class="line">        addEdge(beginWord);</span><br><span class="line">        <span class="keyword">for</span> (String word: wordList) &#123;</span><br><span class="line">            addEdge(word);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!map.containsKey(endWord)) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="comment">// bfs</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>, begin = map.get(beginWord), end = map.get(endWord);</span><br><span class="line">        Queue&lt;Integer&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        q.offer(begin);</span><br><span class="line">        Set&lt;Integer&gt; visited = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        visited.add(begin);</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> q.size();</span><br><span class="line">            ++res;</span><br><span class="line">            <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> q.poll();</span><br><span class="line">                List&lt;Integer&gt; arr = edges.get(i);</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> next: arr) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (next == end) <span class="keyword">return</span> res / <span class="number">2</span> + <span class="number">1</span>;</span><br><span class="line">                    <span class="keyword">if</span> (visited.contains(next)) <span class="keyword">continue</span>;</span><br><span class="line">                    visited.add(next);</span><br><span class="line">                    q.offer(next);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// create all edges</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">addEdge</span><span class="params">(String word)</span> &#123;</span><br><span class="line">        <span class="type">char</span>[] arr = word.toCharArray();</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">            arr[i] = <span class="string">&#x27;*&#x27;</span>;</span><br><span class="line">            connect(word, <span class="keyword">new</span> <span class="title class_">String</span>(arr));</span><br><span class="line">            arr[i] = word.charAt(i);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// connect node and edge</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">connect</span><span class="params">(String w1, String w2)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">i1</span> <span class="operator">=</span> getWordIdx(w1), i2 = getWordIdx(w2);</span><br><span class="line">        edges.get(i1).add(i2);</span><br><span class="line">        edges.get(i2).add(i1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// get index of node/edge in this.edges</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">getWordIdx</span><span class="params">(String word)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!map.containsKey(word)) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> idx;</span><br><span class="line">            map.put(word, idx++);</span><br><span class="line">            edges.add(<span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;());</span><br><span class="line">            <span class="keyword">return</span> res;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> map.get(word);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="854-K-Similar-Strings"><a href="#854-K-Similar-Strings" class="headerlink" title="854. K-Similar Strings"></a>854. K-Similar Strings</h2><p>Strings <code>s1</code> and <code>s2</code> are <strong>k-similar</strong>(for some non-negative integer <code>k</code>) if we can swap the positions of two letters in <code>s1</code> exactly <code>k</code> times so that the resulting string equals <code>s2</code>.</p>
+<p>Given two anagrams <code>s1</code> and <code>s2</code>, return the smallest <code>k</code> for which <code>s1</code> and <code>s2</code> are <strong>k-similar</strong>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s1 = &quot;ab&quot;, s2 = &quot;ba&quot;</span><br><span class="line">Output: 1</span><br><span class="line">Explanation: The two string are 1-similar because we can use one swap to change s1 to s2: &quot;ab&quot; --&gt; &quot;ba&quot;.</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s1 = &quot;abc&quot;, s2 = &quot;bca&quot;</span><br><span class="line">Output: 2</span><br><span class="line">Explanation: The two strings are 2-similar because we can use two swaps to change s1 to s2: &quot;abc&quot; --&gt; &quot;bac&quot; --&gt; &quot;bca&quot;.</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-Solution-3"><a href="#1-Solution-3" class="headerlink" title="1. Solution"></a>1. Solution</h3><p>将<code>s1</code>看作graph的起始node, 其permutation为相邻节点, 如<code>abc</code>, 其permutation为<code>bac</code><br>, <code>cba</code>, <code>acb</code>. 从<code>s1</code>出发, BFS拓展整个graph, 直到抵达<code>s2</code>. 算法的时间复杂度为<code>$O(n^n)$</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> Queue&lt;String&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> Set&lt;String&gt; visited = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">kSimilarity</span><span class="params">(String s1, String s2)</span> &#123;</span><br><span class="line">        q.offer(s1);</span><br><span class="line">        visited.add(s1);</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> q.size();</span><br><span class="line">            <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">word</span> <span class="operator">=</span> q.poll();</span><br><span class="line">                <span class="keyword">if</span> (word.equals(s2)) <span class="keyword">return</span> res;</span><br><span class="line">                visited.add(word);</span><br><span class="line">                getPermutation(word.toCharArray());</span><br><span class="line">            &#125;</span><br><span class="line">            ++res;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">getPermutation</span><span class="params">(<span class="type">char</span>[] s)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s.length; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> i+<span class="number">1</span>; j &lt; s.length; j++) &#123;</span><br><span class="line">                swap(s, i, j);</span><br><span class="line">                <span class="type">String</span> <span class="variable">word</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(s);</span><br><span class="line">                <span class="keyword">if</span> (!visited.contains(word)) &#123;</span><br><span class="line">                    q.offer(word);</span><br><span class="line">                &#125;</span><br><span class="line">                swap(s, i, j);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">swap</span><span class="params">(<span class="type">char</span>[] arr, <span class="type">int</span> i, <span class="type">int</span> j)</span> &#123;</span><br><span class="line">        <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> arr[i];</span><br><span class="line">        arr[i] = arr[j];</span><br><span class="line">        arr[j] = c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-Solution-1"><a href="#2-Solution-1" class="headerlink" title="2. Solution"></a>2. Solution</h3><p>上述算法的时间复杂度过高, 因为其中包含大量不必要的swap: 若<code>s1</code>与<code>s2</code>在<code>i</code>位置不同, 则必定需要一次swap, 若相同, 则一定不需要swap, 因此, 生成s1的permutation时, 可跳过所有<code>s1[i] == s2[i]</code>的情况; 若<code>s1[i] != s2[i]</code>, 则从<code>s1</code>的<code>[i+1 ...)</code>范围上寻找与<code>s2[i]</code>相同的字符并交换. 算法的时间复杂度为<code>$O(n^2)</code>.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> String word;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> pos;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(String word, <span class="type">int</span> pos)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.word = word;</span><br><span class="line">            <span class="built_in">this</span>.pos = pos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">kSimilarity</span><span class="params">(String s1, String s2)</span> &#123;</span><br><span class="line">        Queue&lt;Node&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">        q.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(s1, <span class="number">0</span>));</span><br><span class="line">        Set&lt;String&gt; visited = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        visited.add(s1);</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">size</span> <span class="operator">=</span> q.size();</span><br><span class="line">            <span class="keyword">while</span> (size-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="type">Node</span> <span class="variable">node</span> <span class="operator">=</span> q.poll();</span><br><span class="line">                <span class="type">String</span> <span class="variable">word</span> <span class="operator">=</span> node.word;</span><br><span class="line">                <span class="type">int</span> <span class="variable">pos</span> <span class="operator">=</span> node.pos;</span><br><span class="line">                <span class="keyword">if</span> (word.equals(s2)) <span class="keyword">return</span> res;</span><br><span class="line">                <span class="keyword">while</span> (pos &lt; word.length() &amp;&amp; word.charAt(pos) == s2.charAt(pos)) pos++;</span><br><span class="line">                <span class="type">char</span>[] arr = word.toCharArray();</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> pos + <span class="number">1</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (arr[i] == s2.charAt(i)) <span class="keyword">continue</span>;</span><br><span class="line">                    <span class="keyword">if</span> (arr[i] == s2.charAt(pos)) &#123;</span><br><span class="line">                        swap(arr, pos, i);</span><br><span class="line">                        <span class="type">String</span> <span class="variable">w</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(arr);</span><br><span class="line">                        <span class="keyword">if</span> (!visited.contains(w)) &#123;</span><br><span class="line">                            q.offer(<span class="keyword">new</span> <span class="title class_">Node</span>(w, pos+<span class="number">1</span>));</span><br><span class="line">                            visited.add(w);</span><br><span class="line">                        &#125;</span><br><span class="line">                        swap(arr, pos, i);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            ++res;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">swap</span><span class="params">(<span class="type">char</span>[] arr, <span class="type">int</span> i, <span class="type">int</span> j)</span> &#123;</span><br><span class="line">        <span class="type">char</span> <span class="variable">c</span> <span class="operator">=</span> arr[i];</span><br><span class="line">        arr[i] = arr[j];</span><br><span class="line">        arr[j] = c;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="301-Remove-Invalid-Parentheses"><a href="#301-Remove-Invalid-Parentheses" class="headerlink" title="301. Remove Invalid Parentheses"></a>301. Remove Invalid Parentheses</h2><p>Given a string <code>s</code> that contains parentheses and letters, remove the minimum number of invalid parentheses to make the input string valid.</p>
+<p>Return a list of unique strings that are valid with the minimum number of removals. You may return the answer in any order.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;()())()&quot;</span><br><span class="line">Output: [&quot;(())()&quot;,&quot;()()()&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;(a)())()&quot;</span><br><span class="line">Output: [&quot;(a())()&quot;,&quot;(a)()()&quot;]</span><br></pre></td></tr></table></figure>
+
+<p>Example 3:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: s = &quot;)(&quot;</span><br><span class="line">Output: [&quot;&quot;]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h3><p>题目要求最少删除次数, 因此可使用BFS依次删除一个字符, 当出现合法字符串时, 说明可以停止删除操作. 删除字符时需注意两点:</p>
+<ul>
+<li>不要删除除<code>(</code>, <code>)</code>外的其他字符</li>
+<li>若两个相同字符相邻, 删除第一个字符或第二个字符会产生相同字符串, 因此可跳过以加速算法</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> List&lt;String&gt; <span class="title function_">removeInvalidParentheses</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        List&lt;String&gt; res = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        Set&lt;String&gt; set = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        set.add(s);</span><br><span class="line">        <span class="keyword">while</span> (!set.isEmpty()) &#123;</span><br><span class="line">            Set&lt;String&gt; next = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (String s1: set) &#123;</span><br><span class="line">                <span class="keyword">if</span> (isValid(s1)) &#123;</span><br><span class="line">                    res.add(s1);</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s1.length(); i++) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (i &gt; <span class="number">0</span> &amp;&amp; s1.charAt(i-<span class="number">1</span>) == s.charAt(i)) <span class="keyword">continue</span>;</span><br><span class="line">                    <span class="keyword">if</span> (s1.charAt(i) != <span class="string">&#x27;(&#x27;</span> &amp;&amp; s1.charAt(i) != <span class="string">&#x27;)&#x27;</span>) <span class="keyword">continue</span>;</span><br><span class="line">                    next.add(s1.substring(<span class="number">0</span>, i) + s1.substring(i+<span class="number">1</span>));</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!res.isEmpty()) <span class="keyword">break</span>;</span><br><span class="line">            set = next;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isValid</span><span class="params">(String s)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; s.length(); i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s.charAt(i) == <span class="string">&#x27;(&#x27;</span>) &#123;</span><br><span class="line">                cnt++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (s.charAt(i) == <span class="string">&#x27;)&#x27;</span>) &#123;</span><br><span class="line">                cnt--;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (cnt &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> cnt == <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/afab.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">MST (Minimum Spanning Tree)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/1d0a.html">
+        <span class="next-text nav-default">Sort an Array</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/9bcb.html';
+  var disqus_title = "BFS for Graph";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

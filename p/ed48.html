@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="InnoDB Transaction Model"/>
+
+
+
+
+  <meta name="keywords" content="Database," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/ed48.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/ed48.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/ed48.html"/>
+
+
+<meta name="description" content="InnoDB事务模型旨在结合multi-versioning database(多版本数据库, 保留原始数据和最新修改的数据)和two-phase locking(二段锁协议, 每个事务的执行分为加锁和解锁两个阶段). 与Oracle类似, InnoDB会在行级上加锁, 并默认使用nonlocking consistent read(非锁定一致性读)查询数据. 通常情况下, 多个用户可锁住多个表中">
+<meta property="og:type" content="article">
+<meta property="og:title" content="InnoDB Transaction Model">
+<meta property="og:url" content="https://zaf1ro.github.io/p/ed48.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="InnoDB事务模型旨在结合multi-versioning database(多版本数据库, 保留原始数据和最新修改的数据)和two-phase locking(二段锁协议, 每个事务的执行分为加锁和解锁两个阶段). 与Oracle类似, InnoDB会在行级上加锁, 并默认使用nonlocking consistent read(非锁定一致性读)查询数据. 通常情况下, 多个用户可锁住多个表中">
+<meta property="og:locale">
+<meta property="article:published_time" content="2022-08-26T20:58:50.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.033Z">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+InnoDB Transaction Model - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Transaction-Isolation-Levels"><span class="toc-text">1. Transaction Isolation Levels</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-REPEATABLE-READ"><span class="toc-text">1.1 REPEATABLE READ</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-READ-COMMITTED"><span class="toc-text">1.2 READ COMMITTED</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-READ-UNCOMMITTED"><span class="toc-text">1.3 READ UNCOMMITTED</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-SERIALIZABLE"><span class="toc-text">1.4 SERIALIZABLE</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Autocommit-Commit-and-Rollback"><span class="toc-text">2. Autocommit, Commit, and Rollback</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Grouping-DML-Operations-with-Transactions"><span class="toc-text">2.1 Grouping DML Operations with Transactions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Transactions-in-Client-Side-Languages"><span class="toc-text">2.2 Transactions in Client-Side Languages</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Consistent-Nonlocking-Reads"><span class="toc-text">3. Consistent Nonlocking Reads</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Locking-Reads"><span class="toc-text">4. Locking Reads</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Locking-Read-Examples"><span class="toc-text">4.1 Locking Read Examples</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Locking-Read-Concurrency-with-NOWAIT-and-SKIP-LOCKED"><span class="toc-text">4.2 Locking Read Concurrency with NOWAIT and SKIP LOCKED</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          InnoDB Transaction Model
+        
+      </h1>
+      <time class="post-time">
+          08/26/22
+      </time>
+    </header>
+
+    <div class="post-content">
+      <p>InnoDB事务模型旨在结合<strong>multi-versioning database</strong>(多版本数据库, 保留原始数据和最新修改的数据)和<strong>two-phase locking</strong>(二段锁协议, 每个事务的执行分为加锁和解锁两个阶段). 与Oracle类似, InnoDB会在行级上加锁, 并默认使用<strong>nonlocking consistent read</strong>(非锁定一致性读)查询数据. 通常情况下, 多个用户可锁住多个表中的多个行, 或多个行集合, 且不会造导致内存耗尽.</p>
+<h2 id="1-Transaction-Isolation-Levels"><a href="#1-Transaction-Isolation-Levels" class="headerlink" title="1. Transaction Isolation Levels"></a>1. Transaction Isolation Levels</h2><p>事务隔离是数据库的基础之一. <strong>Isolation</strong>是ACID中的<code>I</code>; 当多个事务同时执行查询或修改时, 不同的隔离级别会在性能, 可靠性, 一致性, 和可再现性上做出不同取舍. InnoDB提供了SQL standard中的四种事务隔离级别: </p>
+<ul>
+<li>READ UNCOMMITTED</li>
+<li>READ COMMITTED</li>
+<li>REPEATABLE READ</li>
+<li>SERIALIZABLE</li>
+</ul>
+<p>InnoDB的默认事务隔离级别为<strong>REPEATABLE READ</strong>. 用户可通过<code>SET TRANSACTION</code>语句修改隔离级别.</p>
+<p>InnoDB中的每个事务隔离级别拥有自己的加锁策略. 对于ACID合规性较高的数据, 可使用默认的<code>REPEATABLE READ</code>; 对一致性和可再现性要求不高的场景(如批量报告), 可使用<code>READ COMMITTED</code>, 甚至是<code>READ UNCOMMITTED</code>, 来降低锁的开销. <code>SERIALIZABLE</code>比<code>REPEATABLE READ</code>更严格, 通常用于一些特殊场景, 如<strong>XA transaction</strong>, 以及解决并发和死锁问题.<br>以下是MySQL中的不同事务隔离级别, 使用频率从上往下依次降低:</p>
+<h3 id="1-1-REPEATABLE-READ"><a href="#1-1-REPEATABLE-READ" class="headerlink" title="1.1 REPEATABLE READ"></a>1.1 REPEATABLE READ</h3><p>InnoDB的默认隔离级别. 同一事务内的所有读取都基于第一次读取时的快照, 也就是说, 在同一事务执行多个<code>nonlocking SELECT</code>语句时, 其返回的结果一致; 对于<code>locking reads</code>(<code>SELECT FOR UPDATE/SHARE</code>), <code>UPDATE</code>, 和<code>DELETE</code>语句, 加锁方式取决于语句使用的是<strong>unique index</strong>(唯一索引)上的唯一搜索条件, 还是范围搜索条件:<br>    * 对于唯一索引上的唯一搜索条件, InnoDB只锁住单个索引记录<br>    * 对于其他搜索条件, InnoDB使用gap lock或next-key lock锁住扫描过的索引区间</p>
+<h3 id="1-2-READ-COMMITTED"><a href="#1-2-READ-COMMITTED" class="headerlink" title="1.2 READ COMMITTED"></a>1.2 READ COMMITTED</h3><p><code>locking read</code>, <code>UPDATE</code>, <code>DELETE</code>语句只会锁住索引记录, 不会锁住区间, 并允许其他事务插入区间, 导致出现<strong>phantom row</strong>(幻读). <code>Gap lock</code>只用于<strong>foreign-key constraint checking</strong>(外键约束检查)和<strong>duplicate-key checking</strong>(重复键检查).<br>只有基于行的binary logging才能使用<code>READ COMMITTED</code>, 若<code>binlog_format=MIXED</code>且使用该事务隔离级别, MySQL会自动改为row-based logging.<br>使用READ COMMITTED有以下影响:</p>
+<ul>
+<li>对于<code>UPDATE</code>和<code>DELETE</code>语句, InnoDB只锁定被更新过删除的行. MySQL会释放不匹配<code>WHERE</code>条件的行上的record lock, 这可以显著降低死锁出现概率.</li>
+<li>对于<code>UPDATE</code>语句, 若某一行已被锁住, InnoDB会执行<code>&quot;semi-consistent read&quot;</code>(半一致读): InnoDB会返回最新提交的数据给MySQL, MySQL决定哪些行匹配<code>WHERE</code>条件; 若某一行符合条件, MySQL会重读该行, 这时InnoDB会为该行上锁, 或等待该行上的锁释放.</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> t (</span><br><span class="line">  a <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>, </span><br><span class="line">  b <span class="type">INT</span></span><br><span class="line">) ENGINE <span class="operator">=</span> InnoDB;</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> t <span class="keyword">VALUES</span> (<span class="number">1</span>,<span class="number">2</span>),(<span class="number">2</span>,<span class="number">3</span>),(<span class="number">3</span>,<span class="number">2</span>),(<span class="number">4</span>,<span class="number">3</span>),(<span class="number">5</span>,<span class="number">2</span>);</span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br></pre></td></tr></table></figure>
+<p>以上表为例, 该表没有索引, 因此搜索和索引扫描会使用隐藏的<code>clustered index</code>(聚簇索引). 假设某个事务执行如下<code>UPDATE</code>语句:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># Session A</span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line"><span class="keyword">UPDATE</span> t <span class="keyword">SET</span> b <span class="operator">=</span> <span class="number">5</span> <span class="keyword">WHERE</span> b <span class="operator">=</span> <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+<p>之后第二个事务执行以下<code>UPDATE</code>语句:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># Session B</span><br><span class="line"><span class="keyword">UPDATE</span> t <span class="keyword">SET</span> b <span class="operator">=</span> <span class="number">4</span> <span class="keyword">WHERE</span> b <span class="operator">=</span> <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+<p>当InnoDB执行<code>UPDATE</code>时, 会首先获得每一行的<code>exclusive lock</code>(排它锁), 并决定是否修改. 若InnoDB无需修改该行, 则释放该锁; 否则InnoDB会一直持有该锁, 直到事务结束.<br>使用<code>REPEATABLE READ</code>隔离级别时, 第一个<code>UPDATE</code>会获得每一行上的<code>x-lock</code>, 且不会释放任何一个锁:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">x-lock(1,2); retain x-lock</span><br><span class="line">x-lock(2,3); update(2,3) to (2,5); retain x-lock</span><br><span class="line">x-lock(3,2); retain x-lock</span><br><span class="line">x-lock(4,3); update(4,3) to (4,5); retain x-lock</span><br><span class="line">x-lock(5,2); retain x-lock</span><br></pre></td></tr></table></figure>
+<p>第二个<code>UPDATE</code>也会尝试获得每一行上的<code>x-lock</code>, 但由于第一个<code>UPDATE</code>已持有锁, 因此只能等待第一个<code>UPDATE</code>提交或回滚.</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">x-lock(1,2); block and wait for first UPDATE to commit or roll back</span><br></pre></td></tr></table></figure>
+<p>使用<code>READ COMMITTED</code>时, 第一个<code>UPDATE</code>会先获得每一行上的<code>x-lock</code>, 并释放无需修改的行:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">x-lock(1,2); unlock(1,2)</span><br><span class="line">x-lock(2,3); update(2,3) to (2,5); retain x-lock</span><br><span class="line">x-lock(3,2); unlock(3,2)</span><br><span class="line">x-lock(4,3); update(4,3) to (4,5); retain x-lock</span><br><span class="line">x-lock(5,2); unlock(5,2)</span><br></pre></td></tr></table></figure>
+<p>对于第二个<code>UPDATE</code>, InnoDB执行<code>半一致读</code>, 向MySQL返回最新提交的行, MySQL负责判断哪些行符合<code>WHERE</code>条件:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">x-lock(1,2); update(1,2) to (1,4); retain x-lock</span><br><span class="line">x-lock(2,3); unlock(2,3)</span><br><span class="line">x-lock(3,2); update(3,2) to (3,4); retain x-lock</span><br><span class="line">x-lock(4,3); unlock(4,3)</span><br><span class="line">x-lock(5,2); update(5,2) to (5,4); retain x-lock</span><br></pre></td></tr></table></figure>
+
+<p>若<code>WHERE</code>条件中包含索引列, 且InnoDB使用该索引, 则只会在索引列上加锁. 以下面的表为例, 第一个<code>UPDATE</code>获得<code>b = 2</code>上的<code>x-lock</code>, 第二个<code>UPDATE</code>会被阻塞, 因此其也用到<code>b</code>列上的索引.</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> t (a <span class="type">INT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>, b <span class="type">INT</span>, c <span class="type">INT</span>, INDEX (b)) ENGINE <span class="operator">=</span> InnoDB;</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> t <span class="keyword">VALUES</span> (<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>),(<span class="number">2</span>,<span class="number">2</span>,<span class="number">4</span>);</span><br><span class="line"><span class="keyword">COMMIT</span>;</span><br><span class="line"></span><br><span class="line"># Session A</span><br><span class="line"><span class="keyword">START</span> TRANSACTION;</span><br><span class="line"><span class="keyword">UPDATE</span> t <span class="keyword">SET</span> b <span class="operator">=</span> <span class="number">3</span> <span class="keyword">WHERE</span> b <span class="operator">=</span> <span class="number">2</span> <span class="keyword">AND</span> c <span class="operator">=</span> <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line"># Session B</span><br><span class="line"><span class="keyword">UPDATE</span> t <span class="keyword">SET</span> b <span class="operator">=</span> <span class="number">4</span> <span class="keyword">WHERE</span> b <span class="operator">=</span> <span class="number">2</span> <span class="keyword">AND</span> c <span class="operator">=</span> <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3-READ-UNCOMMITTED"><a href="#1-3-READ-UNCOMMITTED" class="headerlink" title="1.3 READ UNCOMMITTED"></a>1.3 READ UNCOMMITTED</h3><p><code>SELECT</code>语句会以非阻塞方式执行, 但可能使用旧的行数据, 因此该事务隔离级别下, 读取是不一致性, 也称为<strong>dirty read</strong>(脏读).</p>
+<h3 id="1-4-SERIALIZABLE"><a href="#1-4-SERIALIZABLE" class="headerlink" title="1.4 SERIALIZABLE"></a>1.4 SERIALIZABLE</h3><p>该隔离级别与<code>REPEATABLE READ</code>相似, 但若<code>autocommit</code>被关闭, InnoDB会将所有<code>SELECT</code>语句转换为<code>SELECT FOR SHARE</code>. 若开启<code>autocommit</code>, <code>SELECT</code>会成为单个事务, 该事务是只读的, 若以<code>nonlocking read</code>执行, 且无需阻塞其他事务, 则该事务可序列化.</p>
+<h2 id="2-Autocommit-Commit-and-Rollback"><a href="#2-Autocommit-Commit-and-Rollback" class="headerlink" title="2. Autocommit, Commit, and Rollback"></a>2. Autocommit, Commit, and Rollback</h2><p>InnoDB中所有用户行为都被包含在<strong>transaction</strong>(事务)中. 若已开启<code>autocommit</code>, 每个SQL语句都成为一个事务. MySQL默认会为每个连接开启<code>autocommit</code>, 因此MySQL会在每个SQL语句后自动提交; 若SQL语句返回错误, 则根据错误类型选择提交或回滚.<br>开启<code>autocommit</code>后, 可使用<code>START TRANSACTION</code>或<code>BEGIN</code>语句开启一个<strong>multiple-statement transaction</strong>(多语句事务), 并以<code>COMMIT</code>或<code>ROLLBACK</code>语句结束.<br>若想关闭<code>autocommit</code>, 可执行<code>SET autocommit = 0</code>, session会自动开启一个事务, 直到遇到<code>COMMIT</code>或<code>ROLLBACK</code>才开启下一个事务.<br>若session关闭了<code>autocommit</code>且没有提交事务, MySQL会回滚该次事务.<br>即使没有执行<code>COMMIT</code>或<code>ROLLBACK</code>, 某些语句会导致事务结束, 例如: DDL语句(<code>ALTER EVENT</code>, <code>ALTER FUNCTION</code>, <code>ALTER PROCEDURE</code>, <code>ALTER SERVER</code>等), 修改table的语句(<code>ALTER USER</code>, <code>CREATE USER</code>, <code>DROP USER</code>等), 事务控制或锁语句(<code>BEGIN</code>, <code>LOCK TABLES</code>等), 管理语句(<code>ANALYZE TABLE</code>, <code>CACHE INDEX</code>, <code>CHECK TABLE</code>, <code>FLUSH</code>等), 控制replication的语句(<code>START REPLICA</code>, <code>STOP REPLICA</code>, <code>RESET REPLICA</code>等).<br><code>COMMIT</code>意味着, 当前事务中的所有修改都会呈现给其他session. <code>ROLLBACK</code>则表示当前事务中的任何修改都会被撤回. <code>COMMIT</code>和<code>ROLLBACK</code>都会释放当前事务持有的所有锁.</p>
+<h3 id="2-1-Grouping-DML-Operations-with-Transactions"><a href="#2-1-Grouping-DML-Operations-with-Transactions" class="headerlink" title="2.1 Grouping DML Operations with Transactions"></a>2.1 Grouping DML Operations with Transactions</h3><p>默认情况下, MySQL服务器会开启新的连接的<code>autocommit</code>, 换句话说, 每个SQL语句都会自动提交. 这种行为模式可能和其他数据库不同, 因为其他数据库的通常做法为: 发出一系列DML语句, 并一起提交或回滚.<br>若使用多语句事务, 可关闭<code>autocommit</code>, 并以<code>COMMIT</code>或<code>ROLLBACK</code>结束每个事务; 若不想关闭<code>autocommit</code>, 需以<code>START TRANSACTION</code>开始一个事务, 并以<code>COMMIT</code>或<code>ROLLBACK</code>结束每个事务. 以下是两个事务, 第一个事务提交, 第二个事务回滚:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">CREATE</span> <span class="keyword">TABLE</span> customer (a <span class="type">INT</span>, b <span class="type">CHAR</span> (<span class="number">20</span>), INDEX (a));</span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="comment">-- Do a transaction with autocommit turned on.</span></span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">START</span> TRANSACTION;</span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">INSERT</span> <span class="keyword">INTO</span> customer <span class="keyword">VALUES</span> (<span class="number">10</span>, <span class="string">&#x27;Heikki&#x27;</span>);</span><br><span class="line">Query OK, <span class="number">1</span> <span class="type">row</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">COMMIT</span>;</span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="comment">-- Do another transaction with autocommit turned off.</span></span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">SET</span> autocommit<span class="operator">=</span><span class="number">0</span>;</span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">INSERT</span> <span class="keyword">INTO</span> customer <span class="keyword">VALUES</span> (<span class="number">15</span>, <span class="string">&#x27;John&#x27;</span>);</span><br><span class="line">Query OK, <span class="number">1</span> <span class="type">row</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">INSERT</span> <span class="keyword">INTO</span> customer <span class="keyword">VALUES</span> (<span class="number">20</span>, <span class="string">&#x27;Paul&#x27;</span>);</span><br><span class="line">Query OK, <span class="number">1</span> <span class="type">row</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">DELETE</span> <span class="keyword">FROM</span> customer <span class="keyword">WHERE</span> b <span class="operator">=</span> <span class="string">&#x27;Heikki&#x27;</span>;</span><br><span class="line">Query OK, <span class="number">1</span> <span class="type">row</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="comment">-- Now we undo those last 2 inserts and the delete.</span></span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">ROLLBACK</span>;</span><br><span class="line">Query OK, <span class="number">0</span> <span class="keyword">rows</span> affected (<span class="number">0.00</span> sec)</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> customer;</span><br><span class="line"><span class="operator">+</span><span class="comment">------+--------+</span></span><br><span class="line"><span class="operator">|</span> a    <span class="operator">|</span> b      <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">------+--------+</span></span><br><span class="line"><span class="operator">|</span>   <span class="number">10</span> <span class="operator">|</span> Heikki <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">------+--------+</span></span><br><span class="line"><span class="number">1</span> <span class="type">row</span> <span class="keyword">in</span> <span class="keyword">set</span> (<span class="number">0.00</span> sec)</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-Transactions-in-Client-Side-Languages"><a href="#2-2-Transactions-in-Client-Side-Languages" class="headerlink" title="2.2 Transactions in Client-Side Languages"></a>2.2 Transactions in Client-Side Languages</h3><p>在PHP, Perl DBI, JDBC, ODBC, 或MySQL的标准C调用接口中, 可向MySQL server发送<strong>transaction control statement</strong>(事务控制语句, 如<code>COMMIT</code>), 就像发送其他SQL语句一样. </p>
+<h2 id="3-Consistent-Nonlocking-Reads"><a href="#3-Consistent-Nonlocking-Reads" class="headerlink" title="3. Consistent Nonlocking Reads"></a>3. Consistent Nonlocking Reads</h2><p><strong>Consistent read</strong>意味着: InnoDB使用<strong>multi-versioning</strong>(多版本控制)向每一个query展示数据库在某个时间点的快照. Query只能看到该时间点之前已提交的更改, 不能看到该时间点之后的提交, 或之前尚未提交的更改, 唯一的例外是当前事务中该query之前的更改. 该例外导致了一些异常现象: 当更新表中某些行时, <code>SELECT</code>可能看到更新后的最新数据, 也可能看到旧数据. 若其他session同时更新该表, 当前session观察到的表状态可能从未存在于数据库中.<br><code>REPEATABLE READ</code>事务隔离级别下, 同一事务中的每个<strong>consistent read</strong>都会从事务开始时创建的快照中读取; 若想获得更新版本的数据, 可提交当前事务, 并发起另一个query.<br><code>READ COMMITTED</code>事务隔离级别下, 同一事务中的每个<strong>consistent read</strong>都读取最新版本的快照.<br>InnoDB中, <code>READ COMMITTED</code>和<code>REPEATABLE READ</code>事务隔离级别下的<code>SELECT</code>语句默认使用<strong>consistent read</strong>, 不会设置任何锁, 因此其他session可以并发修改该表.<br>在<code>REPEATABLE READ</code>事务隔离级别下, 执行<strong>consistent read</strong>(<code>SELECT</code>语句)时, InnoDB会为该事务提供一个时间点, query根据该时间点查看数据库. 若其他事务在该时间点后删除某一行并提交, 当前事务无法看到该行被删除, insert和update的处理方式类似.<br>若想提前时间点, 可提交当前事务, 并执行<code>SELECT</code>或<code>START TRANSACTION WITH CONSISTENT SNAPSHOT</code>. 上述技术称为<strong>multi-versioned concurrency control</strong>(多版本并发控制).<br>以下例子中, 只有session A和B都提交后, A才能看到B插入的行, 说明A的快照时间点早于B提交修改:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">          Session A              Session B</span><br><span class="line"> |</span><br><span class="line"> |      SET autocommit=0;     SET autocommit=0;</span><br><span class="line"> |</span><br><span class="line"> |      SELECT * FROM t;</span><br><span class="line">time    empty set</span><br><span class="line"> |                              </span><br><span class="line"> |                            INSERT INTO t VALUES (1, 2);</span><br><span class="line"> |                               </span><br><span class="line"> |      SELECT * FROM t;</span><br><span class="line"> v      empty set</span><br><span class="line"></span><br><span class="line">                              COMMIT;</span><br><span class="line"></span><br><span class="line">        SELECT * FROM t;</span><br><span class="line">        empty set</span><br><span class="line"></span><br><span class="line">        COMMIT;</span><br><span class="line"></span><br><span class="line">        SELECT * FROM t;</span><br><span class="line">        ---------------------</span><br><span class="line">        |    1    |    2    |</span><br><span class="line">        ---------------------</span><br></pre></td></tr></table></figure>
+<p>若想看到最新版本的数据库状态, 可切换为<code>READ COMMITTED</code>隔离级别, 或使用<strong>locking read</strong>: <code>SELECT * FROM t FOR SHARE;</code><br><code>READ COMMITTED</code>隔离级别下, 同一事务中的每个<strong>consistent read</strong>都会读取到最新快照. 使用<code>FOR SHARE</code>会给<code>SELECT</code>选中的行上锁, 阻塞其他事务修改或删除, 直到当前事务结束.<br><strong>Consistent read</strong>无法作用于DDL语句:</p>
+<ul>
+<li>由于MySQL无法使用一个被dropped的表, 因此<code>DROP TABLE</code>无法使用<strong>consistent read</strong></li>
+<li><code>ALTER TABLE</code>会复制一个临时表, 并在完成复制后删除原表, 同一事务中再次执行<strong>consistent read</strong>时, 新表中的行不可见, 事务返回<code>ER_TABLE_DEF_CHANGED</code>, 表示表定义已更改, 需重试事务</li>
+</ul>
+<p>对于不携带<code>FOR UPDATE</code>或<code>FOR SHARE</code>的<code>SELECT</code>子句, 例如<code>INSERT INTO ... SELECT</code>, <code>UPDATE ... (SELECT)</code>, 和<code>CREATE TABLE ... SELECT</code>, 它们使用不同类型的读取方式:</p>
+<ul>
+<li>默认情况下, <code>SELECT</code>子句会锁住扫描过的索引</li>
+<li>若不想上锁, 可降级为<code>READ UNCOMMITTED</code>或<code>READ COMMITTED</code></li>
+</ul>
+<h2 id="4-Locking-Reads"><a href="#4-Locking-Reads" class="headerlink" title="4. Locking Reads"></a>4. Locking Reads</h2><p>在同一事务中查询, 并插入或更新相关数据时, 普通的<code>SELECT</code>语句无法给予相应的保护, 因为其他事务也可以更新或删除目标行. InnoDB提供两种<strong>locking reads</strong></p>
+<ul>
+<li><code>SELECT ... FOR SHARE</code>: 在所读行上设置一个<strong>shared mode lock</strong>. 其他事务可以读取, 但不能修改; 若目标行被修改, 但还未提交, 则当前事务需等待对方结束, 并读取最新值.</li>
+<li><code>SELECT ... FOR UPDATE</code>: 锁住扫描过的索引记录, 就像执行<code>UPDATE</code>语句一样. 其他事务无法更新目标行, 无法执行<code>SELECT ... FOR SHARE</code>, 也无法在某些事务隔离级别下读取数据. <strong>Consistent read</strong>会忽略<strong>read view</strong>上的任何锁(旧版本的记录无法被锁定).</li>
+</ul>
+<p><code>FOR SHARE</code>和<code>FOR UPDATE</code>获得的锁会在事务提交或回滚后被释放.<br>外部语句中的<strong>locking read</strong>不会锁定嵌套子查询中的行, 除非子查询也使用<strong>locking read</strong>:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t1 <span class="keyword">WHERE</span> c1 <span class="operator">=</span> (<span class="keyword">SELECT</span> c1 <span class="keyword">FROM</span> t2) <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>;</span><br></pre></td></tr></table></figure>
+<p>若想锁住<code>t2</code>表中的行, 可在子查询中添加<code>locking read</code>:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t1 <span class="keyword">WHERE</span> c1 <span class="operator">=</span> (<span class="keyword">SELECT</span> c1 <span class="keyword">FROM</span> t2 <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>) <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-Locking-Read-Examples"><a href="#4-1-Locking-Read-Examples" class="headerlink" title="4.1 Locking Read Examples"></a>4.1 Locking Read Examples</h3><p>假设当前事务想向<code>child</code>表中插入一个新行, <code>child</code>中的每一行都对应<code>parent</code>表中的一行. 应用程序代码需确保引用的完整性.<br>首先, 使用<strong>consistent read</strong>查询<code>parent</code>来确保目标行存在. 但不能安全地将目标行插入到<code>child</code>中, 因为其他事务仍可在<code>SELECT</code>和<code>INSERT</code>之间删除目标行. 为避免潜在风险, 需使用<code>SELECT ... FOR SHARE</code>:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> parent <span class="keyword">WHERE</span> NAME <span class="operator">=</span> <span class="string">&#x27;Jones&#x27;</span> <span class="keyword">FOR</span> SHARE;</span><br></pre></td></tr></table></figure>
+<p>执行上述查询后, 事务可安全地插入<code>child</code>表并提交, 任何想要获得<code>parent</code>表中目标行上的<strong>exclusive lock</strong>的事务都需等待当前事务完成.<br>再举个例子, 假设<code>CHILD_CODES</code>表中有一个<strong>integer counter</strong>(整数计数)列, 该列作为唯一标识符, 用于标识<code>CHILD</code>表中的每个child. 由于两个事务会看到某个counter的相同值, 且添加同一标识符到<code>CHILD</code>表中会引发<strong>duplicate-key error</strong>(重复键错误), 因此无需使用<strong>consistent read</strong>或<strong>shared mode read</strong>.<br>若使用<code>FOR SHARE</code>, 由于两个事务同时访问counter时, 至少一个事务会在更新counter时会因死锁而终止.<br>为实现读取并增加counter, 需使用<code>FOR UPDATE</code>锁住读取的行, 并增加counter:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> counter_field <span class="keyword">FROM</span> child_codes <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>;</span><br><span class="line"><span class="keyword">UPDATE</span> child_codes <span class="keyword">SET</span> counter_field <span class="operator">=</span> counter_field <span class="operator">+</span> <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p><code>SELECT ... FOR UPDATE</code>读取最新版本的数据, 在读取的行上设置<strong>exclusive lock</strong>, 与<code>UPDATE</code>设置的锁相同.<br>上述只是<code>SELECT ... FOR UPDATE</code>如何工作的一个例子. 在MySQL中, 生成唯一标识符可通过一次访问来完成:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> child_codes <span class="keyword">SET</span> counter_field <span class="operator">=</span> LAST_INSERT_ID(counter_field <span class="operator">+</span> <span class="number">1</span>);</span><br><span class="line"><span class="keyword">SELECT</span> LAST_INSERT_ID();</span><br></pre></td></tr></table></figure>
+<p><code>SELECT</code>语句仅访问标识符信息, 不访问任何表.</p>
+<h3 id="4-2-Locking-Read-Concurrency-with-NOWAIT-and-SKIP-LOCKED"><a href="#4-2-Locking-Read-Concurrency-with-NOWAIT-and-SKIP-LOCKED" class="headerlink" title="4.2 Locking Read Concurrency with NOWAIT and SKIP LOCKED"></a>4.2 Locking Read Concurrency with NOWAIT and SKIP LOCKED</h3><p>若某一行被事务锁住, 执行<code>SELECT ... FOR UPDATE</code>或<code>SELECT ... FOR SHARE</code>的事务需等待当前事务释放锁. 然而, 如果事务想要立即返回, 等待行锁就没有必要.<br>为避免其他事务等待释放锁, 可使用<code>NOWAIT</code>和<code>SKIP LOCKED</code>选项:</p>
+<ul>
+<li>NOWAIT: 使用<code>NOWAIT</code>的<strong>locking read</strong>不会等待锁释放, 而是直接返回错误.</li>
+<li>SKIP LOCKED: 使用<code>SKIP LOCKED</code>的<strong>locking read</strong>不会等待锁释放, 而是将被锁的行从结果中移除.</li>
+</ul>
+<p><code>NOWAIT</code>和<code>SKIP LOCKED</code>只用于row-level lock. 若语句基于replication, 则<code>NOWAIT</code>或<code>SKIP LOCKED</code>会变得不安全.<br>假设存在两个session: session 1开启一个事务, 获得了一个记录上的行锁; session 2尝试对相同记录进行<strong>locking read</strong>, 并带有<code>NOWAIT</code>选项. 由于目标行已被session 1锁住, 因此立即返回错误; session 3尝试对相同记录进行<strong>locking read</strong>, 并带有<code>SKIP LOCKED</code>选项, 返回除session 1锁定之外的行.</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"># Session <span class="number">1</span>:</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">CREATE</span> <span class="keyword">TABLE</span> t (i <span class="type">INT</span>, <span class="keyword">PRIMARY</span> KEY (i)) ENGINE <span class="operator">=</span> InnoDB;</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">INSERT</span> <span class="keyword">INTO</span> t (i) <span class="keyword">VALUES</span>(<span class="number">1</span>),(<span class="number">2</span>),(<span class="number">3</span>);</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">START</span> TRANSACTION;</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> i <span class="operator">=</span> <span class="number">2</span> <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>;</span><br><span class="line"><span class="operator">+</span><span class="comment">---+</span></span><br><span class="line"><span class="operator">|</span> i <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---+</span></span><br><span class="line"><span class="operator">|</span> <span class="number">2</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---+</span></span><br><span class="line"></span><br><span class="line"># Session <span class="number">2</span>:</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">START</span> TRANSACTION;</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">WHERE</span> i <span class="operator">=</span> <span class="number">2</span> <span class="keyword">FOR</span> <span class="keyword">UPDATE</span> NOWAIT;</span><br><span class="line">ERROR <span class="number">3572</span> (HY000): Do <span class="keyword">not</span> wait <span class="keyword">for</span> lock.</span><br><span class="line"></span><br><span class="line"># Session <span class="number">3</span>:</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">START</span> TRANSACTION;</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> t <span class="keyword">FOR</span> <span class="keyword">UPDATE</span> <span class="keyword">SKIP</span> LOCKED;</span><br><span class="line"><span class="operator">+</span><span class="comment">---+</span></span><br><span class="line"><span class="operator">|</span> i <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---+</span></span><br><span class="line"><span class="operator">|</span> <span class="number">1</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">|</span> <span class="number">3</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">---+</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Database/">Database</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/efcc.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">InnoDB Locks Set by Different SQL Statements</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/b682.html">
+        <span class="next-text nav-default">InnoDB Locking</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/ed48.html';
+  var disqus_title = "InnoDB Transaction Model";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

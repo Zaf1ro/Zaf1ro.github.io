@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Repository"/>
+
+
+
+
+  <meta name="keywords" content="Microservices," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/3435.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/3435.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/3435.html"/>
+
+
+<meta name="description" content="1. Why we use Repository由于ORM框架的大量使用, 程序员对于Entity的理解停留在数据映射的层面, 而忽略了Entity实体本身的行为, 造成代码中的模型仅包含属性, 而业务逻辑分散在service, controller, 和utils工具类. 也被称为Anemic Domain Model(贫血领域模型), 其具有以下特征:  定义了大量DO: 可表示Domain">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Repository">
+<meta property="og:url" content="https://zaf1ro.github.io/p/3435.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Why we use Repository由于ORM框架的大量使用, 程序员对于Entity的理解停留在数据映射的层面, 而忽略了Entity实体本身的行为, 造成代码中的模型仅包含属性, 而业务逻辑分散在service, controller, 和utils工具类. 也被称为Anemic Domain Model(贫血领域模型), 其具有以下特征:  定义了大量DO: 可表示Domain">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/repository-1.jpeg">
+<meta property="article:published_time" content="2021-05-08T13:44:57.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.036Z">
+<meta property="article:tag" content="Microservices">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/microservice/repository-1.jpeg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Repository - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Why-we-use-Repository"><span class="toc-text">1. Why we use Repository</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Overview-of-Repository"><span class="toc-text">2. Overview of Repository</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Application-of-Repository"><span class="toc-text">3. Application of Repository</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Separate-the-Technical-Framework"><span class="toc-text">4. Separate the Technical Framework</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Convert-between-Domain-Model-and-Data-Model"><span class="toc-text">5. Convert between Domain Model and Data Model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Model-Specification"><span class="toc-text">6. Model Specification</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Repository
+        
+      </h1>
+      <time class="post-time">
+          05/08/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Why-we-use-Repository"><a href="#1-Why-we-use-Repository" class="headerlink" title="1. Why we use Repository"></a>1. Why we use Repository</h2><p>由于ORM框架的大量使用, 程序员对于Entity的理解停留在数据映射的层面, 而忽略了Entity实体本身的行为, 造成代码中的模型仅包含属性, 而业务逻辑分散在service, controller, 和utils工具类. 也被称为<strong>Anemic Domain Model</strong>(贫血领域模型), 其具有以下特征:</p>
+<ul>
+<li>定义了大量DO: 可表示Domain Object, 但仅仅包含数据库表的映射, 几乎没有业务逻辑</li>
+<li>Service和Controller中有大量业务逻辑: 比如校验逻辑, 计算逻辑, 格式转化逻辑, 对象关系逻辑, 数据存储逻辑</li>
+<li>大量Utils工具类</li>
+</ul>
+<p>贫血模型有以下缺点:</p>
+<ul>
+<li>无法保证模型对象的完整性和一致性: 由于模型的属性都是公开的, 因此调用方很难维护模型的一致性</li>
+<li>模型对象的可发现性很差: 单纯从模型对象上很难看出业务逻辑, 也无法判断什么时候被调用, 赋值边界是什么</li>
+<li>代码逻辑重复: 校验, 计算逻辑可能出现在多个service中, 当贫血模型变更后, 校验逻辑由于出现在多次, 可能出现某些地方没有及时更新而导致校验失败</li>
+<li>代码的健壮性差: 数据模型的变化可能导致整个代码块的变更</li>
+<li>强依赖底层实现: 由于业务代码中强依赖底层数据库, 网络协议, 第三方服务, 造成逻辑代码僵化且维护成本高</li>
+</ul>
+<p>以下是贫血模型出现的可能原因:</p>
+<ul>
+<li>数据库思维: 由于程序员一开始学习各种工具和技术, 例如数据库, 因此思考项目的方式从<strong>写业务逻辑</strong>转变为<strong>读写数据库逻辑</strong>, 也就是CRUD代码</li>
+<li>贫血模型的简单性: 由于数据库表的字段映射, 前后端可使用统一的格式沟通. 虽然开发时很方便, 但如果业务频繁变更, 反而会成为一件麻烦的事情</li>
+<li>脚本思维: 脚本代码也称为胶水代码, 虽然容易理解, 但缺乏健壮性, 维护成本过高</li>
+</ul>
+<p>更核心的原因在于, 开发者混淆了两个概念:</p>
+<ul>
+<li>Data Model(数据模型): 指如何将业务数据持久化, 以及数据之间的关系</li>
+<li>Domain Model(领域模型): 指业务逻辑中, 相关联数据如何联动</li>
+</ul>
+<h2 id="2-Overview-of-Repository"><a href="#2-Overview-of-Repository" class="headerlink" title="2. Overview of Repository"></a>2. Overview of Repository</h2><p>很多人听说过Repository Pattern, 但却缺乏Aggregate的概念, 随着数据关系复杂程度的升高, Repository也变得十分复杂. Repository的最大优势在于分离domain model和data model, 开发者可以更加轻松地拓展domain model, 优化数据库读取操作, 或向上层隐藏技术细节. Repository Pattern与DAO Pattern不同, DAO本质上是对数据库表的CRUD操作, 而Repository更专注于Domain Model(Aggregate)的操作. 不过Repository并不与DAO或ORM冲突, 甚至可以将DAO或ORM作为Repository的底层实现:<br><img src="/images/microservice/repository-1.jpeg" alt="An ORM maps between the domain and persistence model"></p>
+<h2 id="3-Application-of-Repository"><a href="#3-Application-of-Repository" class="headerlink" title="3. Application of Repository"></a>3. Application of Repository</h2><p>实现Repository之前, 需要先了解Repository的特性:</p>
+<ul>
+<li>Repository只能从Aggregate Root中获取或修改domain model, 从而保证Aggregate内的variant</li>
+<li>Repository可隐藏底层的技术实现, 为上层提供一个与技术无关的接口</li>
+<li>Repository定义了domain model和data model的边界</li>
+</ul>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">OrderId</span> <span class="keyword">extends</span> <span class="title class_ inherited__">EntityId</span>&lt;<span class="built_in">string</span>&gt; &#123;&#125;</span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">OrderProps</span> &#123;&#125;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Order</span> <span class="keyword">extends</span> <span class="title class_ inherited__">Entity</span>&lt;<span class="title class_">OrderId</span>, <span class="title class_">OrderProps</span>&gt; &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// domain/model/order/OrderRepository.ts</span></span><br><span class="line"><span class="keyword">interface</span> <span class="title class_">OrderRepository</span> &#123;</span><br><span class="line">  <span class="comment">// get order by id</span></span><br><span class="line">  <span class="title function_">ofId</span>(<span class="attr">id</span>: <span class="title class_">OrderId</span>): <span class="title class_">Promise</span>&lt;<span class="title class_">Order</span> | <span class="literal">undefined</span>&gt;;</span><br><span class="line">  <span class="comment">// Upsert</span></span><br><span class="line">  <span class="title function_">save</span>(<span class="attr">order</span>: <span class="title class_">Order</span>): <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt;;</span><br><span class="line">  <span class="comment">// remove order by id</span></span><br><span class="line">  <span class="title function_">remove</span>(<span class="attr">id</span>: <span class="title class_">OrderId</span>): <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Repository Interface可放在domain层, 与domain model(Order)一起, 这样能保证第一条特性. 有了interface, 以下是OrderRepository的实现(以Postgres为例):</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SqlOrderRepository</span> <span class="keyword">implements</span> <span class="title class_">OrderRepository</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="attr">pool</span>: <span class="title class_">Postgres</span>.<span class="property">Pool</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">pool</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">pool</span> = pool;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">ofId</span>(<span class="attr">id</span>: <span class="title class_">OrderId</span>): <span class="title class_">Promise</span>&lt;<span class="title class_">Order</span> | <span class="literal">undefined</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="attr">idVal</span>: <span class="built_in">string</span> = id.<span class="title function_">val</span>();</span><br><span class="line">    <span class="keyword">const</span> queryResult = <span class="variable language_">this</span>.<span class="property">pool</span>.<span class="title function_">query</span>(</span><br><span class="line">      <span class="string">&#x27;SELECT * FROM order WHERE id = $1&#x27;</span>,</span><br><span class="line">      idval</span><br><span class="line">    );</span><br><span class="line">    <span class="keyword">const</span> order = <span class="keyword">new</span> <span class="title class_">Order</span>(<span class="comment">/* data from queryResult */</span>);</span><br><span class="line">    <span class="keyword">return</span> order;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">save</span>(<span class="attr">order</span>: <span class="title class_">Order</span>): <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt; &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">remove</span>(<span class="attr">id</span>: <span class="title class_">OrderId</span>): <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt; &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-Separate-the-Technical-Framework"><a href="#4-Separate-the-Technical-Framework" class="headerlink" title="4. Separate the Technical Framework"></a>4. Separate the Technical Framework</h2><p>首先定义一个通用的Repository:</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">Repository</span>&lt;</span><br><span class="line">  <span class="title class_">Id</span> <span class="keyword">extends</span> <span class="title class_">EntityId</span>&lt;<span class="built_in">unknown</span>&gt;,</span><br><span class="line">  A <span class="keyword">extends</span> <span class="title class_">AggregateRoot</span>&lt;<span class="title class_">Id</span>, &#123;&#125;&gt;</span><br><span class="line">&gt; &#123;</span><br><span class="line">  <span class="title function_">exists</span>(<span class="attr">id</span>: <span class="title class_">Id</span>): <span class="title class_">Promise</span>&lt;<span class="built_in">boolean</span>&gt;</span><br><span class="line">  <span class="title function_">findById</span>(<span class="attr">id</span>: <span class="title class_">Id</span>): <span class="title class_">Promise</span>&lt;A | <span class="literal">undefined</span>&gt;</span><br><span class="line">  <span class="title function_">findAllMatching</span>(<span class="attr">querystring</span>: <span class="built_in">string</span>): <span class="title class_">Promise</span>&lt;A[]&gt;</span><br><span class="line">  <span class="title function_">add</span>(<span class="attr">entity</span>: <span class="title class_">Entity</span>): <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt;</span><br><span class="line">  <span class="title function_">update</span>(<span class="attr">entity</span>: A): <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt;</span><br><span class="line">  <span class="title function_">remove</span>(<span class="attr">id</span>: <span class="title class_">Id</span>): <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后在OrderRepository中使用这个Generic Repository:</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">SqlOrderRepository</span> <span class="keyword">implements</span> <span class="title class_">OrderRepository</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="attr">ordersRepo</span>: <span class="title class_">Repository</span>&lt;<span class="title class_">OrderId</span>, <span class="title class_">Order</span>&gt;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"><span class="attr">ordersRepo</span>: <span class="title class_">Repository</span>&lt;<span class="title class_">OrderId</span>, <span class="title class_">Order</span>&gt;</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">ordersRepo</span> = ordersRepo</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">ofId</span>(<span class="attr">id</span>: <span class="title class_">OrderId</span>): <span class="title class_">Promise</span>&lt;<span class="title class_">Order</span> | <span class="literal">undefined</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">ordersRepo</span>.<span class="title function_">findById</span>(id)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">save</span>(<span class="attr">order</span>: <span class="title class_">Order</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> existed = <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">ordersRepo</span>.<span class="title function_">exists</span>(order.<span class="property">id</span>)</span><br><span class="line">    <span class="keyword">if</span> (existed) &#123;</span><br><span class="line">      <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">orderRepo</span>.<span class="title function_">update</span>(order)</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">orderRepo</span>.<span class="title function_">add</span>(order)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">remove</span>(<span class="attr">id</span>: <span class="title class_">OrderId</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> existed = <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">ordersRepo</span>.<span class="title function_">exists</span>(order.<span class="property">id</span>)</span><br><span class="line">    <span class="keyword">if</span> (!existed) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&#x27;Order Not Exists&#x27;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">orderRepo</span>.<span class="title function_">remove</span>(id)</span><br><span class="line">    <span class="keyword">return</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很多开发者更习惯于让Repository继承一个Generic Repository, 但这种做法会使得每个Repository采用相同的策略. 因此上述OrderRepository中, 我们采用composition的方式将Generic Reposiotry嵌入其中.</p>
+<h2 id="5-Convert-between-Domain-Model-and-Data-Model"><a href="#5-Convert-between-Domain-Model-and-Data-Model" class="headerlink" title="5. Convert between Domain Model and Data Model"></a>5. Convert between Domain Model and Data Model</h2><p>从Repository中取出的data model需要重建为domain model, 而写入domain model之前也要先转换为data model. 实现这种转换的方式有很多, 最直接的方式就是将domain model中的所有属性都设置为<strong>public</strong>, 或实现一个Mapper专门用于转换:</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">OrderMapper</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">toDomain</span>(<span class="attr">raw</span>: <span class="built_in">any</span>): <span class="title class_">Order</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">toPersistence</span>(<span class="attr">order</span>: <span class="title class_">Order</span>): <span class="title class_">Object</span> &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-Model-Specification"><a href="#6-Model-Specification" class="headerlink" title="6. Model Specification"></a>6. Model Specification</h2><table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">DO</th>
+<th align="left">Entity</th>
+<th align="left">DTO</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">目的</td>
+<td align="left">数据库表映射</td>
+<td align="left">业务逻辑</td>
+<td align="left">适配业务场景</td>
+</tr>
+<tr>
+<td align="left">代码层级</td>
+<td align="left">Infrastructure</td>
+<td align="left">Domain</td>
+<td align="left">Application</td>
+</tr>
+<tr>
+<td align="left">命名规范</td>
+<td align="left">XxxDO</td>
+<td align="left">Xxx</td>
+<td align="left">XxxDTO</td>
+</tr>
+<tr>
+<td align="left">字段名称标准</td>
+<td align="left">数据库表字段名</td>
+<td align="left">业务语言</td>
+<td align="left">与调用方协定</td>
+</tr>
+<tr>
+<td align="left">字段数据标准</td>
+<td align="left">数据库字段类型</td>
+<td align="left">表示业务含义的类型</td>
+<td align="left">与调用方协定</td>
+</tr>
+<tr>
+<td align="left">是否需要序列化</td>
+<td align="left">不需要</td>
+<td align="left">不需要</td>
+<td align="left">需要</td>
+</tr>
+</tbody></table>
+<p>虽然DO, Entity, DTO带来了代码量的膨胀, 但在复杂的业务场景下, 这样的功能区分会保证模型是功能单一且易测试的, 反而降低了逻辑复杂度.<br>假设我们想让项目从传统架构转向microservices, 项目中已有两个class: OrderDO和OrderDAO. 通过以下几个步骤可以实现Repository Pattern:</p>
+<ul>
+<li>生成Order Entity类, 可保持和OrderDO相同字段</li>
+<li>生成OrderDataConverter</li>
+<li>测试Order和OrderDO之间的转化是否正确</li>
+<li>生成OrderRepository interface和其实现</li>
+<li>将原有代码中的OrderDO全部替换为Order</li>
+<li>将原有代码中的OrderDAO改用OrderRepository</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/bbb8.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Kafka Design</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/c11b.html">
+        <span class="next-text nav-default">Aggregate</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/3435.html';
+  var disqus_title = "Repository";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

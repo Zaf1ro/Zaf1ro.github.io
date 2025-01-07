@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Consistent Hashing"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/10a4.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/10a4.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/10a4.html"/>
+
+
+<meta name="description" content="1. The rehashing problemIf you have n cache servers, a common way to balance the load is to use the following hash method: serverIndex &#x3D; hash(key) % N, where N is the size of the server pool.This appr">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Consistent Hashing">
+<meta property="og:url" content="https://zaf1ro.github.io/p/10a4.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. The rehashing problemIf you have n cache servers, a common way to balance the load is to use the following hash method: serverIndex &#x3D; hash(key) % N, where N is the size of the server pool.This appr">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-space.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-ring.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-keys.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-server-lookup.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-add-new-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-remove-a-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-virtual-nodes-example.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-virtual-nodes-add-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-virtual-nodes-remove-server.jpg">
+<meta property="article:published_time" content="2024-04-11T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.054Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/5-hash-space.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Consistent Hashing - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-The-rehashing-problem"><span class="toc-text">1. The rehashing problem</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Consistent-hashing"><span class="toc-text">2. Consistent hashing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hash-space-and-hash-ring"><span class="toc-text">2.1 Hash space and hash ring</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Hash-servers"><span class="toc-text">2.2 Hash servers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Hash-keys"><span class="toc-text">2.3 Hash keys</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Server-lookup"><span class="toc-text">2.4 Server lookup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Add-a-server"><span class="toc-text">2.5 Add a server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-Remove-a-server"><span class="toc-text">2.6 Remove a server</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Two-issue-in-the-basic-approach"><span class="toc-text">3. Two issue in the basic approach</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Virtual-nodes"><span class="toc-text">3.1 Virtual nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Find-affected-keys"><span class="toc-text">3.2 Find affected keys</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Data-Replication"><span class="toc-text">4. Data Replication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Summary"><span class="toc-text">5. Summary</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Consistent Hashing
+        
+      </h1>
+      <time class="post-time">
+          04/11/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-The-rehashing-problem"><a href="#1-The-rehashing-problem" class="headerlink" title="1. The rehashing problem"></a>1. The rehashing problem</h2><p>If you have n cache servers, a common way to balance the load is to use the following hash method: <code>serverIndex = hash(key) % N</code>, where <code>N</code> is the size of the server pool.<br>This approach works well when the size of the server pool is fixed. However, problems arise when new servers are added, or existing servers are removed: client will connect to the wrong server to fetch data.</p>
+<h2 id="2-Consistent-hashing"><a href="#2-Consistent-hashing" class="headerlink" title="2. Consistent hashing"></a>2. Consistent hashing</h2><p>Comparsion:</p>
+<ul>
+<li>Traditional hashing: when making change on the number of slots, all keys need to be remapped</li>
+<li>Consistent hashing: when making change on the number of slots, only <code>k/n</code> need to be remapped (<code>k</code> is the number of keys, <code>n</code> is the number of slots)</li>
+</ul>
+<h3 id="2-1-Hash-space-and-hash-ring"><a href="#2-1-Hash-space-and-hash-ring" class="headerlink" title="2.1 Hash space and hash ring"></a>2.1 Hash space and hash ring</h3><p>Assume hash function is <code>f</code>, and the output range of the hash function is: <code>$x_0, x_1, x_2, x_3, ..., x_n$</code>. For example, SHA-1&#39;s hash space is <code>$[0, 2^&#123;160&#125; - 1]$</code>, <code>$x_0$</code> corresponds to <code>0</code>, <code>$x_n$</code> corresponds to <code>$2^&#123;160&#125; - 1$</code>.<br><img src="/images/System-Design/Interview/5-hash-space.jpg" alt="Hash Space"></p>
+<p>By connecting the <code>$x_0$</code> and <code>$x_n$</code>, we got a hash ring.<br><img src="/images/System-Design/Interview/5-hash-ring.jpg" alt="Hash Ring"></p>
+<h3 id="2-2-Hash-servers"><a href="#2-2-Hash-servers" class="headerlink" title="2.2 Hash servers"></a>2.2 Hash servers</h3><p>We map the servers based on their IP address or name onto the ring using hash function <code>f</code>.<br><img src="/images/System-Design/Interview/5-hash-server.jpg" alt="Hash Server"></p>
+<h3 id="2-3-Hash-keys"><a href="#2-3-Hash-keys" class="headerlink" title="2.3 Hash keys"></a>2.3 Hash keys</h3><p>The cache keys(key0, key1, key2, and key3) are also hashed onto the hash ring, and there is no modular operation<br><img src="/images/System-Design/Interview/5-hash-keys.jpg" alt="Hash Keys"></p>
+<h3 id="2-4-Server-lookup"><a href="#2-4-Server-lookup" class="headerlink" title="2.4 Server lookup"></a>2.4 Server lookup</h3><p>To determine which server a key is stored on, we go clockwise from the key position on the ring until a server is found. For example:</p>
+<ul>
+<li>key0 is stored on server 0</li>
+<li>key1 is stored on server 1</li>
+<li>key2 is stored on server 2</li>
+<li>key3 is stored on server 3.</li>
+</ul>
+<p><img src="/images/System-Design/Interview/5-server-lookup.jpg" alt="Server Lookup"></p>
+<h3 id="2-5-Add-a-server"><a href="#2-5-Add-a-server" class="headerlink" title="2.5 Add a server"></a>2.5 Add a server</h3><p>adding a new server will only need to redistribute part of keys. For example, after server 4 is added, only key0 needs to be redistributed; The rest of the keys are unaffected.<br><img src="/images/System-Design/Interview/5-add-new-server.jpg" alt="Add New Server"></p>
+<h3 id="2-6-Remove-a-server"><a href="#2-6-Remove-a-server" class="headerlink" title="2.6 Remove a server"></a>2.6 Remove a server</h3><p>When a server is removed, only part of keys require redistribution with consistent hashing. For example, when server 1 is removed, only key1 needs to be remapped to server 2. The rest of the keys are unaffected.<br><img src="/images/System-Design/Interview/5-remove-a-server.jpg" alt="Remove a Server"></p>
+<h2 id="3-Two-issue-in-the-basic-approach"><a href="#3-Two-issue-in-the-basic-approach" class="headerlink" title="3. Two issue in the basic approach"></a>3. Two issue in the basic approach</h2><p>Basic approach of consistent hashing algorithm:</p>
+<ul>
+<li>Map servers and keys on to the ring using a uniformly distributed hash function</li>
+<li>To find out which server a key is mapped to, go clockwise from the key position until the first server on the ring is found</li>
+</ul>
+<p>Two problems with the basic approach:</p>
+<ul>
+<li>When add or remove a server, its impossible to keep the same size of partition for each server</li>
+<li>It is possible to have a non-uniform key distribution on the ring</li>
+</ul>
+<h3 id="3-1-Virtual-nodes"><a href="#3-1-Virtual-nodes" class="headerlink" title="3.1 Virtual nodes"></a>3.1 Virtual nodes</h3><p>A virtual node refers to the real node, and each server is represented by multiple virtual nodes on the ring. To find which server a key is stored on, we go clockwise from the key&#39;s location and find the first virtual node encountered on the ring.<br>For example, both server 0 and server 1 have 3 virtual nodes:</p>
+<ul>
+<li>server 0: s0_0, s0_1, and s0_2</li>
+<li>server 1: s1_0, s1_1, and s1_2</li>
+</ul>
+<p><img src="/images/System-Design/Interview/5-virtual-nodes-example.jpg" alt="Virtual Nodes Example"></p>
+<p>As the number of virtual nodes increases, the distribution of keys becomes more balanced; However, more spaces are needed to store data about virtual nodes. This is a tradeoff, and we can tune the number of virtual nodes to fit our system requirements.</p>
+<h3 id="3-2-Find-affected-keys"><a href="#3-2-Find-affected-keys" class="headerlink" title="3.2 Find affected keys"></a>3.2 Find affected keys</h3><ul>
+<li><p>Add new server: when server <code>S</code> is added onto the ring. The affected range starts from <code>S</code> and moves anticlockwise around the ring until a server is found <code>S&#39;</code>. Thus, keys located between <code>S&#39;</code> and <code>S</code> need to be redistributed to <code>S</code>. For example, server 4 is added onto the ring, keys located between s3 and s4 need to be redistributed to s4.<br><img src="/images/System-Design/Interview/5-virtual-nodes-add-server.jpg" alt="Add New Server with Virtual Nodes"></p>
+</li>
+<li><p>Remove existing server: the affected range starts from <code>S</code>(removed node) and moves anticlockwise around the ring until a server is found <code>S&#39;</code>. Thus, keys located between <code>S</code> and <code>S&#39;</code> must be redistributed to <code>S&#39;</code>. For example, When a server 1 is removed, the affected range is between server 0 and server 1.<br><img src="/images/System-Design/Interview/5-virtual-nodes-remove-server.jpg" alt="Remove Server with Virtual Nodes"></p>
+</li>
+</ul>
+<h2 id="4-Data-Replication"><a href="#4-Data-Replication" class="headerlink" title="4. Data Replication"></a>4. Data Replication</h2><p>To ensure highly available, Consistent Hashing replicates each data item on multiple <code>N</code> nodes. <code>N</code> is equivalent to the replication factor (the number of nodes that will receive the copy of the same data).</p>
+<ol>
+<li>Each key is assigned to a <strong>coordinator node</strong> (usually the first node that falls in the hash range)</li>
+<li>coordinator node stores the data locally</li>
+<li>coordinator node replicates it to <code>&#39;N-1&#39;</code> clockwise successor nodes on the ring asynchronously.</li>
+</ol>
+<p>This results in each node owning the region on the ring between it and its <code>&#39;Nth&#39;</code> predecessor.</p>
+<h2 id="5-Summary"><a href="#5-Summary" class="headerlink" title="5. Summary"></a>5. Summary</h2><p>The benefits of consistent hashing:</p>
+<ul>
+<li>Minimized the number of redistributed keys when servers are added or removed</li>
+<li>Data are more evenly distributed, so it&#39;s easy to scale horizontally</li>
+<li>Mitigate hotspot key problem. Excessive access to a specific shard could cause server overload</li>
+</ul>
+<p>Consistent hashing use case:</p>
+<ul>
+<li>Partitioning component of Amazon&#39;s Dynamo database</li>
+<li>Data partitioning across the cluster in Apache Cassandra</li>
+<li>Discord chat application</li>
+<li>Akamai content delivery network</li>
+<li>Maglev network load balancer</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/9f9c.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - Key Value Store</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/a3f6.html">
+        <span class="next-text nav-default">System Design - Rate Limiter</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/10a4.html';
+  var disqus_title = "System Design - Consistent Hashing";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

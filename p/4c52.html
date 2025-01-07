@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Google Drive"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/4c52.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/4c52.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/4c52.html"/>
+
+
+<meta name="description" content="1. IntroductionGoogle Drive is a file storage and synchronization service that helps you store documents, photos, videos, and other files in the cloud. You can access your files from any computer, sma">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Google Drive">
+<meta property="og:url" content="https://zaf1ro.github.io/p/4c52.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. IntroductionGoogle Drive is a file storage and synchronization service that helps you store documents, photos, videos, and other files in the cloud. You can access your files from any computer, sma">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-single-server-storage-system.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-aws-s3-data-replication.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-updated-high-level-design.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-sync-conflict-strategy.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-high-level-design.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-block-server.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-metadata-db-tables.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-upload-flow.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-download-flow.jpg">
+<meta property="article:published_time" content="2024-04-21T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.053Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/15-single-server-storage-system.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Google Drive - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Understand-Problem-and-Establish-Design-Scope"><span class="toc-text">2. Understand Problem and Establish Design Scope</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Back-of-the-envelope-estimation"><span class="toc-text">2.1 Back of the envelope estimation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Propose-High-level-Design-and-Get-Buy-in"><span class="toc-text">3. Propose High-level Design and Get Buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-APIs"><span class="toc-text">3.1 APIs</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-Upload-a-file-to-Google-Drive"><span class="toc-text">3.1.1 Upload a file to Google Drive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-Download-a-file-from-Google-Drive"><span class="toc-text">3.1.2 Download a file from Google Drive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-Get-file-revisions"><span class="toc-text">3.1.3 Get file revisions</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Move-away-from-single-server"><span class="toc-text">3.2 Move away from single server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Sync-Conflicts"><span class="toc-text">3.3 Sync Conflicts</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-High-level-design"><span class="toc-text">3.4 High-level design</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Design-deep-dive"><span class="toc-text">4. Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Block-servers"><span class="toc-text">4.1 Block servers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-High-Consistency-Requirement"><span class="toc-text">4.2 High Consistency Requirement</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Metadata-Database"><span class="toc-text">4.3 Metadata Database</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Upload-flow"><span class="toc-text">4.4 Upload flow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Download-flow"><span class="toc-text">4.5 Download flow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-Notification-service"><span class="toc-text">4.6 Notification service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-Save-Storage-Space"><span class="toc-text">4.7 Save Storage Space</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-8-Failure-Handling"><span class="toc-text">4.8 Failure Handling</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Google Drive
+        
+      </h1>
+      <time class="post-time">
+          04/21/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Google Drive is a file storage and synchronization service that helps you store documents, photos, videos, and other files in the cloud. You can access your files from any computer, smartphone, and tablet. You can easily share those files with friends, family, and coworkers</p>
+<h2 id="2-Understand-Problem-and-Establish-Design-Scope"><a href="#2-Understand-Problem-and-Establish-Design-Scope" class="headerlink" title="2. Understand Problem and Establish Design Scope"></a>2. Understand Problem and Establish Design Scope</h2><ul>
+<li>What are the most important features: Upload and download files, file sync, and notifications</li>
+<li>Is this a mobile app, a web app, or both: Both</li>
+<li>What are the supported file formats: Any file type</li>
+<li>Do files need to be encrypted: Yes, files in the storage must be encrypted</li>
+<li>Is there a file size limit: Yes, files must be 10 GB or smaller</li>
+<li>How many users does the product have: 10M DAU</li>
+</ul>
+<p>Features of google drive:</p>
+<ul>
+<li>Add files. Drag and drop a file into Google drive</li>
+<li>Download files</li>
+<li>Sync files across multiple devices</li>
+<li>See file revisions</li>
+<li>Share files with others</li>
+<li>Send a notification when a file is edited, deleted, or shared with you</li>
+</ul>
+<p>Requirements of this product:</p>
+<ul>
+<li>Reliability: Data loss is unacceptable</li>
+<li>Fast sync speed</li>
+<li>Bandwidth usage</li>
+<li>Scalability: system should be able to handle high volumes of traffic</li>
+<li>High availability: Users should still be able to use the system when some servers are offline, slowed down, or have unexpected network errors</li>
+</ul>
+<h3 id="2-1-Back-of-the-envelope-estimation"><a href="#2-1-Back-of-the-envelope-estimation" class="headerlink" title="2.1 Back of the envelope estimation"></a>2.1 Back of the envelope estimation</h3><ul>
+<li>50 million signed up users </li>
+<li>10 million DAU</li>
+<li>Users get 10 GB free space</li>
+<li>Users upload 2 files per day</li>
+<li>The average file size is 500 KB</li>
+<li>1:1 read to write ratio</li>
+<li>Total space allocated: 50 million * 10 GB &#x3D; 500 Petabyte</li>
+<li>QPS for upload API: 10 million * 2 uploads &#x2F; 24 hours &#x2F; 3600 seconds &#x3D; ~ 240</li>
+<li>Peak QPS &#x3D; QPS * 2 &#x3D; 480</li>
+</ul>
+<h2 id="3-Propose-High-level-Design-and-Get-Buy-in"><a href="#3-Propose-High-level-Design-and-Get-Buy-in" class="headerlink" title="3. Propose High-level Design and Get Buy-in"></a>3. Propose High-level Design and Get Buy-in</h2><p>First, we will try to build everything in a single server. Then, scale it up to support millions of users. The single server setup as list below:</p>
+<ul>
+<li>A web server to upload and download files</li>
+<li>A database to keep track of metadata like user data, login info, files info, etc</li>
+<li>A storage system to store files</li>
+</ul>
+<p>In the storage system:</p>
+<ul>
+<li>a directory called <code>drive/</code> as the root directory</li>
+<li>a list of subdirectories, known as <code>namespaces</code></li>
+<li>Each namespace contains all the uploaded files for that user</li>
+<li>The filename on the server is kept the same as the original file name</li>
+<li>Each file or folder can be uniquely identified by joining the namespace and the relative path</li>
+</ul>
+<p><img src="/images/System-Design/Interview/15-single-server-storage-system.jpg" alt="Single Server Storage System"></p>
+<h3 id="3-1-APIs"><a href="#3-1-APIs" class="headerlink" title="3.1 APIs"></a>3.1 APIs</h3><h4 id="3-1-1-Upload-a-file-to-Google-Drive"><a href="#3-1-1-Upload-a-file-to-Google-Drive" class="headerlink" title="3.1.1 Upload a file to Google Drive"></a>3.1.1 Upload a file to Google Drive</h4><p>Two types of uploads are supported:</p>
+<ul>
+<li><p>Simple upload: file size is small</p>
+</li>
+<li><p>Resumable upload: file size is large and there is high chance of network interruption</p>
+</li>
+<li><p>HTTP POST</p>
+</li>
+<li><p>URL: <a target="_blank" rel="noopener external nofollow noreferrer" href="https://api.example.com/files/upload">https://api.example.com/files/upload</a></p>
+</li>
+<li><p>Params: </p>
+<ul>
+<li>uploadType&#x3D;resumable</li>
+</ul>
+</li>
+<li><p>Data: Local file to be uploaded.</p>
+</li>
+</ul>
+<p>A resumable upload is achieved by 3 steps:</p>
+<ul>
+<li>Send the initial request to retrieve the resumable URL.</li>
+<li>Upload the data and monitor upload state.</li>
+<li>If upload is disturbed, resume the upload.</li>
+</ul>
+<h4 id="3-1-2-Download-a-file-from-Google-Drive"><a href="#3-1-2-Download-a-file-from-Google-Drive" class="headerlink" title="3.1.2 Download a file from Google Drive"></a>3.1.2 Download a file from Google Drive</h4><ul>
+<li>HTTP GET</li>
+<li>URL: <a target="_blank" rel="noopener external nofollow noreferrer" href="https://api.example.com/files/download">https://api.example.com/files/download</a></li>
+<li>Params:<ul>
+<li>path: download file path</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-1-3-Get-file-revisions"><a href="#3-1-3-Get-file-revisions" class="headerlink" title="3.1.3 Get file revisions"></a>3.1.3 Get file revisions</h4><ul>
+<li>HTTP GET</li>
+<li>URL: <a target="_blank" rel="noopener external nofollow noreferrer" href="https://api.example.com/files/list_revisions">https://api.example.com/files/list_revisions</a></li>
+<li>Params:<ul>
+<li>path: The path to the file you want to get the revision history.</li>
+<li>limit: The maximum number of revisions to return.</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-2-Move-away-from-single-server"><a href="#3-2-Move-away-from-single-server" class="headerlink" title="3.2 Move away from single server"></a>3.2 Move away from single server</h3><p>When storage of single server is full. The first solution comes to mind is to shard the data. Here&#39;s an example of sharding based on <code>user_id</code>. But this solution still under the risk of potential data losses.<br>Amazon S3 for storage would be a good solution. In Amazon S3, each bucket is like a folder in file systems. It offers scalability, data availability, security, and high performance. Amazon S3 has two options of replication:</p>
+<ul>
+<li>same-region: all data is replicated on the same-region</li>
+<li>cross-region: data is replicated to the different region</li>
+</ul>
+<p><img src="/images/System-Design/Interview/15-aws-s3-data-replication.jpg" alt="AWS S3 Data Replication"></p>
+<p>Other improvement:</p>
+<ul>
+<li>Load balancer: If a web server goes down, it will redistribute the traffic</li>
+<li>Web server: After a load balancer is added, more web servers can be added&#x2F;removed easily, depending on the traffic load</li>
+<li>Metadata database: Move the database out of the server to avoid single point of failure. Set up data replication and sharding to meet the availability and scalability requirements</li>
+<li>File storage: Amazon S3 is used for file storage. To ensure availability and durability, files are replicated in two separate geographical regions</li>
+</ul>
+<p><img src="/images/System-Design/Interview/15-updated-high-level-design.jpg" alt="Updated High Level Design"></p>
+<h3 id="3-3-Sync-Conflicts"><a href="#3-3-Sync-Conflicts" class="headerlink" title="3.3 Sync Conflicts"></a>3.3 Sync Conflicts</h3><p>How to deal with sync conflicts when two users modify the same file or folder at the same time: the first version that gets processed wins, and the version that gets processed later receives a conflict.</p>
+<p><img src="/images/System-Design/Interview/15-sync-conflict-strategy.jpg" alt="Sync Conflict Strategy"></p>
+<p>User who receives the sync conflict will have a local copy, and have the option to merge both files or override one version with the other.</p>
+<h3 id="3-4-High-level-design"><a href="#3-4-High-level-design" class="headerlink" title="3.4 High-level design"></a>3.4 High-level design</h3><p><img src="/images/System-Design/Interview/15-high-level-design.jpg" alt="High Level Design"></p>
+<ul>
+<li>User: use the application either through a browser or mobile app</li>
+<li>Block servers: upload blocks to cloud storage. A file can be split into several blocks, each with a unique hash value, stored in our metadata database. Maximal size of a block to 4MB.</li>
+<li>Cloud storage: A file is split into smaller blocks and stored in cloud storage</li>
+<li>Cold storage: a computer system designed for storing inactive data, meaning files are not accessed for a long time</li>
+<li>Load balancer: A load balancer evenly distributes requests among API server</li>
+<li>API servers: used for user authentication, managing user profile, updating file metadata, etc</li>
+<li>Metadata database: stores metadata of users, files, blocks, versions, etc</li>
+<li>Metadata cache: Some of the metadata are cached for fast retrieval</li>
+<li>Notification service: a publisher&#x2F;subscriber system that allows data to be transferred from notification service to clients as certain events happen</li>
+<li>Offline backup queue: If a client is offline and cannot pull the latest file changes, the offline backup queue stores the info so changes will be synced when the client is online</li>
+</ul>
+<h2 id="4-Design-deep-dive"><a href="#4-Design-deep-dive" class="headerlink" title="4. Design deep dive"></a>4. Design deep dive</h2><h3 id="4-1-Block-servers"><a href="#4-1-Block-servers" class="headerlink" title="4.1 Block servers"></a>4.1 Block servers</h3><p>Sending a large file on each update consumes a lot of bandwidth. Two optimizations are proposed to minimize the amount of network traffic:</p>
+<ul>
+<li>Delta sync: When a file is modified, only modified blocks are synced instead of the whole file</li>
+<li>Compression: compression on blocks can reduce the data size. Using different compression algorithms for different file types. For example, gzip and bzip2 for text files</li>
+</ul>
+<p>Block servers process files passed from clients by splitting a file into blocks, compressing each block, and encrypting them, and only modified blocks are transferred.</p>
+<p><img src="/images/System-Design/Interview/15-block-server.jpg" alt="How Block Server Works"></p>
+<ol>
+<li>A file is split into smaller blocks</li>
+<li>Each block is compressed using compression algorithms</li>
+<li>To ensure security, each block is encrypted</li>
+<li>Blocks are uploaded to the cloud storage</li>
+</ol>
+<h3 id="4-2-High-Consistency-Requirement"><a href="#4-2-High-Consistency-Requirement" class="headerlink" title="4.2 High Consistency Requirement"></a>4.2 High Consistency Requirement</h3><p>The system needs to provide strong consistency for metadata cache and database layers: different clients should view the same file at the same time. To achieve strong consistency, we must ensure the following:</p>
+<ul>
+<li>Data in cache replicas is consistent with data in the master database</li>
+<li>Invalidate caches when write data into database, it ensures cache and database hold the same value</li>
+</ul>
+<h3 id="4-3-Metadata-Database"><a href="#4-3-Metadata-Database" class="headerlink" title="4.3 Metadata Database"></a>4.3 Metadata Database</h3><p>Relational database maintains the ACID, so we choose relational database. </p>
+<p><img src="/images/System-Design/Interview/15-metadata-db-tables.jpg" alt="Metadata Database Tables"></p>
+<ul>
+<li>User: basic information about the user such as username, email, profile photo, etc</li>
+<li>Device: device info. <code>Push_id</code> is used for sending and receiving mobile push notifications. Note: A user can have multiple devices</li>
+<li>Namespace: the root directory of a user</li>
+<li>File: everything related to the latest file</li>
+<li>File_version: version history of a file. Existing rows are read-only to keep the integrity of the file revision history</li>
+<li>Block: everything related to a file block</li>
+</ul>
+<h3 id="4-4-Upload-flow"><a href="#4-4-Upload-flow" class="headerlink" title="4.4 Upload flow"></a>4.4 Upload flow</h3><p><img src="/images/System-Design/Interview/15-upload-flow.jpg" alt="Upload Flow"></p>
+<p>Two requests are sent in parallel: add file metadata and upload the file to cloud storage. Both requests from client 1:</p>
+<ul>
+<li>Add file metadata:<ol>
+<li>Client 1 sends a request to add the metadata of the new file</li>
+<li>Store the new file metadata in metadata DB and change the file upload status to <code>pending</code></li>
+<li>Notify the notification service that a new file is being added</li>
+<li>The notification service notifies other clients (client 2) that a file is being uploaded</li>
+</ol>
+</li>
+<li>Upload files to cloud storage:<ol>
+<li>Client 1 uploads the content of the file to block servers</li>
+<li>Block servers chunk the files into blocks, compress, encrypt and upload block to cloud storage</li>
+<li>Once the file is uploaded, cloud storage sent upload completion request to API servers</li>
+<li>File status changed to <code>uploaded</code> in Metadata DB</li>
+<li>Notify the notification service that a file status is changed to <code>uploaded</code></li>
+<li>The notification service notifies other clients (client 2) that a file is fully uploaded</li>
+</ol>
+</li>
+</ul>
+<h3 id="4-5-Download-flow"><a href="#4-5-Download-flow" class="headerlink" title="4.5 Download flow"></a>4.5 Download flow</h3><p>Download flow is triggered when a file is added or edited by other client. There are two ways a client can know:</p>
+<ul>
+<li>If client A is online while a file is changed by another client, notification service will inform client A</li>
+<li>If client A is offline while a file is changed by another client, data will be saved to the cache. When client A is online again, it pulls the latest changes.</li>
+</ul>
+<p><img src="/images/System-Design/Interview/15-download-flow.jpg" alt="Download Flow"></p>
+<ol>
+<li>Notification service informs client 2 that a file is changed</li>
+<li>Once client 2 knows that new updates are available, it sends a request to fetch metadata</li>
+<li>API server call metadata DB to fetch metadata of the changes</li>
+<li>Metadata is returned to the API servers</li>
+<li>Client 2 gets the metadata</li>
+<li>Once the client receives the metadata, it sends requests to block servers to download blocks</li>
+<li>Block servers first download blocks from cloud storage</li>
+<li>Cloud storage returns blocks to the block servers</li>
+<li>Client 2 downloads all the new blocks to reconstruct the file</li>
+</ol>
+<h3 id="4-6-Notification-service"><a href="#4-6-Notification-service" class="headerlink" title="4.6 Notification service"></a>4.6 Notification service</h3><p>To maintain file consistency, any mutation of a file performed locally needs to be informed to other clients to reduce conflicts. Notification service is built to serve this purpose. Two options for the notification service:</p>
+<ul>
+<li>Long polling</li>
+<li>WebSocket</li>
+</ul>
+<p>We choose long polling for two reasons:</p>
+<ul>
+<li>Notification service doesn&#39;t need bi-directional: server sends notification to client, but client doesn&#39;t send information to server</li>
+<li>WebSocket is suited for real-time bi-directional communication such as a chat app. Notifications are sent infrequently with no burst of data.</li>
+</ul>
+<p>For long polling:</p>
+<ul>
+<li>Each client establishes a long poll connection to the notification service</li>
+<li>If changes to a file are detected, the client will close the long poll connection, and connect to the metadata server to download the latest changes</li>
+<li>After a response is received or connection timeout is reached, a client sends a new request to keep the connection open</li>
+</ul>
+<h3 id="4-7-Save-Storage-Space"><a href="#4-7-Save-Storage-Space" class="headerlink" title="4.7 Save Storage Space"></a>4.7 Save Storage Space</h3><p>To support file version history and ensure reliability, multiple versions of the same file are stored across multiple data centers. To reduce storage costs:</p>
+<ul>
+<li>De-duplicate data block: Two blocks are identical if they have the same hash value, remove the redundant block.</li>
+<li>Adopt an intelligent data backup strategy:<ul>
+<li>Set a limit for the number of versions to store. If the limit is reached, the oldest version will be removed</li>
+<li>Keep valuable versions only: Some files might be edited frequently, To avoid unnecessary copies, we could limit the number of saved versions, give more weight to recent versions</li>
+</ul>
+</li>
+<li>Moving infrequently used data to cold storage: Amazon S3 glacier is much cheaper than S3</li>
+</ul>
+<h3 id="4-8-Failure-Handling"><a href="#4-8-Failure-Handling" class="headerlink" title="4.8 Failure Handling"></a>4.8 Failure Handling</h3><ul>
+<li>Load balancer failure: If a load balancer fails, the secondary would become active and pick up the traffic. Load balancers usually monitor each other using a heartbeat, a periodic signal sent between load balancers</li>
+<li>Block server failure: If a block server fails, other servers pick up unfinished or pending jobs</li>
+<li>Cloud storage failure: If files are not available in one region, they can be fetched from different regions</li>
+<li>API server failure: It is a stateless service. If an API server fails, the traffic is redirected to other API servers by a load balancer</li>
+<li>Metadata cache failure: Metadata cache servers are replicated multiple times. If one node goes down, you can still access other nodes to fetch data.</li>
+<li>Metadata DB failure:<ul>
+<li>Master down: If the master is down, promote one of the slaves to act as a new master and bring up a new slave node</li>
+<li>Slave down: If a slave is down, you can use another slave for read operations and bring another database server to replace the failed one</li>
+</ul>
+</li>
+<li>Notification service failure: If a server goes down, all the long poll connections are lost, so clients must reconnect to a different server.</li>
+<li>Offline backup queue failure: Queues are replicated multiple times. If one queue fails, consumers of the queue may need to re-subscribe to the backup queue.</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/2f11.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">DP - Multidimensional Knapsack Problem</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/b233.html">
+        <span class="next-text nav-default">DP - Group Knapsack Problem</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/4c52.html';
+  var disqus_title = "System Design - Google Drive";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

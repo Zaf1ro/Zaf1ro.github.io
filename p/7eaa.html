@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - URL Shortener"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/7eaa.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/7eaa.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/7eaa.html"/>
+
+
+<meta name="description" content="1. Understand Problem and Establish Design Scope Can you give an example of how a URL shortener work?: Assume URL https:&#x2F;&#x2F;www.amazon.com&#x2F; is the original URL. Your service creates an alias with shorte">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - URL Shortener">
+<meta property="og:url" content="https://zaf1ro.github.io/p/7eaa.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Understand Problem and Establish Design Scope Can you give an example of how a URL shortener work?: Assume URL https:&#x2F;&#x2F;www.amazon.com&#x2F; is the original URL. Your service creates an alias with shorte">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/8-url-redirect.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/8-hash-collision.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/8-url-shortening-deep-dive.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/8-url-redirecting-deep-dive.jpg">
+<meta property="article:published_time" content="2024-04-14T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.054Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/8-url-redirect.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - URL Shortener - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understand-Problem-and-Establish-Design-Scope"><span class="toc-text">1. Understand Problem and Establish Design Scope</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Back-of-the-envelope-estimation"><span class="toc-text">1.1 Back of the envelope estimation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Propose-High-level-Design-and-get-buy-in"><span class="toc-text">2. Propose High-level Design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-API-Endpoints"><span class="toc-text">2.1 API Endpoints</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-URL-redirecting"><span class="toc-text">2.2 URL redirecting</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-URL-shortening"><span class="toc-text">2.3 URL shortening</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Design-deep-dive"><span class="toc-text">3. Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Data-model"><span class="toc-text">3.1 Data model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Hash-function"><span class="toc-text">3.2 Hash function</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-Hash-Collision"><span class="toc-text">3.2.1 Hash Collision</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-Base-62-Conversion"><span class="toc-text">3.2.2 Base 62 Conversion</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-Comparison-of-the-Two-Approaches"><span class="toc-text">3.2.3 Comparison of the Two Approaches</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-URL-Shortening-Deep-Dive"><span class="toc-text">3.3 URL Shortening Deep Dive</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-URL-Redirecting-Deep-Dive"><span class="toc-text">3.4 URL Redirecting Deep Dive</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Wrap-up"><span class="toc-text">4. Wrap up</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - URL Shortener
+        
+      </h1>
+      <time class="post-time">
+          04/14/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Understand-Problem-and-Establish-Design-Scope"><a href="#1-Understand-Problem-and-Establish-Design-Scope" class="headerlink" title="1. Understand Problem and Establish Design Scope"></a>1. Understand Problem and Establish Design Scope</h2><ul>
+<li>Can you give an example of how a URL shortener work?: Assume URL <a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.amazon.com/">https://www.amazon.com/</a> is the original URL. Your service creates an alias with shorter length: <a target="_blank" rel="noopener external nofollow noreferrer" href="https://tinyurl.com/y7keocwj">https://tinyurl.com/y7keocwj</a>. If you click the alias, it redirects you to the original URL.</li>
+<li>What is the traffic volume?: 100 million URLs are generated per day.</li>
+<li>How long is the shortened URL?: As short as possible</li>
+<li>What characters are allowed in the shortened URL?: Shortened URL can be a combination of numbers (0-9) and characters (a-z, A-Z).</li>
+<li>Can shortened URLs be deleted or updated?: shortened URLs cannot be deleted or updated.</li>
+</ul>
+<p>basic use cases:</p>
+<ul>
+<li>URL shortening: a long URL &#x3D;&gt; a much shorter URL</li>
+<li>URL redirecting: a shorter URL &#x3D;&gt; the original URL</li>
+<li>High availability</li>
+<li>Scalability</li>
+<li>Fault tolerance</li>
+</ul>
+<h3 id="1-1-Back-of-the-envelope-estimation"><a href="#1-1-Back-of-the-envelope-estimation" class="headerlink" title="1.1 Back of the envelope estimation"></a>1.1 Back of the envelope estimation</h3><ul>
+<li>Write operation: 100 million URLs are generated per day.</li>
+<li>Write operation per second: 100 million &#x2F; 24 &#x2F; 3600 &#x3D; 1160</li>
+<li>Read operation: Assuming ratio of read to write is 10:1, read operation per second: 1160 * 10 &#x3D; 11,600</li>
+<li>Assuming URL shortener service will run for 10 years: 100 million * 365 * 10 &#x3D; 365 billion records</li>
+<li>Assuming Average URL length is 100, storage requirement: 365 billion * 100 bytes * 10 years &#x3D; 365 TB</li>
+</ul>
+<h2 id="2-Propose-High-level-Design-and-get-buy-in"><a href="#2-Propose-High-level-Design-and-get-buy-in" class="headerlink" title="2. Propose High-level Design and get buy-in"></a>2. Propose High-level Design and get buy-in</h2><h3 id="2-1-API-Endpoints"><a href="#2-1-API-Endpoints" class="headerlink" title="2.1 API Endpoints"></a>2.1 API Endpoints</h3><p>A URL shortener primary needs two API endpoints:</p>
+<ul>
+<li>URL shortening: a client sends a <code>POST</code> request, contains one parameter: the original long URL. For example:<ul>
+<li>URL: <code>api/v1/data/shorten</code></li>
+<li>request parameter: {longUrl: longURLString}</li>
+<li>Return: shortURL</li>
+</ul>
+</li>
+<li>URL redirecting: a client sends a <code>GET</code> request. For example:<ul>
+<li>URL: <code>api/v1/shortUrl</code></li>
+<li>Return: longURL for HTTP redirection</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-2-URL-redirecting"><a href="#2-2-URL-redirecting" class="headerlink" title="2.2 URL redirecting"></a>2.2 URL redirecting</h3><p>Once the server receives a tinyurl request, it changes the short URL to the long URL with 301 redirect.<br><img src="/images/System-Design/Interview/8-url-redirect.jpg" alt="URL Redirect"></p>
+<p>The most intuitive solution: hash table. Assuming the hash table stores <code>&lt;shortURL, longURL&gt;</code> pairs, URL redirecting can be implemented by the following:</p>
+<ul>
+<li>Get longURL: longURL &#x3D; hashTable.get(shortURL)</li>
+<li>Once you get the longURL, perform the URL redirect.</li>
+</ul>
+<h3 id="2-3-URL-shortening"><a href="#2-3-URL-shortening" class="headerlink" title="2.3 URL shortening"></a>2.3 URL shortening</h3><p>Assume the short URL looks like: <code>www.tinyurl.com/&#123;hashValue&#125;</code>, we need a hash function <code>fx</code> that maps a long URL to the <code>hashValue</code>, The requirements of hash function:</p>
+<ul>
+<li>Each <code>longURL</code> is hashed to one <code>hashValue</code></li>
+<li>Each <code>hashValue</code> can be mapped back to the <code>longURL</code>.</li>
+</ul>
+<h2 id="3-Design-deep-dive"><a href="#3-Design-deep-dive" class="headerlink" title="3. Design deep dive"></a>3. Design deep dive</h2><h3 id="3-1-Data-model"><a href="#3-1-Data-model" class="headerlink" title="3.1 Data model"></a>3.1 Data model</h3><p>Since memory resources are limited and expensive, we cannot store everything in a hash table. A better option is to store <code>&lt;shortURL, longURL&gt;</code> mapping in a relational database, the simplified version of the table contains 3 columns: <code>id</code>, <code>shortURL</code>, <code>longURL</code>.</p>
+<h3 id="3-2-Hash-function"><a href="#3-2-Hash-function" class="headerlink" title="3.2 Hash function"></a>3.2 Hash function</h3><p>Hash function is used to hash a long URL to a short URL, also known as <code>hashValue</code>. The <code>hashValue</code> consists of characters from <code>[0-9, a-z, A-Z]</code>, containing 10 + 26 + 26 &#x3D; 62 characters.</p>
+<h4 id="3-2-1-Hash-Collision"><a href="#3-2-1-Hash-Collision" class="headerlink" title="3.2.1 Hash Collision"></a>3.2.1 Hash Collision</h4><p>Use well-known hash functions like CRC32, MD5, or SHA-1 to hash a long URL to a 7 characters string, but this method can lead to hash collisions. To resolve hash collisions, we can recursively append a new predefined string until no more collision is discovered.<br><img src="/images/System-Design/Interview/8-hash-collision.jpg" alt="Hash Collision"></p>
+<ul>
+<li>Drawback: it is expensive to query the database to check if a shortURL exists for every request.</li>
+<li>Solution: bloom filter</li>
+</ul>
+<h4 id="3-2-2-Base-62-Conversion"><a href="#3-2-2-Base-62-Conversion" class="headerlink" title="3.2.2 Base 62 Conversion"></a>3.2.2 Base 62 Conversion</h4><p>Base conversion helps to convert the same number between its different number representation systems. Example to explain how the conversion works: convert ${11157}_{10}$ to base 62 representation:</p>
+<ul>
+<li>0-0, ..., 9-9, 10-a, 11-b, ..., 35-z, 36-A, ..., 61-Z,</li>
+<li>${11157}_{10}$ &#x3D; 2 x 62^2 + 55 x 62^1 + 59 x 62^0 &#x3D; [2, 55, 59] -&gt; [2, T, X] in base 62</li>
+</ul>
+<p>Thus, the short URL is <a target="_blank" rel="noopener external nofollow noreferrer" href="https://tinyurl.com/2TX">https://tinyurl.com/2TX</a></p>
+<h4 id="3-2-3-Comparison-of-the-Two-Approaches"><a href="#3-2-3-Comparison-of-the-Two-Approaches" class="headerlink" title="3.2.3 Comparison of the Two Approaches"></a>3.2.3 Comparison of the Two Approaches</h4><table>
+<thead>
+<tr>
+<th align="left">Hash + collision resolution</th>
+<th align="left">Base 62 conversion</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Fixed short URL length</td>
+<td align="left">The short URL length is not fixed, it goes up with ID</td>
+</tr>
+<tr>
+<td align="left">It doesn&#39;t need a unique ID generator</td>
+<td align="left">depends on a unique ID generator</td>
+</tr>
+<tr>
+<td align="left">Collision is possible and must be resolved</td>
+<td align="left">Collision is impossible because ID is unique</td>
+</tr>
+<tr>
+<td align="left">impossible to figure out the next available short URL</td>
+<td align="left">easy to figure out the next available short URL, it&#39;s a security concern</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-URL-Shortening-Deep-Dive"><a href="#3-3-URL-Shortening-Deep-Dive" class="headerlink" title="3.3 URL Shortening Deep Dive"></a>3.3 URL Shortening Deep Dive</h3><p><img src="/images/System-Design/Interview/8-url-shortening-deep-dive.jpg" alt="URL Shortening Deep Dive"></p>
+<ol>
+<li>Input longURL</li>
+<li>The system checks if the longURL is in the database</li>
+<li>If it is, it means the longURL was converted to shortURL before</li>
+<li>If not, the longURL is new. A new unique ID is generated by an unique ID generator</li>
+<li>Convert the ID to shortURL with base 62 conversion</li>
+<li>Create a new database row with the ID, shortURL, and longURL</li>
+</ol>
+<p>Problem: we have to implement a unique ID generator in distributed environment<br>Solution: refer to chapter 7</p>
+<h3 id="3-4-URL-Redirecting-Deep-Dive"><a href="#3-4-URL-Redirecting-Deep-Dive" class="headerlink" title="3.4 URL Redirecting Deep Dive"></a>3.4 URL Redirecting Deep Dive</h3><p>As there are more reads than writes, <code>&lt;shortURL, longURL&gt;</code> mapping is stored in a cache to improve performance.<br><img src="/images/System-Design/Interview/8-url-redirecting-deep-dive.jpg" alt="URL Redirecting Deep Dive"></p>
+<ol>
+<li>User clicks a short URL link</li>
+<li>Load balancer forwards the request to web servers</li>
+<li>If a shortURL is already in the cache, return the longURL directly</li>
+<li>If shortURL not in the cache, fetch the longURL from the database</li>
+<li>If shortURL not in the database, it is likely a user entered an invalid shortURL</li>
+<li>Return longURL to user</li>
+</ol>
+<h2 id="4-Wrap-up"><a href="#4-Wrap-up" class="headerlink" title="4. Wrap up"></a>4. Wrap up</h2><p>Additional talking points:</p>
+<ul>
+<li>Rate limiter: filter out requests based on IP address or other filtering rules</li>
+<li>Web server scaling: scale the web tier by adding or removing web servers</li>
+<li>Database scaling: Database replication and sharding</li>
+<li>Analytics: help to answer important questions like how many people click on a link? When do they click the link? etc</li>
+<li>Availability, consistency, and reliability</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/6100.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">DP - Complete Knapsack Problem</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/b1ee.html">
+        <span class="next-text nav-default">System Design - Unique ID Generator</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/7eaa.html';
+  var disqus_title = "System Design - URL Shortener";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

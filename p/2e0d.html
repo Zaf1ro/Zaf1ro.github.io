@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Deadlock"/>
+
+
+
+
+  <meta name="keywords" content="Concurrency," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/2e0d.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/2e0d.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/2e0d.html"/>
+
+
+<meta name="description" content="1 Intro一方面, lock在共享内存的并发开发中承担了重要角色, 但一方面它也印发了诸多问题: deadlocks(死锁), convoying(锁封护), starvation(饥饿), unfairness(非公平锁), data races(资源争抢). 但其实解决方法也有很多:  利用Lock hierarchies(锁层级)来避免deadlock 使用deadlock探测工具, 例">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Deadlock">
+<meta property="og:url" content="https://zaf1ro.github.io/p/2e0d.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1 Intro一方面, lock在共享内存的并发开发中承担了重要角色, 但一方面它也印发了诸多问题: deadlocks(死锁), convoying(锁封护), starvation(饥饿), unfairness(非公平锁), data races(资源争抢). 但其实解决方法也有很多:  利用Lock hierarchies(锁层级)来避免deadlock 使用deadlock探测工具, 例">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/locking-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/locking-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/locking-3.png">
+<meta property="article:published_time" content="2019-06-03T13:21:54.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.032Z">
+<meta property="article:tag" content="Concurrency">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/multithreading/Basic/locking-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Deadlock - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Intro"><span class="toc-text">1 Intro</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Reason-of-Deadlock"><span class="toc-text">2. Reason of Deadlock</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Locking-Hierarchies"><span class="toc-text">3. Locking Hierarchies</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Local-Locking-Hierarchies"><span class="toc-text">3.1 Local Locking Hierarchies</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Layered-Locking-Hierarchies"><span class="toc-text">3.2 Layered Locking Hierarchies</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Conditional-Locking"><span class="toc-text">4. Conditional Locking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Acquire-Needed-Locks-First"><span class="toc-text">5. Acquire Needed Locks First</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Single-Lock-at-a-Time-Designs"><span class="toc-text">6. Single-Lock-at-a-Time Designs</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Signal-Interrupt-Handlers"><span class="toc-text">7. Signal&#x2F;Interrupt Handlers</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Deadlock
+        
+      </h1>
+      <time class="post-time">
+          06/03/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Intro"><a href="#1-Intro" class="headerlink" title="1 Intro"></a>1 Intro</h2><p>一方面, lock在共享内存的并发开发中承担了重要角色, 但一方面它也印发了诸多问题: deadlocks(死锁), convoying(锁封护), starvation(饥饿), unfairness(非公平锁), data races(资源争抢). 但其实解决方法也有很多:</p>
+<ol>
+<li>利用Lock hierarchies(锁层级)来避免deadlock</li>
+<li>使用deadlock探测工具, 例如: linux的lockdep</li>
+<li>使用对锁友好的数据结构, 例如: array, hashtable, radix tree</li>
+<li>利用恰当的synchronization mechanism来避免错误, 例如: reference counters, statistical counters, non-blocking data structures, RCU</li>
+</ol>
+<h2 id="2-Reason-of-Deadlock"><a href="#2-Reason-of-Deadlock" class="headerlink" title="2. Reason of Deadlock"></a>2. Reason of Deadlock</h2><p>当一组thread中每个thread都拥有一把锁, 且同时还在等待被同组thread占有的锁时, 会发生死锁. 本质上即thread与lock之间形成一个环.<br><img src="/images/multithreading/Basic/locking-1.png" alt="Deadlock Cycle"></p>
+<p>上图中, thread A拥有lock 1且想要获取lock 2, thread B拥有lock 2和lock 4且想获取lock 3, thread C拥有lock 3且想获取lock 4. Thread B, Thread C, lock 3, lock 4之间形成了一个环, 从而导致死锁. 如果没有外部干预, 死锁情况会一直持续. </p>
+<h2 id="3-Locking-Hierarchies"><a href="#3-Locking-Hierarchies" class="headerlink" title="3. Locking Hierarchies"></a>3. Locking Hierarchies</h2><p>锁层级目的是让锁的获取按照一定的顺序执行. 例如给每个锁编上数字编号, 若线程没有任何锁, 则可以获得任意编号的锁; 若线程已经拥有锁, 则只能获得比锁编号更高的锁, 不可获得编号相同或更低的锁.</p>
+<h3 id="3-1-Local-Locking-Hierarchies"><a href="#3-1-Local-Locking-Hierarchies" class="headerlink" title="3.1 Local Locking Hierarchies"></a>3.1 Local Locking Hierarchies</h3><p>锁层级的前提是全局性, 因此很难应用于库函数. 因为库函数调用的代码无法获知, 那也就无法遵循锁编号的顺序执行. 绝大多数情况下, 库函数并不会使用到调用者的代码, 这就可以保证库函数内部的锁层级正确执行; 但有时库函数也需要运行调用者的代码, 如qsort():<br><img src="/images/multithreading/Basic/locking-2.png" alt="Local Locking Hierarchy for qsort()"></p>
+<p>线程1和线程2分别拥有锁1和锁2, 在调用qsort()之前必须拥有锁3, qsort()需要调用外部的cmp()函数, 而cmp()需要锁2. 假设线程1优先获得锁3, 而线程2已经获取了锁2, 这时就会发生deadlock. 虽然依照锁层级, 线程1在拥有锁3后不应去获取锁2, 但qsort()事前不知道锁2的存在, 因此锁层级失效. 为避免这种情况的deadlock, 需要在获取任何未知锁前释放已经获取的锁: 当线程1获取锁3后想要获取外部的锁2时, 应先释放锁3.</p>
+<h3 id="3-2-Layered-Locking-Hierarchies"><a href="#3-2-Layered-Locking-Hierarchies" class="headerlink" title="3.2 Layered Locking Hierarchies"></a>3.2 Layered Locking Hierarchies</h3><p>若库函数无法在获取外部锁时释放内部的所有锁, 这时只能通过将锁分离成不同层来解决. 以上述qsort()为例, 将cmp()的锁剥离为单独一层. 但这通常需要从设计层面上进行改进:<br><img src="/images/multithreading/Basic/locking-3.png" alt="Layered Locking Hierarchy for qsort()"></p>
+<h2 id="4-Conditional-Locking"><a href="#4-Conditional-Locking" class="headerlink" title="4. Conditional Locking"></a>4. Conditional Locking</h2><p>有时业务逻辑让程序员无法实现锁层级, 例如在网络协议栈中, 报文流双向传输. 当报文从某一层向下一层流动时, 就需要同时获得两层的锁. 由于报文的双向性, 很容易导致死锁. 例如: 报文1从物理层向链路层传输, 其获得了物理层的锁; 报文2从链路层向物理层传输, 获得了链路层的锁, 双方都无法获得对方的锁.<br>因此应使用<code>spin_trylock()</code>来获取锁, <code>spin_trylock()</code>只会非阻塞性的获取的一次锁, 并立即返回结果(返回0则已获取锁, 返回非0则反之)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Thread 1 */</span></span><br><span class="line"><span class="built_in">pthread_mutex_lock</span>(&amp;m1); </span><br><span class="line"><span class="built_in">pthread_mutex_lock</span>(&amp;m2);</span><br><span class="line"><span class="comment">/* process data */</span> </span><br><span class="line"><span class="built_in">pthread_mutex_unlock</span>(&amp;m2);</span><br><span class="line"><span class="built_in">pthread_mutex_unlock</span>(&amp;m1);</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Thread 2 */</span></span><br><span class="line"><span class="keyword">for</span> (; ;) &#123; </span><br><span class="line">  <span class="built_in">pthread_mutex_lock</span>(&amp;m2);   </span><br><span class="line">  <span class="keyword">if</span>(<span class="built_in">pthread_mutex_trylock</span>(&amp;m1) == <span class="number">0</span>) <span class="comment">/* got it */</span> </span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  <span class="comment">/* didn&#x27;t get it */</span> </span><br><span class="line">  <span class="built_in">pthread_mutex_unlock</span>(&amp;m2);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* process data */</span> </span><br><span class="line"><span class="built_in">pthread_mutex_unlock</span>(&amp;m1);</span><br><span class="line"><span class="built_in">pthread_mutex_unlock</span>(&amp;m2);</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-Acquire-Needed-Locks-First"><a href="#5-Acquire-Needed-Locks-First" class="headerlink" title="5. Acquire Needed Locks First"></a>5. Acquire Needed Locks First</h2><p>Conditional Locking需要获取所有必要的锁后才能处理事务, 因此不能为了获取某个锁而释放一个已经获取的锁, 只能释放所有的锁, 然后再获取该锁.<br>由于无法释放锁的特性, Two-phase locking(两段锁协议)应运而生. Two-phase locking分为两个阶段: 第一阶段期间只获得锁, 不释放锁. 第一阶段结束后应获得所有必要的锁, 从而处理事务. 第二阶段期间只释放锁, 不获取锁. 这种锁协议保证事务处理按照某个顺序执行, 虽然避免了deadlock, 但可能造成livelock.</p>
+<h2 id="6-Single-Lock-at-a-Time-Designs"><a href="#6-Single-Lock-at-a-Time-Designs" class="headerlink" title="6. Single-Lock-at-a-Time Designs"></a>6. Single-Lock-at-a-Time Designs</h2><p>Locking Hierarchies和Conditional Locking都是针对嵌套锁的情况来试图避免deadlock, 但如果任何时刻线程只拥有一把锁, 则死锁就无法形成. 例如: 如果可以将事务逻辑完美分割, 每个事务分片只需要一把锁, 特定分片的线程只需获取对应该分片的锁, 这时deadlock就不可能发生.</p>
+<h2 id="7-Signal-Interrupt-Handlers"><a href="#7-Signal-Interrupt-Handlers" class="headerlink" title="7. Signal&#x2F;Interrupt Handlers"></a>7. Signal&#x2F;Interrupt Handlers</h2><p>由于在signal handler中调用<code>pthread_mutex_lock()</code>是非法, 所以signal handler中的deadlock并不会发生. 但绝大多数的OS kernel都允许在interrupt handler中使用锁. 当需要在interrupt handler中获取锁时, 应阻塞信号或屏蔽中断. 不幸的是, 在一些操作系统里阻塞和解除阻塞信号都属于代价昂贵的操作. 所以出于性能上的考虑, 应用程序和signal handler之间的通信通常使用无锁同步机制.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Concurrency/">Concurrency</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/25e7.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Types of Locks</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/e99f.html">
+        <span class="next-text nav-default">Counting</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/2e0d.html';
+  var disqus_title = "Deadlock";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

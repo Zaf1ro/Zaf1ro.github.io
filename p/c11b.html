@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Aggregate"/>
+
+
+
+
+  <meta name="keywords" content="Microservices," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/c11b.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/c11b.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/c11b.html"/>
+
+
+<meta name="description" content="1. Overview当Domain中的Entity和Value Object越来越多时, 各个模型之间的交互越来越复杂, 管理这些互动关系就变成一个问题. 因此需要设计一个边界来降低复杂度, 保持边界内规则的完整性, 称为aggregate. 以下是关于aggregate的几个问题:  如何处理模型间复杂的关联性 如何在模型中划分出边界 如何将关联性放入repository 使用reposito">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Aggregate">
+<meta property="og:url" content="https://zaf1ro.github.io/p/c11b.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Overview当Domain中的Entity和Value Object越来越多时, 各个模型之间的交互越来越复杂, 管理这些互动关系就变成一个问题. 因此需要设计一个边界来降低复杂度, 保持边界内规则的完整性, 称为aggregate. 以下是关于aggregate的几个问题:  如何处理模型间复杂的关联性 如何在模型中划分出边界 如何将关联性放入repository 使用reposito">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/aggregate-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/microservice/aggregate-2.png">
+<meta property="article:published_time" content="2021-05-01T19:21:34.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.035Z">
+<meta property="article:tag" content="Microservices">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/microservice/aggregate-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Aggregate - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Overview"><span class="toc-text">1. Overview</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-State-of-Aggregation"><span class="toc-text">2. State of Aggregation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Design-Principles"><span class="toc-text">3. Design Principles</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-How-to-Find-Aggregate"><span class="toc-text">4. How to Find Aggregate</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Eventual-Consistency"><span class="toc-text">5. Eventual Consistency</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Aggregate
+        
+      </h1>
+      <time class="post-time">
+          05/01/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h2><p>当Domain中的Entity和Value Object越来越多时, 各个模型之间的交互越来越复杂, 管理这些互动关系就变成一个问题. 因此需要设计一个边界来降低复杂度, 保持边界内规则的完整性, 称为aggregate. 以下是关于aggregate的几个问题:</p>
+<ul>
+<li>如何处理模型间复杂的关联性</li>
+<li>如何在模型中划分出边界</li>
+<li>如何将关联性放入repository</li>
+<li>使用repository模式时, 是否要给每个Entity建立一个Repository</li>
+</ul>
+<h2 id="2-State-of-Aggregation"><a href="#2-State-of-Aggregation" class="headerlink" title="2. State of Aggregation"></a>2. State of Aggregation</h2><p>在具有复杂关系的模型中, 想保证Strong consistency(强一致性)是很困难的. 例如, 当用户网购下单时, 一个订单会包含很多模型(商品, 折扣, 支付, 物流, 发票等), 若用户取消某个已下单的商品, 需重新计算折扣, 退款, 退货, 重新开发票, 甚至影响到会员系统或商品推荐系统.<br>因此需要Aggregate来降低复杂度, Aggregate是一群相关联模型(Entity或Value Object)的集合, 每个Aggregate需要有一个Entity作为<strong>Aggregate Root</strong>, 任何获取数据或修改数据都需要通过Aggregate Root, 再传给Aggregate中的其他模型. 以下是Order Aggregate的模型设计:<br><img src="/images/microservice/aggregate-1.png" alt="Order Aggregate 1"></p>
+<p>将Order Entity作为Aggregate Root, 无论外部有什么请求, 都要先经过Aggregate Root才能与Aggregate内部的其他模型互动. 这样Aggregate Root不仅可以封装业务逻辑, 还可以保证状态变化时, 规则保证一致性(Invariant), 模型如下:<br><img src="/images/microservice/aggregate-2.png" alt="Order Aggregate 2"></p>
+<p>对于Order Aggregate, 可能存在以下Invariant(固定规则):</p>
+<ul>
+<li>OrderItem(商品)的数量可以被增加, 减少, 但总数量不能为零</li>
+<li>Payment(支付)与OrderItem的数量相关</li>
+<li>Shipping(物流)有最低消费限制</li>
+<li>Invoice(发票)包含支付信息</li>
+<li>退货时需要将商品重新放回Inventory</li>
+</ul>
+<p>若开发者不采用Aggregate, 当用户修改订单中的商品数量时, 则需对多个模型进行更新:</p>
+<ol>
+<li>OrderItem.update()</li>
+<li>Payment.check()</li>
+<li>Order.update()</li>
+<li>Shipping.check()</li>
+<li>Invoice.update()</li>
+<li>Inventory.update()</li>
+</ol>
+<p>如果使用Aggregate, 则整个过程更加简洁: Order.updateItem(), Inventory.update(). 其中Order.updateItem()既是状态改变的原因, 也是修改支付金额, 发票信息, 检查最低消费的结果. 由此保证业务的一致性.</p>
+<h2 id="3-Design-Principles"><a href="#3-Design-Principles" class="headerlink" title="3. Design Principles"></a>3. Design Principles</h2><p>以下是Aggregate的几个设计原则:</p>
+<ul>
+<li>Aggregate Root的Entity必须在Bounded Context中有唯一标示</li>
+<li>Aggregate Root负责检查边界内的所有Invariants(固定规则)</li>
+<li>Aggregate外的物品不能引用除Aggregate Root之外的任何内部模型</li>
+<li>通过Repository只能获得Aggregate Root, 不能获得Aggregate中的其他模型</li>
+<li>Aggregate中的模型可以引用其他Aggregate Root, 但只能引用其ID</li>
+<li>删除操作必须删除Aggregate内的所有模型</li>
+<li>当对Aggregate做出修改时, Aggregate的Invariant必须都满足, 且存储时必须全部存储, 而不能只存储单个模型</li>
+</ul>
+<p>写入整个Aggregate时, 可能导致Aggregate相关的所有table被锁住, 因此可能会影响性能, 但大多数情况下, 写入的正确性比性能优先级更高. 为减少性能的损失, 需要适当地减少Aggregate的大小. 对于读取来说, 有时不需要将Aggregate中的所有模型从数据库中取出, 可借助CQRS模型来对读取做优化.</p>
+<h2 id="4-How-to-Find-Aggregate"><a href="#4-How-to-Find-Aggregate" class="headerlink" title="4. How to Find Aggregate"></a>4. How to Find Aggregate</h2><p>Aggregate的尺寸有一个矛盾之处: Aggregate越大, 复杂度越低, 性能越查; Aggregate越小, 复杂度越高, 性能越好. 所以设计的第一步, 先规划一个大的Aggregate, 以商店为例, 最大的Aggregate就是Shop本身, 但如果将所有业务都放入Shop里, 会发生很多不方便之处, 例如, 当修改Shop里的商品信息时, 必须锁住整个Aggregate, 甚至无法创建新的订单.<br>有一个大的Aggregate后, 就对其进行拆分. Aggregate拆分的越小, 系统的性能和拓展性越强, 复杂度也会随之提升. 绝大多数情况下, 若Invariant的约束并不严格, 则可将Aggregate内除Aggregate Root外的Entity数量减少, 最好只保留Value Object. 这里需注意被两个使用者同时修改某个Aggregate的情况. 以商店为例, 其中包含多个Aggregate: Product, Member, Seller. 若将Order放入Member中, 当Member修改Order时, Seller正好也在处理Order, 可能导致Seller的处理失败, 因此需要将Order从Member分离出来, Order中带有MemberID即可.</p>
+<h2 id="5-Eventual-Consistency"><a href="#5-Eventual-Consistency" class="headerlink" title="5. Eventual Consistency"></a>5. Eventual Consistency</h2><p>Invariant所指的一致性是<strong>transactional consistency</strong>(事务一致性, 所有状态修改同时保存), 而不是<strong>eventual consistency</strong>(最终一致性, 所有状态修改会保存, 但并不是立刻执行), 因此Aggregate Root会将整个Aggregate存储repository, Aggregate的边界也是transaction的边界; 但若某个transaction涉及的Aggregate不止一个, 存在以下两种解决方法:</p>
+<ul>
+<li>将多个Aggregate打包成一个, 由此保证transactional consistency, 代价是执行效率降低</li>
+<li>使用eventual consistency, 保证各个Aggregate最终都能正确地修改状态, 代价是各个Aggregate存入repository的时间之间有一定延迟</li>
+</ul>
+<p>上述两个方法没有优劣之分, 只取决于transaction的业务属性. 若transaction无法接受时延, 则采用第一种方法; 反之则采用第二种. Aggregate中实现eventual consistency的最常见方式是Domain Event, 接收到状态改变的Aggregate发出Domain Event, 订阅该Aggregate Event的Aggregate会自动处理:</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// domain/model/Order.ts</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Order</span> &#123;</span><br><span class="line">  <span class="title function_">close</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">setStatus</span>(<span class="string">&#x27;CLOSED&#x27;</span>);</span><br><span class="line">    <span class="comment">// publish event</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">events</span>.<span class="title function_">push</span>(<span class="keyword">new</span> <span class="title class_">OrderClosed</span>(<span class="variable language_">this</span>.<span class="property">id</span>, <span class="variable language_">this</span>.<span class="property">buyerId</span>));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">OrderClosed</span> <span class="keyword">implements</span> <span class="title class_">DomainEvent</span> &#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="attr">orderId</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="attr">buyerId</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="keyword">public</span> <span class="attr">occuredAt</span>: <span class="title class_">Date</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params">orderId, buyerId</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">orderId</span> = orderId;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">buyerId</span> = buyerId;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">occuredAt</span> = <span class="keyword">new</span> <span class="title class_">Date</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> events = <span class="built_in">require</span>(<span class="string">&#x27;events&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CloseOrder</span> &#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="attr">orderRepo</span>: <span class="title class_">OrderRepository</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="attr">memberRepo</span>: <span class="title class_">MemberRepository</span>;</span><br><span class="line">  <span class="keyword">private</span> <span class="attr">eventEmitter</span>: events.<span class="property">EventEmitter</span>;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"><span class="attr">orderRepo</span>: <span class="title class_">OrderRepository</span>, <span class="attr">memberRepo</span>: <span class="title class_">MemberRepository</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">orderRepo</span> = orderRepo;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">memberRepo</span> = memberRepo;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">eventEmitter</span> = <span class="keyword">new</span> events.<span class="title class_">EventEmitter</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">async</span> <span class="title function_">execute</span>(<span class="params"><span class="attr">input</span>: &#123; orderId: <span class="built_in">string</span> &#125;</span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">eventEmitter</span>.<span class="title function_">on</span>(</span><br><span class="line">      <span class="string">&#x27;OrderClosed&#x27;</span>,</span><br><span class="line">      <span class="title function_">async</span> (<span class="attr">orderClosed</span>: <span class="title class_">OrderClosed</span>): <span class="function"><span class="params">void</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// increase credit</span></span><br><span class="line">        <span class="keyword">const</span> <span class="attr">member</span>: <span class="title class_">Member</span> = <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">memberRepo</span>.<span class="title function_">ofId</span>(orderClosed.<span class="property">buyerId</span>);</span><br><span class="line">        member.<span class="title function_">increaseCreditByOrderClosed</span>();</span><br><span class="line">        <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">memberRepo</span>.<span class="title function_">save</span>(member);</span><br><span class="line">        <span class="comment">// another transaction end</span></span><br><span class="line">      &#125;</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// transaction start</span></span><br><span class="line">    <span class="keyword">const</span> <span class="attr">order</span>: <span class="title class_">Order</span> = <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">orderRepo</span>.<span class="title function_">ofId</span>(input.<span class="property">orderId</span>);</span><br><span class="line">    order.<span class="title function_">close</span>(); <span class="comment">// statu -&gt; &#x27;CLOSED&#x27;</span></span><br><span class="line">    <span class="keyword">await</span> <span class="variable language_">this</span>.<span class="property">orderRepo</span>.<span class="title function_">save</span>(order);</span><br><span class="line">    <span class="comment">// transaction end</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// send all events</span></span><br><span class="line">    order.<span class="property">events</span>.<span class="title function_">forEach</span>(<span class="function"><span class="params">event</span> =&gt;</span> <span class="variable language_">this</span>.<span class="property">eventEmitter</span>.<span class="title function_">emit</span>(<span class="string">&#x27;OrderClosed&#x27;</span>, event));</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">eventEmitter</span>.<span class="title function_">removeAllListeners</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Microservices/">Microservices</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/3435.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Repository</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/bc4.html">
+        <span class="next-text nav-default">Value Object</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/c11b.html';
+  var disqus_title = "Aggregate";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

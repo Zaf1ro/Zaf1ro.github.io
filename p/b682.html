@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="InnoDB Locking"/>
+
+
+
+
+  <meta name="keywords" content="Database," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/b682.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/b682.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/b682.html"/>
+
+
+<meta name="description" content="1. Shared and Exclusive LocksInnoDB中存在两种row-level locks(行级锁)类型:  shared lock(简写为S锁): 允许持有该锁的事务读取目标行, 且允许其他事务读取目标行, 但不允许其他事务对目标行进行更改或删除 exclusive lock(简写为X锁): 允许持有该锁的事务更新或删除目标行, 但不允许其他事务对目标行加锁  若事务T1对于">
+<meta property="og:type" content="article">
+<meta property="og:title" content="InnoDB Locking">
+<meta property="og:url" content="https://zaf1ro.github.io/p/b682.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Shared and Exclusive LocksInnoDB中存在两种row-level locks(行级锁)类型:  shared lock(简写为S锁): 允许持有该锁的事务读取目标行, 且允许其他事务读取目标行, 但不允许其他事务对目标行进行更改或删除 exclusive lock(简写为X锁): 允许持有该锁的事务更新或删除目标行, 但不允许其他事务对目标行加锁  若事务T1对于">
+<meta property="og:locale">
+<meta property="article:published_time" content="2022-08-15T18:53:05.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.033Z">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+InnoDB Locking - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Shared-and-Exclusive-Locks"><span class="toc-text">1. Shared and Exclusive Locks</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Intention-Locks"><span class="toc-text">2. Intention Locks</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-InnoDB-Index"><span class="toc-text">3. InnoDB Index</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Row-Level-Locks"><span class="toc-text">4. Row-Level Locks</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Record-Locks"><span class="toc-text">4.1 Record Locks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Gap-Locks"><span class="toc-text">4.2 Gap Locks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Next-Key-Locks"><span class="toc-text">4.3 Next-Key Locks</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Insert-Intention-Locks"><span class="toc-text">5. Insert Intention Locks</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-AUTO-INC-Locks"><span class="toc-text">6. AUTO-INC Locks</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Predicate-Locks-for-Spatial-Indexes"><span class="toc-text">7. Predicate Locks for Spatial Indexes</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Troubleshoot-InnoDB-Lock-Issues"><span class="toc-text">8. Troubleshoot InnoDB Lock Issues</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-Preparation"><span class="toc-text">8.1 Preparation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-Database-Administration-Statements"><span class="toc-text">8.1 Database Administration Statements</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-How-Locks-Work"><span class="toc-text">9. How Locks Work</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-Rules-of-Locking-on-Row-Level-Locks"><span class="toc-text">9.1 Rules of Locking on Row-Level Locks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-Status-of-Row-level-locks"><span class="toc-text">9.2 Status of Row-level locks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-Locking-on-Different-Index"><span class="toc-text">9.3 Locking on Different Index</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#9-3-1-Unique-Index"><span class="toc-text">9.3.1 Unique Index</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#9-3-2-Non-unique-Index"><span class="toc-text">9.3.2 Non-unique Index</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#9-3-3-No-Index"><span class="toc-text">9.3.3 No Index</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          InnoDB Locking
+        
+      </h1>
+      <time class="post-time">
+          08/15/22
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Shared-and-Exclusive-Locks"><a href="#1-Shared-and-Exclusive-Locks" class="headerlink" title="1. Shared and Exclusive Locks"></a>1. Shared and Exclusive Locks</h2><p>InnoDB中存在两种<strong>row-level locks</strong>(行级锁)类型:</p>
+<ul>
+<li>shared lock(简写为<strong>S锁</strong>): 允许持有该锁的事务读取目标行, 且允许其他事务读取目标行, 但不允许其他事务对目标行进行更改或删除</li>
+<li>exclusive lock(简写为<strong>X锁</strong>): 允许持有该锁的事务更新或删除目标行, 但不允许其他事务对目标行加锁</li>
+</ul>
+<p>若事务T1对于行r持有<code>S锁</code>, 之后事务T2请求获得行r上的锁, 分为两种情况:</p>
+<ul>
+<li>T2请求<code>S锁</code>: 立即获得该锁</li>
+<li>T2请求<code>X锁</code>: 无法立即获得该锁</li>
+</ul>
+<p>若T1持有行r的<code>X锁</code>, 无论T2请求哪一种锁, 都无法立即获得, 只能等待T1释放锁.</p>
+<h2 id="2-Intention-Locks"><a href="#2-Intention-Locks" class="headerlink" title="2. Intention Locks"></a>2. Intention Locks</h2><p>InnoDB允许<strong>row-level lock</strong>与<strong>table-level lock</strong>在一个table中共存. 为实现不同粒度的锁, InnoDB采用了<strong>intention lock</strong>(意向锁), 该锁是一种table-level lock(表级锁), 表示事务<strong>有意</strong>获得目标表中一些行的锁(shared或exclusive). 该锁由InnoDB自行申请和维护的, 无需用户手动操作. 以下是两种intention lock类型:</p>
+<ul>
+<li>Intention shared lock(简写为<strong>IS锁</strong>): 表示事务有意获得目标表中一些行的<strong>row-level shared lock</strong></li>
+<li>Intention exclusive lock(简写为<strong>IX锁</strong>): 表示事务有意获得目标表中一些行的<strong>row-level exclusive lock</strong></li>
+</ul>
+<p>Intention lock协议:</p>
+<ul>
+<li>在事务获得表中某一行的shared lock之前, 必须先获得该表的<code>IS锁</code>或更严格的锁</li>
+<li>在事务获得表中某一行的exclusive lock前, 必须先获得该表的<code>IX锁</code></li>
+</ul>
+<p>总结一下, table-level locks分为两大类, 四种锁:</p>
+<ul>
+<li>通过<code>LOCK</code>命令获得的table-level lock:<ul>
+<li><code>LOCK TABLES ... READ</code>: shared lock(S)</li>
+<li><code>LOCK TABLES ... WRITE</code>: exclusive lock(X)</li>
+</ul>
+</li>
+<li>通过<code>SELECT FOR SHARE/UPDATE</code>命令获得的intention lock:<ul>
+<li><code>SELECT ... FOR SHARE</code>: Intention shared lock(IS)</li>
+<li><code>SELECT ... FOR UPDATE</code>: Intention exclusive lock(IX)</li>
+</ul>
+</li>
+</ul>
+<p>以下是各种table-level locks的兼容性:</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">X</th>
+<th align="center">IX</th>
+<th align="center">S</th>
+<th align="center">IS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">X</td>
+<td align="center">Conflict</td>
+<td align="center">Conflict</td>
+<td align="center">Conflict</td>
+<td align="center">Conflict</td>
+</tr>
+<tr>
+<td align="center">IX</td>
+<td align="center">Conflict</td>
+<td align="center">Compatible</td>
+<td align="center">Conflict</td>
+<td align="center">Compatible</td>
+</tr>
+<tr>
+<td align="center">S</td>
+<td align="center">Conflict</td>
+<td align="center">Conflict</td>
+<td align="center">Compatible</td>
+<td align="center">Compatible</td>
+</tr>
+<tr>
+<td align="center">IS</td>
+<td align="center">Conflict</td>
+<td align="center">Compatible</td>
+<td align="center">Compatible</td>
+<td align="center">Compatible</td>
+</tr>
+</tbody></table>
+<p>可以看到, 不同类型的intention lock彼此兼容, 因此锁请求可能构成死锁, 检测到死锁时会报错; 但intention lock与table-level lock不兼容, 当发生冲突时, 事务会被阻塞, 直到互斥的锁被释放.<br>需要注意的是, intention lock不与row-level lock互斥. 虽然intention lock让获取row-level lock分为两步:</p>
+<ol>
+<li>先获得目标表的intention lock</li>
+<li>再获得目标表中目标行的row-level lock</li>
+</ol>
+<p>但如果不使用intention lock, 事务试图获得table-level lock时, 需进行以下两个步骤:</p>
+<ol>
+<li>检查目标表是否被table-level lock锁住</li>
+<li>若目标表未锁住, 检查表中的每一行是否被row-level lock锁住</li>
+</ol>
+<p>由于每次获取table-level lock都需扫描整个表, 导致效率很低, 而采用intention lock可在第一步得知该表是否存在row-level lock.</p>
+<h2 id="3-InnoDB-Index"><a href="#3-InnoDB-Index" class="headerlink" title="3. InnoDB Index"></a>3. InnoDB Index</h2><p>InnoDB的index以<strong>B+Tree</strong>形式实现, <strong>clustered index</strong>(聚簇索引)将<strong>primary key</strong>(主键)映射为表中的每一行, <strong>secondary index</strong>(二级索引)则将其他key映射为主键, 因此当InnoDB通过二级索引查找某一行时, 需先通过二级索引找到该行的主键, 再通过聚簇索引找到行内数据.<br>Index中的数据根据key值顺序保存, 更适合范围查找; 由于随时保持顺序分布, 因此index中的每个record(索引记录)都有一个<strong>heap number</strong>, 以此表示每个record的位置. 任何index都包含两个特殊的record:</p>
+<ul>
+<li>infimum: 比任何key都小的index, heap no为0</li>
+<li>supremum: 比任何key都大的index, heap no为1</li>
+</ul>
+<h2 id="4-Row-Level-Locks"><a href="#4-Row-Level-Locks" class="headerlink" title="4. Row-Level Locks"></a>4. Row-Level Locks</h2><h3 id="4-1-Record-Locks"><a href="#4-1-Record-Locks" class="headerlink" title="4.1 Record Locks"></a>4.1 Record Locks</h3><p>除了table-level lock, InnoDB还提供row-level lock, 分为以下三种:</p>
+<ul>
+<li>record lock: 也称为<strong>rec-not-gap lock</strong>, 只锁定某一行</li>
+<li>gap lock: 锁定两个record之间的所有记录, 但不包含左右边界本身</li>
+<li>next-key lock: 锁定两个两个record之间的所有记录, 且包含右边界</li>
+</ul>
+<p>需要注意的是, InnoDB中所有row-level locks只会锁住索引记录, 不会锁住对应的数据. 因此, 所有row-level lock都需要挂靠在某个索引记录上, 例如:</p>
+<ul>
+<li>若<code>id</code>列上某个索引记录(key值为1)上有一个record lock: 表示<code>id = 1</code>的行被锁定, <code>id</code>列需有唯一索引</li>
+<li>若<code>id</code>列上某个索引记录(key值为1)上有一个gap lock: 表示<code>(?, 1)</code>区间被锁定, <code>?</code>表示索引值比1小且与1相邻的索引记录</li>
+<li>若<code>id</code>列上某个索引记录(key值为1)上有一个next-key lock: 表示<code>(?, 1]</code>区间被锁定, <code>?</code>表示索引值比1小且与1相邻的索引记录</li>
+</ul>
+<p>若表内没有任何index, InnoDB会为该表创建聚簇索引(行数作为主键), 并使用该index锁定记录.</p>
+<h3 id="4-2-Gap-Locks"><a href="#4-2-Gap-Locks" class="headerlink" title="4.2 Gap Locks"></a>4.2 Gap Locks</h3><p><strong>Gap lock</strong>负责锁住两个索引记录之间的所有key, 目的是解决<strong>phantom read</strong>(幻读)问题. 例如, <code>SELECT c1 FROM t WHERE c1 BETWEEN 10 and 20 FOR UPDATE</code>, 无论表中是否拥有<code>t.c1</code>为15的行, 该语句会阻塞其他事务插入<code>t.c1 = 15</code>, 因为<code>[10, 20]</code>区间都被锁定.<br>需要注意的是, 该锁类型只会在事务隔离级别为<strong>Repeatable Read</strong>时使用(RR要求不能出现幻读), <strong>Read Committed</strong>下不会使用该锁.<br>Gap lock可跨越单个索引值, 多个索引值, 甚至是空值. InnoDB的默认事务隔离级别为RR, 范围搜索时会自动使用gap lock; 但gap lock可能造成性能急剧下降, 有些业务会将事务隔离级别降为RC, 从而关闭gap lock.<br>锁定<strong>unique index</strong>(唯一索引, 包括主键)上的单行无需gap lock; 但若语句在查询条件中使用<strong>multiple-column unique index</strong>(多列唯一索引), 则仍需使用gap lock. 例如, <code>id</code>拥有唯一索引, <code>SELECT * FROM child WHERE id = 100</code>只需锁定id为100的行, 因此使用<strong>record lock</strong>; 若id列没有索引, 或<strong>nonunique index</strong>(非唯一索引), 则使用gap lock.<br>需要注意的是, 同一索引记录区间可被不同事务同时持有gap lock. 例如, 事务A持有一个shared gap lock, 事务B可在相同区间上持有一个exclusive gap lock. 之所以gap lock允许重叠, 因为当某个索引记录被移除时, 该记录上的gap lock需被合并. Gap lock的唯一目的是防止其他并发事务插入数据. Gap lock可以共存, 相同gap上的gap lock不会互相排斥, 也就是说, shared gap lock和exclusive gap lock没有区别, 它们不会阻塞彼此, 且功能相同.<br>若事务隔离级别改为RC, gap lock会自动关闭, 只用于<strong>foreign-key constraint checking</strong>(检查外键约束)和<strong>duplicate-key checking</strong>(重复键检查). 除了gap lock, 其他lock在RC下也有一些改变: 对于record lock, InnoDB不会锁住<code>WHERE</code>条件中无法在index中匹配的行; 对于<code>UPDATE</code>语句, InnoDB会将<strong>最新提交</strong>的数据返回给MySQL, MySQL以此确定数据是否匹配<code>UPDATE</code>的<code>WHERE</code>条件.</p>
+<h3 id="4-3-Next-Key-Locks"><a href="#4-3-Next-Key-Locks" class="headerlink" title="4.3 Next-Key Locks"></a>4.3 Next-Key Locks</h3><p>Next-key lock是record lock和gap lock的结合, 也就是说, 该锁不仅锁定一个index record, 还锁定一个区间, 目的是解决<strong>phantom read</strong>(幻读)问题.<br>InnoDB中row-level lock的运行方式为: 当搜索一个index时, 会在对应的index record上设置shared lock或exclusive lock. 因此, row-level lock实际上是index-record lock. 若当前事务在某个index record上持有shared lock或exclusive lock, 其他事务无法在该record之前的区间插入新的index record.<br>假设index中包含10, 11, 13, 20四个record, next-key lock拥有以下几种可能:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">(negative infinity, 10]</span><br><span class="line">(10, 11]</span><br><span class="line">(11, 13]</span><br><span class="line">(13, 20]</span><br><span class="line">(20, positive infinity)</span><br></pre></td></tr></table></figure>
+
+<p>对于最后一个区间, next-key会锁定大于最大值的区间, 其中, <strong>positive infinity</strong>表示高于index中任何一个值的pseudo-record(伪记录, 也就是supremum). 由于伪记录并不是一个真实的index record, 因此锁定最大的index record之后的区间.</p>
+<h2 id="5-Insert-Intention-Locks"><a href="#5-Insert-Intention-Locks" class="headerlink" title="5. Insert Intention Locks"></a>5. Insert Intention Locks</h2><p>Insert intention lock是一种gap lock, 执行<code>INSERT</code>命令时会先获得该锁. 当多个事务同时insert同一区间, 只要插入的位置不同, 则无需等待对方. 例如, index中存在两个record, 分别为为4和7, 两个事务尝试插入5和6, 在获得目标行的排它锁之前, 事务会用insert intention lock锁住<code>[4, 7]</code>区间, 且彼此不会相互阻塞, 因为插入的目标行不冲突.<br>下面例子展示了事务先获取insert intention lock, 之后获得排它锁. 该例包含两个客户端A和B, A创建一个包含两个index record(90和102)的表, 并启动一个事务来获得index record大于100的exclusive lock, 该锁包含102之前的gap lock.</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">CREATE</span> <span class="keyword">TABLE</span> child (id <span class="type">int</span>(<span class="number">11</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>, <span class="keyword">PRIMARY</span> KEY(id)) ENGINE<span class="operator">=</span>InnoDB;</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">INSERT</span> <span class="keyword">INTO</span> child (id) <span class="keyword">values</span> (<span class="number">90</span>),(<span class="number">102</span>);</span><br><span class="line"></span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">START</span> TRANSACTION;</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">SELECT</span> <span class="operator">*</span> <span class="keyword">FROM</span> child <span class="keyword">WHERE</span> id <span class="operator">&gt;</span> <span class="number">100</span> <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>;</span><br><span class="line"><span class="operator">+</span><span class="comment">-----+</span></span><br><span class="line"><span class="operator">|</span> id  <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-----+</span></span><br><span class="line"><span class="operator">|</span> <span class="number">102</span> <span class="operator">|</span></span><br><span class="line"><span class="operator">+</span><span class="comment">-----+</span></span><br></pre></td></tr></table></figure>
+
+<p>客户端B启动一个事务向gap插入一条record, 该事务会在等待exclusive lock时获得一个insert intention lock.</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">START</span> TRANSACTION;</span><br><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">INSERT</span> <span class="keyword">INTO</span> child (id) <span class="keyword">VALUES</span> (<span class="number">101</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-AUTO-INC-Locks"><a href="#6-AUTO-INC-Locks" class="headerlink" title="6. AUTO-INC Locks"></a>6. AUTO-INC Locks</h2><p>AUTO-INC lock是一种特殊的table-level lock, 只有事务插入的行带有<code>AUTO_INCREMENT</code>列时才会使用该锁. 最简单的情况下, 若事务向表中插入值, 其他事务必须等待该事务, 以保证第一个事务插入的行具有连续的键值.<br><code>innodb_autoinc_lock_mode</code>配置选项可控制auto-increment locking的算法, 允许应用在<strong>可预测的自动递增值序列</strong>和<strong>插入操作的最大并发性</strong>之间进行权衡.</p>
+<h2 id="7-Predicate-Locks-for-Spatial-Indexes"><a href="#7-Predicate-Locks-for-Spatial-Indexes" class="headerlink" title="7. Predicate Locks for Spatial Indexes"></a>7. Predicate Locks for Spatial Indexes</h2><p>InnoDB支持对包含spatial column的列进行SPATIAL indexing(空间索引). Next-key lock无法锁定涉及空间索引的操作, 因为多维数据没有绝对的排序概念, 因此无法判断键值区间.<br>InnoDB使用predicate lock为具有空间索引的表提供隔离级别, 空间索引包含MBR(minimum bounding rectangle, 最小边界矩形), InnoDB会对MBR值设置一个predicate lock来强制对index进行一致性读取, 其他事务不能插入或修改查询条件匹配的行.</p>
+<h2 id="8-Troubleshoot-InnoDB-Lock-Issues"><a href="#8-Troubleshoot-InnoDB-Lock-Issues" class="headerlink" title="8. Troubleshoot InnoDB Lock Issues"></a>8. Troubleshoot InnoDB Lock Issues</h2><h3 id="8-1-Preparation"><a href="#8-1-Preparation" class="headerlink" title="8.1 Preparation"></a>8.1 Preparation</h3><p>查看InnoDB的锁之前, 需先确保MySQL的配置正确, 以下是一些常用命令:</p>
+<ul>
+<li>查看事务隔离级别: <code>SHOW VARIABLES LIKE &#39;transaction_isolation&#39;;</code></li>
+<li>更改事务隔离级别: <code>SET TRANSACTION ISOLATION LEVEL </code> + <code>SERIALIZABLE</code>&#x2F;<code>REPEATABLE READ</code>&#x2F;<code>READ COMMITTED</code>&#x2F;<code>READ UNCOMMITTED</code></li>
+<li>查看自动提交: <code>SHOW VARIABLES LIKE &#39;autocommit&#39;;</code></li>
+<li>关闭自动提交: <code>SET autocommit = 0;</code></li>
+<li>开启InnoDB Monitor: <code>SET GLOBAL innodb_status_output = 1;</code></li>
+<li>开启InnoDB Lock Monitor: <code>SET GLOBAL innodb_status_output_locks = 1;</code></li>
+</ul>
+<h3 id="8-1-Database-Administration-Statements"><a href="#8-1-Database-Administration-Statements" class="headerlink" title="8.1 Database Administration Statements"></a>8.1 Database Administration Statements</h3><ul>
+<li>查看锁的整体情况:   <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; show status like <span class="string">&#x27;innodb_row_lock_%&#x27;</span>;</span><br><span class="line">+-------------------------------+--------+</span><br><span class="line">| Variable_name                 | Value  |</span><br><span class="line">+-------------------------------+--------+</span><br><span class="line">| Innodb_row_lock_current_waits | 1      |</span><br><span class="line">| Innodb_row_lock_time          | 479764 |</span><br><span class="line">| Innodb_row_lock_time_avg      | 39980  |</span><br><span class="line">| Innodb_row_lock_time_max      | 51021  |</span><br><span class="line">| Innodb_row_lock_waits         | 12     |</span><br><span class="line">+-------------------------------+--------+</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>Innodb_row_lock_current_waits</code>: 当前等待锁的数量</li>
+<li><code>Innodb_row_lock_time</code>: 系统启动到现在，锁定的总时间长度</li>
+<li><code>Innodb_row_lock_time_avg</code>: 每次平均锁定的时间</li>
+<li><code>Innodb_row_lock_time_max</code>: 最长一次锁定时间</li>
+<li><code>Innodb_row_lock_waits</code>: 系统启动到现在总共锁定的次数</li>
+</ul>
+</li>
+<li>查看所有用户的当前操作:   <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; SHOW FULL PROCESSLIST;</span><br><span class="line">+----+-----------------+-----------+--------+---------+--------+------------------------+-----------------------+</span><br><span class="line">| Id | User            | Host      | db     | Command | Time   | State                  | Info                  |</span><br><span class="line">+----+-----------------+-----------+--------+---------+--------+------------------------+-----------------------+</span><br><span class="line">|  5 | event_scheduler | localhost | NULL   | Daemon  | 193808 | Waiting on empty queue | NULL                  |</span><br><span class="line">|  8 | root            | localhost | testdb | Sleep   |    509 |                        | NULL                  |</span><br><span class="line">| 20 | root            | localhost | testdb | Sleep   |  68025 |                        | NULL                  |</span><br><span class="line">| 22 | root            | localhost | testdb | Query   |      0 | init                   | SHOW FULL PROCESSLIST |</span><br><span class="line">+----+-----------------+-----------+--------+---------+--------+------------------------+-----------------------+</span><br></pre></td></tr></table></figure></li>
+<li>查看InnoDB Monitor的信息: 该命令可显示更多细节, 包括当前事务持有的锁  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysql&gt; SHOW ENGINE INNODB STATUS;</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">------------</span><br><span class="line">TRANSACTIONS</span><br><span class="line">------------</span><br><span class="line">Trx id counter 2361</span><br><span class="line">Purge done for trx&#x27;s n:o &lt; 2358 undo n:o &lt; 0 state: running but idle</span><br><span class="line">History list length 0</span><br><span class="line">LIST OF TRANSACTIONS FOR EACH SESSION:</span><br><span class="line">---TRANSACTION 421939754615480, not started</span><br><span class="line">0 lock struct(s), heap size 1128, 0 row lock(s)</span><br><span class="line">---TRANSACTION 421939754614688, not started</span><br><span class="line">0 lock struct(s), heap size 1128, 0 row lock(s)</span><br><span class="line">---TRANSACTION 421939754613104, not started</span><br><span class="line">0 lock struct(s), heap size 1128, 0 row lock(s)</span><br><span class="line">---TRANSACTION 421939754612312, not started</span><br><span class="line">0 lock struct(s), heap size 1128, 0 row lock(s)</span><br><span class="line">---TRANSACTION 2360, ACTIVE 3 sec</span><br><span class="line">2 lock struct(s), heap size 1128, 1 row lock(s)</span><br><span class="line">MySQL thread id 8, OS thread handle 123145549533184, query id 248 localhost root</span><br><span class="line">TABLE LOCK table `testdb`.`t1` trx id 2360 lock mode IX</span><br><span class="line">RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `testdb`.`t1` trx id 2360 lock_mode X locks rec but not gap</span><br><span class="line">Record lock, heap no 2 PHYSICAL RECORD: n_fields 4; compact format; info bits 0</span><br><span class="line">0: len 4; hex 80000001; asc     ;;</span><br><span class="line">1: len 6; hex 00000000072f; asc      /;;</span><br><span class="line">2: len 7; hex 82000000870110; asc        ;;</span><br><span class="line">3: len 4; hex 8000000a; asc     ;;</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure></li>
+<li>查看当前所有持有的锁:  <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; SELECT * FROM performance_schema.data_locks;</span><br><span class="line">+--------+---------------------------------------+-----------------------+-----------+----------+---------------+-------------+----------------+-------------------+------------+-----------------------+-----------+---------------+-------------+-----------+</span><br><span class="line">| ENGINE | ENGINE_LOCK_ID                        | ENGINE_TRANSACTION_ID | THREAD_ID | EVENT_ID | OBJECT_SCHEMA | OBJECT_NAME | PARTITION_NAME | SUBPARTITION_NAME | INDEX_NAME | OBJECT_INSTANCE_BEGIN | LOCK_TYPE | LOCK_MODE     | LOCK_STATUS | LOCK_DATA |</span><br><span class="line">+--------+---------------------------------------+-----------------------+-----------+----------+---------------+-------------+----------------+-------------------+------------+-----------------------+-----------+---------------+-------------+-----------+</span><br><span class="line">| INNODB | 140464777903240:1063:140464966621120  |                  2360 |        49 |       91 | testdb        | t1          | NULL           | NULL              | NULL       |       140464966621120 | TABLE     | IX            | GRANTED     | NULL      |</span><br><span class="line">| INNODB | 140464777903240:2:4:2:140464967740448 |                  2360 |        49 |       91 | testdb        | t1          | NULL           | NULL              | PRIMARY    |       140464967740448 | RECORD    | X,REC_NOT_GAP | GRANTED     | 1         |</span><br><span class="line">+--------+---------------------------------------+-----------------------+-----------+----------+---------------+-------------+----------------+-------------------+------------+-----------------------+-----------+---------------+-------------+-----------+</span><br></pre></td></tr></table></figure></li>
+<li>查看当前所有等待的锁:  <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; SELECT * FROM performance_schema.data_lock_waits;</span><br><span class="line">+--------+---------------------------------------+----------------------------------+----------------------+---------------------+----------------------------------+---------------------------------------+--------------------------------+--------------------+-------------------+--------------------------------+</span><br><span class="line">| ENGINE | REQUESTING_ENGINE_LOCK_ID             | REQUESTING_ENGINE_TRANSACTION_ID | REQUESTING_THREAD_ID | REQUESTING_EVENT_ID | REQUESTING_OBJECT_INSTANCE_BEGIN | BLOCKING_ENGINE_LOCK_ID               | BLOCKING_ENGINE_TRANSACTION_ID | BLOCKING_THREAD_ID | BLOCKING_EVENT_ID | BLOCKING_OBJECT_INSTANCE_BEGIN |</span><br><span class="line">+--------+---------------------------------------+----------------------------------+----------------------+---------------------+----------------------------------+---------------------------------------+--------------------------------+--------------------+-------------------+--------------------------------+</span><br><span class="line">| INNODB | 140464777904032:2:4:2:140464967745056 |                             2361 |                   61 |                  31 |                  140464967745056 | 140464777903240:2:4:2:140464967740448 |                           2360 |                 49 |                91 |                140464967740448 |</span><br><span class="line">+--------+---------------------------------------+----------------------------------+----------------------+---------------------+----------------------------------+---------------------------------------+--------------------------------+--------------------+-------------------+--------------------------------+</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="9-How-Locks-Work"><a href="#9-How-Locks-Work" class="headerlink" title="9. How Locks Work"></a>9. How Locks Work</h2><p>InnoDB的上锁步骤涉及数据库的很多方面, 以下是需要考虑的问题:</p>
+<ul>
+<li>不同的SQL语句: <code>SELECT FOR UPDATE</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>INSERT</code></li>
+<li>不同的Index类型: 唯一索引, 非唯一索引, 无索引</li>
+<li>不同的事务隔离级别: <code>Read Committed</code>, <code>Repeatable Read</code></li>
+<li>不同的锁类型: <code>Table-level lock</code>, <code>Row-level lock</code>, <code>Insert intention lock</code>, <code>Auto-increment lock</code></li>
+</ul>
+<h3 id="9-1-Rules-of-Locking-on-Row-Level-Locks"><a href="#9-1-Rules-of-Locking-on-Row-Level-Locks" class="headerlink" title="9.1 Rules of Locking on Row-Level Locks"></a>9.1 Rules of Locking on Row-Level Locks</h3><p>其中最复杂的为<code>row-level lock</code>, 因为其涉及的命令更多, 锁类型更多, 且加锁情况更多, 因此需考虑不同语句下的不同加锁情况. Row-level lock的加锁规则包含以下几条:</p>
+<ul>
+<li>锁的基础类型为next-key lock(前开后闭区间)</li>
+<li>查找索引过程中, 能访问到的索引记录才能被上锁</li>
+<li>若等值查询能找到指定的索引记录, 则next-key lock降级为record lock</li>
+<li>若等值查询向右遍历时, 最后一个值不满足等值条件时, next-key lock降级为gap lock</li>
+<li>唯一索引上的范围查询会一直向右遍历, 直到不满足条件</li>
+</ul>
+<h3 id="9-2-Status-of-Row-level-locks"><a href="#9-2-Status-of-Row-level-locks" class="headerlink" title="9.2 Status of Row-level locks"></a>9.2 Status of Row-level locks</h3><p>使用<code>SHOW ENGINE INNODB STATUS</code>查看事务持有&#x2F;等待的锁时, 需了解InnoDB Monitor输出的内容, 以下是不同row-level locks的例子:</p>
+<ul>
+<li>Next-key lock, 最普通的row-level lock:   <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `testdb`.`t1` trx id 2359 lock_mode X</span><br></pre></td></tr></table></figure></li>
+<li>Record lock, 写作rec-not-gap locks:  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `testdb`.`t1` trx id 2360 lock_mode X locks rec but not gap</span><br></pre></td></tr></table></figure></li>
+<li>Gap lock, 写作gap before rec:  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">RECORD LOCKS space id 2 page no 4 n bits 72 index PRIMARY of table `testdb`.`t1` trx id 2362 lock_mode X locks gap before rec</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="9-3-Locking-on-Different-Index"><a href="#9-3-Locking-on-Different-Index" class="headerlink" title="9.3 Locking on Different Index"></a>9.3 Locking on Different Index</h3><p>假设事务隔离级别为<strong>Repeatable Read</strong>, 存在表<code>t1</code>, 其描述如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; describe t1;</span><br><span class="line">+-------+------+------+-----+---------+-------+</span><br><span class="line">| Field | Type | Null | Key | Default | Extra |</span><br><span class="line">+-------+------+------+-----+---------+-------+</span><br><span class="line">| <span class="built_in">id</span>    | int  | NO   | PRI | NULL    |       |</span><br><span class="line">| col1  | int  | YES  | MUL | NULL    |       |</span><br><span class="line">| col2  | int  | YES  |     | NULL    |       |</span><br><span class="line">+-------+------+------+-----+---------+-------+</span><br></pre></td></tr></table></figure>
+<p>其中<code>id</code>列为主键, <code>col1</code>列拥有非唯一索引(名为<code>idx1</code>), <code>col2</code>列无索引. <code>t1</code>包含的数据如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1;</span><br><span class="line">+----+------+------+</span><br><span class="line">| <span class="built_in">id</span> | col1 | col2 |</span><br><span class="line">+----+------+------+</span><br><span class="line">|  1 |   10 |  100 |</span><br><span class="line">|  5 |   50 |  500 |</span><br><span class="line">| 10 |  100 | 1000 |</span><br><span class="line">+----+------+------+</span><br></pre></td></tr></table></figure>
+
+<h4 id="9-3-1-Unique-Index"><a href="#9-3-1-Unique-Index" class="headerlink" title="9.3.1 Unique Index"></a>9.3.1 Unique Index</h4><ol>
+<li>等值查询:<ul>
+<li>命中某个索引记录: next-key lock降级为record lock, 锁住<code>id = 1</code>的索引记录<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> * from t1 <span class="built_in">where</span> <span class="built_in">id</span> = 1 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+-----------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE     | LOCK_DATA |</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+-----------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX            | NULL      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X,REC_NOT_GAP | 1         |</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+-----------+</span><br></pre></td></tr></table></figure></li>
+<li>未命中任何索引记录: 在索引记录5处停止, 但由于<code>5 != 2</code>, 因此next-key lock降级为gap lock, 锁住<code>(1, 5)</code>区间<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> <span class="built_in">id</span> = 2 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE | LOCK_DATA |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX        | NULL      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X,GAP     | 5         |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>范围查询:<ul>
+<li>单区间: 在后一个索引记录上加gap lock<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> <span class="built_in">id</span> &gt; 5 and <span class="built_in">id</span> &lt; 10 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE | LOCK_DATA |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX        | NULL      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X,GAP     | 10        |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br></pre></td></tr></table></figure></li>
+<li>多区间: 由多个next-key lock组成, 下面语句会锁住多个区间: <code>(1, 5]</code>, <code>(5, 10]</code>, 和<code>(10, supremum)</code><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> <span class="built_in">id</span> &gt; 1 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+------------------------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE | LOCK_DATA              |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+------------------------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX        | NULL                   |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | supremum pseudo-record |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | 5                      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | 10                     |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+------------------------+</span><br></pre></td></tr></table></figure></li>
+<li>需要注意的是, 范围搜索可能锁定额外区间:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> <span class="built_in">id</span> &lt; 2 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE | LOCK_DATA |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX        | NULL      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | 1         |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X,GAP     | 5         |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------</span><br></pre></td></tr></table></figure>
+上述语句锁住两个区间:<code>(infimum, 1]</code>和<code>(1, 5]</code>, 下面SQL语句的含义与上述相同, 但锁定的范围更小:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> <span class="built_in">id</span> &lt;= 1 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE | LOCK_DATA |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX        | NULL      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | 1         |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br></pre></td></tr></table></figure>
+上述语句只锁住一个区间:<code>(infimum, 1]</code>, 因为InnoDB会从第一个满足条件的索引记录开始(infimum), 一直向右遍历, 直至不符合条件(对于第一个语句, InnoDB会在索引记录5停止扫描, 由于<code>5 &gt; 2</code>, 降级为gap lock; 对于第二个语句, 由于索引记录1满足等值查询, next-key lock不会降为gap lock, 也无需向右继续遍历).</li>
+</ul>
+</li>
+</ol>
+<h4 id="9-3-2-Non-unique-Index"><a href="#9-3-2-Non-unique-Index" class="headerlink" title="9.3.2 Non-unique Index"></a>9.3.2 Non-unique Index</h4><ol>
+<li>等值查询:<ul>
+<li><p>命中某个索引记录: </p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> col1 = 10 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+-----------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE     | LOCK_DATA |</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+-----------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX            | NULL      |</span><br><span class="line">| testdb        | t1          | idx1       | RECORD    | X             | 10, 1     |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X,REC_NOT_GAP | 1         |</span><br><span class="line">| testdb        | t1          | idx1       | RECORD    | X,GAP         | 50, 5     |</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+-----------+</span><br></pre></td></tr></table></figure>
+<p>InnoDB锁住<code>primary key</code>(主键)和<code>idx1</code>(非唯一索引), 加锁过程分为两个步骤:</p>
+<ol>
+<li>在<code>idx1</code>中查找值为<code>col1 = 10</code>的索引记录, 找到目标记录(10)和其下一个记录(50). 之所以扫描10之后的记录, 因为如果不锁住索引记录50之前的区间, 其他事务仍能插入<code>id &gt; 1</code>且<code>col1 = 10</code>的行.</li>
+<li>向下查找索引记录10和50对应的clustered index:<ul>
+<li>以next-key lock形式锁住索引记录10下的所有clustered index记录, 也就是<code>$(-\infty, 1]$</code></li>
+<li>以record lock形式锁住<code>id = 1</code>的主键记录</li>
+<li>以gap lock形式锁住索引记录50下的第一个clustered index记录, 也就是<code>(1, 5)</code></li>
+</ul>
+</li>
+</ol>
+<p>需要注意的是, 由于锁住了<code>col1 = 50 and id = 5</code>之前的区间, 任何<code>$col1 \in [10, 50)$</code>或<code>$col1 = 50 and id &lt; 5$</code>的insert语句都会被阻塞.</p>
+</li>
+<li><p>未命中任何索引记录: 从左向右扫描时, 由于找不到<code>idx1</code>中值为11的索引记录, 会停在50(第一个不满足条件的索引记录), 并锁住50下的第一个clustered index记录之前的区间(gap lock).</p>
+ <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> col1 = 11 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE | LOCK_DATA |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX        | NULL      |</span><br><span class="line">| testdb        | t1          | idx1       | RECORD    | X,GAP     | 50, 5     |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>范围查询:<ul>
+<li>单区间: 在第一个不满足条件的非唯一索引记录(50)的第一个clustered index记录(5)上加gap lock <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> col1 &gt; 10 and col1 &lt; 50 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE | LOCK_DATA |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX        | NULL      |</span><br><span class="line">| testdb        | t1          | idx1       | RECORD    | X         | 50, 5     |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+-----------+</span><br></pre></td></tr></table></figure></li>
+<li>多区间: 依旧是先扫描<code>idx1</code>, 再对每个clustered index记录添加next-key lock, 最后对符合条件的主键记录添加record lock. <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">mysql&gt; <span class="keyword">select</span> * from t1 <span class="built_in">where</span> col1 &gt; 30 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+------------------------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE     | LOCK_DATA              |</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+------------------------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX            | NULL                   |</span><br><span class="line">| testdb        | t1          | idx1       | RECORD    | X             | supremum pseudo-record |</span><br><span class="line">| testdb        | t1          | idx1       | RECORD    | X             | 50, 5                  |</span><br><span class="line">| testdb        | t1          | idx1       | RECORD    | X             | 100, 10                |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X,REC_NOT_GAP | 5                      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X,REC_NOT_GAP | 10                     |</span><br><span class="line">+---------------+-------------+------------+-----------+---------------+------------------------+</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ol>
+<h4 id="9-3-3-No-Index"><a href="#9-3-3-No-Index" class="headerlink" title="9.3.3 No Index"></a>9.3.3 No Index</h4><p>由于没有采用任何索引, 因此InnoDB会对全表的clustered index记录添加next-key lock.</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> * from t1 <span class="built_in">where</span> col2 = 100 <span class="keyword">for</span> update;</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+------------------------+</span><br><span class="line">| OBJECT_SCHEMA | OBJECT_NAME | INDEX_NAME | LOCK_TYPE | LOCK_MODE | LOCK_DATA              |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+------------------------+</span><br><span class="line">| testdb        | t1          | NULL       | TABLE     | IX        | NULL                   |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | supremum pseudo-record |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | 1                      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | 5                      |</span><br><span class="line">| testdb        | t1          | PRIMARY    | RECORD    | X         | 10                     |</span><br><span class="line">+---------------+-------------+------------+-----------+-----------+------------------------+</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Database/">Database</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/ed48.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">InnoDB Transaction Model</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/a7f0.html">
+        <span class="next-text nav-default">PostgreSQL Concurrency Control</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/b682.html';
+  var disqus_title = "InnoDB Locking";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

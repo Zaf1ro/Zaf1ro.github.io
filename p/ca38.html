@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Hashtable"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/ca38.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/ca38.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/ca38.html"/>
+
+
+<meta name="description" content="1. Hashtable概述Hashtable和HashMap解决Hash Collision的方法相同, 都使用Separate Chaining. 但Hashtable使用synchronized保证线程安全, 使得效率上插入删除效率上略低于HashMap 2. 重要参数&#x2F;* Hashtable主体 *&#x2F;private transient Entry&lt;?,?&gt;[] table;&#x2F;*">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hashtable">
+<meta property="og:url" content="https://zaf1ro.github.io/p/ca38.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Hashtable概述Hashtable和HashMap解决Hash Collision的方法相同, 都使用Separate Chaining. 但Hashtable使用synchronized保证线程安全, 使得效率上插入删除效率上略低于HashMap 2. 重要参数&#x2F;* Hashtable主体 *&#x2F;private transient Entry&lt;?,?&gt;[] table;&#x2F;*">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-01-23T18:41:20.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.049Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Hashtable - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Hashtable%E6%A6%82%E8%BF%B0"><span class="toc-text">1. Hashtable概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%87%8D%E8%A6%81%E5%8F%82%E6%95%B0"><span class="toc-text">2. 重要参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%88%9D%E5%A7%8B%E5%8C%96%E5%87%BD%E6%95%B0"><span class="toc-text">3. 初始化函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%97%A0%E5%8F%82%E6%95%B0%E5%88%9D%E5%A7%8B%E5%8C%96%E5%87%BD%E6%95%B0"><span class="toc-text">3.1 无参数初始化函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%B8%A6%E5%8F%82%E6%95%B0%E5%88%9D%E5%A7%8B%E5%8C%96%E5%87%BD%E6%95%B0"><span class="toc-text">3.2 带参数初始化函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-table%E7%9A%84%E7%BB%84%E6%88%90%E5%8D%95%E5%85%83-Entry"><span class="toc-text">4. table的组成单元 - Entry</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-table%E6%89%A9%E5%AE%B9%E5%87%BD%E6%95%B0"><span class="toc-text">5. table扩容函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-put"><span class="toc-text">6. put()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-get-%E6%9F%A5%E6%89%BE%E5%85%83%E7%B4%A0"><span class="toc-text">7. get() 查找元素</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-remove"><span class="toc-text">8. remove()</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Hashtable
+        
+      </h1>
+      <time class="post-time">
+          01/23/18
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Hashtable概述"><a href="#1-Hashtable概述" class="headerlink" title="1. Hashtable概述"></a>1. Hashtable概述</h2><p>Hashtable和HashMap解决Hash Collision的方法相同, 都使用Separate Chaining. 但Hashtable使用synchronized保证线程安全, 使得效率上插入删除效率上略低于HashMap</p>
+<h2 id="2-重要参数"><a href="#2-重要参数" class="headerlink" title="2. 重要参数"></a>2. 重要参数</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Hashtable主体 */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> Entry&lt;?,?&gt;[] table;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* hash table中entry的个数 */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> <span class="type">int</span> count;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* table容量的阈值, 超过这个值就需要rehash */</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">int</span> threshold;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 负载因子 threshold = loadFactor * table.length */</span></span><br><span class="line"><span class="keyword">private</span> <span class="type">float</span> loadFactor;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Hashtable修改的次数 */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> <span class="type">int</span> <span class="variable">modCount</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* table的最大长度(部分VM会在Array前保留几个字节, 所以需要-8) */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MAX_ARRAY_SIZE</span> <span class="operator">=</span> Integer.MAX_VALUE - <span class="number">8</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="3-初始化函数"><a href="#3-初始化函数" class="headerlink" title="3. 初始化函数"></a>3. 初始化函数</h2><h3 id="3-1-无参数初始化函数"><a href="#3-1-无参数初始化函数" class="headerlink" title="3.1 无参数初始化函数"></a>3.1 无参数初始化函数</h3><p>Hashtable的默认大小为11, 而HashMap的默认大小为16. 因为HashMap获得table的index操作为 hash_value &amp; table.length - 1 . 这时就需要HashMap的长度始终保持在2<sup>n</sup>, 而Hashtable的长度则需要一个质数, 因为Hashtable获得table的index操作为 hash_value % table.length, 这就需要 hash_value 和 table.length 的GCD(Greatest Common Divisor, 最大公约数)为1, 这样才能保证index的分布平均, 证明如下:</p>
+<p>index的求解公式: index &#x3D; N % M (N为hash_value, M为table的长度, index为余数)<br>假设N &#x3D; kn, M &#x3D; km. k为N和M的GCD<br>所以index求解公式可转换为:  kn &#x3D; km &times; q + r<br>这么看来, r的取值范围为[0, M - 1]<br>但当公式两边除k后: n &#x3D; m &times; q + r &#x2F; k<br>r的取值范围变为[0, k, 2k, 3k ... m*k], 缩小了k倍, 导致分布不平均.<br>所以简单的方法就是将M设置为质数, 保证N和M的GCD为1</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 默认table长度为11, load factor为0.75 */</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">Hashtable</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="built_in">this</span>(<span class="number">11</span>, <span class="number">0.75f</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-带参数初始化函数"><a href="#3-2-带参数初始化函数" class="headerlink" title="3.2 带参数初始化函数"></a>3.2 带参数初始化函数</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Hashtable</span><span class="params">(<span class="type">int</span> initialCapacity)</span> &#123;</span><br><span class="line">  <span class="built_in">this</span>(initialCapacity, <span class="number">0.75f</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Hashtable中对table的长度没有要求 */</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">Hashtable</span><span class="params">(<span class="type">int</span> initialCapacity, <span class="type">float</span> loadFactor)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (initialCapacity &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Illegal Capacity: &quot;</span>+ initialCapacity);</span><br><span class="line">  <span class="keyword">if</span> (loadFactor &lt;= <span class="number">0</span> || Float.isNaN(loadFactor))</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Illegal Load: &quot;</span>+loadFactor);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (initialCapacity == <span class="number">0</span>)</span><br><span class="line">    initialCapacity = <span class="number">1</span>;</span><br><span class="line">  <span class="built_in">this</span>.loadFactor = loadFactor;   <span class="comment">/* 设置loadfactor */</span></span><br><span class="line">  table = <span class="keyword">new</span> <span class="title class_">Entry</span>&lt;?,?&gt;[initialCapacity];  <span class="comment">/* 初始化table */</span></span><br><span class="line">  threshold = (<span class="type">int</span>)Math.min(initialCapacity * loadFactor, MAX_ARRAY_SIZE + <span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="4-table的组成单元-Entry"><a href="#4-table的组成单元-Entry" class="headerlink" title="4. table的组成单元 - Entry"></a>4. table的组成单元 - Entry</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* Hashtable中table的组成单元 */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Entry</span>&lt;K,V&gt; <span class="keyword">implements</span> <span class="title class_">Map</span>.Entry&lt;K,V&gt; &#123;</span><br><span class="line">  <span class="keyword">final</span> <span class="type">int</span> hash;</span><br><span class="line">  <span class="keyword">final</span> K key;</span><br><span class="line">  V value;</span><br><span class="line">  Entry&lt;K,V&gt; next;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="title function_">Entry</span><span class="params">(<span class="type">int</span> hash, K key, V value, Entry&lt;K,V&gt; next)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.hash = hash;</span><br><span class="line">    <span class="built_in">this</span>.key =  key;</span><br><span class="line">    <span class="built_in">this</span>.value = value;</span><br><span class="line">    <span class="built_in">this</span>.next = next;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">  <span class="keyword">protected</span> Object <span class="title function_">clone</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Entry</span>&lt;&gt;(hash, </span><br><span class="line">               key, </span><br><span class="line">               value,</span><br><span class="line">               (next == <span class="literal">null</span> ? <span class="literal">null</span> : (Entry&lt;K,V&gt;) next.clone())</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> K <span class="title function_">getKey</span><span class="params">()</span> &#123; <span class="keyword">return</span> key; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> V <span class="title function_">getValue</span><span class="params">()</span> &#123; <span class="keyword">return</span> value; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> V <span class="title function_">setValue</span><span class="params">(V value)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (value == <span class="literal">null</span>)    <span class="comment">/* Hashtable中的key和value不可设置为null */</span></span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line"></span><br><span class="line">    <span class="type">V</span> <span class="variable">oldValue</span> <span class="operator">=</span> <span class="built_in">this</span>.value;</span><br><span class="line">    <span class="built_in">this</span>.value = value;</span><br><span class="line">    <span class="keyword">return</span> oldValue;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">equals</span><span class="params">(Object o)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> Map.Entry))  <span class="comment">/* 先判断类型是否正确 */</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    Map.Entry&lt;?,?&gt; e = (Map.Entry&lt;?,?&gt;)o;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 再判断key和value是否匹配 */</span></span><br><span class="line">    <span class="keyword">return</span> (key==<span class="literal">null</span> ? e.getKey()==<span class="literal">null</span> : key.equals(e.getKey())) &amp;&amp;</span><br><span class="line">      (value==<span class="literal">null</span> ? e.getValue()==<span class="literal">null</span> : value.equals(e.getValue()));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> hash ^ Objects.hashCode(value);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> key.toString() + <span class="string">&quot;=&quot;</span> + value.toString();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-table扩容函数"><a href="#5-table扩容函数" class="headerlink" title="5. table扩容函数"></a>5. table扩容函数</h2><p>table长度的增长规律为 n<sub>n+1</sub> &#x3D; 2&times;n<sub>n</sub> + 1, 这样虽然不能保证n<sub>n</sub>为质数, 但可保证n<sub>n</sub>一直为odd number, 避免了n<sub>n</sub>与hash value的公约数为2.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 扩容table, 并重新组织table中的Entry </span></span><br><span class="line"><span class="comment"> * 该函数会在Entry数量达到threshold时自动调用</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">rehash</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="type">int</span> <span class="variable">oldCapacity</span> <span class="operator">=</span> table.length;</span><br><span class="line">  Entry&lt;?,?&gt;[] oldMap = table;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 以下几行代码是overflow-conscious code, 因为一共有以下几种情况:</span></span><br><span class="line"><span class="comment">   * 1. newCapacity &gt; MAX_ARRAY_SIZE: oldCapacity位于[1073741820, 1073741823]</span></span><br><span class="line"><span class="comment">   * 2. newCapacity == MAX_ARRAY_SIZE: oldCapacity为1073741819</span></span><br><span class="line"><span class="comment">   * 3. newCapacity &lt; MAX_ARRAY_SIZE: oldCapacity位于[1073741824, 2147483647]或[1, 1073741818]</span></span><br><span class="line"><span class="comment">   * 由于初始化函数中没有对initialCapacity做任何限制, 所以oldCapacity可能为[1, 2147483647]中的任意值</span></span><br><span class="line"><span class="comment">   * 所以唯一会导致溢出的oldCapacity区间为[1073741824, 2147483647]</span></span><br><span class="line"><span class="comment">   * 此时 newCapacity &lt; 0 且 newCapacity &gt; MAX_ARRAY_SIZE 不成立</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * 但由于减法运算存在溢出情况, 所以oldCapacity位于区间[1073741824, 2147483642]时</span></span><br><span class="line"><span class="comment">   * newCapacity + MAX_ARRAY_SIZE &gt; 0 就会成立, newCapacity被替换为MAX_ARRAY_SIZE</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * 最后就剩下一种情况: oldCapacity位于区间[2147483643, 2147483647]</span></span><br><span class="line"><span class="comment">   * 此时 newCapacity + MAX_ARRAY_SIZE &gt; 0 不成立, 且 newCapacity &lt; 0, 溢出发生</span></span><br><span class="line"><span class="comment">   * </span></span><br><span class="line"><span class="comment">   * 但其实并不会发生, 因为当你调用 new Hashtable(Integer.MAX_VALUE) 时, 会出现溢出(OutOfMemoryError)</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="type">int</span> <span class="variable">newCapacity</span> <span class="operator">=</span> (oldCapacity &lt;&lt; <span class="number">1</span>) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">if</span> (newCapacity - MAX_ARRAY_SIZE &gt; <span class="number">0</span>) &#123;   <span class="comment">/* 无溢出情况 */</span></span><br><span class="line">    <span class="keyword">if</span> (oldCapacity == MAX_ARRAY_SIZE)</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    newCapacity = MAX_ARRAY_SIZE;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* 初始化新的table</span></span><br><span class="line"><span class="comment">   * 并设置新的threshold和modCount</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  Entry&lt;?,?&gt;[] newMap = <span class="keyword">new</span> <span class="title class_">Entry</span>&lt;?,?&gt;[newCapacity];</span><br><span class="line">  modCount++;</span><br><span class="line">  threshold = (<span class="type">int</span>)Math.min(newCapacity * loadFactor, MAX_ARRAY_SIZE + <span class="number">1</span>);</span><br><span class="line">  table = newMap;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* 两层for循环将每个Entry都移动到了newMap中 </span></span><br><span class="line"><span class="comment">   * 第一层for针对table中的每条链表</span></span><br><span class="line"><span class="comment">   * 第二层for针对每条链表中的每个Entry</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> oldCapacity ; i-- &gt; <span class="number">0</span> ;) &#123;</span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; old = (Entry&lt;K,V&gt;)oldMap[i] ; old != <span class="literal">null</span> ; ) &#123;</span><br><span class="line">      Entry&lt;K,V&gt; e = old;</span><br><span class="line">      old = old.next;</span><br><span class="line"></span><br><span class="line">      <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> (e.hash &amp; <span class="number">0x7FFFFFFF</span>) % newCapacity;</span><br><span class="line">      e.next = (Entry&lt;K,V&gt;)newMap[index];</span><br><span class="line">      newMap[index] = e;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="6-put"><a href="#6-put" class="headerlink" title="6. put()"></a>6. put()</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 往table中插入key和value, key和value都不能为null</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> key   key of Entry</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> value value of Entry</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> the previous value of key or null</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@exception</span> NullPointerException key is null</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> V <span class="title function_">put</span><span class="params">(K key, V value)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (value == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">NullPointerException</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 判断key是否已经存在</span></span><br><span class="line">  Entry&lt;?,?&gt; tab[] = table;</span><br><span class="line">  <span class="type">int</span> <span class="variable">hash</span> <span class="operator">=</span> key.hashCode();</span><br><span class="line">  <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">  <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">  Entry&lt;K,V&gt; entry = (Entry&lt;K,V&gt;)tab[index];</span><br><span class="line">  <span class="keyword">for</span>(; entry != <span class="literal">null</span> ; entry = entry.next) &#123; <span class="comment">/* 反复查询table, 直到entry为null */</span></span><br><span class="line">    <span class="keyword">if</span> ((entry.hash == hash) &amp;&amp; entry.key.equals(key)) &#123;  <span class="comment">/* 替换entry的value */</span></span><br><span class="line">      <span class="type">V</span> <span class="variable">old</span> <span class="operator">=</span> entry.value;</span><br><span class="line">      entry.value = value;</span><br><span class="line">      <span class="keyword">return</span> old;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  addEntry(hash, key, value, index);    <span class="comment">/* 插入一个新的entry */</span></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">addEntry</span><span class="params">(<span class="type">int</span> hash, K key, V value, <span class="type">int</span> index)</span> &#123;</span><br><span class="line">  modCount++;</span><br><span class="line"></span><br><span class="line">  Entry&lt;?,?&gt; tab[] = table;</span><br><span class="line">  <span class="keyword">if</span> (count &gt;= threshold) &#123;   <span class="comment">/* 检查是否进行扩容 */</span></span><br><span class="line">    rehash();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 重新计算key的hash value */</span></span><br><span class="line">    tab = table;</span><br><span class="line">    hash = key.hashCode();</span><br><span class="line">    index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 将新建的Entry放入table中, 且指向之前的Entry */</span></span><br><span class="line">  <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">  Entry&lt;K,V&gt; e = (Entry&lt;K,V&gt;) tab[index];</span><br><span class="line">  tab[index] = <span class="keyword">new</span> <span class="title class_">Entry</span>&lt;&gt;(hash, key, value, e);</span><br><span class="line">  count++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="7-get-查找元素"><a href="#7-get-查找元素" class="headerlink" title="7. get() 查找元素"></a>7. get() 查找元素</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 查询并返回key所对应的value, 如果未找到则返回null</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> key the key whose associated value is to be returned</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> return the value to which the specified key is mapped, or null</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> NullPointerException key == null</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> V <span class="title function_">get</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">  Entry&lt;?,?&gt; tab[] = table;</span><br><span class="line">  <span class="type">int</span> <span class="variable">hash</span> <span class="operator">=</span> key.hashCode();</span><br><span class="line">  <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">/* 在tab[index]开头的链表上进行查找 */</span></span><br><span class="line">  <span class="keyword">for</span> (Entry&lt;?,?&gt; e = tab[index] ; e != <span class="literal">null</span> ; e = e.next) &#123;</span><br><span class="line">    <span class="keyword">if</span> ((e.hash == hash) &amp;&amp; e.key.equals(key)) &#123;</span><br><span class="line">      <span class="keyword">return</span> (V)e.value;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-remove"><a href="#8-remove" class="headerlink" title="8. remove()"></a>8. remove()</h2><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 删除与key匹配的Entry, 如果没找到key直接退出</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> key</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> 被删除Entry的value</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> NullPointerException key == null</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> V <span class="title function_">remove</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">  <span class="comment">/* 步骤与HashMap基本相同:</span></span><br><span class="line"><span class="comment">   * 1. 根据hash value找到table中的某个链表</span></span><br><span class="line"><span class="comment">   * 2. 根据key在链表中找到要被删除的Entry, 并删除</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  Entry&lt;?,?&gt; tab[] = table;</span><br><span class="line">  <span class="type">int</span> <span class="variable">hash</span> <span class="operator">=</span> key.hashCode();</span><br><span class="line">  <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">  <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">  Entry&lt;K,V&gt; e = (Entry&lt;K,V&gt;)tab[index];</span><br><span class="line">  <span class="keyword">for</span>(Entry&lt;K,V&gt; prev = <span class="literal">null</span> ; e != <span class="literal">null</span> ; prev = e, e = e.next) &#123;</span><br><span class="line">    <span class="keyword">if</span> ((e.hash == hash) &amp;&amp; e.key.equals(key)) &#123;</span><br><span class="line">      modCount++;</span><br><span class="line">      <span class="keyword">if</span> (prev != <span class="literal">null</span>) &#123;</span><br><span class="line">        prev.next = e.next;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        tab[index] = e.next;</span><br><span class="line">      &#125;</span><br><span class="line">      count--;</span><br><span class="line">      <span class="type">V</span> <span class="variable">oldValue</span> <span class="operator">=</span> e.value;</span><br><span class="line">      e.value = <span class="literal">null</span>;</span><br><span class="line">      <span class="keyword">return</span> oldValue;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">null</span>;  <span class="comment">/* 未找到要被删除的元素 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/9ce9.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">TCP handshake and Termination</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/bd61.html">
+        <span class="next-text nav-default">HashMap</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/ca38.html';
+  var disqus_title = "Hashtable";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

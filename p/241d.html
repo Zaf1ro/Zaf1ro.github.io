@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Youtube"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/241d.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/241d.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/241d.html"/>
+
+
+<meta name="description" content="1. Understand the problem and establish design scope What features are important: Ability to upload a video and watch a video What clients do we need to support: Mobile apps, web browsers, and smart T">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Youtube">
+<meta property="og:url" content="https://zaf1ro.github.io/p/241d.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Understand the problem and establish design scope What features are important: Ability to upload a video and watch a video What clients do we need to support: Mobile apps, web browsers, and smart T">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-components-of-system.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-video-uploading-flow.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-upload-actual-video.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-update-metadata.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-DAG-model.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-video-transcoding-arch.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-DAG-scheduler-example.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-resource-manager.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-video-split.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-original-video-workflow.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-optimized-video-workflow.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-presigned-upload-url.jpg">
+<meta property="article:published_time" content="2024-04-20T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.053Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/14-components-of-system.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Youtube - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understand-the-problem-and-establish-design-scope"><span class="toc-text">1. Understand the problem and establish design scope</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Back-of-the-envelope-estimation"><span class="toc-text">1.1 Back of the envelope estimation</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Propose-high-level-design-and-get-buy-in"><span class="toc-text">2. Propose high-level design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Video-uploading-flow"><span class="toc-text">2.1 Video uploading flow</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-1-upload-the-actual-video"><span class="toc-text">2.1.1 upload the actual video</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-update-the-metadata"><span class="toc-text">2.1.2 update the metadata</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Video-streaming-flow"><span class="toc-text">2.2 Video streaming flow</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Design-deep-dive"><span class="toc-text">3. Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Video-transcoding"><span class="toc-text">3.1 Video transcoding</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Directed-acyclic-graph-DAG-model"><span class="toc-text">3.2 Directed acyclic graph (DAG) model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Video-transcoding-architecture"><span class="toc-text">3.3 Video transcoding architecture</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-Preprocessor"><span class="toc-text">3.3.1 Preprocessor</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-DAG-scheduler"><span class="toc-text">3.3.2 DAG scheduler</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-Resource-manager"><span class="toc-text">3.3.3 Resource manager</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-Task-workers"><span class="toc-text">3.3.4 Task workers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-5-Temporary-storage"><span class="toc-text">3.3.5 Temporary storage</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-6-Encoded-video"><span class="toc-text">3.3.6 Encoded video</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-System-optimizations"><span class="toc-text">3.4 System optimizations</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-Speed-optimization-parallelize-video-uploading"><span class="toc-text">3.4.1 Speed optimization: parallelize video uploading</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-Speed-optimization-place-upload-centers-close-to-users"><span class="toc-text">3.4.2 Speed optimization: place upload centers close to users</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-Speed-optimization-parallelism-everywhere"><span class="toc-text">3.4.3 Speed optimization: parallelism everywhere</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-4-Safety-optimization-pre-signed-upload-URL"><span class="toc-text">3.4.4 Safety optimization: pre-signed upload URL</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-5-Safety-optimization-protect-your-videos"><span class="toc-text">3.4.5 Safety optimization: protect your videos</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-6-Cost-saving-optimization"><span class="toc-text">3.4.6 Cost-saving optimization</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Error-handling"><span class="toc-text">3.5 Error handling</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Wrap-up"><span class="toc-text">4. Wrap up</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Youtube
+        
+      </h1>
+      <time class="post-time">
+          04/20/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Understand-the-problem-and-establish-design-scope"><a href="#1-Understand-the-problem-and-establish-design-scope" class="headerlink" title="1. Understand the problem and establish design scope"></a>1. Understand the problem and establish design scope</h2><ul>
+<li>What features are important: Ability to upload a video and watch a video</li>
+<li>What clients do we need to support: Mobile apps, web browsers, and smart TV</li>
+<li>How many daily active users do we have: 5 million</li>
+<li>What is the average daily time spent on the product: 30 minutes</li>
+<li>Do we need to support international users: Yes, a large percentage of users are international users</li>
+<li>What are the supported video resolutions: The system accepts most of the video resolutions and formats</li>
+<li>Is encryption required: Yes</li>
+<li>Any file size requirement for videos: The maximum allowed video size is 1GB</li>
+<li>Can we leverage the existing cloud infrastructures provided by Amazon, Google, or Microsoft: Yes</li>
+</ul>
+<p>A video streaming service should have the following features:</p>
+<ul>
+<li>Ability to upload videos fast</li>
+<li>Smooth video streaming</li>
+<li>Ability to change video quality</li>
+<li>Low infrastructure cost</li>
+<li>High availability, scalability, and reliability requirements</li>
+<li>Support mobile apps, web browser, and smart TV</li>
+</ul>
+<h3 id="1-1-Back-of-the-envelope-estimation"><a href="#1-1-Back-of-the-envelope-estimation" class="headerlink" title="1.1 Back of the envelope estimation"></a>1.1 Back of the envelope estimation</h3><ul>
+<li>Product has 5 million daily active users (DAU)</li>
+<li>Users watch 5 videos per day</li>
+<li>10% of users upload 1 video per day</li>
+<li>Average video size is 300 MB</li>
+<li>Total daily storage space needed: 5 million * 10% * 300 MB &#x3D; 150TB</li>
+<li>CDN cost: Assume 100% of traffic is served from CDN service, the average cost per GB is 0.02, cost could be 5 million * 5 videos * 0.3GB * 0.02 &#x3D; 150,000 per day</li>
+</ul>
+<h2 id="2-Propose-high-level-design-and-get-buy-in"><a href="#2-Propose-high-level-design-and-get-buy-in" class="headerlink" title="2. Propose high-level design and get buy-in"></a>2. Propose high-level design and get buy-in</h2><p>Reasons of why we choose not to build everything by ourselves:</p>
+<ul>
+<li>Within the limited interview time frame, choosing the right technology to do a job right is more important than explaining how the technology works in detail. For instance, mentioning blob storage for storing source videos is enough for the interview.</li>
+<li>Building scalable blob storage or CDN is extremely complex and costly. Even Netflix or Facebook do not build everything themselves.</li>
+</ul>
+<p><img src="/images/System-Design/Interview/14-components-of-system.jpg" alt="Components of System"></p>
+<ul>
+<li>Client: computer, mobile phone, and smartTV</li>
+<li>CDN: Videos are stored in CDN. When you press play, a video is streamed from the CDN</li>
+<li>API Servers: Everything else except video streaming goes through API servers, including feed recommendation, generating video upload URL, updating metadata database and cache, user signup, etc</li>
+</ul>
+<h3 id="2-1-Video-uploading-flow"><a href="#2-1-Video-uploading-flow" class="headerlink" title="2.1 Video uploading flow"></a>2.1 Video uploading flow</h3><p><img src="/images/System-Design/Interview/14-video-uploading-flow.jpg" alt="Video Uploading Flow"></p>
+<ul>
+<li>User: watch videos on devices, like a computer, mobile phone, or smartTV</li>
+<li>Load balancer: evenly distribute requests among API servers</li>
+<li>API servers: All user requests go through API servers except video streaming</li>
+<li>Metadata DB: Video metadata are stored in Metadata DB. It is sharded and replicated to meet performance and high availability requirements.</li>
+<li>Metadata cache: video metadata and user objects are cached</li>
+<li>Original storage: A blob storage system is used to store original videos.</li>
+<li>Transcoding servers: Video transcoding is also called video encoding. It is the process of converting a video format to other formats, which provide the best video streams possible for different devices and bandwidth capabilities</li>
+<li>Transcoded storage: It is a blob storage that stores transcoded video files</li>
+<li>CDN: Videos are cached in CDN. When you click the play button, a video is streamed from the CDN</li>
+<li>Completion queue: a message queue that stores information about video transcoding completion events</li>
+<li>Completion handler: a list of workers that pull event data from the completion queue and update metadata cache and database</li>
+</ul>
+<h4 id="2-1-1-upload-the-actual-video"><a href="#2-1-1-upload-the-actual-video" class="headerlink" title="2.1.1 upload the actual video"></a>2.1.1 upload the actual video</h4><p><img src="/images/System-Design/Interview/14-upload-actual-video.jpg" alt="Upload the Actual Video"></p>
+<ol>
+<li>Videos are uploaded to the original storage</li>
+<li>Transcoding servers fetch videos from the original storage and start transcoding</li>
+<li>Once transcoding is complete, the following two steps are executed in parallel:<ol>
+<li>For video storage:<ul>
+<li>Transcoded videos are sent to transcoded storage</li>
+<li>Transcoded videos are distributed to CDN</li>
+</ul>
+</li>
+<li>For video metadata:<ul>
+<li>Transcoding completion events are queued in the completion queue</li>
+<li>Workers in completion handler pull event data from the queue, and update the metadata database and cache</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>API servers inform the client that the video is successfully uploaded and is ready for streaming</li>
+</ol>
+<h4 id="2-1-2-update-the-metadata"><a href="#2-1-2-update-the-metadata" class="headerlink" title="2.1.2 update the metadata"></a>2.1.2 update the metadata</h4><p><img src="/images/System-Design/Interview/14-update-metadata.jpg" alt="Update the Metadata"></p>
+<p>While a file is being uploaded to the original storage, the client in parallel sends a request to update the video metadata. The request contains video metadata, including file name, size, format, etc. API servers update the metadata cache and database</p>
+<h3 id="2-2-Video-streaming-flow"><a href="#2-2-Video-streaming-flow" class="headerlink" title="2.2 Video streaming flow"></a>2.2 Video streaming flow</h3><p><strong>Downloading</strong> means the whole video is copied to your device, while <strong>streaming</strong> means your device continuously receives video streams from remote source videos. When you watch streaming videos, your client loads a little bit of data at a time so you can watch videos immediately and continuously.<br>Before we discuss video streaming flow, let us look at the <strong>streaming protocol</strong>. This is a standardized way to control data transfer for video streaming. Popular streaming protocols are:</p>
+<ul>
+<li>MPEG–DASH</li>
+<li>Apple HLS</li>
+<li>Microsoft Smooth Streaming</li>
+<li>Adobe HTTP Dynamic Streaming</li>
+</ul>
+<p>When we design a video streaming service, we have to choose the right streaming protocol to support our use cases.<br>Videos are streamed from CDN directly. The edge server closest to you will deliver the video. Thus, there is very little latency.</p>
+<h2 id="3-Design-deep-dive"><a href="#3-Design-deep-dive" class="headerlink" title="3. Design deep dive"></a>3. Design deep dive</h2><h3 id="3-1-Video-transcoding"><a href="#3-1-Video-transcoding" class="headerlink" title="3.1 Video transcoding"></a>3.1 Video transcoding</h3><p>When you record a video, the device (usually a phone or camera) gives the video file a certain format. If you want the video to be played smoothly on other devices, the video must be encoded into compatible bitrates and formats.<br>Bitrate is the rate at which bits are processed over time. A higher bitrate generally means higher video quality. High bitrate streams need more processing power and fast internet speed.<br>Video transcoding is important for the following reasons:</p>
+<ul>
+<li>Raw video consumes large amounts of storage space. An hour-long high definition video recorded at 60 frames per second can take up hundred GB of space</li>
+<li>Many devices and browsers only support certain types of video formats</li>
+<li>Deliver higher resolution video to users who have high network bandwidth and lower resolution video to users who have low bandwidth</li>
+<li>To ensure a video is played continuously, switching video quality automatically or manually based on network conditions is essential for smooth user experience</li>
+</ul>
+<p>Many types of encoding formats are available; however, most of them contain two parts:</p>
+<ul>
+<li>Container: contain the video file, audio, and metadata</li>
+<li>Codecs: compression and decompression algorithms aim to reduce the video size while preserving the video quality</li>
+</ul>
+<h3 id="3-2-Directed-acyclic-graph-DAG-model"><a href="#3-2-Directed-acyclic-graph-DAG-model" class="headerlink" title="3.2 Directed acyclic graph (DAG) model"></a>3.2 Directed acyclic graph (DAG) model</h3><p>Different content creators may have different video processing requirements:</p>
+<ul>
+<li>some content creators require watermarks on top of their video</li>
+<li>some provide thumbnail image</li>
+<li>some upload high definition videos</li>
+</ul>
+<p>To support different video processing pipelines and maintain high parallelism, we need to add some level of abstraction and let client programmers define what tasks to execute. For example, Facebook&#39;s streaming video engine uses a directed acyclic graph (DAG) programming model, which defines tasks in stages so they can be executed sequentially or parallelly.</p>
+<p><img src="/images/System-Design/Interview/14-DAG-model.jpg" alt="DAG model"></p>
+<p>The original video is split into video, audio, and metadata. Here are some tasks that can be applied on a video file:</p>
+<ul>
+<li>Inspection: Make sure videos have good quality and are not malformed</li>
+<li>Video encodings: Videos are converted to support different resolutions, codec, bitrates, etc</li>
+<li>Thumbnail: Thumbnails can either be uploaded by a user or automatically generated by the system</li>
+<li>Watermark: An image overlay on top of your video contains identifying information about your video</li>
+</ul>
+<h3 id="3-3-Video-transcoding-architecture"><a href="#3-3-Video-transcoding-architecture" class="headerlink" title="3.3 Video transcoding architecture"></a>3.3 Video transcoding architecture</h3><p><img src="/images/System-Design/Interview/14-video-transcoding-arch.jpg" alt="Video Transcoding Architecture"></p>
+<h4 id="3-3-1-Preprocessor"><a href="#3-3-1-Preprocessor" class="headerlink" title="3.3.1 Preprocessor"></a>3.3.1 Preprocessor</h4><p>The preprocessor has 4 responsibilities:</p>
+<ol>
+<li>Video splitting: Video stream is split into smaller <strong>Group of Pictures</strong>(GOP) alignment. Each chunk is an independently playable unit, usually a few seconds in length.</li>
+<li>Some old mobile devices or browsers might not support video splitting. Preprocessor split videos by GOP alignment for old clients.</li>
+<li>DAG generation: The processor generates DAG based on configuration files client programmers write</li>
+<li>Cache data: The preprocessor is a cache for segmented videos. For better reliability, the preprocessor stores GOPs and metadata in temporary storage. If video encoding fails, the system could use persisted data for retry operations.</li>
+</ol>
+<h4 id="3-3-2-DAG-scheduler"><a href="#3-3-2-DAG-scheduler" class="headerlink" title="3.3.2 DAG scheduler"></a>3.3.2 DAG scheduler</h4><p>The DAG scheduler splits a DAG graph into stages of tasks and puts them in the task queue in the resource manager.<br><img src="/images/System-Design/Interview/14-DAG-scheduler-example.jpg" alt="DAG Scheduler Example"></p>
+<p>The original video is split into three stages:</p>
+<ol>
+<li>video, audio, and metadata</li>
+<li>The video file is split into two tasks<ol>
+<li>video encoding</li>
+<li>thumbnail</li>
+</ol>
+</li>
+<li>The audio file requires audio encoding as part of the stage 2 tasks</li>
+</ol>
+<h4 id="3-3-3-Resource-manager"><a href="#3-3-3-Resource-manager" class="headerlink" title="3.3.3 Resource manager"></a>3.3.3 Resource manager</h4><p>The resource manager is responsible for managing the efficiency of resource allocation:</p>
+<ul>
+<li>Task queue: a priority queue that contains tasks to be executed</li>
+<li>Worker queue: a priority queue that contains worker utilization info</li>
+<li>Running queue: contains info about the running tasks and workers</li>
+<li>Task scheduler: picks the optimal task&#x2F;worker, and instructs the chosen task worker to execute the job</li>
+</ul>
+<p><img src="/images/System-Design/Interview/14-resource-manager.jpg" alt="Resource Manager"></p>
+<p>The resource manager works as follows:</p>
+<ol>
+<li>Get the highest priority task from the task queue</li>
+<li>Get the optimal task worker to run the task from the worker queue</li>
+<li>Instruct the chosen task worker to run the task</li>
+<li>Bind the task&#x2F;worker info and puts it in the running queue</li>
+<li>Remove the job from the running queue once the job is done</li>
+</ol>
+<h4 id="3-3-4-Task-workers"><a href="#3-3-4-Task-workers" class="headerlink" title="3.3.4 Task workers"></a>3.3.4 Task workers</h4><p>Task workers run the tasks which are defined in the DAG. Different task workers may run different tasks.</p>
+<h4 id="3-3-5-Temporary-storage"><a href="#3-3-5-Temporary-storage" class="headerlink" title="3.3.5 Temporary storage"></a>3.3.5 Temporary storage</h4><p>The choice of storage system depends on factors like data type, data size, access frequency, data life span, etc. For instance:</p>
+<ul>
+<li>memory store: metadata is frequently accessed by workers, and the data size is usually small</li>
+<li>blob storage: video or audio data</li>
+</ul>
+<h4 id="3-3-6-Encoded-video"><a href="#3-3-6-Encoded-video" class="headerlink" title="3.3.6 Encoded video"></a>3.3.6 Encoded video</h4><p>Encoded video is the final output of the encoding pipeline. an example of the output: funny_720p.mp4</p>
+<h3 id="3-4-System-optimizations"><a href="#3-4-System-optimizations" class="headerlink" title="3.4 System optimizations"></a>3.4 System optimizations</h3><h4 id="3-4-1-Speed-optimization-parallelize-video-uploading"><a href="#3-4-1-Speed-optimization-parallelize-video-uploading" class="headerlink" title="3.4.1 Speed optimization: parallelize video uploading"></a>3.4.1 Speed optimization: parallelize video uploading</h4><p>Uploading a video as a whole unit is inefficient. We can split a video into smaller chunks by GOP alignment. This allows fast resumable uploads when the previous upload failed. The job of splitting a video file by GOP can be implemented by the client to improve the upload speed.<br><img src="/images/System-Design/Interview/14-video-split.jpg" alt="Video Split"></p>
+<h4 id="3-4-2-Speed-optimization-place-upload-centers-close-to-users"><a href="#3-4-2-Speed-optimization-place-upload-centers-close-to-users" class="headerlink" title="3.4.2 Speed optimization: place upload centers close to users"></a>3.4.2 Speed optimization: place upload centers close to users</h4><p>Set up multiple upload centers across the globel. </p>
+<h4 id="3-4-3-Speed-optimization-parallelism-everywhere"><a href="#3-4-3-Speed-optimization-parallelism-everywhere" class="headerlink" title="3.4.3 Speed optimization: parallelism everywhere"></a>3.4.3 Speed optimization: parallelism everywhere</h4><p>Build a loosely coupled system and enable high parallelism. The flow of how a video is transferred from original storage to the CDN is shown below:</p>
+<p><img src="/images/System-Design/Interview/14-original-video-workflow.jpg" alt="Original Video Workflow"></p>
+<p>To make the system more loosely coupled, we introduced message queues:</p>
+<p><img src="/images/System-Design/Interview/14-optimized-video-workflow.jpg" alt="Optimized Video Workflow"></p>
+<ul>
+<li>Before: the encoding module must wait for the output of the download module</li>
+<li>After: the encoding module does not need to wait for the output of the download module anymore</li>
+</ul>
+<h4 id="3-4-4-Safety-optimization-pre-signed-upload-URL"><a href="#3-4-4-Safety-optimization-pre-signed-upload-URL" class="headerlink" title="3.4.4 Safety optimization: pre-signed upload URL"></a>3.4.4 Safety optimization: pre-signed upload URL</h4><p>To ensure only authorized users upload videos to the right location, we introduce pre-signed URLs:</p>
+<p><img src="/images/System-Design/Interview/14-presigned-upload-url.jpg" alt="Pre-signed Upload URL"></p>
+<ol>
+<li>Client makes a HTTP request to API servers to fetch the pre-signed URL, which gives the access permission to the object identified in the URL. The term pre-signed URL is used by uploading files to Amazon S3. </li>
+<li>API servers respond with a pre-signed URL</li>
+<li>Once the client receives the response, it uploads the video using the pre-signed URL.</li>
+</ol>
+<h4 id="3-4-5-Safety-optimization-protect-your-videos"><a href="#3-4-5-Safety-optimization-protect-your-videos" class="headerlink" title="3.4.5 Safety optimization: protect your videos"></a>3.4.5 Safety optimization: protect your videos</h4><p>To protect copyrighted videos:</p>
+<ul>
+<li>Digital rights management (DRM) systems: Apple FairPlay, Google Widevine, and Microsoft PlayReady</li>
+<li>AES encryption: You can encrypt a video and configure an authorization policy. This ensures that only authorized users can watch an encrypted video</li>
+<li>Visual watermarking: Place an image overlay on top of video that contains identifying information</li>
+</ul>
+<h4 id="3-4-6-Cost-saving-optimization"><a href="#3-4-6-Cost-saving-optimization" class="headerlink" title="3.4.6 Cost-saving optimization"></a>3.4.6 Cost-saving optimization</h4><p>Few optimizations to reduce CDN cost:</p>
+<ul>
+<li>Only serve the most popular videos from CDN, and other videos from our high capacity storage video servers</li>
+<li>For less popular content, we don&#39;t need to store many encoded video versions</li>
+<li>Some videos are only popular in certain regions. No need to distribute these videos to other regions.</li>
+<li>Build your own CDN and partner with Internet Service Providers (ISPs).</li>
+</ul>
+<p>All those optimizations are based on content popularity, user access pattern, video size, etc. It is important to analyze historical viewing patterns before doing any optimization.</p>
+<h3 id="3-5-Error-handling"><a href="#3-5-Error-handling" class="headerlink" title="3.5 Error handling"></a>3.5 Error handling</h3><p>Two types of errors exist:</p>
+<ul>
+<li>Recoverable error: video segment fails to transcode. Solution: retry the operation a few times; If the task continues to fail, returns a proper error code to the client</li>
+<li>Non-recoverable error: malformed video format, system stops the running tasks associated with the video and returns the proper error code to the client</li>
+</ul>
+<p>Typical errors for each system component:</p>
+<ul>
+<li>Upload error: retry a few times</li>
+<li>Split video error: if older versions of clients cannot split videos by GOP alignment, the entire video is passed to the server</li>
+<li>Transcoding error: retry</li>
+<li>Preprocessor error: regenerate DAG diagram</li>
+<li>DAG scheduler error: reschedule a task</li>
+<li>Resource manager queue down: use a replica</li>
+<li>Task worker down: retry the task on a new worker</li>
+<li>API server down: API servers are stateless so requests will be directed to a different API server</li>
+<li>Metadata cache server down: data is replicated multiple times. If one node goes down, can still access other nodes to fetch data</li>
+<li>Metadata DB server down:<ul>
+<li>Master is down: promote one of the slaves to act as the new master</li>
+<li>Slave is down: use another slave for reads and bring up another database server to replace the dead one</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-Wrap-up"><a href="#4-Wrap-up" class="headerlink" title="4. Wrap up"></a>4. Wrap up</h2><p>Additional talking points:</p>
+<ul>
+<li>Scale the API tier: Because API servers are stateless, it is easy to scale API tier horizontally</li>
+<li>Scale the database: You can talk about database replication and sharding</li>
+<li>Live streaming: differences between video and live streaming<ul>
+<li>Live streaming has a higher latency requirement, might need a different streaming protocol</li>
+<li>Live streaming has a lower requirement for parallelism because small chunks of data are already processed in real-time</li>
+<li>Live streaming requires different sets of error handling. Error handling shouldn&#39;t take too much time</li>
+</ul>
+</li>
+<li>Video takedowns: Videos that violate copyrights, pornography, or other illegal acts shall be removed</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/b233.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">DP - Group Knapsack Problem</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/6c1f.html">
+        <span class="next-text nav-default">System Design - Search Autocomplete</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/241d.html';
+  var disqus_title = "System Design - Youtube";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

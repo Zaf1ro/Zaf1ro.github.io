@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Replication Controllers"/>
+
+
+
+
+  <meta name="keywords" content="K8s," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/17e0.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/17e0.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/17e0.html"/>
+
+
+<meta name="description" content="1. Introduction当创造了一个新的pod后, Kubernetes会为其自动分配至一个worker node并开始运行. 若pod中的主进程停止运行或所在的worker node不可用, 则pod也不可用. 为此Kubernetes提供了Replication Controller和Deployment来维护pod运行: 当pod中的主进程停止运行或所在的worker node不可用时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Replication Controllers">
+<meta property="og:url" content="https://zaf1ro.github.io/p/17e0.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction当创造了一个新的pod后, Kubernetes会为其自动分配至一个worker node并开始运行. 若pod中的主进程停止运行或所在的worker node不可用, 则pod也不可用. 为此Kubernetes提供了Replication Controller和Deployment来维护pod运行: 当pod中的主进程停止运行或所在的worker node不可用时">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/rc-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/rc-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/rc-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/rc-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/rc-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/rc-6.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/rc-7.png">
+<meta property="article:published_time" content="2019-10-17T12:32:29.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.030Z">
+<meta property="article:tag" content="K8s">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/rc-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Replication Controllers - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-liveness-probes"><span class="toc-text">2 liveness probes</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Create-an-HTTP-based-liveness-probe"><span class="toc-text">2.1 Create an HTTP-based liveness probe</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Configure-additional-properties-of-the-liveness-probe"><span class="toc-text">2.2 Configure additional properties of the liveness probe</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Create-effective-liveness-probes"><span class="toc-text">2.3 Create effective liveness probes</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-ReplicationControllers"><span class="toc-text">3. ReplicationControllers</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-The-Operation-of-a-ReplicationController"><span class="toc-text">3.1 The Operation of a ReplicationController</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Create-a-ReplicationController"><span class="toc-text">3.2 Create a ReplicationController</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-ReplicationController-in-action"><span class="toc-text">3.3 ReplicationController in action</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Move-pods-in-and-out-of-the-scope-of-a-ReplicationController"><span class="toc-text">3.4 Move pods in and out of the scope of a ReplicationController</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Change-the-pod-template"><span class="toc-text">3.5 Change the pod template</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-Horizontally-scaling-pods"><span class="toc-text">3.6 Horizontally scaling pods</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-Delete-a-ReplicationController"><span class="toc-text">3.7 Delete a ReplicationController</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-ReplicaSet"><span class="toc-text">4. ReplicaSet</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-DaemonSet"><span class="toc-text">5. DaemonSet</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Job"><span class="toc-text">6. Job</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-Define-a-Job-resource"><span class="toc-text">6.1 Define a Job resource</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Job-in-a-Pod"><span class="toc-text">6.2 Job in a Pod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-Run-Multiple-Pod-Instance-in-a-Job"><span class="toc-text">6.3 Run Multiple Pod Instance in a Job</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-CronJob"><span class="toc-text">7. CronJob</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Replication Controllers
+        
+      </h1>
+      <time class="post-time">
+          10/17/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>当创造了一个新的pod后, Kubernetes会为其自动分配至一个worker node并开始运行. 若pod中的主进程停止运行或所在的worker node不可用, 则pod也不可用. 为此Kubernetes提供了Replication Controller和Deployment来维护pod运行: 当pod中的主进程停止运行或所在的worker node不可用时, Kubernetes会重启或再分配pod到新的worker node. 但若出现异常情况, 例如: 内存溢出, 死锁等导致的进程无响应, Kubernetes不会发觉并重启pod. 因此需要从外部不断检查app的状态.</p>
+<h2 id="2-liveness-probes"><a href="#2-liveness-probes" class="headerlink" title="2 liveness probes"></a>2 liveness probes</h2><p>Kubernetes可通过liveness probes来探测container是否运行. 每个pod中的每个container都可指定一个liveness probe来定期执行probe并在probe运行失败后重启container. Liveness probe有三种探测container的方式:</p>
+<ol>
+<li>Probe向container的IP address发送HTTP GET请求. 若probe收到错误的response code或没收到任何response, 则重启container.</li>
+<li>Probe会向container的指定port发起TCP连接请求. 若连接请求失败, 则重启container.</li>
+<li>Probe在container内存执行<strong>exec</strong> command并检查exit status code. 若exit status code不为0, 则重启container</li>
+</ol>
+<h3 id="2-1-Create-an-HTTP-based-liveness-probe"><a href="#2-1-Create-an-HTTP-based-liveness-probe" class="headerlink" title="2.1 Create an HTTP-based liveness probe"></a>2.1 Create an HTTP-based liveness probe</h3><p>当创建pod时, 可为每个pod制定一个liveness probe. 下面例子中probe每隔一段时间(默认为10秒)会对产生的container下**&#x2F;<strong>路径和</strong>8080**端口进行HTTP访问.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">pod-name</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">image-name</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">container-name</span></span><br><span class="line">    <span class="attr">livenessProbe:</span></span><br><span class="line">      <span class="attr">httpGet:</span></span><br><span class="line">        <span class="attr">path:</span> <span class="string">/</span></span><br><span class="line">        <span class="attr">port:</span> <span class="number">8080</span> </span><br></pre></td></tr></table></figure>
+<p>当probe发现container返回错误response code或无响应时会自动重启该container. 当运行<strong>kubectl get pods</strong>时, RESTARTS一列会显示该pod中的container被重启多少次:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get po kubia-liveness</span><br><span class="line">NAME     READY STATUS  RESTARTS AGE</span><br><span class="line">pod-name 1/1   Running 1        2m</span><br></pre></td></tr></table></figure>
+<p>通过<strong>kubectl describe pod</strong>可获得probe更详细的信息:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">Name: pod-name</span><br><span class="line">...</span><br><span class="line">Containers:</span><br><span class="line">  kubia:</span><br><span class="line">  Container ID: docker://480986f8</span><br><span class="line">  Image: image-name</span><br><span class="line">  Image ID: docker://sha256:2b208508</span><br><span class="line">  Port:</span><br><span class="line">  State: Running</span><br><span class="line">    Started: Sun, 14 May 2017 11:41:40 +0200</span><br><span class="line">  Last State: Terminated</span><br><span class="line">    Reason: Error</span><br><span class="line">    Exit Code: 137</span><br><span class="line">    Started: Mon, 01 Jan 0001 00:00:00 +0000</span><br><span class="line">    Finished: Sun, 14 May 2017 11:41:38 +0200</span><br><span class="line">  Ready: True</span><br><span class="line">  Restart Count: 1</span><br><span class="line">  Liveness: http-get http://:8080/ delay=0s <span class="built_in">timeout</span>=1s</span><br><span class="line">            period=10s <span class="comment">#success=1 #failure=3</span></span><br><span class="line">  ...</span><br><span class="line">Events:</span><br><span class="line">  ... </span><br><span class="line">  Killing container with <span class="built_in">id</span> docker://95246981:pod <span class="string">&quot;image-name&quot;</span> ...</span><br></pre></td></tr></table></figure>
+<p>上述表示当前运行的container之前被终止过, exit code为137 (exit code为128+x, x表示真正的exit code), 也就是9 (由Kubernetes发出的SIGKILL signal). </p>
+<h3 id="2-2-Configure-additional-properties-of-the-liveness-probe"><a href="#2-2-Configure-additional-properties-of-the-liveness-probe" class="headerlink" title="2.2 Configure additional properties of the liveness probe"></a>2.2 Configure additional properties of the liveness probe</h3><p>每个liveness probe都有属性, 包括:</p>
+<ul>
+<li>initialDelaySeconds: container启动后多少秒后启动probe, 默认为0</li>
+<li>timeoutSeconds: probe发出请求后多少秒内container应回复, 默认为1</li>
+<li>periodSeconds: probe发出请求的间隔时间, 默认为10</li>
+<li>failureThreshold: probe探测到container失败后, 重启container的最大次数, 默认为3, 最小为1.</li>
+</ul>
+<p>HTTP probe提供了更多属性:</p>
+<ul>
+<li>host: Hostname, 默认为pod IP</li>
+<li>scheme: 连接container的方式, HTTP或HTTPS, 默认为HTTP</li>
+<li>path: HTTP资源路径</li>
+<li>httpHeaders: HTTP Header</li>
+<li>port: HTTP port, 范围为[1, 65535]</li>
+</ul>
+<h3 id="2-3-Create-effective-liveness-probes"><a href="#2-3-Create-effective-liveness-probes" class="headerlink" title="2.3 Create effective liveness probes"></a>2.3 Create effective liveness probes</h3><p>Pod中的每个container都应有一个liveness probe检测其状态. 但也要注意, liveness probe只应检测由container内部产生的异常, 而不是外部因素导致的运行错误, 例如: 当使用liveness probe检测server运行状况时, 不应因database导致server的异常让server不断重启.<br>Liveness probe的设计必须轻量级, 每个container都有自己的资源上限, liveness probe与container共享该资源; 当liveness probe消耗太多CPU时, container则受限于CPU的不足.<br>即使将failureThreshold设为1, Kubernetes也会在放弃container之前使用probe来多次探测container. 所以使用者不必设计retry loop使用probe.<br>Probe由worker node上的kubelet管理并实现, 所以当worker node不可用时, probe也不再可用. 为保证pod会被分配到其他worker node上, 需使用ReplicationController或其他方法.</p>
+<h2 id="3-ReplicationControllers"><a href="#3-ReplicationControllers" class="headerlink" title="3. ReplicationControllers"></a>3. ReplicationControllers</h2><p>ReplicationController作为Kubernetes的一种resource, 能确保pods一直保持运行. 无论是pod停止运行, 或node不可用, ReplicationController都会创造替代的pod.  下图中ReplicationController管理Pod B; 当Node 1不可用时, ReplicationController会在Node 2创建一个Pod B来替代旧的Pod.<br><img src="/images/Kubernetes/rc-1.png" alt="When a node fails, only pods backed by a ReplicationController are recreated"></p>
+<h3 id="3-1-The-Operation-of-a-ReplicationController"><a href="#3-1-The-Operation-of-a-ReplicationController" class="headerlink" title="3.1 The Operation of a ReplicationController"></a>3.1 The Operation of a ReplicationController</h3><p>ReplicationController会通过label selector来监控特定的Pod set并确保这些Pods维持在一定数量. 若当前运行的Pod数量少于目标数量, 则创建Pod; 若当前运行的Pod数量多于目标数量, 则移除部分Pod. 以下操作会导致运行的Pod数量多于目标数量:</p>
+<ul>
+<li>创建相同类型(Pod的label与ReplicationController的label selector相等)的Pod</li>
+<li>其他类型的Pod被修改为相同类型</li>
+<li>目标Pod数量被修改为更小数值</li>
+</ul>
+<p>ReplicationmController的运行过程如下:<br><img src="/images/Kubernetes/rc-2.png" alt="A ReplicationController’s reconciliation loop"></p>
+<p>ReplicationController有三大属性值:</p>
+<ul>
+<li>label selector: ReplicationController管理的Pod范围</li>
+<li>replica count: 被管理的Pod所需的运行数量</li>
+<li>pod template: 创建Pod的模板</li>
+</ul>
+<p>Kubernetes允许在ReplicationController运行过程中修改其label selector和pod template, 但并不会影响当前运行的Pod. 例如: label selector被修改后, ReplicationController并不会移除当前pod, 而是放任这些pod继续运行; pod template被修改后, ReplicationController当前管理的pod不会被修改, 之后新建的pod才会遵循修改后的pod template.</p>
+<p>ReplicationController对比单独运行Pod, 有以下几点优点:</p>
+<ul>
+<li>当Pod停止工作时, 确保新的Pod会被创建并持续运行</li>
+<li>当Node不可用时, 会在其他可用的Node中创建Pod替代</li>
+<li>提供了一种horizontal scaling of pods</li>
+</ul>
+<h3 id="3-2-Create-a-ReplicationController"><a href="#3-2-Create-a-ReplicationController" class="headerlink" title="3.2 Create a ReplicationController"></a>3.2 Create a ReplicationController</h3><p>ReplicationController同样通过JSON或YAML文件创建:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ReplicationController</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">image-name</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span> </span><br></pre></td></tr></table></figure>
+<p>上述YAML文件中ReplicationController使用<strong>app&#x3D;kubia</strong>作为label selector, 所有携带该label的Pod都处于ReplicationController的管理之中; ReplicationController会保证随时都有3个该类型的Pod在cluster中运行, 当前运行的Pod数量不足时, 会调用<strong>template</strong>中的模板创建新的Pod.<br>注意: 若template中的labels与selector不同, 则ReplicationController会不断创建Pod, 因为所创建的Pod无法满足selector标示的label. 为避免这种情况出现, 可将selector域置空, Kubernetes会自动将Pod template中的labels赋为label selector.</p>
+<h3 id="3-3-ReplicationController-in-action"><a href="#3-3-ReplicationController-in-action" class="headerlink" title="3.3 ReplicationController in action"></a>3.3 ReplicationController in action</h3><p>运行<strong>kubectl create</strong>创建ReplicationController:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create -f kubia-rc.yaml</span><br><span class="line">replicationcontroller <span class="string">&quot;kubia&quot;</span> created</span><br><span class="line"></span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME        READY STATUS            RESTARTS AGE</span><br><span class="line">kubia-53thy 0/1   ContainerCreating 0        2s</span><br><span class="line">kubia-k0xz6 0/1   ContainerCreating 0        2s</span><br><span class="line">kubia-q3vkg 0/1   ContainerCreating 0        2s</span><br></pre></td></tr></table></figure>
+<p>当Pod数量小于目标Pod数量时, ReplicationController会自动创建新的Pod:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl delete pod kubia-53thy</span><br><span class="line">pod <span class="string">&quot;kubia-53thy&quot;</span> deleted</span><br><span class="line"></span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME        READY STATUS            RESTARTS AGE</span><br><span class="line">kubia-53thy 1/1   Terminating       0        3m</span><br><span class="line">kubia-oini2 0/1   ContainerCreating 0        2s</span><br><span class="line">kubia-k0xz6 1/1   Running           0        3m</span><br><span class="line">kubia-q3vkg 1/1   Running           0        3m</span><br></pre></td></tr></table></figure>
+<p>调用<strong>kubectl get rc</strong>可显示cluster中所有的ReplicationController:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get rc</span><br><span class="line">NAME  DESIRED CURRENT READY AGE</span><br><span class="line">kubia 3       3       2     3m</span><br></pre></td></tr></table></figure>
+<p>以下是node不可用时的情况(本例中共有3个worker nodes, 3个Pods):</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">----- Disconnect one of worker nodes from the network -----</span><br><span class="line"></span><br><span class="line">$ kubectl get node</span><br><span class="line">NAME            STATUS   AGE</span><br><span class="line">kubia-pool-opc5 Ready    5h</span><br><span class="line">kubia-pool-s8gj Ready    5h</span><br><span class="line">kubia-pool-zwko NotReady 5h</span><br><span class="line"></span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME        READY STATUS  RESTARTS AGE</span><br><span class="line">kubia-oini2 1/1   Running 0        10m</span><br><span class="line">kubia-k0xz6 1/1   Running 0        10m</span><br><span class="line">kubia-q3vkg 1/1   Unknown 0        10m</span><br><span class="line">kubia-dmdck 1/1   Running 0        5s</span><br></pre></td></tr></table></figure>
+<p>当worker node重新连接后, 其status将会变为Ready, 但Unknown状态的pod将会被删除.</p>
+<h3 id="3-4-Move-pods-in-and-out-of-the-scope-of-a-ReplicationController"><a href="#3-4-Move-pods-in-and-out-of-the-scope-of-a-ReplicationController" class="headerlink" title="3.4 Move pods in and out of the scope of a ReplicationController"></a>3.4 Move pods in and out of the scope of a ReplicationController</h3><ol>
+<li><p>Add Labels to Pods Managed by a ReplicationController<br>ReplicationController并不会在意pod上的其他label</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl label pod kubia-dmdck <span class="built_in">type</span>=special</span><br><span class="line">pod <span class="string">&quot;kubia-dmdck&quot;</span> labeled</span><br><span class="line"></span><br><span class="line">$ kubectl get pods --show-labels</span><br><span class="line">NAME        READY STATUS  RESTARTS AGE LABELS</span><br><span class="line">kubia-oini2 1/1   Running 0        11m app=kubia</span><br><span class="line">kubia-k0xz6 1/1   Running 0        11m app=kubia</span><br><span class="line">kubia-dmdck 1/1   Running 0        1m  app=kubia,<span class="built_in">type</span>=special</span><br></pre></td></tr></table></figure></li>
+<li><p>Change the Labels of a Managed Pod<br>修改Pod的label可能导致Pod脱离ReplicationController的管理范围, ReplicationController会重新创建一个Pod作为替代</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl label pod kubia-dmdck app=foo --overwrite</span><br><span class="line">pod <span class="string">&quot;kubia-dmdck&quot;</span> labeled</span><br><span class="line"></span><br><span class="line">$ kubectl get pods -L app</span><br><span class="line">NAME        READY STATUS            RESTARTS AGE APP</span><br><span class="line">kubia-2qneh 0/1   ContainerCreating 0        2s  kubia</span><br><span class="line">kubia-oini2 1/1   Running           0        20m kubia</span><br><span class="line">kubia-k0xz6 1/1   Running           0        20m kubia</span><br><span class="line">kubia-dmdck 1/1   Running           0        10m foo </span><br></pre></td></tr></table></figure>
+<p><img src="/images/Kubernetes/rc-3.png" alt="Removing a pod from the scope of a ReplicationController by changing its labels"></p>
+</li>
+<li><p>Remove Pods from ReplicationControllers in Practice<br>当需要对特定Pod进行操作时, 需将Pod从ReplicationController中移除</p>
+</li>
+<li><p>Change the ReplicationController&#39;s label selector<br>当ReplicationController的selector被修改后, 之前运行的Pod会脱离管理并继续运行, ReplicationController会创建新的Pod来保住replica count. 但绝大多数情况下都不需要修改selector.</p>
+</li>
+</ol>
+<h3 id="3-5-Change-the-pod-template"><a href="#3-5-Change-the-pod-template" class="headerlink" title="3.5 Change the pod template"></a>3.5 Change the pod template</h3><p>ReplicationController中的Pod template也可在任何时刻被修改. 修改后不会影响已经运行的Pod, 但ReplicationController之后新建的Pod会遵循新的Pod template.<br><img src="/images/Kubernetes/rc-4.png" alt="Changing a ReplicationController’s pod template only affects pods created afterward and has no effect on existing pods"></p>
+<p>运行<strong>kubectl edit rc <rc-name><strong>会打开ReplicationController的YAML definition(使用默认editor), 修改后并保存即可. 若需修改editor, 可修改环境变量</strong>KUBE_EDUTOR</strong>为想要的editor路径.</p>
+<h3 id="3-6-Horizontally-scaling-pods"><a href="#3-6-Horizontally-scaling-pods" class="headerlink" title="3.6 Horizontally scaling pods"></a>3.6 Horizontally scaling pods</h3><p>有两种方法改变replica count:</p>
+<ol>
+<li>调用<strong>kubectl scale</strong> command直接修改replica count:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl scale rc kubia --replicas=&lt;num-of-desired-replicas&gt;</span><br></pre></td></tr></table></figure></li>
+<li>调用<strong>kubectl edit</strong> command修改ReplicationController的YAML definition:<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">kubectl edit rc kubia</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="3-7-Delete-a-ReplicationController"><a href="#3-7-Delete-a-ReplicationController" class="headerlink" title="3.7 Delete a ReplicationController"></a>3.7 Delete a ReplicationController</h3><p>当运行<strong>kubectl delete</strong> command不仅会删除ReplicationController, 还会删除其管理下的所有pods. 若想在删除ReplicationController的前提下保留其pods, 可加上<strong>cascade&#x3D;false</strong> option:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl delete rc kubia --cascade=<span class="literal">false</span></span><br><span class="line">replicationcontroller <span class="string">&quot;kubia&quot;</span> deleted</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="4-ReplicaSet"><a href="#4-ReplicaSet" class="headerlink" title="4. ReplicaSet"></a>4. ReplicaSet</h2><p>ReplicaSet作为ReplicationController的增强版, 其具有和ReplicationController相同的功能: 维持cluster中运行replica count个pod. ReplicaSet相比于ReplicationController, 最大的区别在于: ReplicaSet支持set-based selector. 例如: ReplicationController不支持selector中同一key拥有多个value值(例如: env&#x3D;devel, env&#x3D;production); ReplicationController也不支持单个key的selector.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1beta2</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ReplicaSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">kubia</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kubia</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">luksa/kubia</span> </span><br></pre></td></tr></table></figure>
+
+<p>Label selector是ReplicaSet与ReplicationController在YAML中唯一不同之处. Replica使用<strong>matchLabels</strong>表示简单的label匹配(与ReplicationController相同), <strong>matchExpressions</strong>表示更复杂的label匹配. 以下是matchExpressions selector的例子:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">selector:</span></span><br><span class="line">  <span class="attr">matchExpressions:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">app</span></span><br><span class="line">    <span class="attr">operator:</span> <span class="string">In</span></span><br><span class="line">    <span class="attr">values:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">kubia</span> </span><br></pre></td></tr></table></figure>
+
+<p>除了key和value, matchExpressions加入了operator选项表示value的匹配模式:</p>
+<ol>
+<li>In: Pod的value需与ReplicaSet中的其中一个value相同</li>
+<li>NotIn: Pod的value需与ReplicaSet中的所有value不同</li>
+<li>Exists: Pod需拥有和ReplicaSet相同的key, 不可设置value域</li>
+<li>DoesNotExist: Pod不需拥有和ReplicaSet相同的key, 不可设置value域</li>
+</ol>
+<p>若同时使用了matchLabels和matchExpressions, 则Pod只要匹配其中一个即可归入该ReplicaSet的管辖内.</p>
+<h2 id="5-DaemonSet"><a href="#5-DaemonSet" class="headerlink" title="5. DaemonSet"></a>5. DaemonSet</h2><p>ReplicationController和ReplicaSet都可让特定数量的Pod运行在Kubernetes Cluster之中, 但却无法保证Pod被分配到了哪个worker node. 如果需要每个worker node上都运行pod, 例如: 用于收集resource信息的log collector, 则需要DaemonSet.<br><img src="/images/Kubernetes/rc-5.png" alt="DaemonSets run only a single pod replica on each node, whereas ReplicaSets scatter them around the whole cluster randomly"></p>
+<p>DaemonSet不需要确认replica count, 因为Pod数量与worker node的数量相关. 当某个worker node不可用时, DaemonSet不会重新创建worker node上的pod.<br>除了label selector, DaemonSet还提供了node selector, 可以确保pod在哪些worker node上进行. 下面的DaemonSet只会在具有<strong>disk: ssd</strong> label的worker node上创建Pod:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1beta2</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">DaemonSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">ssd-monitor</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">ssd-monitor</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">ssd-monitor</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">nodeSelector:</span></span><br><span class="line">        <span class="attr">disk:</span> <span class="string">ssd</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">main</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">luksa/ssd-monitor</span></span><br></pre></td></tr></table></figure>
+
+<p>以下是DaemonSet的运行结果:<br><img src="/images/Kubernetes/rc-6.png" alt="Using a DaemonSet with a node selector to deploy system pods only on certain nodes"></p>
+<p>当worker node移除或修改<strong>app: ssd</strong> label后, DaemonSet会删除该worker node上的Pod:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl label node minikube disk=hdd --overwrite</span><br><span class="line">node <span class="string">&quot;minikube&quot;</span> labeled</span><br><span class="line"></span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME              READY STATUS      RESTARTS AGE</span><br><span class="line">ssd-monitor-hgxwq 1/1   Terminating 0        4m</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="6-Job"><a href="#6-Job" class="headerlink" title="6. Job"></a>6. Job</h2><p>Job作为Kubernetes的一种resource, 会在Pod被中断或所在的worker node不可用时自动重启. 但与ReplicaSet和ReplicationController不同的是, Job管理的Pod在成功运行后会自行结束, 而不是继续创建新的Pod重新执行. 下面是worker node不可用时发生的情况:<br><img src="/images/Kubernetes/rc-7.png" alt="Pods managed by Jobs are rescheduled until they finish successfullys"></p>
+<h3 id="6-1-Define-a-Job-resource"><a href="#6-1-Define-a-Job-resource" class="headerlink" title="6.1 Define a Job resource"></a>6.1 Define a Job resource</h3><p>Pod默认情况下restartPolicy为Always, 但Job所管理的Pod必须显式标记restartPolicy为OnFailure或Never.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">batch/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Job</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">batch-job</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">batch-job</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">restartPolicy:</span> <span class="string">OnFailure</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">main</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">luksa/batch-job</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="6-2-Job-in-a-Pod"><a href="#6-2-Job-in-a-Pod" class="headerlink" title="6.2 Job in a Pod"></a>6.2 Job in a Pod</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get <span class="built_in">jobs</span></span><br><span class="line">NAME      DESIRED SUCCESSFUL AGE</span><br><span class="line">batch-job 1       0          2s</span><br><span class="line"></span><br><span class="line">$ kubectl get pods</span><br><span class="line">NAME            READY STATUS  RESTARTS AGE</span><br><span class="line">batch-job-28qf4 1/1   Running 0        4s</span><br><span class="line"></span><br><span class="line">----- After pod finish successfully -----</span><br><span class="line"></span><br><span class="line">$ kubectl get pods -a</span><br><span class="line">NAME            READY STATUS    RESTARTS AGE</span><br><span class="line">batch-job-28qf4 0/1   Completed 0        2m</span><br><span class="line"></span><br><span class="line">$ kubectl get job</span><br><span class="line">NAME      DESIRED SUCCESSFUL AGE</span><br><span class="line">batch-job 1       1          3m</span><br></pre></td></tr></table></figure>
+<p>注意: kubectl get必须加上**--show-all<strong>或</strong>-a**时才能显示已完成的Pod. </p>
+<h3 id="6-3-Run-Multiple-Pod-Instance-in-a-Job"><a href="#6-3-Run-Multiple-Pod-Instance-in-a-Job" class="headerlink" title="6.3 Run Multiple Pod Instance in a Job"></a>6.3 Run Multiple Pod Instance in a Job</h3><p>Job还包含两个属性:</p>
+<ul>
+<li>completions: 需要多少个Pod执行</li>
+<li>parallelism: 同一时刻可运行多少个Pod</li>
+</ul>
+<p>通过设置这两个属性, 可实现串行或并行运行Job:</p>
+<ol>
+<li>Run Job Pods Sequentially<br>当Job需要多个Pod运行且未设置parallelism时, Job会一个个创建Pod并等待其运行完毕<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">apiVersion: batch/v1</span><br><span class="line">kind: Job</span><br><span class="line">metadata:</span><br><span class="line">  name: multi-completion-batch-job</span><br><span class="line">spec:</span><br><span class="line">  completions: 5</span><br><span class="line">  template:</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure></li>
+<li>Run Job Pods in Parallel<br>当Job需要多个Pod运行且设置了parallelism时, Job会同时运行多个Pod<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">apiVersion: batch/v1</span><br><span class="line">kind: Job</span><br><span class="line">metadata:</span><br><span class="line">  name: multi-completion-batch-job</span><br><span class="line">spec:</span><br><span class="line">  completions: 5</span><br><span class="line">  parallelism: 2</span><br><span class="line">  template:</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>调用<strong>kubectl scale</strong> command会修改Job的parallelism值, 不会修改completions值. 通过设置spec.activeDeadlineSeconds值可规定Pod超过运行时长后自动终止.</p>
+<h2 id="7-CronJob"><a href="#7-CronJob" class="headerlink" title="7. CronJob"></a>7. CronJob</h2><p>Job虽然可执行单个或多个Pod并等待其完成, 但无法规定Pod在某个特定时刻运行. CronJob作为Kubernetes的一种resource, 具有定时执行功能, 精确到秒. 假设我们需要每隔15分钟执行一次Job:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">apiVersion: batch/v1beta1</span><br><span class="line">kind: CronJob</span><br><span class="line">metadata:</span><br><span class="line">  name: batch-job-every-fifteen-minutes</span><br><span class="line">spec:</span><br><span class="line">  schedule: <span class="string">&quot;0,15,30,45 * * * *&quot;</span></span><br><span class="line">  jobTemplate:</span><br><span class="line">    spec:</span><br><span class="line">      template:</span><br><span class="line">        metadata:</span><br><span class="line">          labels:</span><br><span class="line">            app: periodic-batch-job</span><br><span class="line">        spec:</span><br><span class="line">          restartPolicy: OnFailure</span><br><span class="line">          containers:</span><br><span class="line">          - name: main</span><br><span class="line">            image: luksa/batch-job </span><br></pre></td></tr></table></figure>
+<p>CronJob中schedule域分为5个值:</p>
+<ul>
+<li>Minute</li>
+<li>Hour </li>
+<li>Day of month</li>
+<li>Month</li>
+<li>Day of week</li>
+</ul>
+<p>若需每个月第一天每隔30分钟执行一次, 可设置为&quot;0, 30 * 1 * *&quot;; 若需每个周日的3AM执行, 可设置为&quot;0 3 * * 0&quot;. 一般来说, Pod的创建会比规定的时间晚一点, 若对Pod的执行时刻有严格限制, 可在YAML文件中设置startingDeadlineSeconds. 例如: </p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">batch/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">CronJob</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">schedule:</span> <span class="string">&quot;30 10 * * *&quot;</span></span><br><span class="line">  <span class="attr">startingDeadlineSeconds:</span> <span class="number">15</span></span><br><span class="line">  <span class="string">...</span></span><br></pre></td></tr></table></figure>
+<p>上述例子中, 若Pod没有在10:30:15之前创建Pod, 则本次job不会运行并直接标记为Failed</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/K8s/">K8s</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/1936.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Services</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/f841.html">
+        <span class="next-text nav-default">Pods</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/17e0.html';
+  var disqus_title = "Replication Controllers";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

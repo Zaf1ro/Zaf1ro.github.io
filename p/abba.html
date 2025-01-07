@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Socket Options"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/abba.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/abba.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/abba.html"/>
+
+
+<meta name="description" content="1. getsocketopt and setsockopt Functions#include &lt;sys&#x2F;socket.h&gt;&#x2F;** * @brief get option for the socket referred to by the file  *        descriptor sockfd * @param level: the general code or some">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Socket Options">
+<meta property="og:url" content="https://zaf1ro.github.io/p/abba.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. getsocketopt and setsockopt Functions#include &lt;sys&#x2F;socket.h&gt;&#x2F;** * @brief get option for the socket referred to by the file  *        descriptor sockfd * @param level: the general code or some">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/7-3-default-close.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/7-3-close-with-opt-and-positive-val.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/7-3-close-with-opt-and-small-positive-val.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/7-3-shutdown.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/7-3-application-ack.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/7-7-svr-with-nagle-disabled.gif">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Network/UNP/7-7-svr-with-nagle-enabled.gif">
+<meta property="article:published_time" content="2019-12-08T14:21:48.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.043Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Network/UNP/7-3-default-close.gif">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Socket Options - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-getsocketopt-and-setsockopt-Functions"><span class="toc-text">1. getsocketopt and setsockopt Functions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Socket-States"><span class="toc-text">2. Socket States</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Generic-Socket-Options"><span class="toc-text">3. Generic Socket Options</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-SO-BROADCAST"><span class="toc-text">3.1 SO_BROADCAST</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-SO-DEBUG"><span class="toc-text">3.2 SO_DEBUG</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-SO-DONTOUTE"><span class="toc-text">3.3 SO_DONTOUTE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-SO-ERROR"><span class="toc-text">3.4 SO_ERROR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-SO-KEEPALIVE"><span class="toc-text">3.5 SO_KEEPALIVE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-SO-LINGER"><span class="toc-text">3.6 SO_LINGER</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-SO-OOBINLINE"><span class="toc-text">3.7 SO_OOBINLINE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-SO-RCVBUF-and-SO-SNDBUF"><span class="toc-text">3.8 SO_RCVBUF and SO_SNDBUF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-9-SO-RCVLOWAT-and-SO-SNDLOWAT"><span class="toc-text">3.9 SO_RCVLOWAT and SO_SNDLOWAT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-10-SO-RCVTIMEO-and-SO-SNDTIMEO"><span class="toc-text">3.10 SO_RCVTIMEO and SO_SNDTIMEO</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-11-SO-REUSEADDR-and-SO-REUSEPORT"><span class="toc-text">3.11 SO_REUSEADDR and SO_REUSEPORT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-12-SO-TYPE"><span class="toc-text">3.12 SO_TYPE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-13-SO-USELOOPBACK"><span class="toc-text">3.13 SO_USELOOPBACK</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-IPv4-Socket-Options"><span class="toc-text">4. IPv4 Socket Options</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-IP-HDRINCL"><span class="toc-text">4.1 IP_HDRINCL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-IP-OPTIONS"><span class="toc-text">4.2 IP_OPTIONS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-IP-RECVDSTADDR"><span class="toc-text">4.3 IP_RECVDSTADDR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-IP-RECVIF"><span class="toc-text">4.4 IP_RECVIF</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-IP-TOIS"><span class="toc-text">4.5 IP_TOIS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-IP-TTL"><span class="toc-text">4.6 IP_TTL</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-ICMPv6-Socket-Option"><span class="toc-text">5. ICMPv6 Socket Option</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-IPv6-Socket-Options"><span class="toc-text">6. IPv6 Socket Options</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-IPV6-CHECKSUM"><span class="toc-text">6.1 IPV6_CHECKSUM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-IPV6-DONTFRAG"><span class="toc-text">6.2 IPV6_DONTFRAG</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-IPV6-NEXTHOP"><span class="toc-text">6.3 IPV6_NEXTHOP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-IPV6-PATHMTU"><span class="toc-text">6.4 IPV6_PATHMTU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-IPV6-RECVDSTOPTS"><span class="toc-text">6.5 IPV6_RECVDSTOPTS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-6-IPV6-RECVHOPLIMIT"><span class="toc-text">6.6 IPV6_RECVHOPLIMIT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-7-IPV6-RECVHOPOPTS"><span class="toc-text">6.7 IPV6_RECVHOPOPTS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-8-IPV6-RECVPATHMTU"><span class="toc-text">6.8 IPV6_RECVPATHMTU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-9-IPV6-RECVPKTINFO"><span class="toc-text">6.9 IPV6_RECVPKTINFO</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-10-IPV6-RECVRTHDR"><span class="toc-text">6.10 IPV6_RECVRTHDR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-11-IPV6-RECVTCLASS"><span class="toc-text">6.11 IPV6_RECVTCLASS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-12-IPV6-UNICAST-HOPS"><span class="toc-text">6.12 IPV6_UNICAST_HOPS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-13-IPV6-USE-MIN-MTU"><span class="toc-text">6.13 IPV6_USE_MIN_MTU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-14-IPV6-V6ONLY"><span class="toc-text">6.14 IPV6_V6ONLY</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-TCP-Socket-Options"><span class="toc-text">7. TCP Socket Options</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-TCP-MAXSEG"><span class="toc-text">7.1 TCP_MAXSEG</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-TCP-NODELAY"><span class="toc-text">7.2 TCP_NODELAY</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-fcntl-Function"><span class="toc-text">8. fcntl Function</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Socket Options
+        
+      </h1>
+      <time class="post-time">
+          12/08/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-getsocketopt-and-setsockopt-Functions"><a href="#1-getsocketopt-and-setsockopt-Functions" class="headerlink" title="1. getsocketopt and setsockopt Functions"></a>1. getsocketopt and setsockopt Functions</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief get option for the socket referred to by the file </span></span><br><span class="line"><span class="comment"> *        descriptor sockfd</span></span><br><span class="line"><span class="comment"> * @param level: the general code or some protocol-specific</span></span><br><span class="line"><span class="comment"> *        code (e.g. IPv4, IPv6, TCP)</span></span><br><span class="line"><span class="comment"> * @param optname: the name of socket option</span></span><br><span class="line"><span class="comment"> * @param optval: a pointer to a variable from which the new</span></span><br><span class="line"><span class="comment"> *        value of the option</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">getsockopt</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">int</span> level, <span class="type">int</span> optname, <span class="type">void</span> *optval, </span></span><br><span class="line"><span class="params">               <span class="type">socklen_t</span> *optlen)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief set option for the socket referred to by the file</span></span><br><span class="line"><span class="comment"> *        descriptor sockfd</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">setsockopt</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">int</span> level, <span class="type">int</span> optname, <span class="type">const</span> <span class="type">void</span> *optval,</span></span><br><span class="line"><span class="params">               <span class="type">socklen_t</span> optlen)</span>;</span><br></pre></td></tr></table></figure>
+<p>以下是<code>getsockopt()</code>和<code>setsockopt()</code>所能操作的所有socket options:</p>
+<table>
+<thead>
+<tr>
+<th align="center">level</th>
+<th align="center">optname</th>
+<th align="center">get</th>
+<th align="center">set</th>
+<th align="center">Description</th>
+<th align="center">Flag</th>
+<th align="center">Datatype</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">SOL_SOCKET</td>
+<td align="center">SO_BROADCAST</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Permit sending of broadcasr datagram</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_DEBUG</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Enable debug tracing</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_DONTROUTE</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Bypass routing table lookup</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_ERROR</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center">Get pending error and clear</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_KEEPALIVE</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Periodically test if connection alive</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_LINGER</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Linger on close if data to send</td>
+<td align="center"></td>
+<td align="center">struct linger</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_OOBINLINE</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Leave received out-of-band data inline</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_RCVBUF</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive buffer size</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_SNDBUF</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Send buffer size</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_RCVLOMAT</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Send buffer low-water mark</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_SNDLOMAT</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive buffer low-water mark</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_RCVTIMEO</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive timeout</td>
+<td align="center"></td>
+<td align="center">struct timeval</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_SNDTIMEO</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Send timeout</td>
+<td align="center"></td>
+<td align="center">struct timeval</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_REUSEADDR</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Allow local address reuse</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_REUSEPORT</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Allow local port reuse</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_TYPE</td>
+<td align="center">&#x2714;</td>
+<td align="center"></td>
+<td align="center">Get socket type</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">SO_USELOOPBACK</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Routing socket gets copy of what it sends</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center">IPPROTO_IP</td>
+<td align="center">IP_HDRINCL</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">IP header included with data</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IP_OPTIONS</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">IP header options</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IP_RECVDSTADDR</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Return destination IP address</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IP_RECVIP</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Return received interface index</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IP_TOS</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Type-of-service and precedure</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IP_TTL</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">TTL</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IP_MULTICAST_IP</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Specify outgoing interface</td>
+<td align="center"></td>
+<td align="center">struct in_addr</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IP_MULTICAST_TTL</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Specify outgoing TTL</td>
+<td align="center"></td>
+<td align="center">u_char</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IP_MULTICAST_LOOP</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Specify loopback</td>
+<td align="center"></td>
+<td align="center">u_char</td>
+</tr>
+<tr>
+<td align="center">IPPROTO_ICMPV6</td>
+<td align="center">ICMP6_FILTER</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Specify ICMPv6 message types to pass</td>
+<td align="center"></td>
+<td align="center">strcut icmp6_filter</td>
+</tr>
+<tr>
+<td align="center">IPPROTO_IPV6</td>
+<td align="center">IPV6_CHECKSUM</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Offset of checksum field for raw sockets</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_DONTFRAG</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Drop instead of fragment large packets</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_NEXTHOP</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Specify next-hop address</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_PATHMTU</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Retrieve current path MTU</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_RECVDSTOPTS</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive destination options</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_RECVHOPLIMIT</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive unicast hop limit</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_RECVHOPOPTS</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive hop-by-hop options</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_RECVPATHMTU</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive path MTU</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_RECVPKTINFO</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive packet information</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_RECVRTHDR</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive source route</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_RECVTCLASS</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Receive traffic class</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_UNICAST_HOPS</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Default unicast hop limit</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_USE_MIN_MTU</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Use minimum MTU</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_V6ONLY</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Disable v4 compatibility</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_XXX</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Sticky ancillary data</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_MULTICAST_IP</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Specify outgoing interface</td>
+<td align="center"></td>
+<td align="center">u_int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_MULTICAST_HOPS</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Specify outgoing hop limit</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_MULTICAST_LOOP</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Specify loopback</td>
+<td align="center">&#x2714;</td>
+<td align="center">u_int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_JOIN_GROUP</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">Join multicast group</td>
+<td align="center"></td>
+<td align="center">strcut ipv6_mreq</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">IPV6_LEAVE_GROUP</td>
+<td align="center"></td>
+<td align="center">&#x2714;</td>
+<td align="center">Leave multicast group</td>
+<td align="center"></td>
+<td align="center">strcut ipv6_mreq</td>
+</tr>
+<tr>
+<td align="center">IPPROTO_TCP</td>
+<td align="center">TCP_MAXSEG</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">TCP maximum segment size</td>
+<td align="center"></td>
+<td align="center">int</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">TCP_NODELAY</td>
+<td align="center">&#x2714;</td>
+<td align="center">&#x2714;</td>
+<td align="center">Disable Nagle algorithm</td>
+<td align="center">&#x2714;</td>
+<td align="center">int</td>
+</tr>
+</tbody></table>
+<p>其中, <strong>Flag</strong>表示该socket option只有两个选项: 开启或关闭. nonzero表示开启, zero表示关闭. </p>
+<h2 id="2-Socket-States"><a href="#2-Socket-States" class="headerlink" title="2. Socket States"></a>2. Socket States</h2><p>部分socket option需要在规定的时间写入和读取, 例如connected TCP socket. connected TCP socket会继承listening socket的部分socket options: </p>
+<ul>
+<li><code>SO_DEBUG</code></li>
+<li><code>SO_DONTROUTE</code></li>
+<li><code>SO_KEEPALIVE</code></li>
+<li><code>SO_LINGER</code></li>
+<li><code>SO_OOBINLINE</code></li>
+<li><code>SO_RCVBUF</code></li>
+<li><code>SO_RCVLOWAT</code></li>
+<li><code>SO_SNDBUF</code></li>
+<li><code>SO_SNDLOWAT</code></li>
+<li><code>TCP_MAXSEG</code></li>
+<li><code>TCP_NODELAY</code></li>
+</ul>
+<p>因此如果需为connected socket修改options, 需在调用<code>accept()</code>前为listening socket设置options.</p>
+<h2 id="3-Generic-Socket-Options"><a href="#3-Generic-Socket-Options" class="headerlink" title="3. Generic Socket Options"></a>3. Generic Socket Options</h2><p>Generic socket options表示协议独立的socket options(可用于多种protocols). 但这其中也有一些options不适用于所有protocol, 例如: <code>SO_BROADCAST</code>虽然为generic, 但只适用于datagram socket.</p>
+<h3 id="3-1-SO-BROADCAST"><a href="#3-1-SO-BROADCAST" class="headerlink" title="3.1 SO_BROADCAST"></a>3.1 SO_BROADCAST</h3><p>该option可允许或禁止socket发送broadcast message. 只有datagram socket且网络支持broadcast message时, 才能使用该<code>SO_BROADCAST</code>. 对于TCP, SCTP, 或point-to-point link则不能使用. 由于发送broadcast message前必须设置该option, 因此在没有设置<code>SO_BROADCAST</code> option的socket上将目的地址设为broadcasr address会返回<code>EACCES</code></p>
+<h3 id="3-2-SO-DEBUG"><a href="#3-2-SO-DEBUG" class="headerlink" title="3.2 SO_DEBUG"></a>3.2 SO_DEBUG</h3><p>该option只有TCP支持. 当启动该option后, kernel会一直跟踪该socket发出的所有packet的详细信息, 并可通过trpt程序查看. </p>
+<h3 id="3-3-SO-DONTOUTE"><a href="#3-3-SO-DONTOUTE" class="headerlink" title="3.3 SO_DONTOUTE"></a>3.3 SO_DONTOUTE</h3><p>该option会让所有发出的packets绕过路由机制. 例如: IPv4中, packet会根据目的地址和subnet来判断使用哪个local interface, 不会通过gateway(网关)转发; 若无法做出判断, 则返回<code>ENETUNREACH</code>. 也可通过在<code>send()</code>, <code>sendto()</code>或<code>sendmsg()</code>中设置<code>MSG_DONTROUTE</code> flag起到相同作用.</p>
+<h3 id="3-4-SO-ERROR"><a href="#3-4-SO-ERROR" class="headerlink" title="3.4 SO_ERROR"></a>3.4 SO_ERROR</h3><p>一般进程有两种方式获知socket error:</p>
+<ol>
+<li>进程中<code>select()</code>检测到error并返回</li>
+<li>进程使用signal-driven I&#x2F;O model, SIGIO signal通知进程发生error</li>
+</ol>
+<p>这时可以通过调用<code>getsockopt()</code>并设置该option来获取socket error, 且不可在<code>setsockopt()</code>中设置该option.</p>
+<h3 id="3-5-SO-KEEPALIVE"><a href="#3-5-SO-KEEPALIVE" class="headerlink" title="3.5 SO_KEEPALIVE"></a>3.5 SO_KEEPALIVE</h3><p>该option保证即便TCP connection中没有信息交换, socket也会每隔一段时间向对端发送<strong>keep-alive probe</strong>来探测对端是否存活. 以下是发送probe后的几种结果:</p>
+<ol>
+<li>对端回复ACK, socket将会继续等待一段时间并再次发送probe</li>
+<li>对端回复RST, 说明对端进程崩溃, 返回<code>ECONNRESET</code>并关闭socket</li>
+<li>对端无回复, socket会继续发送多个probe; 若仍无回复, 则返回<code>ETIMEOUT</code>并关闭socket</li>
+</ol>
+<p>该option通常由server使用, 拥有检测client是否不可达(可能原因: client断开连接, 断电或主机崩溃). 这种情况成为half-open connection, keep-alive option专门用于检测该情况. 以下是检测TCP connection所能遇到的各种情况:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Scenario</th>
+<th align="center">Peer process crashed</th>
+<th align="center">Peer host crashes</th>
+<th align="center">Peer host is unreachable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">本端TCP正在发送数据</td>
+<td align="center">对端TCP发送<strong>FIN</strong>, <code>select()</code>检测到socket可读; 若本端TCP发送了另一个packet, 则对端回复<strong>RST</strong>; 若进程在socket收到RST后依然发送数据, 则socket返回<strong>SIGPIPE</strong></td>
+<td align="center">本端TCP多次发送超时后发挥<strong>ETIMEDOUT</strong></td>
+<td align="center">本端TCP多次发送超时后返回EHOSTUNREACH</td>
+</tr>
+<tr>
+<td align="center">本端TCP正在等待接收数据</td>
+<td align="center">对端TCP发送FIN, 本端<code>read()</code>返回<strong>EOF</strong></td>
+<td align="center">主动停止接受数据</td>
+<td align="center">主动停止接收数据</td>
+</tr>
+<tr>
+<td align="center">Connection无数据交换且开启keep-alive</td>
+<td align="center">对端TCP发送FIN, <code>select()</code>检测到socket可读</td>
+<td align="center">本端keep-alive probe多次发送超时后返回<strong>ETIMEDOUT</strong></td>
+<td align="center">本端keep-alive probe多次发送超时后返回<strong>EHOSTUNREACH</strong></td>
+</tr>
+<tr>
+<td align="center">Connection无数据交换且未开启keep-alive</td>
+<td align="center">对端TCP发送FIN, <code>select()</code>检测到socket可读</td>
+<td align="center">无事发生</td>
+<td align="center">无事发生</td>
+</tr>
+</tbody></table>
+<p>其中, 若本端TCP等待接收数据, 对端主机崩溃或不可达, 则需要本端主动发送数据, 根据返回来判断对端情况; 若本端不主动发送数据, 则需要keep-alive机制来自动断开连接; 若本端未开启keep-alive, 则本端会一直等待.</p>
+<h3 id="3-6-SO-LINGER"><a href="#3-6-SO-LINGER" class="headerlink" title="3.6 SO_LINGER"></a>3.6 SO_LINGER</h3><p>该option用于规定<code>close()</code>如何关闭一段connection, 只用于TCP和SCTP, 不适用于UDP. 通常, <code>close()</code>在调用后会立即返回, 若socket send buffer中还有数据未发送, 则kernel会自动发送给对方.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linger</span> &#123;</span></span><br><span class="line">  <span class="type">int</span> l_onoff;  <span class="comment">/* 0=off, nonzero=on */</span></span><br><span class="line">  <span class="type">int</span> l_linger; <span class="comment">/* linger time, POSIX specifies units as seconds */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>getsocketopt()</code>会根据<strong>l_onoff</strong>和<strong>l_linger</strong>的不同值设置<code>close()</code>的不同行为:</p>
+<ol>
+<li>若<code>l_onoff</code>为零, 则<code>l_linger</code>将被忽略, <code>close()</code>保持默认行为</li>
+<li>若<code>l_onoff</code>为非零, 且<code>l_linger</code>为零, <code>close()</code>会让socket丢弃connection: 丢弃socket send buffer数据, 并向对端发送RST. 由于跳过了TIME_WAIT state, 因此无需等待2 MSL, 可能导致旧connection中的数据干扰新的connection.</li>
+<li>若<code>l_onoff</code>和<code>l_linger</code>都非零, 则kernel会阻塞<code>close()</code>一段时间: 若socket send buffer中仍有数据, 则进程进入睡眠状态, 直到达到以下某个其中一个条件:</li>
+<li>所有数据都收到ACK确认, <code>close()</code>返回0</li>
+<li>linger time倒计时结束, <code>close()</code>返回socket send buffer中丢弃的数据字节数, 并将errno置为<code>EWOULDBLOCK</code></li>
+</ol>
+<p>若为nonblocking socket, 则SO_LINGER不起任何作用. 以下是<code>close()</code>默认情况下的操作:<br><img src="/images/Network/UNP/7-3-default-close.gif" alt="Default operation of close: it returns immediately"></p>
+<p>可以看到, client在调用<code>close()</code>后立即返回, server可能因进程崩溃或主机崩溃而未能获取数据. 而SO_LINGER option则能让<code>close()</code>等待一段时间, 确保数据已经保存在server的socket receive buffer中, 如下图:<br><img src="/images/Network/UNP/7-3-close-with-opt-and-positive-val.gif" alt="close with SO_LINGER socket option set and l_linger a positive value"></p>
+<p>但SO_LINGER还未解决一个问题: 若server将数据保存到socket receive buffer, 此时主机崩溃, client仍无法得知. 更糟的是, SO_LINGER可能因<code>l_linger</code>过小而提前返回:<br><img src="/images/Network/UNP/7-3-close-with-opt-and-small-positive-val.gif" alt="close with SO_LINGER socket option set and l_linger a small positive value"></p>
+<p>为解决server是否读取buffer数据的问题, 可使用<code>shutdown()</code>替代<code>close()</code>, 如下图:<br><img src="/images/Network/UNP/7-3-shutdown.gif" alt="Using shutdown to know that peer has received our data"></p>
+<p>可以看到, <code>shutdown()</code>只有收到FIN后才返回, 从而确保server已读取数据. 另一种方法则是使用application-level acknowledgement, 也称为application ACK. 假设client向server发送完毕数据后, 会调用<code>read()</code>等待application ACK; 而server进程在读取数据后会发送one-byte application ACK告知client数据已被读取; client在收到application ACK后调用<code>close()</code>关闭connection. 整个流程如下:<br><img src="/images/Network/UNP/7-3-application-ack.gif" alt="Application ACK"></p>
+<p>以下是<code>shutdown()</code>, <code>close()</code>, 和SO_LINGER的不同组合:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Function</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">shutdown, SHUT_RD</td>
+<td align="center">socket不再接受任何数据; 进程仍可发送数据, socket receive buffer中的数据会被丢弃, socket send buffer中的数据依旧会被发送至对端</td>
+</tr>
+<tr>
+<td align="center">shutdown, SHUT_WR</td>
+<td align="center">socket不再发送任何数据; 进程仍可接收数据, 发送FIN后socket send buffer中数据会被发送至对端; 不影响socket receive buffer</td>
+</tr>
+<tr>
+<td align="center">close, l_onoff &#x3D; 0</td>
+<td align="center">socket不再接收或发送数据; socket send buffer中数据会被发送至对端. 若socket descriptor的reference count为0, 则开始TCP connection termination, 丢弃socket receive receive buffer中的数据</td>
+</tr>
+<tr>
+<td align="center">close, l_onoff &#x3D; 1, l_linger &#x3D; 0</td>
+<td align="center">socket不再接收或发送数据; 若socket descriptor的reference count为0, 则发送RST至对端, 丢弃socket send buffer和socket receive buffer中数据</td>
+</tr>
+<tr>
+<td align="center">close, l_onoff &#x3D; 1, l_linger !&#x3D; 0</td>
+<td align="center">socket不再接收或发送数据; 若socket descriptor的reference count为0, 则发送FIN至对端, 等待socket send buffer中数据被发送和确认, 或linger time倒计时结束; 抛弃socket receive buffer中数据</td>
+</tr>
+</tbody></table>
+<h3 id="3-7-SO-OOBINLINE"><a href="#3-7-SO-OOBINLINE" class="headerlink" title="3.7 SO_OOBINLINE"></a>3.7 SO_OOBINLINE</h3><p>当开启该option后, out-of-band data将会被放入normal input queue中. </p>
+<h3 id="3-8-SO-RCVBUF-and-SO-SNDBUF"><a href="#3-8-SO-RCVBUF-and-SO-SNDBUF" class="headerlink" title="3.8 SO_RCVBUF and SO_SNDBUF"></a>3.8 SO_RCVBUF and SO_SNDBUF</h3><p>每个socket都有自己的send buffer和receive buffer. TCP, UDP和SCTP都有receive buffer, 进程会从receive buffer中读取数据. 对于TCP而言, 不存在receive buffer溢出情况, 因为TCP有flow control: 每次数据交换都会告诉对端receive buffer的剩余空间大小, 对端会据此发送相应大小的数据; 若对端并不遵守flow control, 则多余数据会被抛弃. 由于UDP没有flow control, 超出receive buffer空间的大量数据涌入会导致数据丢失.<br>SO_RCVBUF和SO_SNDBUF可用于修改buffer size. 当设置TCP socket receive buffer size时, 调用<code>setsockopt()</code>的时机十分重要, 因为TCP window scale option会在SYN中交换. 对于client, 应在调用<code>connect()</code>之前设置buffer size; 对于serber, 应在调用<code>listen()</code>之前设置buffer size.<br>TCP socket buffer size应至少为四倍的MSS, 因为TCP使用<strong>fast recovery algorithm</strong>来检测发出的数据是否丢失: 当发送端收到三次DACK时说明数据丢失, 需要重发指定的数据. 为防止buffer空间被浪费, TCP socket buffer的大小应为MSS的偶数倍. </p>
+<h3 id="3-9-SO-RCVLOWAT-and-SO-SNDLOWAT"><a href="#3-9-SO-RCVLOWAT-and-SO-SNDLOWAT" class="headerlink" title="3.9 SO_RCVLOWAT and SO_SNDLOWAT"></a>3.9 SO_RCVLOWAT and SO_SNDLOWAT</h3><p>每个socket都有一个receive low-water mark和send low-water mark, 可通过这两个options设置. receive low-water mark作为<code>select()</code>判断socket receive buffer中数据是否可读的条件, 默认为1字节; send low-water mark作为<code>select()</code>判断socket send buffer中数据是否可写的条件, 通常为2048字节(TCP); 对于UDP来说, 由于发送的数据不需要备份保留, 所以socket send buffer中的可用空间始终不变, 只要socket send buffer大于low-water mark, UDP socket始终处于可写状态.</p>
+<h3 id="3-10-SO-RCVTIMEO-and-SO-SNDTIMEO"><a href="#3-10-SO-RCVTIMEO-and-SO-SNDTIMEO" class="headerlink" title="3.10 SO_RCVTIMEO and SO_SNDTIMEO"></a>3.10 SO_RCVTIMEO and SO_SNDTIMEO</h3><p>用于设置socket receive和send的timeout.</p>
+<ul>
+<li>受timeout影响的receive function: <code>read()</code>, <code>readv()</code>, <code>recdv()</code>, <code>recvfrom()</code>, <code>recvmsg()</code></li>
+<li>受timeout影响的send function: <code>write()</code>, <code>writev()</code>, <code>send()</code>, <code>sendto()</code>, <code>sendmsg()</code>.</li>
+</ul>
+<h3 id="3-11-SO-REUSEADDR-and-SO-REUSEPORT"><a href="#3-11-SO-REUSEADDR-and-SO-REUSEPORT" class="headerlink" title="3.11 SO_REUSEADDR and SO_REUSEPORT"></a>3.11 SO_REUSEADDR and SO_REUSEPORT</h3><p>SO_REUSEADDR socket option有以下用途:</p>
+<ol>
+<li>SO_REUSEADDR允许listening server绑定已被connected socket使用的端口, 情况如下:<ol>
+<li>启动一个listening server</li>
+<li>某client请求连接, 使用一个child process作为connected socket处理client请求</li>
+<li>listening server终止运行, 但其child process仍在运行</li>
+<li>另一个listening server启动并使用相同端口</li>
+</ol>
+</li>
+<li>若server使用wildcard address作为local address, SO_REUSEADDR socket option允许其他server在使用不同的local IP address的前提下复用port. 假设local host的primary IP address为<code>198.69.10.2</code>, 另外两个IP aliases为<code>198.69.10.128</code>和<code>198.69.10.129</code>. Server A使用wildcard address和80端口; Server B使用<code>198.69.10.128</code>和80端口(使用SO_REUSEADDR), 第三个Server C使用<code>198.69.10.129</code>和80端口(使用SO_REUSEADDR). 目的地址为<code>198.69.10.128</code>且端口号为80的请求由server B接收; 目的地址为<code>198.69.10.129</code>且端口号为80的请求由server C接收; server A负责接收目的地址为<code>198.69.10.2</code>且端口号为80的请求.</li>
+<li>SO_REUSEADDR允许同一进程下的多个socket使用同一port时, 只要每个socket绑定不同的local IP address即可. 通常UDP server会使用这一特性, 因为当系统不支持IP_RECVDSTADDR socket option时(无法获取请求的destination address), UDP server接收请求后, 无法确定使用哪个local address作为source address回复client; 而TCP server可调用<code>getsockname()</code>获取目的地址.</li>
+<li>SO_REUSEADDR允许多个socket绑定同一IP address和port, 只支持UDP socket. 该特性一般用于multicast(组播), 多个socket将local address设为相同组播地址和端口, 但发来的数据destination address为该组播地址且端口相同时, 每个socket都会收到一份数据; 但若多个socket使用同一unicast(单播)地址, 则不同系统会决定不同socket获得数据.</li>
+</ol>
+<p>4.4BSD引入SO_REUSEPORT socket option用于支持组播数据传输, 其用途覆盖了SO_REUSEADDR中的第4个特性:</p>
+<ol>
+<li>SO_REUSEPORT允许多个socket绑定相同IP address和port.</li>
+<li>若socket并不与其他socket的IP address和port相同, 则不能设置该option</li>
+</ol>
+<p>SO_REUSEADDR socket option存在一个安全隐患: 当socket A绑定wildcard address和port 5555后, socket B绑定198.69.10.2和port 5000会导致之后所有的流量转向socket B. 因此所有绑定相同port的specific IP address都需要superuser权限. </p>
+<h3 id="3-12-SO-TYPE"><a href="#3-12-SO-TYPE" class="headerlink" title="3.12 SO_TYPE"></a>3.12 SO_TYPE</h3><p>该option返回socket type, 例如SOCK_STREAM或SOCK_DGRAM.</p>
+<h3 id="3-13-SO-USELOOPBACK"><a href="#3-13-SO-USELOOPBACK" class="headerlink" title="3.13 SO_USELOOPBACK"></a>3.13 SO_USELOOPBACK</h3><p>该option只用于routing domain. 默认情况下开启该option, 使得socket收到所有发出数据的备份.</p>
+<h2 id="4-IPv4-Socket-Options"><a href="#4-IPv4-Socket-Options" class="headerlink" title="4. IPv4 Socket Options"></a>4. IPv4 Socket Options</h2><h3 id="4-1-IP-HDRINCL"><a href="#4-1-IP-HDRINCL" class="headerlink" title="4.1 IP_HDRINCL"></a>4.1 IP_HDRINCL</h3><p>通常kernel会为每个datagram设置IP header, 但通过该option可自行设置. 以下几种情况IP header还是会被kernel修改:</p>
+<ul>
+<li>IP header checksum会被自动计算并保存</li>
+<li>若进程将IP identification设置为0, kernel会自动设置该field</li>
+<li>若进程将source IP address设置为<code>INADDR_ANY</code>, kernel会将其置为外出接口的primary IP address</li>
+<li>IP option的设置与系统实现有关. 有些系统会将所有IP_OPTIONS socket option设置的IP options添加到IP header中; 有些系统则只会添加部分IP options</li>
+<li>有些系统要求某些field以host byte order写入, 而其他系统要求某些field以network byte order写入</li>
+</ul>
+<h3 id="4-2-IP-OPTIONS"><a href="#4-2-IP-OPTIONS" class="headerlink" title="4.2 IP_OPTIONS"></a>4.2 IP_OPTIONS</h3><p>该option可用于为IPv4 header设置IP option.</p>
+<h3 id="4-3-IP-RECVDSTADDR"><a href="#4-3-IP-RECVDSTADDR" class="headerlink" title="4.3 IP_RECVDSTADDR"></a>4.3 IP_RECVDSTADDR</h3><p>该option用于获取接收到的UDP datagram中的destination IP address.</p>
+<h3 id="4-4-IP-RECVIF"><a href="#4-4-IP-RECVIF" class="headerlink" title="4.4 IP_RECVIF"></a>4.4 IP_RECVIF</h3><p>该option用于获取接收到的UDP datagram中的interface index.</p>
+<h3 id="4-5-IP-TOIS"><a href="#4-5-IP-TOIS" class="headerlink" title="4.5 IP_TOIS"></a>4.5 IP_TOIS</h3><p>该option用于设置TOS field(type-of-service), 其中包括DSCP和ECN fields. 应用设置一个与运营商协商好的DSCP value来提供更好的网络服务, 例如: 低延迟或高流量的数据传输.</p>
+<h3 id="4-6-IP-TTL"><a href="#4-6-IP-TTL" class="headerlink" title="4.6 IP_TTL"></a>4.6 IP_TTL</h3><p>该option可设置或获取socket中的TTL值. 默认情况下, TCP和UDP socket的TTL为64, raw socket的TTL为255, 但无法从接收的datagram中获取TTL.</p>
+<h2 id="5-ICMPv6-Socket-Option"><a href="#5-ICMPv6-Socket-Option" class="headerlink" title="5. ICMPv6 Socket Option"></a>5. ICMPv6 Socket Option</h2><p>ICMPv6只有一个socket option: <code>ICMPV6_FILTER</code>. 该option可规定socket接收哪些ICMPv6 message type. 包含ICMPv6 message type的结构体为<code>icmpv6_filter</code>.</p>
+<h2 id="6-IPv6-Socket-Options"><a href="#6-IPv6-Socket-Options" class="headerlink" title="6. IPv6 Socket Options"></a>6. IPv6 Socket Options</h2><h3 id="6-1-IPV6-CHECKSUM"><a href="#6-1-IPV6-CHECKSUM" class="headerlink" title="6.1 IPV6_CHECKSUM"></a>6.1 IPV6_CHECKSUM</h3><p>该option用于开启或关闭checksum processing. 若该option为非负值, kernel为每个发出的packet计算并添加checksum; 并验证每个接收到的packet的正确性. 若该option为-1, 则kernel不会计算checksum; 也不会验证接收到的packet中的checksum.</p>
+<h3 id="6-2-IPV6-DONTFRAG"><a href="#6-2-IPV6-DONTFRAG" class="headerlink" title="6.2 IPV6_DONTFRAG"></a>6.2 IPV6_DONTFRAG</h3><p>该option用于停止UDP和raw socket的自动分片. 若packet大于输出接口的MTU, 则自动丢弃该packet, 且不会返回任何错误. 若启动该option, 推荐使用IPV6_RECVPATHMTU socket option检测MTU的变化.</p>
+<h3 id="6-3-IPV6-NEXTHOP"><a href="#6-3-IPV6-NEXTHOP" class="headerlink" title="6.3 IPV6_NEXTHOP"></a>6.3 IPV6_NEXTHOP</h3><p>该option用于指定下一跳地址, 需要superuser权限.</p>
+<h3 id="6-4-IPV6-PATHMTU"><a href="#6-4-IPV6-PATHMTU" class="headerlink" title="6.4 IPV6_PATHMTU"></a>6.4 IPV6_PATHMTU</h3><p>该option无法设置, 只能读取. 用于表示当前path-MTU discovery下的MTU值.</p>
+<h3 id="6-5-IPV6-RECVDSTOPTS"><a href="#6-5-IPV6-RECVDSTOPTS" class="headerlink" title="6.5 IPV6_RECVDSTOPTS"></a>6.5 IPV6_RECVDSTOPTS</h3><p>该option允许进程通过<code>recvmsg()</code>获取IPv6 packet中的destination options. 默认为关闭状态.</p>
+<h3 id="6-6-IPV6-RECVHOPLIMIT"><a href="#6-6-IPV6-RECVHOPLIMIT" class="headerlink" title="6.6 IPV6_RECVHOPLIMIT"></a>6.6 IPV6_RECVHOPLIMIT</h3><p>该option允许进程通过<code>recvmsg()</code>获取IPv6 packet中的hop limit field. 默认为关闭状态.</p>
+<h3 id="6-7-IPV6-RECVHOPOPTS"><a href="#6-7-IPV6-RECVHOPOPTS" class="headerlink" title="6.7 IPV6_RECVHOPOPTS"></a>6.7 IPV6_RECVHOPOPTS</h3><p>该option允许进程通过<code>recvmsg()</code>获取IPv6 packet中的hop-by-hop options. 默认为关闭状态.</p>
+<h3 id="6-8-IPV6-RECVPATHMTU"><a href="#6-8-IPV6-RECVPATHMTU" class="headerlink" title="6.8 IPV6_RECVPATHMTU"></a>6.8 IPV6_RECVPATHMTU</h3><p>该option允许进程通过<code>recvmsg()</code>获取IPv6 packet中的path MTU值.</p>
+<h3 id="6-9-IPV6-RECVPKTINFO"><a href="#6-9-IPV6-RECVPKTINFO" class="headerlink" title="6.9 IPV6_RECVPKTINFO"></a>6.9 IPV6_RECVPKTINFO</h3><p>该option允许进程通过<code>recvmsg()</code>获取IPv6 packet中的两种信息: destination IPv6 address和interface index.</p>
+<h3 id="6-10-IPV6-RECVRTHDR"><a href="#6-10-IPV6-RECVRTHDR" class="headerlink" title="6.10 IPV6_RECVRTHDR"></a>6.10 IPV6_RECVRTHDR</h3><p>该option允许进程通过<code>recvmsg()</code>获取IPv6 packet中的routing header. 默认为关闭状态.</p>
+<h3 id="6-11-IPV6-RECVTCLASS"><a href="#6-11-IPV6-RECVTCLASS" class="headerlink" title="6.11 IPV6_RECVTCLASS"></a>6.11 IPV6_RECVTCLASS</h3><p>该option允许进程通过<code>recvmsg()</code>获取IPv6 packet中的traffic class, 其中包括DSCP和ECN fields. 默认为关闭状态.</p>
+<h3 id="6-12-IPV6-UNICAST-HOPS"><a href="#6-12-IPV6-UNICAST-HOPS" class="headerlink" title="6.12 IPV6_UNICAST_HOPS"></a>6.12 IPV6_UNICAST_HOPS</h3><p>与IPv4的IP_TTL类似, 可通过该option获取或设置当前socket的hop limit值. </p>
+<h3 id="6-13-IPV6-USE-MIN-MTU"><a href="#6-13-IPV6-USE-MIN-MTU" class="headerlink" title="6.13 IPV6_USE_MIN_MTU"></a>6.13 IPV6_USE_MIN_MTU</h3><p>该option用于决定socket使用path MTU discovery或minimum IPv6 MTU:</p>
+<ol>
+<li>option &#x3D; 1: 任何目的地址都使用minimum MTU来避免分片</li>
+<li>option &#x3D; 0: 任何目的地址都使用path MTU discovery</li>
+<li>option &#x3D; -1: 单播地址使用path MTU discovery; 组播地址使用minimum MTU</li>
+</ol>
+<h3 id="6-14-IPV6-V6ONLY"><a href="#6-14-IPV6-V6ONLY" class="headerlink" title="6.14 IPV6_V6ONLY"></a>6.14 IPV6_V6ONLY</h3><p>该option要求socket只能发送和接收IPv6 packet. 默认为关闭状态.</p>
+<h2 id="7-TCP-Socket-Options"><a href="#7-TCP-Socket-Options" class="headerlink" title="7. TCP Socket Options"></a>7. TCP Socket Options</h2><h3 id="7-1-TCP-MAXSEG"><a href="#7-1-TCP-MAXSEG" class="headerlink" title="7.1 TCP_MAXSEG"></a>7.1 TCP_MAXSEG</h3><p>该option允许进程获取或设置TCP connection中的MSS, 表示单个TCP sgment所能传输的最大字节数. MSS会在本端MSS和对端的MSS中取一个最小值, 对端MSS会在TCP three-way handshake中传输给本端; 若TCP支持path MTU discovery, MSS也可能在数据交换时修改. 并不是所有系统都支持修改MSS, 对于4.4BSD来说, 只能设置更小的MSS.</p>
+<h3 id="7-2-TCP-NODELAY"><a href="#7-2-TCP-NODELAY" class="headerlink" title="7.2 TCP_NODELAY"></a>7.2 TCP_NODELAY</h3><p>该option可用于在TCP connection中停止使用Nagle algorithm, 默认情况下启动该算法. Nagle algorithm用于减少发出small packet的数量: 其中, small packet表示数据小于MSS的packet, 若socket中有还没得到ACK确认的数据, 则暂时不发送small packet. 至于为什么防止发送small packet: TCP header有20字节, IP header有20字节, 若数据只有几个字节, 则sement的有效传输效率很低.<br>Rlogin和Telnet client会产生大量small packet, 因为用户每次敲击键盘都会产生单独的packet. 对于fast LAN, Nagle algorithm不会产生太大影响; 但对于slow WAN, nagle algorithm会将网络延迟放大. 例如: Telnet client需要向server发送**&quot;hello&quot;**, 每个字符输入的间隔为250 ms, client与server的RTT为600 ms. 当不开启Nagle algorithm时, 情况如下图:<br><img src="/images/Network/UNP/7-7-svr-with-nagle-disabled.gif" alt="Six characters echoed by server with Nagle algorithm disabled"></p>
+<p>可以看到, 每个packet都得到server的ACK, 总共需要1800 ms. 但当开启Nagle algorithm后, 情况如下图:<br><img src="/images/Network/UNP/7-7-svr-with-nagle-enabled.gif" alt="Six characters echoed by server with Nagle algorithm enabled"></p>
+<p>可以看到, client只有收到ACK后才发送packet, 导致整个传输用时2400 ms. 通常Nagle algorithm会搭配另一个TCP algorithm: delayed ACK algorithm, 该算法为了等待本端发送数据, 并将数据和ACK一起发送至对端, 会在收到对端数据后推迟一段时间(50-200 ms), 可节省一个TCP segment. 但对于server端不需要回复数据的情况, delayed ACK algorithm会整体传输速率, 这时应设置TCP_NODELAY socket option.<br>还有另外一种需要关闭Nagle algorithm的情况: client需要向server发送多段request, server根据全部的request决定回复内容. 例如: client总共需要向server发送400 byte的request, 其中前4 byte为request type, 后396 byte为request data. 当client调用<code>write()</code>发送request type后, 由于还未得到ACK确认, 因此client端停止发送request data; server端接收到request type后需要等待request data才能做出回应, 因此只有等delayed ACK algorithm倒计时结束才能发送ACK. 对于这种情况, 有3种解决方法:</p>
+<ol>
+<li>使用<code>writev()</code>替代<code>write()</code>, <code>writev()</code>可实现一次I&#x2F;O call中写入多个数据 (推荐方法)</li>
+<li>将request type和request data写入同一buffer中, 并对该buffer调用<code>write()</code></li>
+<li>使用TCP_NODELAY socket option关闭Nagle algorithm, 并调用<code>write()</code>两次 (不推荐)</li>
+</ol>
+<h2 id="8-fcntl-Function"><a href="#8-fcntl-Function" class="headerlink" title="8. fcntl Function"></a>8. fcntl Function</h2><p>fcntl表示<strong>file control</strong>. fcntl, ioctl和routing socket的对比总结如下:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Operation</th>
+<th align="center">fcntl</th>
+<th align="center">ioctl</th>
+<th align="center">Routing socket</th>
+<th align="center">POSIX</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Set socket for nonblocking I&#x2F;O</td>
+<td align="center">F_SETFL, O_NONBLOCK</td>
+<td align="center">FIONBIO</td>
+<td align="center"></td>
+<td align="center">fcntl</td>
+</tr>
+<tr>
+<td align="center">Set socket for signal-driven I&#x2F;O</td>
+<td align="center">F_SETFL, O_ASYNC</td>
+<td align="center">FIOASYNC</td>
+<td align="center"></td>
+<td align="center">fcntl</td>
+</tr>
+<tr>
+<td align="center">Set socket owner</td>
+<td align="center">F_SETOWN</td>
+<td align="center">SIOCSPGRP or FIOSETOWN</td>
+<td align="center"></td>
+<td align="center">fcntl</td>
+</tr>
+<tr>
+<td align="center">Get socket owner</td>
+<td align="center">F_GETOWN</td>
+<td align="center">SIOCGPGRP or FIOGETOWN</td>
+<td align="center"></td>
+<td align="center">fcntl</td>
+</tr>
+<tr>
+<td align="center">Get # bytes in socket receive buffer</td>
+<td align="center"></td>
+<td align="center">FIONREAD</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Test for socket at out-of-band mark</td>
+<td align="center"></td>
+<td align="center">SIOCATMARK</td>
+<td align="center"></td>
+<td align="center">sockatmark</td>
+</tr>
+<tr>
+<td align="center">Obtain interface list</td>
+<td align="center"></td>
+<td align="center">SIOCGIFCONF</td>
+<td align="center">sysctl</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Interface operations</td>
+<td align="center"></td>
+<td align="center">SIOC[GS]IFxxx</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">ARP cache operations</td>
+<td align="center"></td>
+<td align="center">SIOCxARP</td>
+<td align="center">RTM_xxx</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Routing table operations</td>
+<td align="center"></td>
+<td align="center">SIOCxxxRT</td>
+<td align="center">RTM_xxx</td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<p>前五个operations可被所有进程使用; 中间两个为interface operations; 最后两个operations用于ARP和routing table, 只能由管理员进程操作. </p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @brief perform a operation on the open file descriptor fd</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, ... <span class="comment">/* arg */</span> )</span>;</span><br></pre></td></tr></table></figure>
+<p>网络编程中, <code>fcntl()</code>用于以下情况:</p>
+<ul>
+<li><code>F_SETFL</code>和<code>N_NONBLOCK</code>: socket变为nonblocking I&#x2F;O</li>
+<li><code>F_SETFL</code>和<code>O_ASYNC</code>: socket变为signal-driven I&#x2F;O, 当ocket状态改变时, 进程收到<code>SIGIO</code> signal</li>
+<li><code>F_SETOWN</code>: 可设置socket owner(process ID或process group ID), 用于接收<code>SIGIO</code>和<code>SIGURG</code> signal</li>
+</ul>
+<p>以下为设置或取消nonblocking I&#x2F;O:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> flags;</span><br><span class="line">flags |= O_NONBLOCK;</span><br><span class="line"><span class="keyword">if</span> (fcntl(fd, F_SETFL, flags) &lt; <span class="number">0</span>)</span><br><span class="line">  err_sys(<span class="string">&quot;F_SETFL error&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> flags;</span><br><span class="line">flags &amp;= ~O_NONBLOCK;</span><br><span class="line"><span class="keyword">if</span> (fcntl(fd, F_SETFL, flags) &lt; <span class="number">0</span>)</span><br><span class="line">  err_sys(<span class="string">&quot;F_SETFL error&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>当设置socket owner时, F_SETOWN可接收两种参数:</p>
+<ul>
+<li>positive integer: process ID</li>
+<li>negative integer: 其绝对值为process group ID</li>
+</ul>
+<p>当socket owner为process ID时, 只有该进程会收到signal; 当socket owner为process group ID时, process group中的所有进程都会收到signal; 当socket刚被创建时, 其不拥有socket owner. 但当connected socket被创建时, 会从listening socket继承socket owner.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/80a7.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Elementary UDP Sockets</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/e03d.html">
+        <span class="next-text nav-default">I/O Multiplexing</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/abba.html';
+  var disqus_title = "Socket Options";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="System Design - Chat System"/>
+
+
+
+
+  <meta name="keywords" content="System Design," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/601d.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/601d.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/601d.html"/>
+
+
+<meta name="description" content="1. Understand the problem and establish design scope What kind of chat app shall we design? 1 on 1 or group based: It should support both 1 on 1 and group chat Is this a mobile app or a web app: Both">
+<meta property="og:type" content="article">
+<meta property="og:title" content="System Design - Chat System">
+<meta property="og:url" content="https://zaf1ro.github.io/p/601d.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Understand the problem and establish design scope What kind of chat app shall we design? 1 on 1 or group based: It should support both 1 on 1 and group chat Is this a mobile app or a web app: Both">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-chat-service.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-polling.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-long-polling.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-websocket.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-high-level-design.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-adjusted-high-level-design.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-data-model-1-on-1-chat.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-data-model-group-chat.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-service-discovery.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-1-on-1-chat-flow.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-message-sync.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-group-chat-flow.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-user-disconnection.jpg">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-online-status-fanout.jpg">
+<meta property="article:published_time" content="2024-04-18T16:42:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.053Z">
+<meta property="article:tag" content="System Design">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/Interview/12-chat-service.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+System Design - Chat System - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understand-the-problem-and-establish-design-scope"><span class="toc-text">1. Understand the problem and establish design scope</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Propose-high-level-design-and-get-buy-in"><span class="toc-text">2. Propose high-level design and get buy-in</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Polling"><span class="toc-text">2.1 Polling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Long-polling"><span class="toc-text">2.2 Long polling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-WebSocket"><span class="toc-text">2.3 WebSocket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Long-Polling-vs-WebSocket"><span class="toc-text">2.4 Long Polling vs WebSocket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-High-Level-Design"><span class="toc-text">2.4 High-Level Design</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-Stateless-Services"><span class="toc-text">2.4.1 Stateless Services</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-2-Stateful-Service"><span class="toc-text">2.4.2 Stateful Service</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-3-Third-party-integration"><span class="toc-text">2.4.3 Third-party integration</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-4-Scalability"><span class="toc-text">2.4.4 Scalability</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-5-Storage"><span class="toc-text">2.4.5 Storage</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Data-models"><span class="toc-text">2.5 Data models</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-5-1-Message-table-for-1-on-1-chat"><span class="toc-text">2.5.1 Message table for 1 on 1 chat</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-5-1-Message-table-for-group-chat"><span class="toc-text">2.5.1 Message table for group chat</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-5-1-Message-ID"><span class="toc-text">2.5.1 Message ID</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Design-deep-dive"><span class="toc-text">3. Design deep dive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Service-discovery"><span class="toc-text">3.1 Service discovery</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Message-flows"><span class="toc-text">3.2 Message flows</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-1-on-1-chat-flow"><span class="toc-text">3.2.1 1 on 1 chat flow</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-Message-synchronization-across-multiple-devices"><span class="toc-text">3.2.2 Message synchronization across multiple devices</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-Small-group-chat-flow"><span class="toc-text">3.2.3 Small group chat flow</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Online-presence"><span class="toc-text">3.3 Online presence</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-User-login"><span class="toc-text">3.3.1 User login</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-User-logout"><span class="toc-text">3.3.2 User logout</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-User-disconnection"><span class="toc-text">3.3.3 User disconnection</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-Online-status-fanout"><span class="toc-text">3.3.4 Online status fanout</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Wrap-up"><span class="toc-text">4. Wrap up</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          System Design - Chat System
+        
+      </h1>
+      <time class="post-time">
+          04/18/24
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Understand-the-problem-and-establish-design-scope"><a href="#1-Understand-the-problem-and-establish-design-scope" class="headerlink" title="1. Understand the problem and establish design scope"></a>1. Understand the problem and establish design scope</h2><ul>
+<li>What kind of chat app shall we design? 1 on 1 or group based: It should support both 1 on 1 and group chat</li>
+<li>Is this a mobile app or a web app: Both</li>
+<li>What is the scale of this app: It should support 50 million daily active users (DAU)</li>
+<li>For group chat, what is the group member limit: A maximum of 100 people</li>
+<li>What features are important for the chat app: 1 on 1 chat, group chat, online indicator. The system only supports text messages.</li>
+<li>Is there a message size limit: Yes, text length should be less than 100,000 characters long</li>
+<li>Is end-to-end encryption required: Not required for now but we will discuss that if time allows</li>
+<li>How long shall we store the chat history: Forever</li>
+</ul>
+<p>Features of a chat app:</p>
+<ul>
+<li>A one-on-one chat with low delivery latency</li>
+<li>Small group chat (max of 100 people)</li>
+<li>Online presence</li>
+<li>Multiple device support</li>
+<li>Push notifications</li>
+</ul>
+<h2 id="2-Propose-high-level-design-and-get-buy-in"><a href="#2-Propose-high-level-design-and-get-buy-in" class="headerlink" title="2. Propose high-level design and get buy-in"></a>2. Propose high-level design and get buy-in</h2><p>In a chat system, clients can be either mobile applications or web applications. Clients do not communicate directly with each other. Instead, client connects to a chat service, which supports all the features mentioned above. The chat service must support the following functions:</p>
+<ul>
+<li>Receive messages from other client</li>
+<li>Find the right recipients for each message and relay the message to the recipients</li>
+<li>If a recipient is not online, hold the messages for that recipient on the server until she is online</li>
+</ul>
+<p><img src="/images/System-Design/Interview/12-chat-service.jpg" alt="Chat Service"></p>
+<p>When a client intends to start a chat, it connects the chats service using one or more network protocols:</p>
+<ul>
+<li>on the sender side: HTTP is a fine option, and many chat applications such as Facebook used HTTP to send messages</li>
+<li>on the receiver side: Since HTTP is client-initiated, it is not trivial to send messages from the server. Other techniques are used to simulate a server-initiated connection:  polling, long polling, and WebSocket.</li>
+</ul>
+<h3 id="2-1-Polling"><a href="#2-1-Polling" class="headerlink" title="2.1 Polling"></a>2.1 Polling</h3><p><img src="/images/System-Design/Interview/12-polling.jpg" alt="Polling"></p>
+<p>Client periodically asks the server if there are messages available. The cost of polling depends on polling frequency. </p>
+<h3 id="2-2-Long-polling"><a href="#2-2-Long-polling" class="headerlink" title="2.2 Long polling"></a>2.2 Long polling</h3><p><img src="/images/System-Design/Interview/12-long-polling.jpg" alt="Long Polling"></p>
+<p>In long polling, a client holds the connection open until</p>
+<ul>
+<li>there are actually new messages available</li>
+<li>timeout threshold has been reached</li>
+</ul>
+<p>Once the client receives new messages or reaches timeout threshold, it immediately sends another request to the server. Long polling has a few drawbacks:</p>
+<ul>
+<li>Sender and receiver may not connect to the same chat server. HTTP servers are usually stateless, the server that receives the message might not have a long-polling connection with the client who receives the message.</li>
+<li>A server has no good way to tell if a client is disconnected</li>
+<li>If a user does not chat much, long polling still makes periodic connections after timeouts</li>
+</ul>
+<h3 id="2-3-WebSocket"><a href="#2-3-WebSocket" class="headerlink" title="2.3 WebSocket"></a>2.3 WebSocket</h3><p><img src="/images/System-Design/Interview/12-websocket.jpg" alt="WebSocket"></p>
+<p>WebSocket connection is initiated by the client. It is bi-directional and persistent. Through this persistent connection, a server could send updates to a client. By using WebSocket for both sending and receiving.</p>
+<h3 id="2-4-Long-Polling-vs-WebSocket"><a href="#2-4-Long-Polling-vs-WebSocket" class="headerlink" title="2.4 Long Polling vs WebSocket"></a>2.4 Long Polling vs WebSocket</h3><ul>
+<li>Long Polling:<ul>
+<li>Advantages: Long polling is implemented on <code>XMLHttpRequest</code>, so nearly all devices support long polling</li>
+<li>Disadvantages: more resource intensive on the server than WebSocket; could have message ordering issue if a client has two browser tabs open consuming the same server resource</li>
+</ul>
+</li>
+<li>WebSockets:<ul>
+<li>Advantages: low latency since only one connection and Full-duplex asynchronous messaging; HTTP headers are not sent on each server request, reduce the size of data payloads.</li>
+<li>Disadvantages: don’t automatically recover when connections are terminated; Browsers older than 2011 aren’t able to support</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-4-High-Level-Design"><a href="#2-4-High-Level-Design" class="headerlink" title="2.4 High-Level Design"></a>2.4 High-Level Design</h3><p>Most features (sign up, login, user profile, etc) of a chat application could use the traditional request&#x2F;response method over HTTP. The chat system is broken down into three categories: stateless services, stateful services, and third-party integration.<br><img src="/images/System-Design/Interview/12-high-level-design.jpg" alt="High Level Design"></p>
+<h4 id="2-4-1-Stateless-Services"><a href="#2-4-1-Stateless-Services" class="headerlink" title="2.4.1 Stateless Services"></a>2.4.1 Stateless Services</h4><p>Stateless services are traditional public-facing request&#x2F;response services, used to manage the login, signup, user profile, etc. Stateless services sit behind a load balancer. These services can be monolithic or individual microservices. </p>
+<h4 id="2-4-2-Stateful-Service"><a href="#2-4-2-Stateful-Service" class="headerlink" title="2.4.2 Stateful Service"></a>2.4.2 Stateful Service</h4><p>The only stateful service is the chat service. The service is stateful because each client maintains a persistent network connection to a chat server. A client doesn&#39;t switch to another chat server as long as the server is still available. </p>
+<h4 id="2-4-3-Third-party-integration"><a href="#2-4-3-Third-party-integration" class="headerlink" title="2.4.3 Third-party integration"></a>2.4.3 Third-party integration</h4><p>Push notification is the most important third-party integration, refer to chapter 10</p>
+<h4 id="2-4-4-Scalability"><a href="#2-4-4-Scalability" class="headerlink" title="2.4.4 Scalability"></a>2.4.4 Scalability</h4><p>Assuming each user connection needs 10K of memory, 1M concurrent users, it only needs about 10GB of memory to hold all the connections in a single server; But it may raise a big red flag in for the interview: No interviewer would accept a design in such scale.</p>
+<p><img src="/images/System-Design/Interview/12-adjusted-high-level-design.jpg" alt="Adjusted High Level Design"></p>
+<p>Client maintains a persistent WebSocket connection to a chat server for real-time messaging:</p>
+<ul>
+<li>Chat servers facilitate message sending&#x2F;receiving</li>
+<li>Presence servers manage online&#x2F;offline status</li>
+<li>API servers handle everything including user login, signup, change profile, etc</li>
+<li>Notification servers send push notifications</li>
+<li>The key-value store is used to store chat history</li>
+</ul>
+<h4 id="2-4-5-Storage"><a href="#2-4-5-Storage" class="headerlink" title="2.4.5 Storage"></a>2.4.5 Storage</h4><p>To make an decision on the type of database, we will examine the data types and read&#x2F;write patterns. Two types of data exist in a typical chat system:</p>
+<ul>
+<li>generic data: user profile, setting, user friends list. These data are stored in robust and reliable relational databases. Replication and sharding are common techniques to satisfy availability and scalability.</li>
+<li>unique to chat system: chat history. It is important to understand the read&#x2F;write pattern:<ul>
+<li>The amount of data is enormous</li>
+<li>Only recent chats are accessed frequently. Users don&#39;t look up for old chats.</li>
+<li>users might use features that require random access of data, such as search, view your mentions, jump to specific messages, etc</li>
+<li>The read to write ratio is about 1:1 for 1 on 1 chat</li>
+</ul>
+</li>
+</ul>
+<p>We choose key-value stores for the following reasons:</p>
+<ul>
+<li>Allow easy horizontal scaling</li>
+<li>Provide very low latency to access data</li>
+<li>When the indexes grow large, random access is expensive in relational database</li>
+<li>Adopted by other proven reliable chat application. For example, Facebook messenger uses HBase, and Discord uses Cassandra</li>
+</ul>
+<h3 id="2-5-Data-models"><a href="#2-5-Data-models" class="headerlink" title="2.5 Data models"></a>2.5 Data models</h3><h4 id="2-5-1-Message-table-for-1-on-1-chat"><a href="#2-5-1-Message-table-for-1-on-1-chat" class="headerlink" title="2.5.1 Message table for 1 on 1 chat"></a>2.5.1 Message table for 1 on 1 chat</h4><p>The primary key is <code>message_id</code>, which helps to decide message sequence. We cannot rely on <code>created_at</code> to decide the message sequence because two messages can be created at the same time.<br><img src="/images/System-Design/Interview/12-data-model-1-on-1-chat.jpg" alt="1-on-1 Chat Data Model"></p>
+<h4 id="2-5-1-Message-table-for-group-chat"><a href="#2-5-1-Message-table-for-group-chat" class="headerlink" title="2.5.1 Message table for group chat"></a>2.5.1 Message table for group chat</h4><p>The composite primary key is <code>(channel_id, message_id)</code>, <code>channel_id</code> is the partition key because all queries in a group chat operate in a channel.<br><img src="/images/System-Design/Interview/12-data-model-group-chat.jpg" alt="Group Chat Data Model"></p>
+<h4 id="2-5-1-Message-ID"><a href="#2-5-1-Message-ID" class="headerlink" title="2.5.1 Message ID"></a>2.5.1 Message ID</h4><p><code>message_id</code> must satisfy the following two requirements:</p>
+<ul>
+<li>IDs must be unique</li>
+<li>IDs should be sortable by time: new rows have higher IDs than old ones</li>
+</ul>
+<p>Solution: </p>
+<ol>
+<li><code>auto_increment</code> keyword in MySql.</li>
+<li>use a global 64-bit sequence number generator like <code>Snowflake</code>.</li>
+<li>use local sequence number generator. The ID are only unique within a group</li>
+</ol>
+<h2 id="3-Design-deep-dive"><a href="#3-Design-deep-dive" class="headerlink" title="3. Design deep dive"></a>3. Design deep dive</h2><h3 id="3-1-Service-discovery"><a href="#3-1-Service-discovery" class="headerlink" title="3.1 Service discovery"></a>3.1 Service discovery</h3><p>The primary role of service discovery is to recommend the best chat server for a client based on the criteria like geographical location, server capacity, etc. Apache Zookeeper is a open-source solution for service discovery. It registers all the available chat servers and picks the best chat server for a client based on predefined criteria.</p>
+<p><img src="/images/System-Design/Interview/12-service-discovery.jpg" alt="Service Discovery"></p>
+<ol>
+<li>User A tries to log in to the app</li>
+<li>The load balancer sends the login request to API servers</li>
+<li>After the backend authenticates the user, service discovery finds the best chat server for user. In this example, server 2 is chosen and the server info is returned back to User A.</li>
+<li>User A connects to chat server 2 through WebSocket</li>
+</ol>
+<h3 id="3-2-Message-flows"><a href="#3-2-Message-flows" class="headerlink" title="3.2 Message flows"></a>3.2 Message flows</h3><h4 id="3-2-1-1-on-1-chat-flow"><a href="#3-2-1-1-on-1-chat-flow" class="headerlink" title="3.2.1 1 on 1 chat flow"></a>3.2.1 1 on 1 chat flow</h4><p><img src="/images/System-Design/Interview/12-1-on-1-chat-flow.jpg" alt="1 on 1 Chat Flow"></p>
+<ol>
+<li>User A sends a chat message to Chat server 1</li>
+<li>Chat server 1 obtains a message ID from the ID generator</li>
+<li>Chat server 1 sends the message to the message sync queue</li>
+<li>The message is stored in a key-value store<ul>
+<li>If User B is online, the message is forwarded to Chat server 2 where User B is connected</li>
+<li>If User B is offline, a push notification is sent from push notification (PN) servers</li>
+</ul>
+</li>
+<li>Chat server 2 forwards the message to User B</li>
+</ol>
+<h4 id="3-2-2-Message-synchronization-across-multiple-devices"><a href="#3-2-2-Message-synchronization-across-multiple-devices" class="headerlink" title="3.2.2 Message synchronization across multiple devices"></a>3.2.2 Message synchronization across multiple devices</h4><p>Assuming user A has two devices: a phone and a laptop<br><img src="/images/System-Design/Interview/12-message-sync.jpg" alt="Message Synchronization"></p>
+<ul>
+<li>When User A logs in with phone, it establishes a WebSocket connection with Chat server 1</li>
+<li>When User A logs in with laptop, also establishes a WebSocket connection with Chat server 1</li>
+</ul>
+<p>Each device maintains a variable called <code>cur_max_message_id</code>, which keeps track of the latest message ID on the device. New messages should satisfy the following two conditions:</p>
+<ul>
+<li>The recipient ID is equal to the currently logged-in user ID</li>
+<li>Message ID in the key-value store is larger than <code>cur_max_message_id</code></li>
+</ul>
+<h4 id="3-2-3-Small-group-chat-flow"><a href="#3-2-3-Small-group-chat-flow" class="headerlink" title="3.2.3 Small group chat flow"></a>3.2.3 Small group chat flow</h4><p>Assume there are 3 members in the group (User A, User B and user C)<br><img src="/images/System-Design/Interview/12-group-chat-flow.jpg" alt="Group Chat Flow"></p>
+<ol>
+<li>the message from User A is copied to each group member&#39;s message sync queue: one for User B and the second for User C. This design choice is good for small group chat because:<ul>
+<li>It simplifies message sync flow as each client only needs to check its own inbox to get new messages</li>
+<li>when the group number is small, store a copy in each recipient&#39;s inbox is not too expensive</li>
+</ul>
+</li>
+<li>Each recipient has an inbox (message sync queue) which contains messages from different senders</li>
+</ol>
+<h3 id="3-3-Online-presence"><a href="#3-3-Online-presence" class="headerlink" title="3.3 Online presence"></a>3.3 Online presence</h3><p>In the high-level design, presence servers are responsible for managing online status and communicating with clients through WebSocket. There are a few flows that will trigger online status change.</p>
+<h4 id="3-3-1-User-login"><a href="#3-3-1-User-login" class="headerlink" title="3.3.1 User login"></a>3.3.1 User login</h4><p>After a WebSocket connection is built between the client and the real-time service, user A&#39;s online status and <code>last_active_at</code> timestamp are saved in the KV store. Presence indicator shows the user is online after she logs in.</p>
+<h4 id="3-3-2-User-logout"><a href="#3-3-2-User-logout" class="headerlink" title="3.3.2 User logout"></a>3.3.2 User logout</h4><p>The online status is changed to offline in the KV store. The presence indicator shows a user is offline.</p>
+<h4 id="3-3-3-User-disconnection"><a href="#3-3-3-User-disconnection" class="headerlink" title="3.3.3 User disconnection"></a>3.3.3 User disconnection</h4><p>When a user disconnects from the internet, the persistent connection between the client and server is lost. </p>
+<ul>
+<li>When user disconnects, mark the user as offline and change the status to online when the connection re-establishes: result in poor user experience</li>
+<li>heartbeat mechanism: client sends a heartbeat event to presence servers. If presence servers receive a heartbeat event within a certain time, the user is considered as online; Otherwise, it is offline.</li>
+</ul>
+<p><img src="/images/System-Design/Interview/12-user-disconnection.jpg" alt="User Disconnection"></p>
+<h4 id="3-3-4-Online-status-fanout"><a href="#3-3-4-Online-status-fanout" class="headerlink" title="3.3.4 Online status fanout"></a>3.3.4 Online status fanout</h4><p>Presence servers use a publish-subscribe model, in which each friend pair maintains a channel. When User A&#39;s online status changes, it publishes the event to three channels, channel A-B, A-C, A-D. Those three channels are subscribed by User B, C, D.<br><img src="/images/System-Design/Interview/12-online-status-fanout.jpg" alt="Online Status Fanout"></p>
+<p>The above design is effective for a small user group. Assume a group has 100,000 members, each status change will generate 100,000 events. To solve the performance bottleneck, a possible solution is to fetch online status only when a user enters a group or manually refreshes the friend list.</p>
+<h2 id="4-Wrap-up"><a href="#4-Wrap-up" class="headerlink" title="4. Wrap up"></a>4. Wrap up</h2><ul>
+<li>chat system: support 1-to-1 chat and small group chat</li>
+<li>websocket is used for real-time communication</li>
+<li>components:<ul>
+<li>chat servers for real-time messaging</li>
+<li>presence servers for managing online presence</li>
+<li>push notification servers for sending push notifications</li>
+<li>key-value stores for chat history persistence</li>
+<li>API servers for other functionalities</li>
+</ul>
+</li>
+</ul>
+<p>talking points:</p>
+<ul>
+<li>Support media files such as photos and videos</li>
+<li>End-to-end encryption</li>
+<li>Caching messages on the client-side to reduce the data transfer between the client and server</li>
+<li>Improve load time: build a geographically distributed network to cache users&#39; data</li>
+<li>Error handling:<ul>
+<li>If a chat server goes offline, service discovery (Zookeeper) will provide a new chat server for clients to establish new connections</li>
+<li>Message resent mechanism. Retry and queueing are common techniques for resending messages</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/System-Design/">System Design</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/6c1f.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">System Design - Search Autocomplete</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/f46c.html">
+        <span class="next-text nav-default">System Design - News Feed</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/601d.html';
+  var disqus_title = "System Design - Chat System";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

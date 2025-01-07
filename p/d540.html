@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Partitioning"/>
+
+
+
+
+  <meta name="keywords" content="Distributed System," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/d540.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/d540.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/d540.html"/>
+
+
+<meta name="description" content="上一节我们讨论了复制, 即数据在不同节点上的副本. 但对于数据量极大或吞吐量极高的数据集, 仅仅进行复制是不够的, 还需要对数据进行partition(分区), 也称为sharding(分片).通常来说, 每条数据(记录, 行, 或文档)仅属于一个分片. 实际上, 每个分片都是一个小型数据库, 数据库支持同时进行多个分区的操作.分区是为了scalability(可伸缩性). 不同分区可放在不共享集">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Partitioning">
+<meta property="og:url" content="https://zaf1ro.github.io/p/d540.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="上一节我们讨论了复制, 即数据在不同节点上的副本. 但对于数据量极大或吞吐量极高的数据集, 仅仅进行复制是不够的, 还需要对数据进行partition(分区), 也称为sharding(分片).通常来说, 每条数据(记录, 行, 或文档)仅属于一个分片. 实际上, 每个分片都是一个小型数据库, 数据库支持同时进行多个分区的操作.分区是为了scalability(可伸缩性). 不同分区可放在不共享集">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-6.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-7.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-8.png">
+<meta property="article:published_time" content="2021-10-12T18:18:32.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.038Z">
+<meta property="article:tag" content="Distributed System">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/DDIA/ch-6-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Partitioning - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Partition-and-Replication"><span class="toc-text">1. Partition and Replication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Partitioning-of-Key-Value-Data"><span class="toc-text">2. Partitioning of Key-Value Data</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Partitioning-by-Key-Range"><span class="toc-text">2.1 Partitioning by Key Range</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Partitioning-by-Hash-of-Key"><span class="toc-text">2.2 Partitioning by Hash of Key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Skewed-Workloads-and-Relieving-Hot-Spots"><span class="toc-text">2.3 Skewed Workloads and Relieving Hot Spots</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Partitioning-and-Secondary-Indexes"><span class="toc-text">3. Partitioning and Secondary Indexes</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Partitioning-Secondary-Indexes-by-Document"><span class="toc-text">3.1 Partitioning Secondary Indexes by Document</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Partitioning-Secondary-Indexes-by-Term"><span class="toc-text">3.2 Partitioning Secondary Indexes by Term</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Rebalancing-Partitions"><span class="toc-text">4. Rebalancing Partitions</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Strategies-for-Rebalancing"><span class="toc-text">4.1 Strategies for Rebalancing</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-How-not-to-do-it-hash-mod-N"><span class="toc-text">4.1.1 How not to do it: hash mod N</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-Fixed-number-of-partitions"><span class="toc-text">4.1.2 Fixed number of partitions</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-3-Dynamic-partitioning"><span class="toc-text">4.1.3 Dynamic partitioning</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-4-Partitioning-proportionally-to-nodes"><span class="toc-text">4.1.4 Partitioning proportionally to nodes</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Operations-Automatic-or-Manual-Rebalancing"><span class="toc-text">4.2 Operations: Automatic or Manual Rebalancing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Request-Routing"><span class="toc-text">5. Request Routing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Parallel-Query-Execution"><span class="toc-text">5.1 Parallel Query Execution</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Partitioning
+        
+      </h1>
+      <time class="post-time">
+          10/12/21
+      </time>
+    </header>
+
+    <div class="post-content">
+      <p>上一节我们讨论了复制, 即数据在不同节点上的副本. 但对于数据量极大或吞吐量极高的数据集, 仅仅进行复制是不够的, 还需要对数据进行<strong>partition</strong>(分区), 也称为<strong>sharding</strong>(分片).<br>通常来说, 每条数据(记录, 行, 或文档)仅属于一个分片. 实际上, 每个分片都是一个小型数据库, 数据库支持同时进行多个分区的操作.<br>分区是为了<strong>scalability</strong>(可伸缩性). 不同分区可放在不共享集群的不同节点上. 因此, 数据集可分布在多个磁盘上, 查询负载也分布在多个处理器上.<br>对于单个分区上运行的查询, 每个节点可以独立执行查询, 因此节点越多, 查询吞吐量越大. 大型且复杂的查询会横跨多个节点并发执行, 当然这也带来新的挑战.<br>分区数据库在20世纪80年代由Teradata和NonStop SQL等产品推出, 因NoSQL数据库和基于Hadoop的数据仓库而重新回到大众视野. 有些系统的设计是为了事务型工作, 有些则为了分析: 这种差异会影响系统的运行方式, 但分区的基本原理相同.</p>
+<h2 id="1-Partition-and-Replication"><a href="#1-Partition-and-Replication" class="headerlink" title="1. Partition and Replication"></a>1. Partition and Replication</h2><p>分区通常与复制一起使用, 使得每个分片的副本存储在多个节点上. 这意味着, 虽然每条记录只属于一个分区, 但为了容错能力, 仍需保存在多个节点上. 单个节点可能保存多个分区. 若采用基于leader的复制模型, 分区和复制的结合如下:<br><img src="/images/System-Design/DDIA/ch-6-1.png" alt="Combining replication and partitioning: each node acts as leader for some partitions and follower for other partitions"></p>
+<p>每个分区有一个leader, 分布在某个节点上, 它的follower分布在其他节点上. 每个节点都可以是某些分区的leader, 同时也是某些分区的follower. 数据库复制的所有内容同样适用于分区的复制, 分区模型和复制模型相互独立.</p>
+<h2 id="2-Partitioning-of-Key-Value-Data"><a href="#2-Partitioning-of-Key-Value-Data" class="headerlink" title="2. Partitioning of Key-Value Data"></a>2. Partitioning of Key-Value Data</h2><p>假设存在大量数据, 且需要分区, 我们应在哪些节点上存储哪些记录? 分区的目的在于将数据和查询负荷均匀分布到各个节点上. 若每个节点共享相同的数据和负载, 那么10个节点就可处理单个节点的10倍数据和10倍的读写吞吐量(不考虑复制).<br>若分区不平均, 则某些分区拥有更多的数据和查询, 称为<strong>skewed</strong>(偏斜). 数据偏斜会让分区效率降低. 极端情况下, 所有负载会集中于一个分区, 剩下分区空闲, 整个系统的瓶颈落在单个节点. 不平均导致的高负载分区称为<strong>hot spot</strong>(热点).<br>避免热点最简单的方式: 将记录随机分配给节点, 这样可以让数据均分到每个节点, 但存在一个弊端: 当读取某个特定的值时, 无法知道其在哪个节点上, 因此必须并行查询所有节点.<br>假设现在有一个简单的key-value数据模型, 可通过主键访问记录. 例如, 纸质百科全书中, 我们可通过标题查找某个条目, 因为所有条目按照字母排序.</p>
+<h3 id="2-1-Partitioning-by-Key-Range"><a href="#2-1-Partitioning-by-Key-Range" class="headerlink" title="2.1 Partitioning by Key Range"></a>2.1 Partitioning by Key Range</h3><p>为每个分区指定一段连续的键范围(从最低值到最高值)可作为一种分区方法, 就像纸质百科全书的卷册. 若明确范围之间的边界, 则可知道哪个分区包含特定的键. 若知道分区所在的节点, 则可直接向对应的节点发送请求(对于纸质百科全书, 可从书架选取对应的卷册).<br><img src="/images/System-Design/DDIA/ch-6-2.png" alt="A print encyclopedia is partitioned by key range"></p>
+<p>键的范围不一定均匀分布, 因为数据无法均匀分布. 上图中, 卷1包含A和B, 卷12包含T,U,V,X,Y,Z. 如果规定每个卷册只包含两个字母, 则有些卷册比其他卷册大很多. 为均匀分配数据, 分区边界需根据数据调整.<br>分区边界可由管理员手动配置, 也让数据库自动选择. Bigtable使用了这种分区策略, 以及HBase, RethinkDB, 和2.4版本之前的MongoDB.<br>每个分区中按照一定顺序保存键, 好处是可以进行范围扫描, 也可以将键作为联合index, 以便在一次查询中获得多个相关记录. 假设应用程序用于存储传感器网络的数据, 主键为测量的时间戳. 这时我们可以轻松地获得特定月份的所有数据.<br>范围键的缺点在于: 某些访问模式会导致热点. 若主键为时间戳, 则分区对应时间范围. 例如, 一天一个分区. 然而由于传感器只有在测量时才写入数据, 因此一天内的所有数据都写入一个分区, 导致该分区因写入过多而过载, 而其他分区处于空闲状态.<br>为避免上述问题, 需使用除时间戳外的其他东西作为键的第一部分. 例如, 在时间戳前添加传感器名称, 系统会先按照传感器名称, 再按照时间戳进行分区. 假设多个传感器同时工作, 写入负载会均匀分布在多个分区. 但查询某个时间范围时, 需对每个传感器名称执行一个范围查询.</p>
+<h3 id="2-2-Partitioning-by-Hash-of-Key"><a href="#2-2-Partitioning-by-Hash-of-Key" class="headerlink" title="2.2 Partitioning by Hash of Key"></a>2.2 Partitioning by Hash of Key</h3><p>为避免偏斜和热点, 许多分布式数据存储使用<strong>hash function</strong>(散列函数)来确定键的分区.<br>一个好的散列函数可将偏斜的数据均匀分布. 假设有一个接收字符串的32位散列函数, 无论输入什么字符串, 都返回$[0, 2^{32}-1]$之间的一个随机数.<br>散列函数不必具有很强的加密性: 例如, Cassandra和MongoDB使用MD5, Voldemort使用Fowler-Noll-Vo函数. 很多编程语言也自带散列函数(用于散列表), 但可能不适合分区: 例如, Java的<code>Object.hashCode()</code>和Ruby的<code>Object#hash</code>, 同一个键在不同的进程中返回不同的哈希值.<br>一旦找到合适的散列函数, 就可为每个分区分配一个散列范围(不是键的范围), 键的哈希值决定了键所在的分区, 如下图:<br><img src="/images/System-Design/DDIA/ch-6-3.png" alt="Partitioning by hash of key"></p>
+<p>这种技术适合在分区间平均分配键, 分区边界可以是均匀间隔的, 也可以是伪随机选择的(该技术也称为<strong>consistent hashing</strong>, 一致性哈希).<br>然而, 键散列分区无法实现键范围分区的一个特性: 高效执行范围查询. 由于相邻的键没有放在同一分区中, 因此没有顺序关系. MongoDB中, 若使用基于散列的分区模式, 则任何范围查询都必须发送给所有分区. Riak, Couchbase, 或Voldemort不支持基于主键的范围搜索.<br>Cassandra采用折衷的策略: 表使用多个列组成的<strong>compound primart key</strong>(复合主键), 键的第一列用于散列来决定分区, 其他列作为联合索引, 用于在SSTable中排序数据. 虽然无法对index的第一列执行范围查询, 但如果指定第一列的值, 则可对该键的其他列执行高效的范围查询.<br>联合索引方法为一对多关系提供了一种数据模型. 例如, 社交网站中, 一个用户可以发布很多动态. 若动态的主键为(user_id, update_timestamp), 则可以检索特定用户在某个时间段内的所有动态. 不同的用户保存在不同的分区上, 对于单个用户, 动态会按照时间顺序保存在单个分区上.</p>
+<h3 id="2-3-Skewed-Workloads-and-Relieving-Hot-Spots"><a href="#2-3-Skewed-Workloads-and-Relieving-Hot-Spots" class="headerlink" title="2.3 Skewed Workloads and Relieving Hot Spots"></a>2.3 Skewed Workloads and Relieving Hot Spots</h3><p>哈希分区可以减少热点, 但不能完全避免热点: 极端条件下, 所有读写都是针对同一个键, 所有请求都会发送给同一分区.<br>这种情况很少见, 但并非不可能: 在社交网站中, 一个拥有百万粉丝的名人的一次行为可能造成这种情况, 导致大量写入涌向某个分区,(键为名人的ID, 或名人评论的事件的ID).<br>大多数系统都无法自动应对这种高度偏斜的负载, 因此需要应用程序调节. 例如, 若某个键使用频繁, 可为该键添加一个随机前缀或后缀, 两位数的十进制随机数就可将一个主键切分成100个不同的主键, 从而存储在不同分区中.<br>虽然切分主键可以分散写入, 但读取需要做额外工作, 因为需要读取所有主键, 并将所有数据合并. 这种方法还需要额外的记录: 只需为少数热门的主键添加随机数, 大多数主键的写入吞吐量较低, 没必要添加随机数. 因此, 需要跟踪哪些键需要被分割.<br>也许数据系统会在未来支持自动检测和补偿偏斜的工作负载. 但目前需要开发者自行实现.</p>
+<h2 id="3-Partitioning-and-Secondary-Indexes"><a href="#3-Partitioning-and-Secondary-Indexes" class="headerlink" title="3. Partitioning and Secondary Indexes"></a>3. Partitioning and Secondary Indexes</h2><p>上述讨论的分区模式都基于key-value数据模型. 若只通过主键访问数据, 则根据主键就能找到数据所在的分区, 并让该分区处理读写请求; 但如果涉及<strong>secondary indexe</strong>(次级索引), 事情会变得更加复杂.<br>次级索引通常不能唯一标识记录, 而是一种搜索记录中出现特定值的方式: 寻找用户123的所有操作, 寻找包含单词hogwash的文章, 寻找颜色为红色的车辆等等.<br>次级索引是关系数据库的基础, 且在文档数据库中很常见. 许多key-value存储都避免使用次级索引, 因为其复杂度较高. 但也有一些数据库开始添加次级索引(如Riak), 因为次级索引对于数据模型十分有用. 次级索引也是Solr和Elasticsearch等搜索服务器的基本.<br>次级索引的问题在于: 其无法整齐地映射到分区. 有两种方法可在分区数据库中实现次级索引: <strong>document-based partitioning</strong>(基于文档的分区)和<strong>term-based partitioning</strong>(基于关键词的分区).</p>
+<h3 id="3-1-Partitioning-Secondary-Indexes-by-Document"><a href="#3-1-Partitioning-Secondary-Indexes-by-Document" class="headerlink" title="3.1 Partitioning Secondary Indexes by Document"></a>3.1 Partitioning Secondary Indexes by Document</h3><p>假设一个销售二手车的网站中, 每一行都有一个唯一ID, 称为<strong>document ID</strong>(文档ID), 并使用文档ID进行分区(例如, 分区0的ID从0到499, 分区1的ID从500到999).<br>当用户搜索汽车时, 可按照颜色和厂牌过滤, 因此需一个颜色和厂商的次级索引(文档数据库中为<strong>字段</strong>, 关系数据库中为<strong>列</strong>). 声明索引后, 数据库会自动执行索引. 例如, 当一辆红色汽车被添加到数据库时, 数据库分片会自动将其添加到索引条目<code>color:red</code>的文档ID列表中.<br><img src="/images/System-Design/DDIA/ch-6-4.png" alt="Partitioning secondary indexes by document"></p>
+<p>这种索引方法的每个分区相互独立: 每个分区维护自己的次级索引, 不关心其他分区的数据. 无论用户进行什么写入操作(添加, 删除, 或更新文档), 只需要处理被更新文档的文档ID所在的分区. 因此, 文档分区索引也称为<strong>local index</strong>(本地索引).<br>然而, 从本地索引读取数据时需要注意: 除非文档ID进行了特别处理, 否则没必要将特定颜色或品牌的汽车放在同一分区. 上图中, 红色汽车出现在分区0和分区1. 若想搜索红色汽车, 需向所有分区发送查询请求, 并将结果合并.<br>这种查询分区数据库的方法有时也称为<strong>scatter&#x2F;gather</strong>(分散&#x2F;聚集), 可能会让次级索引上的查询十分昂贵. 即使查询是并发执行, 但也会放大尾部延迟(microburst of bandwidth usage). 然而, MongoDB, Riak, Cassandra, Elasticsearch, SolrCloud, 和VoltDB都使用文档分区的次级索引. 大部分数据库供应商推荐开发者构建能够从单个分区执行次级索引查询的分区方案, 但并不总是可行的, 尤其是在单个查询中使用多个次级索引(例如, 同时按照颜色和厂牌查询).</p>
+<h3 id="3-2-Partitioning-Secondary-Indexes-by-Term"><a href="#3-2-Partitioning-Secondary-Indexes-by-Term" class="headerlink" title="3.2 Partitioning Secondary Indexes by Term"></a>3.2 Partitioning Secondary Indexes by Term</h3><p>与其为每个分区创建各自的次级索引, 不如创建一个<strong>global index</strong>(全局索引)覆盖所有分区的数据. 然而, 不能将索引放在单个节点上, 否则该节点会成为性能瓶颈, 违背了分区的初衷. 全局索引也需要分区, 但分区方式与主键不同.<br><img src="/images/System-Design/DDIA/ch-6-5.png" alt="Partitioning secondary indexes by term"></p>
+<p>上图展示了全局索引的存储: 首字母从a到r的color保存在分区0中, s到z的color保存在分区1中. 汽车厂牌的索引与之类似.<br>这种索引称为<strong>term-partitioned</strong>(关键字分区), 由关键字决定索引的分区方式. 上图中关键字可能是<code>color:red</code>. Term(关键字)源自于<strong>full-text index</strong>(全文索引), 指文档中出现过的所有单词.<br>我们也可以根据关键词本身, 或其散列进行索引分区. 关键词分区更适合范围搜索, 散列分区更适合负载均衡.<br>全局索引的优势在于读取效率更高: 不需要分散&#x2F;收集所有分区, 客户端只需向包含关键字的分区发送请求. 然而, 全局索引的代价是写入更慢更复杂: 之前写入数据只涉及一个分区, 现在还需要处理所有关键字, 可能会涉及多个分区.<br>理想情况下, 索引一直保持最新状态, 且写入的文档会立刻反映在索引上. 然而, 对于全局索引, 由于需要跨分区的分布式事务, 并不是所有数据库都支持.<br>实际上, 全局索引的更新通常是异步的(也就是说, 写入后立即读取索引, 更改可能尚未反应在索引中). 例如, Amazon DynamoDB在正常状态下不到一秒内就会更新, 但若基础设施出现故障, 延迟可能会更高.<br>Riak的搜索功能和Oracle的数据仓库也用到了分区索引, 允许开发者选择本地或全局索引. </p>
+<h2 id="4-Rebalancing-Partitions"><a href="#4-Rebalancing-Partitions" class="headerlink" title="4. Rebalancing Partitions"></a>4. Rebalancing Partitions</h2><p>随着时间的推移, 数据库经历了以下变更:</p>
+<ul>
+<li>查询吞吐量不断增加, 需要更多CPU处理负载</li>
+<li>数据集规模增加, 需要更多磁盘和RAM存储数据</li>
+<li>机器出现故障, 需要其他机器接管</li>
+</ul>
+<p>集群中, 负载从一个节点转移到另一个节点的过程称为<strong>rebalancing</strong>(再平衡). 无论采用何种分区模式, rebalancing需满足以下几点要求:</p>
+<ul>
+<li>再平衡后, 负载可均分到集群中的每个节点</li>
+<li>再平衡时, 数据库应能继续接受读取和写入</li>
+<li>节点之间只移动所需的数据, 已实现快速平衡, 减少网络和磁盘I&#x2F;O负载</li>
+</ul>
+<h3 id="4-1-Strategies-for-Rebalancing"><a href="#4-1-Strategies-for-Rebalancing" class="headerlink" title="4.1 Strategies for Rebalancing"></a>4.1 Strategies for Rebalancing</h3><p>以下是几种分区分配的方法:</p>
+<h4 id="4-1-1-How-not-to-do-it-hash-mod-N"><a href="#4-1-1-How-not-to-do-it-hash-mod-N" class="headerlink" title="4.1.1 How not to do it: hash mod N"></a>4.1.1 How not to do it: hash mod N</h4><p>当根据键的散列值进行分区时, 最好将散列分成不同的范围, 每个分区一个范围(例如, 若键处于$0 \le hash(key) &lt; b_{0}$, 则分配给分区0; 若键处于$b_{0} \le hash(key) \le b_{1}$, 则分配给分区1).<br>那么为什么不直接用<strong>mod</strong>(取模). 例如, <code>hash(key) mod 10</code>会返回一个$[0, 9]$之间的整数. 这种方法的问题在于, 若节点数量发生变化, 绝大多数键都需要从一个节点迁移到另一个节点. 例如, 某个键为123456, 起初有10个节点, 该键取模为6($123456 \mod 10 &#x3D; 6$); 若节点增加到11个, 键取模为3($123456 \mod 11 &#x3D; 3$); 当增加到12个节点时, 该键取模为0($123456 \mod 12 &#x3D; 0$). 这种频繁的迁移会让再平衡十分昂贵.</p>
+<h4 id="4-1-2-Fixed-number-of-partitions"><a href="#4-1-2-Fixed-number-of-partitions" class="headerlink" title="4.1.2 Fixed number of partitions"></a>4.1.2 Fixed number of partitions</h4><p>还有一种十分简单的再平衡方法: 创建比节点更多的分区, 并为每个节点分配多个分区. 例如, 数据库中有10个节点, 集群被拆分为1000个分区, 因此每个节点有100个分区.<br>若某个新的节点添加到集群中, 新节点会从现有节点中<strong>窃取</strong>一些分区, 直到分区数量再次平衡. 以下图为例:<br><img src="/images/System-Design/DDIA/ch-6-6.png" alt="Adding a new node to a database cluster with multiple partitions per node"></p>
+<p>分区会在节点间移动, 但分区的总数不变, 键所指向的分区也不变, 唯一改变的是分区所在的节点. 由于网络传输大量数据需要一定时间, 所以变更不是即时的. 重新分配节点时, 旧分区仍可进行读写.<br>原则上, 该方法还可以解决硬件不匹配问题: 将更多分区分配给硬件更好的节点, 让该节点承担更多负载. Riak, Elasticsearch, Couchbase, 和Voldemort都使用了这种再平衡方式.<br>数据库第一次建立时就会确定分区的总数量, 且之后不会改变. 虽然原则上可以分割和合并分区, 但固定数量的分区更容易实现, 因此也不会实现分区的切割. 初始分区数量即节点最大数量, 需分配足够多的分区来应对未来的增长. 不过分区有管理开销, 因此选择过大的分区数量会适得其反.<br>若数据集的总大小不确定(初始很小, 随时间推移不断变大), 则很难选择分区数量. 由于每个分区包含固定比例的数据, 单个分区的大小与集群中总数据量成正比. 若分区过大, 再平衡和故障节点的恢复会很昂贵; 若分区过小, 则会产生过多的额外开销. 只有当分区大小适中时才能获得优秀性能. 若分区数量固定, 而数据量变化很大, 则很难达到最佳性能.</p>
+<h4 id="4-1-3-Dynamic-partitioning"><a href="#4-1-3-Dynamic-partitioning" class="headerlink" title="4.1.3 Dynamic partitioning"></a>4.1.3 Dynamic partitioning</h4><p>对于键范围分区的数据库, 具有固定边界的固定数量分区将非常不方便: 若出现边界错误, 则会导致数据集中于某个分区, 而其他分区没有数据. 重新配置分区边界将会非常繁琐.<br>出于以上原因, 键范围分区的数据库会动态创建分区(如HBase, RethinkDB). 当一个分区大于某个阈值时(HBase默认为10GB), 会拆分成两个分区并各占一半数据. 相反的, 若大量数据从分区中删除, 导致分区小于某个阈值, 其会与相邻的分区合并. 此过程与B-Tree相似.<br>每个分区分配给一个节点, 单个节点可处理多个分区, 就像固定数量的分区. 当一个大的分区拆分后, 其中一半会转移到其他节点, 以保持负载均衡. 以HBase为例, 分区文件通过HDFS传输.<br>动态分区的优点在于, 分区数量可适应动态变化的数据量. 若数据量很小, 则只需少量分区, 因此额外开销很小; 若数据量很大, 则会拆分过大的分区, 减少再平衡的开销.<br>需要注意的是, 由于没有规定分区边界, 一个空的数据库从一个分区开始. 开始时数据集很小, 所有写入都由单个节点处理, 直到分区体积达到某个阈值才能切分, 在此之前其他节点都处于空闲状态. 为解决该问题, HBase和MongoDB允许为空数据库提供一组初始分区(称为<strong>pre-splitting</strong>, 预分割), 该方法需要开发者知道键的分布.</p>
+<h4 id="4-1-4-Partitioning-proportionally-to-nodes"><a href="#4-1-4-Partitioning-proportionally-to-nodes" class="headerlink" title="4.1.4 Partitioning proportionally to nodes"></a>4.1.4 Partitioning proportionally to nodes</h4><p>动态分区将单个分区的大小保持在一个区间, 根据阈值对分区进行切分或合并, 因此分区数量和数据集规模成正比; 对于固定数量的分区, 单个分区的体积与数据集大小成正比. 无论上述哪种分区方式, 分区数都与节点数没有关系.<br>Cassandra和Ketama使用第三种方法: 让分区数量和节点数成正比, 换句话说, 每个节点拥有固定数量的分区. 当节点数量不变时, 分区的体积与数据集大小成正比; 当添加节点时, 分区体积变小. 由于大数据集需要大量节点存储, 因此该方法可让每个分区的体积保持稳定.<br>当集群中新加入一个节点时, 会随机选择固定数量的现有分区进行拆分, 其中一半数据转交给新的节点, 另一半留在原来的节点. 随机选取可能导致不平均的切分, 但当分区数量足够多时(Cassandra默认每个节点有256个分区), 最终会实现负载均衡. Cassandra 3.0引入了另一种再平衡的算法来避免不公平的切分.<br>随机选择分区边界要求使用基于散列的分区(从散列函数产生的数字范围中挑选边界), 这种方法最适合一致性哈希的定义.</p>
+<h3 id="4-2-Operations-Automatic-or-Manual-Rebalancing"><a href="#4-2-Operations-Automatic-or-Manual-Rebalancing" class="headerlink" title="4.2 Operations: Automatic or Manual Rebalancing"></a>4.2 Operations: Automatic or Manual Rebalancing</h3><p>关于再平衡还有一个问题: 自动平衡还是手动平衡?<br>在<strong>全自动再平衡</strong>(系统自动决定何时将分区从一个节点迁移到另一个节点, 无需管理员介入)和<strong>全手动再平衡</strong>(管理员手动配置分区的分配, 且仅在管理员重新配置时变更)之间存在一个权衡. 例如, Couchbase, Riak, 和Voldemort会自动生成一个分区分配的建议, 需要管理员提交才能生效.<br>虽然全自动再平衡只需很少日常维护的操作, 但无法预测. 再平衡是一项代价很大的操作, 需要重新路由请求, 并将大量数据从一个节点迁移到另一个节点. 若操作不当, 该操作会加重网络和节点负载, 且降低请求性能.<br>自动化再平衡与自动故障检测相结合十分危险. 例如, 某个节点过载而响应过慢, 其他节点会认为该节点已死亡, 并重新平衡集群. 这会对超载的节点, 其他节点, 和网络造成额外负载, 可能会造成级联失败.<br>出于这个原因, 再平衡中的人为干涉是一件好事. 虽然比全自动慢, 但可防止运维意外.</p>
+<h2 id="5-Request-Routing"><a href="#5-Request-Routing" class="headerlink" title="5. Request Routing"></a>5. Request Routing</h2><p>现在我们已将数据集分布到多个节点上, 但还存在一个问题: 当客户端发送请求时, 需要连接到哪个节点? 随着分区再平衡, 节点上分区也在变化. 这时需要一个顶层服务知晓这一切变化: 若用户想要读取或写入<strong>foo</strong>, 需连接哪个IP地址或端口号?<br>这类问题可概括为<strong>service discovery</strong>(服务发现), 不限于数据库. 任何需要通过网络访问的软件都存在这个问题, 尤其当系统要求高可用性(在多台机器上运行冗余配置). 许多公司都有自己的内部服务发现工具, 其中一些已经开源.<br>总的来说, 该问题有几种不同的解决思路:</p>
+<ol>
+<li>允许客户端联系任意节点(通过一个round-robin load balancer). 若该节点恰好拥有请求需要的分区, 则直接处理请求; 否则将请求转发给适当的节点, 接收回复并传递回客户端.</li>
+<li>将来自客户端的请求发送给路由层, 其决定并转发给合适的节点. 该路由层不会处理任何请求, 仅负责分区的负载均衡.</li>
+<li>客户端必须知道分区和节点的分配, 因此可以直接发送给合适的节点, 无需任何中介.</li>
+</ol>
+<p><img src="/images/System-Design/DDIA/ch-6-7.png" alt="Three different ways of routing a request to the right node"></p>
+<p>上述所有例子都存在一个关键问题: 作为路由决策的组件(节点, 路由层, 或客户端)如何了解到分区分配的变化? 这是一个具有挑战性的问题, 因为需要所有参与者都达成<strong>共识</strong>, 否则请求会被发送给错误的节点.<br>很多分布式数据系统都依赖于一个独立的协调服务(如ZooKeeper), 用于跟踪集群元数据. 下图中, 每个节点都在ZooKeeper上注册, ZooKeeper维护分区与节点的映射. 其他组件(如路由层或分区感知客户端)在ZooKeeper上订阅信息. 当分区的分配发生变更, ZooKeeper会通知路由信息, 让其保持最新状态.<br><img src="/images/System-Design/DDIA/ch-6-8.png" alt="Using ZooKeeper to keep track of assignment of partitions to nodes"></p>
+<p>例如, LinkedIn的Espresso使用Helix进行集群管理, 实现如上图的路由层. HBase, SolrCloud和Kafka使用ZooKeeper跟踪分区的分配. MongoDB也有类似的架构, 但依赖于自己的<strong>config server</strong>(配置服务器)实现, 和作为路由层的mongos守护进程.<br>Cassandra和Riak采用不同的方法: 节点间使用<strong>gossip protocol</strong>(流言协议)来传播集群状态的变化. 请求可以发送给任意节点, 接收到请求的节点会转发到拥有所请求的分区的节点. 该模型虽然增加了复杂度, 但减少对外部协议服务的依赖.<br>Couchbase不会自动再平衡, 也就简化了设计. 它配置了一个名为moxi的路由层, 其会从集群节点了解路由变化. 当使用路由层或向随机节点发送请求时, 客户端仍需寻找IP地址. 但这些地址不像分区变化那么快, 因此使用DNS足矣.</p>
+<h3 id="5-1-Parallel-Query-Execution"><a href="#5-1-Parallel-Query-Execution" class="headerlink" title="5.1 Parallel Query Execution"></a>5.1 Parallel Query Execution</h3><p>截至目前, 我们只关注读写单个键的简单查询(还有基于文档分区的次级索引中的scatter&#x2F;gather查询). 这也是大多数NoSQL分布式数据存储所支持的访问层级.<br>然而, <strong>massive parallel processing</strong>(大规模并行处理)关系数据库产品(通常用于分析)支持更复杂的查询类型. 一个典型的数据仓库包括多种join, filter, group, 和aggregate操作. MPP查询优化器将复杂的查询拆分为多个执行阶段和分区, 很多都可以在数据库集群的多个节点上并行执行. 涉及大规模数据集扫描的查询也会受益于并行执行.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Distributed-System/">Distributed System</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/4e8.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Transactions</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/bcad.html">
+        <span class="next-text nav-default">Replication</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/d540.html';
+  var disqus_title = "Partitioning";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

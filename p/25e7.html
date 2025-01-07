@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Types of Locks"/>
+
+
+
+
+  <meta name="keywords" content="Concurrency," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/25e7.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/25e7.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/25e7.html"/>
+
+
+<meta name="description" content="1. Exclusive Locks某一时刻, 一把锁只能被一个线程持有, 被称为Exclusive Lock(互斥锁). 锁的持有者对受锁保护的区域有排他性访问权. 互斥锁作为最基础的一类锁, 以最简单的方式展现了锁的基本属性: 为限制资源的访问提供了一套同步机制. 锁还有Granularity(粒度)属性, 锁的Granularity关系到两个方面:  lock overhead: 为使用或实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Types of Locks">
+<meta property="og:url" content="https://zaf1ro.github.io/p/25e7.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Exclusive Locks某一时刻, 一把锁只能被一个线程持有, 被称为Exclusive Lock(互斥锁). 锁的持有者对受锁保护的区域有排他性访问权. 互斥锁作为最基础的一类锁, 以最简单的方式展现了锁的基本属性: 为限制资源的访问提供了一套同步机制. 锁还有Granularity(粒度)属性, 锁的Granularity关系到两个方面:  lock overhead: 为使用或实">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/multithreading/Basic/tol-1.png">
+<meta property="article:published_time" content="2019-06-30T12:28:26.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.033Z">
+<meta property="article:tag" content="Concurrency">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/multithreading/Basic/tol-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Types of Locks - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Exclusive-Locks"><span class="toc-text">1. Exclusive Locks</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Reader-Writer-Locks"><span class="toc-text">2. Reader-Writer Locks</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Beyond-Reader-Writer-Locks"><span class="toc-text">3. Beyond Reader-Writer Locks</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Scoped-Locking"><span class="toc-text">4. Scoped Locking</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Intro"><span class="toc-text">4.1 Intro</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Benefits-and-Limitations"><span class="toc-text">4.2 Benefits and Limitations</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Lock-Tree"><span class="toc-text">4.3 Lock Tree</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Types of Locks
+        
+      </h1>
+      <time class="post-time">
+          06/30/19
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Exclusive-Locks"><a href="#1-Exclusive-Locks" class="headerlink" title="1. Exclusive Locks"></a>1. Exclusive Locks</h2><p>某一时刻, 一把锁只能被一个线程持有, 被称为Exclusive Lock(互斥锁). 锁的持有者对受锁保护的区域有排他性访问权. 互斥锁作为最基础的一类锁, 以最简单的方式展现了锁的基本属性: 为限制资源的访问提供了一套同步机制. 锁还有Granularity(粒度)属性, 锁的Granularity关系到两个方面:</p>
+<ol>
+<li>lock overhead: 为使用或实现锁而消耗的资源, 包含锁占用的内存大小, CPU用于初始化, 获得和释放锁的时间.</li>
+<li>lock contention: 某一线程试图获取其他线程已持有的锁, 这一情况称为lock contention. lock的精细度越小, 线程争夺锁的情况越少. 例如: 数据库中锁可能用于保护整个database, 也可能只用于保护某个table, 或某个row.</li>
+</ol>
+<p>通常来说粒度越大, lock overhead越小, lock contention越大; 反之, 粒度越小, lock overhead越大, lock contention越小.</p>
+<h2 id="2-Reader-Writer-Locks"><a href="#2-Reader-Writer-Locks" class="headerlink" title="2. Reader-Writer Locks"></a>2. Reader-Writer Locks</h2><p>读写锁包含两个部分:</p>
+<ol>
+<li>同一时刻可有多个读者拥有锁.</li>
+<li>同一时刻最多允许一个写者拥有锁.</li>
+</ol>
+<p>理论上, 在面对频繁读取且较少写入的情况, 读写锁有较好的可拓展性. 但现实中, 读写锁的可拓展性取决于其如何实现. 最经典的读写锁实现涉及到counter和flag, 在面对较短的critical section(锁保护的代码区域)时性能不佳, 因为获得和释放锁操作十分耗时. 但若critical section足够长, 则可以忽略获得和释放锁的开销.<br>使用per-thread exclusive lock可以设计一种偏向于读者的读写锁. 对于读操作, 每个线程可以获取各自的锁; 对于写操作, 线程需要获得所有锁. 在没有写者的情况下, 读者只需要atomic operation和memory barrier, 不再出现cache miss; 但对于写者来说会发生大量cache miss. 每一种读写锁的实现都有其优缺点, 但都需要较长的critical section.</p>
+<h2 id="3-Beyond-Reader-Writer-Locks"><a href="#3-Beyond-Reader-Writer-Locks" class="headerlink" title="3. Beyond Reader-Writer Locks"></a>3. Beyond Reader-Writer Locks</h2><p>Reader-Writer Locks和Exclusive Locks的区别在于不同的访问策略: 互斥锁只运行同一时刻最多一位访问者, 读写锁允许多个读者同时访问. 除此之外还有其他访问策略, VAX&#x2F;VMS distributed lock manager(DLM)就是其中之一. 图中每一格表示兼容情况, &quot;X&quot;表示不兼容:</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">Null</th>
+<th align="center">Concurrent Read</th>
+<th align="center">Concurrent Write</th>
+<th align="center">Protected Read</th>
+<th align="center">Protected Write</th>
+<th align="center">Exclusive</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Null</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Concurrent Read</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">X</td>
+</tr>
+<tr>
+<td align="center">Concurrent Write</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">X</td>
+<td align="center">X</td>
+<td align="center">X</td>
+</tr>
+<tr>
+<td align="center">Protected Read</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">X</td>
+<td align="center"></td>
+<td align="center">X</td>
+<td align="center">X</td>
+</tr>
+<tr>
+<td align="center">Protected Write</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">X</td>
+<td align="center">X</td>
+<td align="center">X</td>
+<td align="center">X</td>
+</tr>
+<tr>
+<td align="center">Exclusive</td>
+<td align="center"></td>
+<td align="center">X</td>
+<td align="center">X</td>
+<td align="center">X</td>
+<td align="center">X</td>
+<td align="center">X</td>
+</tr>
+</tbody></table>
+<ol>
+<li>Null(无锁): 这个模式可以和任何模式兼容. 因为如果一个线程不拥有锁, 就不需要防止其他线程争抢.</li>
+<li>Concurrent Read(并发读): 该模式只与exclusive不兼容, 其他的都兼容. 一般用于统计粗略的计数结果, 允许与Concurrent Write同时操作.</li>
+<li>Concurrent Write(并发写): 与Null, Concurrent Read, Concurrent Write兼容, 一般用于更新粗略的计数结果.</li>
+<li>Protected Read(受保护读): 与Null, Concurrent Read, Protected Write兼容, 一般用于读取精确的计数结果, 可允许多个读操作同时进行, 但不允许与写操作同时进行.</li>
+<li>Protected Write(受保护写): 与Null, Concurrent Read兼容. 允许与Concurrent Read同时发生, 但会与Protected Read争抢锁.</li>
+<li>Exclusive(互斥): 仅与Null兼容, 用于排他性访问时使用.</li>
+</ol>
+<h2 id="4-Scoped-Locking"><a href="#4-Scoped-Locking" class="headerlink" title="4. Scoped Locking"></a>4. Scoped Locking</h2><h3 id="4-1-Intro"><a href="#4-1-Intro" class="headerlink" title="4.1 Intro"></a>4.1 Intro</h3><p>以上所说的锁都需要显式地获取或释放锁, 例如<code>spin_lock()</code>和<code>spin_unlock()</code>, 另一种方式则是使用resource allocation is initialization(RAII). 许多编程语言都用到RAII来实现automatic variable(local variable进入作用域时自动初始化, 离开作用域时自动销毁), 在C++中, object在进入作用域后自动调用constructor, 离开作用域后自动调用destructor.<br>RAII locking最大的特性在于, 程序员不必仔细检查获取的锁是否正确释放, 因为锁会在离开作用域后自动释放. C++提供了<code>std::lock_guard()</code>实现RAII-Style的范围锁:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="type">int</span> g_i = <span class="number">0</span>;</span><br><span class="line">std::mutex g_i_mutex; <span class="comment">// protects g_i</span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">safe_increment</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lock</span><span class="params">(g_i_mutex)</span></span>;</span><br><span class="line">  ++g_i;</span><br><span class="line">  <span class="comment">/* g_i_mutex is automatically released when </span></span><br><span class="line"><span class="comment">   * lock goes out of scope</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="function">std::thread <span class="title">t1</span><span class="params">(safe_increment)</span></span>;</span><br><span class="line">  <span class="function">std::thread <span class="title">t2</span><span class="params">(safe_increment)</span></span>;</span><br><span class="line">  t<span class="number">1.</span><span class="built_in">join</span>();</span><br><span class="line">  t<span class="number">2.</span><span class="built_in">join</span>();</span><br><span class="line"></span><br><span class="line">  std::cout &lt;&lt; g_i &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-Benefits-and-Limitations"><a href="#4-2-Benefits-and-Limitations" class="headerlink" title="4.2 Benefits and Limitations"></a>4.2 Benefits and Limitations</h3><p>RAII作为一项资源管理方案, 其优点如下:</p>
+<ol>
+<li>Encapsulation: 封装性让资源有特定的作用域, 固定的生存周期, 所以可以确保其自动的初始化与销毁.</li>
+<li>Exception Safety: 由于资源被固定在一个作用域范围内, 所以资源其实被分配到stack上, 当异常发生时会正常地销毁资源. 例如C++中的stack unwinding, 所有分配在stack上的变量无论是否发生异常都会正常析构. </li>
+<li>Locality: 资源初始化和释放的定义写在一块(同一个class内)</li>
+</ol>
+<p>但RAII也有其缺陷和限制:</p>
+<ol>
+<li>RAII只用于stack上分配的资源, 这样才能确定资源的生存周期. 对于heap上分配的资源, 则需要隐式或显式地调用析构. 或使用smart pointer来管理heap上的资源.</li>
+<li>RAII需要一定的封装性来限制资源的作用域. 但有些资源并不能很好的封装, 例如iterator: 当使用iterator遍历某数据结构时, 很难将iterator的初始化和终止遍历封装在一个作用域内.</li>
+<li>RAII不能实现critical section的重叠, 因为作用域只能嵌套. 当存在大量并发尝试时, 只能有一个线程能成功. 这时就需要让大部分线程尽快放弃尝试, 否则lock contention将会大量消耗资源.</li>
+</ol>
+<h3 id="4-3-Lock-Tree"><a href="#4-3-Lock-Tree" class="headerlink" title="4.3 Lock Tree"></a>4.3 Lock Tree</h3><p>RAII的特性需要不同于其他锁类型的数据结构, 这里介绍RCU的实现作为一个例子. 每个CPU都被分配一个rcu_node结构体, 每一个rcu_node有一个parent指针指向其父节点. 父节点同样为rcu_node, 其parent指针指向NULL. 每一个父节点一般拥有32或64个子节点. 每个rcu_node还有fqslock指针指向一把锁, 如下图:<br><img src="/images/multithreading/Basic/tol-1.png" alt="Locking Hierarchy"></p>
+<p>为选出一个胜利者获得critical section的使用权, 需要从下向上进行一场<strong>竞赛</strong>. CPU首先从叶子节点rcu_node的出发, 尝试获取该节点的fqslock. 如果成功获得锁, 则尝试获取其父亲节点的fqslock. 如果成功获取父节点的锁, 则释放原节点的锁并晋升到其父节点, 依次循环. 如果有CPU成功拿到根节点的fqslock, 说明该CPU获得了critical section的使用权, 在操作前需修改全局变量gp_flags, 该变量用于通知是否有CPU(线程)赢得了本次竞赛. 另外, 每次尝试获取锁前, CPU都需要检查gp_flags. 简易代码实现如下:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">force_quiescent_state</span><span class="params">(<span class="keyword">struct</span> rcu_node *rnp_leaf)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">int</span> ret;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">rcu_node</span> *rnp = rnp_leaf;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">rcu_node</span> *rnp_old = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (; rnp != <span class="literal">NULL</span>; rnp = rnp-&gt;parent) &#123;</span><br><span class="line">    ret = (<span class="built_in">ACCESS_ONCE</span>(gp_flags)) || !<span class="built_in">raw_spin_trylock</span>(&amp;rnp-&gt;fqslock);</span><br><span class="line">    <span class="keyword">if</span> (rnp_old != <span class="literal">NULL</span>)</span><br><span class="line">      <span class="built_in">raw_spin_unlock</span>(&amp;rnp_old-&gt;fqslock);</span><br><span class="line">    <span class="keyword">if</span> (ret)</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    rnp_old = rnp;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!<span class="built_in">ACCESS_ONCE</span>(gp_flags)) &#123;</span><br><span class="line">    <span class="built_in">ACCESS_ONCE</span>(gp_flags) = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">do_force_quiescent_state</span>();</span><br><span class="line">    <span class="built_in">ACCESS_ONCE</span>(gp_flags) = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">raw_spin_unlock</span>(&amp;rnp_old-&gt;fqslock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Concurrency/">Concurrency</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/de50.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">RCU</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/2e0d.html">
+        <span class="next-text nav-default">Deadlock</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/25e7.html';
+  var disqus_title = "Types of Locks";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

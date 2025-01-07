@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Shortest Path in Graph"/>
+
+
+
+
+  <meta name="keywords" content="Algorithm," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/c8ae.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/c8ae.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/c8ae.html"/>
+
+
+<meta name="description" content="1. Introduction图(graph)是一个二元集$G &#x3D; (V(G), E(G))$, 其中$V(G)$称为vertex set(点集), $E(G)$为$V(G)$中各个节点之间的边的集合, 称为edge set(边集). 若G的每条边都可被赋予一个数, 称为weight(权).最短路径算法用于找到图中两点之间的最短路. 假设图中n为点的数量, m为边的数量, 对于边权为正的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shortest Path in Graph">
+<meta property="og:url" content="https://zaf1ro.github.io/p/c8ae.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction图(graph)是一个二元集$G &#x3D; (V(G), E(G))$, 其中$V(G)$称为vertex set(点集), $E(G)$为$V(G)$中各个节点之间的边的集合, 称为edge set(边集). 若G的每条边都可被赋予一个数, 称为weight(权).最短路径算法用于找到图中两点之间的最短路. 假设图中n为点的数量, m为边的数量, 对于边权为正的">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-03-09T19:49:10.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.026Z">
+<meta property="article:tag" content="Algorithm">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Shortest Path in Graph - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Dijkstra-s-algorithm"><span class="toc-text">1.1 Dijkstra&#39;s algorithm</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Floyd-Warshall-algorithm"><span class="toc-text">1.2 Floyd-Warshall algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#743-Network-Delay-Time"><span class="toc-text">743. Network Delay Time</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Dijkstra"><span class="toc-text">Dijkstra</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#399-Evaluate-Division"><span class="toc-text">399. Evaluate Division</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Floyd-Warshall-algorithm"><span class="toc-text">Floyd-Warshall algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#882-Reachable-Nodes-In-Subdivided-Graph"><span class="toc-text">882. Reachable Nodes In Subdivided Graph</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Dijkstra-1"><span class="toc-text">Dijkstra</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2577-Minimum-Time-to-Visit-a-Cell-In-a-Grid"><span class="toc-text">2577. Minimum Time to Visit a Cell In a Grid</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Dijkstra-2"><span class="toc-text">Dijkstra</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2699-Modify-Graph-Edge-Weights"><span class="toc-text">2699. Modify Graph Edge Weights</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Binary-Search-Dijkstra"><span class="toc-text">Binary Search + Dijkstra</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Shortest Path in Graph
+        
+      </h1>
+      <time class="post-time">
+          03/09/23
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>图(graph)是一个二元集$G &#x3D; (V(G), E(G))$, 其中$V(G)$称为vertex set(点集), $E(G)$为$V(G)$中各个节点之间的边的集合, 称为edge set(边集). 若G的每条边都可被赋予一个数, 称为weight(权).<br>最短路径算法用于找到图中两点之间的最短路. 假设图中<code>n</code>为点的数量, <code>m</code>为边的数量, 对于边权为正的图, 一条最短路径拥有以下属性:</p>
+<ul>
+<li>任意两点之间的最短路径不会经过重复节点</li>
+<li>任意两点之间的最短路径不会经过重复边</li>
+<li>任意两点之间的最短路径上的点数不会超过<code>n</code>, 边数不会超过<code>n-1</code></li>
+<li>任意两点之间的最短路径的子路径仍为最短路径: 假设a到e的最短路径为<code>a-&gt;b-&gt;c-&gt;d-&gt;e</code>, 则a到c的最短路径一定为<code>a-&gt;b-&gt;c</code>; 反过来说, 若i到j的最短路径经过节点k, 则<code>i到j的最短路径</code>等同于<code>i到k的最短路径</code>加上<code>k到j的最短路径</code></li>
+</ul>
+<h3 id="1-1-Dijkstra-s-algorithm"><a href="#1-1-Dijkstra-s-algorithm" class="headerlink" title="1.1 Dijkstra&#39;s algorithm"></a>1.1 Dijkstra&#39;s algorithm</h3><p>Dijkstra算法用于在graph中寻找一个node到其他node的最短路径, 从而生成<strong>shortest-path tree</strong>(最小路径树). 算法步骤如下:</p>
+<ol>
+<li>创建一个集合<code>set</code>, 用于保存所有已访问的node</li>
+<li>创建一个表<code>table</code>, 表示从起始点<code>source</code>到其他node的距离, <code>source</code>到自身的距离为0, <code>source</code>到其他node的距离为<code>$+\infty$</code></li>
+<li>若<code>set</code>没有包含所有node, 则循环执行以下步骤:<ol>
+<li>从<code>table</code>取出一个点<code>node</code>, 其距离<code>source</code>最短, 且不包含在<code>set</code>中</li>
+<li>将<code>node</code>加入<code>set</code></li>
+<li>遍历<code>node</code>的相邻边, 并更新相邻点到<code>source</code>的距离, 存在两种情况:<ul>
+<li><code>node</code>到<code>source</code>的距离 + 相邻边的距离 &lt; 相邻点到<code>source</code>的距离: 更新<code>table</code>中相邻点到<code>source</code>的距离</li>
+<li>反之不更新</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+<p>Dijkstra算法每次将一个node加入set集合, 因此每个node至少处理一次, 且每次挑选最小距离的节点仍需扫描一遍, 因此算法时间复杂度为<code>$O(n^2)$</code>. 可使用最小堆优化时间复杂度, 每次取出最小距离节点, 或修改节点距离的时间复杂度为$O(\log{n})$, 因此算法时间复杂度为<code>$n\log&#123;n&#125;$</code> 需要注意的是, Dijkstra算法不支持负权重的边, 也不支持负权重的环.</p>
+<h3 id="1-2-Floyd-Warshall-algorithm"><a href="#1-2-Floyd-Warshall-algorithm" class="headerlink" title="1.2 Floyd-Warshall algorithm"></a>1.2 Floyd-Warshall algorithm</h3><p>Floyd算法用于计算图中任意两点的最短路径, 支持有向图和负权重的边. 假设<code>D(i,j,k)</code>表示从节点i到节点j的最短路径, 且该路径只经过<code>(1...k)</code>集合中的节点, 因此:</p>
+<ul>
+<li>若i到j的最短路径经过k, 则<code>D(i,j,k) = D(i,k,k-1) + D(k,j,k-1)</code></li>
+<li>若i到j的最短路径不经过k, 则<code>D(i,j,k) = D(i,j,k-1)</code></li>
+</ul>
+<p>因此, <code>D(i,j,k) = min(D(i,k,k-1) + D(k,j,k-1), D(i,j,k-1))</code>. 可以发现, 该算法采用的是动态规划, 该公式即为动态规划中的状态转移方程. 假设点到点的距离矩阵为<code>dist</code>, 算法步骤如下:</p>
+<ol>
+<li>将每个节点到自己的距离设为0: <code>dist[i][i] = 0</code></li>
+<li>将每个边的权重值写入矩阵: <code>dist[i][j] = w(i, j)</code>; 若两点之间没有直连边, 则设为$+\infty$</li>
+<li>计算经过k的最短路径: <code>dist[k][i][j] = min(dist[k-1][i][j], dist[k-1][i][k] + dist[k-1][k][j])</code></li>
+</ol>
+<p>可以看到, <code>D[0][i][j]</code>即为原图的邻接矩阵. 该算法的时间复杂度为<code>$O(n^3)$</code>, 空间复杂度为<code>$O(n^2)$</code>(n为点数).</p>
+<h2 id="743-Network-Delay-Time"><a href="#743-Network-Delay-Time" class="headerlink" title="743. Network Delay Time"></a>743. Network Delay Time</h2><p>You are given a network of <code>n</code> nodes, labeled from <code>1</code> to <code>n</code>. You are also given times, a list of travel times as directed edges <code>$\text&#123;times&#125;[i] = (u_i, v_i, w_i)$</code>, where <code>$u_i$</code> is the source node, <code>$v_i$</code> is the target node, and <code>$w_i$</code> is the time it takes for a signal to travel from source to target.</p>
+<p>We will send a signal from a given node <code>k</code>. Return the <strong>minimum</strong> time it takes for all the <code>n</code> nodes to receive the signal. If it is impossible for all the <code>n</code> nodes to receive the signal, return <code>-1</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: times = [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2</span><br><span class="line">Output: 2</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: times = [[1,2,1]], n = 2, k = 2</span><br><span class="line">Output: -1</span><br></pre></td></tr></table></figure>
+
+<h3 id="Dijkstra"><a href="#Dijkstra" class="headerlink" title="Dijkstra"></a>Dijkstra</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Edge</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> Node from;</span><br><span class="line">        <span class="keyword">public</span> Node to;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> time;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Edge</span><span class="params">(Node from, Node to, <span class="type">int</span> time)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.from = from;</span><br><span class="line">            <span class="built_in">this</span>.to = to;</span><br><span class="line">            <span class="built_in">this</span>.time = time;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Node</span> &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> id;</span><br><span class="line">        <span class="keyword">public</span> List&lt;Edge&gt; next;</span><br><span class="line">        <span class="keyword">public</span> <span class="type">int</span> time;</span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Node</span><span class="params">(<span class="type">int</span> id)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.id = id;</span><br><span class="line">            <span class="built_in">this</span>.time = Integer.MAX_VALUE;</span><br><span class="line">            next = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">networkDelayTime</span><span class="params">(<span class="type">int</span>[][] times, <span class="type">int</span> n, <span class="type">int</span> k)</span> &#123;</span><br><span class="line">        Node[] nodes = <span class="keyword">new</span> <span class="title class_">Node</span>[n+<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            nodes[i] = <span class="keyword">new</span> <span class="title class_">Node</span>(i);</span><br><span class="line">        &#125;</span><br><span class="line">        nodes[k].time = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] t: times) &#123;</span><br><span class="line">            nodes[t[<span class="number">0</span>]].next.add(<span class="keyword">new</span> <span class="title class_">Edge</span>(nodes[t[<span class="number">0</span>]], nodes[t[<span class="number">1</span>]], t[<span class="number">2</span>]));</span><br><span class="line">        &#125;</span><br><span class="line">        Set&lt;Node&gt; visited = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">        <span class="type">Node</span> <span class="variable">min</span> <span class="operator">=</span> nodes[k];</span><br><span class="line">        <span class="keyword">while</span> (min != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (Edge edge: min.next) &#123;</span><br><span class="line">                <span class="keyword">if</span> (min.time + edge.time &lt; edge.to.time) &#123;</span><br><span class="line">                    edge.to.time = min.time + edge.time;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            visited.add(min);</span><br><span class="line">            min = getMinimumAndUnvisitedNode(nodes, visited);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (nodes[i].time == Integer.MAX_VALUE) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">            res = Math.max(res, nodes[i].time);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Node <span class="title function_">getMinimumAndUnvisitedNode</span><span class="params">(Node[] nodes, Set&lt;Node&gt; visited)</span> &#123;</span><br><span class="line">        <span class="type">Node</span> <span class="variable">res</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">int</span> <span class="variable">time</span> <span class="operator">=</span> Integer.MAX_VALUE;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; nodes.length; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (visited.contains(nodes[i])) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (nodes[i].time &lt; time) &#123;</span><br><span class="line">                res = nodes[i];</span><br><span class="line">                time = nodes[i].time;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="399-Evaluate-Division"><a href="#399-Evaluate-Division" class="headerlink" title="399. Evaluate Division"></a>399. Evaluate Division</h2><p>You are given an array of variable pairs <code>equations</code> and an array of real numbers <code>values</code>, where <code>equations[i] = [$A_i$, $B_i$]</code> and <code>values[i]</code> represent the equation <code>$A_i / B_i = \text&#123;values&#125;[i]$</code>. Each Ai or Bi is a string that represents a single variable.</p>
+<p>You are also given some <code>queries</code>, where <code>$\text&#123;queries&#125;[j] = [C_j, D_j]$</code> represents the <code>$j^&#123;th&#125;$</code> query where you must find the answer for <code>$C_j$ / $D_j$ = ?</code>.</p>
+<p>Return the answers to all queries. If a single answer cannot be determined, return <code>-1.0</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: equations = [[&quot;a&quot;,&quot;b&quot;],[&quot;b&quot;,&quot;c&quot;]], values = [2.0,3.0], queries = [[&quot;a&quot;,&quot;c&quot;],[&quot;b&quot;,&quot;a&quot;],[&quot;a&quot;,&quot;e&quot;],[&quot;a&quot;,&quot;a&quot;],[&quot;x&quot;,&quot;x&quot;]]</span><br><span class="line">Output: [6.00000,0.50000,-1.00000,1.00000,-1.00000]</span><br><span class="line">Explanation: </span><br><span class="line">Given: a / b = 2.0, b / c = 3.0</span><br><span class="line">queries are: a / c = ?, b / a = ?, a / e = ?, a / a = ?, x / x = ?</span><br><span class="line">return: [6.0, 0.5, -1.0, 1.0, -1.0 ]</span><br></pre></td></tr></table></figure>
+
+<h3 id="Floyd-Warshall-algorithm"><a href="#Floyd-Warshall-algorithm" class="headerlink" title="Floyd-Warshall algorithm"></a>Floyd-Warshall algorithm</h3><p>假设方程为<code>A / B = C</code>, 可令A和B为节点, C为两点间边的权重. 计算<code>$\text&#123;node&#125;_i / \text&#123;node&#125;_j$</code>时, 只需将<code>$\text&#123;node&#125;_i$</code>到<code>$\text&#123;node&#125;_j$</code>的最短路径上的权值相乘.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">double</span>[] calcEquation(List&lt;List&lt;String&gt;&gt; equations, <span class="type">double</span>[] values, List&lt;List&lt;String&gt;&gt; queries) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">len</span> <span class="operator">=</span> <span class="number">0</span>, n = equations.size();</span><br><span class="line">        Map&lt;String, Integer&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span> (List&lt;String&gt; eq: equations) &#123;</span><br><span class="line">            map.putIfAbsent(eq.get(<span class="number">0</span>), len++);</span><br><span class="line">            map.putIfAbsent(eq.get(<span class="number">1</span>), len++);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">double</span>[][] matrix = <span class="keyword">new</span> <span class="title class_">double</span>[len][len];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">double</span>[] line: matrix) &#123;</span><br><span class="line">            Arrays.fill(line, Double.MAX_VALUE);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            List&lt;String&gt; eq = equations.get(i);</span><br><span class="line">            <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> map.get(eq.get(<span class="number">0</span>)), b = map.get(eq.get(<span class="number">1</span>));</span><br><span class="line">            matrix[a][b] = values[i];</span><br><span class="line">            matrix[b][a] = <span class="number">1</span> / values[i];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> <span class="number">0</span>; k &lt; len; k++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; len; j++) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (matrix[i][k] == Double.MAX_VALUE || matrix[k][j] == Double.MAX_VALUE) <span class="keyword">continue</span>;</span><br><span class="line">                    matrix[i][j] = matrix[i][k] * matrix[k][j];</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">double</span>[] res = <span class="keyword">new</span> <span class="title class_">double</span>[queries.size()];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; res.length; i++) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">a</span> <span class="operator">=</span> queries.get(i).get(<span class="number">0</span>), b = queries.get(i).get(<span class="number">1</span>);</span><br><span class="line">            <span class="type">Integer</span> <span class="variable">x</span> <span class="operator">=</span> map.get(a), y = map.get(b);</span><br><span class="line">            res[i] = (x == <span class="literal">null</span> || y == <span class="literal">null</span> || matrix[x][y] == Double.MAX_VALUE) ? -<span class="number">1</span> : matrix[x][y];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="882-Reachable-Nodes-In-Subdivided-Graph"><a href="#882-Reachable-Nodes-In-Subdivided-Graph" class="headerlink" title="882. Reachable Nodes In Subdivided Graph"></a>882. Reachable Nodes In Subdivided Graph</h2><p>You are given an undirected graph (the <strong>&quot;original graph&quot;</strong>) with <code>n</code> nodes labeled from <code>0</code> to <code>n - 1</code>. You decide to <strong>subdivide</strong> each edge in the graph into a chain of nodes, with the number of new nodes varying between each edge.</p>
+<p>The graph is given as a 2D array of <code>edges</code> where <code>$\text&#123;edges&#125;[i] = [u_i, v_i, &#123;cnt&#125;_i]$</code> indicates that there is an edge between nodes <code>$u_i$</code> and <code>$v_i$</code> in the original graph, and <code>$&#123;cnt&#125;_i$</code> is the total number of new nodes that you will <strong>subdivide</strong> the edge into. Note that <code>$&#123;cnt&#125;_i == 0$</code> means you will not subdivide the edge.</p>
+<p>To <strong>subdivide</strong> the edge <code>[$u_i$, $v_i$]</code>, replace it with (<code>$&#123;cnt&#125;_i + 1$</code>) new edges and <code>$&#123;cnt&#125;_i$</code> new nodes. The new nodes are <code>$x_1$</code>, <code>$x_2$</code>, ..., <code>$x_&#123;\text&#123;cnt&#125;_i&#125;$</code>, and the new edges are <code>$[u_i, x_1], [x_1, x_2], [x_2, x_3], ..., [x_&#123;\text&#123;cnt&#125;_&#123;i-1&#125;&#125;, x_&#123;\text&#123;cnt&#125;_i&#125;], [x_&#123;\text&#123;cnt&#125;_i&#125;, v_i]$</code>.</p>
+<p>In this <strong>new graph</strong>, you want to know how many nodes are <strong>reachable</strong> from the node <code>0</code>, where a node is <strong>reachable</strong> if the distance is <code>maxMoves</code> or less.</p>
+<p>Given the original graph and <code>maxMoves</code>, return the number of nodes that are <strong>reachable</strong> from node <code>0</code> in the new graph.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: edges = [[0,1,10],[0,2,1],[1,2,2]], maxMoves = 6, n = 3</span><br><span class="line">Output: 13</span><br><span class="line">Explanation: The edge subdivisions are shown in the image above.</span><br><span class="line">The nodes that are reachable are highlighted in yellow.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Dijkstra-1"><a href="#Dijkstra-1" class="headerlink" title="Dijkstra"></a>Dijkstra</h3><p><strong>reachable node</strong>包含两部分:</p>
+<ul>
+<li>node本身</li>
+<li>edge上可subdivide的node (cnt)</li>
+</ul>
+<p>若想获得最多的node, 则需从<code>$\text&#123;node&#125;_0$</code>抵达更多节点, 因此采用Dijkstra算法. 假设结果为<code>reachable</code>, 每经过一个节点, 则<code>reachable</code>加一; 对于edge上的节点, 我们可假设一个场景:<br><code>$\text&#123;edge&#125;_i$</code>为<code>$\text&#123;node&#125;_a$</code>与<code>$\text&#123;node&#125;_b$</code>之间的edge, <code>$\text&#123;edge&#125;_i$</code>上可subdivide的节点数为<code>$\text&#123;cnt&#125;_i$</code>, 从<code>$\text&#123;node&#125;_0$</code>到<code>$\text&#123;node&#125;_a$</code>还剩余<code>$\text&#123;move&#125;_i$</code>移动数, 存在三种情况:</p>
+<ul>
+<li><code>$\text&#123;move&#125;_i \lt \text&#123;cnt&#125;_i$</code>, 且从其他路径无法走到<code>$\text&#123;node&#125;_b$</code>: 通过的节点数为<code>$\text&#123;move&#125;_i$</code></li>
+<li><code>$\text&#123;move&#125;_i \lt \text&#123;cnt&#125;_i$</code>, 但从其他路径可以走到<code>$\text&#123;node&#125;_b$</code>: 假设走到<code>$\text&#123;node&#125;_b$</code>时还剩余<code>$\text&#123;move&#125;_j$</code>移动数, 则通过的节点数为<code>$\text&#123;move&#125;_i + \text&#123;move&#125;_j$</code></li>
+<li><code>$\text&#123;move&#125;_i \ge \text&#123;cnt&#125;_i$</code>: 通过的节点数为<code>$\text&#123;cnt&#125;_i$</code></li>
+</ul>
+<p>对于任意节点, 其<code>剩余移动数</code>为<code>maxMoves - 已经过的节点数</code>, Dijkstra算法遍历一个节点的相邻边时, 一个edge上可经过的节点数为<code>min(cnt, maxMoves - 已经过的节点数)</code>. 需要注意的是, 若maxMoves足够大, 一条边会被经过两次, 因此需比较<code>$\text&#123;move&#125;_&#123;\text&#123;edge&#125;_&#123;ab&#125;&#125; + \text&#123;move&#125;_&#123;\text&#123;edge&#125;_&#123;ab&#125;&#125;$</code>与<code>$\text&#123;cnt&#125;_i$</code>的大小.</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">reachableNodes</span><span class="params">(<span class="type">int</span>[][] edges, <span class="type">int</span> maxMoves, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">        List&lt;<span class="type">int</span>[]&gt;[] nodes = <span class="keyword">new</span> <span class="title class_">List</span>[n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            nodes[i] = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] e: edges) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> e[<span class="number">0</span>], j = e[<span class="number">1</span>], cnt = e[<span class="number">2</span>];</span><br><span class="line">            nodes[i].add(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;j, cnt&#125;);</span><br><span class="line">            nodes[j].add(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;i, cnt&#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">boolean</span>[] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[n];</span><br><span class="line">        PriorityQueue&lt;<span class="type">int</span>[]&gt; pq = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;((a,b)-&gt;a[<span class="number">1</span>]-b[<span class="number">1</span>]); <span class="comment">// node, distance traveled</span></span><br><span class="line">        pq.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;<span class="number">0</span>, <span class="number">0</span>&#125;);</span><br><span class="line">        <span class="type">int</span>[][] matrix = <span class="keyword">new</span> <span class="title class_">int</span>[n][n]; <span class="comment">// reachable nodes on each edge (i to j and j to i)</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (!pq.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span>[] p = pq.poll();</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> p[<span class="number">0</span>], dist = p[<span class="number">1</span>]; <span class="comment">// from node</span></span><br><span class="line">            <span class="keyword">if</span> (visited[i]) <span class="keyword">continue</span>;</span><br><span class="line">            res++;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span>[] edge: nodes[i]) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> edge[<span class="number">0</span>], cnt = edge[<span class="number">1</span>]; <span class="comment">// to node</span></span><br><span class="line">                <span class="keyword">if</span> (dist + cnt + <span class="number">1</span> &lt;= maxMoves) &#123; <span class="comment">// whether or not move to next node</span></span><br><span class="line">                    pq.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;j, dist + cnt + <span class="number">1</span>&#125;);</span><br><span class="line">                &#125;</span><br><span class="line">                matrix[i][j] = Math.min(cnt, maxMoves - dist);</span><br><span class="line">            &#125;</span><br><span class="line">            visited[i] = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] e: edges) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> e[<span class="number">0</span>], j = e[<span class="number">1</span>], cnt = e[<span class="number">2</span>];</span><br><span class="line">            res += Math.min(matrix[i][j] + matrix[j][i], cnt);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2577-Minimum-Time-to-Visit-a-Cell-In-a-Grid"><a href="#2577-Minimum-Time-to-Visit-a-Cell-In-a-Grid" class="headerlink" title="2577. Minimum Time to Visit a Cell In a Grid"></a>2577. Minimum Time to Visit a Cell In a Grid</h2><p>You are given a <code>m x n</code> matrix <code>grid</code> consisting of <strong>non-negative</strong> integers where <code>grid[row][col]</code> represents the <strong>minimum</strong> time required to be able to visit the cell <code>(row, col)</code>, which means you can visit the cell <code>(row, col)</code> only when the time you visit it is greater than or equal to <code>grid[row][col]</code>.</p>
+<p>You are standing in the <strong>top-left</strong> cell of the matrix in the $0^{\text{th}}$ second, and you must move to <strong>any</strong> adjacent cell in the four directions: up, down, left, and right. Each move you make takes 1 second.</p>
+<p>Return the <strong>minimum</strong> time required in which you can visit the bottom-right cell of the matrix. If you cannot visit the bottom-right cell, then return <code>-1</code>.</p>
+<p>Example 1:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: grid = [[0,1,3,2],[5,1,2,5],[4,3,8,6]]</span><br><span class="line">Output: 7</span><br><span class="line">Explanation: One of the paths that we can take is the following:</span><br><span class="line">- at t = 0, we are on the cell (0,0).</span><br><span class="line">- at t = 1, we move to the cell (0,1). It is possible because grid[0][1] &lt;= 1.</span><br><span class="line">- at t = 2, we move to the cell (1,1). It is possible because grid[1][1] &lt;= 2.</span><br><span class="line">- at t = 3, we move to the cell (1,2). It is possible because grid[1][2] &lt;= 3.</span><br><span class="line">- at t = 4, we move to the cell (1,1). It is possible because grid[1][1] &lt;= 4.</span><br><span class="line">- at t = 5, we move to the cell (1,2). It is possible because grid[1][2] &lt;= 5.</span><br><span class="line">- at t = 6, we move to the cell (1,3). It is possible because grid[1][3] &lt;= 6.</span><br><span class="line">- at t = 7, we move to the cell (2,3). It is possible because grid[1][3] &lt;= 7.</span><br><span class="line">The final time is 7. It can be shown that it is the minimum time possible.</span><br></pre></td></tr></table></figure>
+
+<p>Example 2:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Input: grid = [[0,2,4],[3,2,1],[1,0,4]]</span><br><span class="line">Output: -1</span><br><span class="line">Explanation: There is no path from the top left to the bottom-right cell.</span><br></pre></td></tr></table></figure>
+
+<h3 id="Dijkstra-2"><a href="#Dijkstra-2" class="headerlink" title="Dijkstra"></a>Dijkstra</h3><p>假设题目中矩阵大小为<code>m*n</code>, 要求用最短时间从(0,0)走到(m-1,n-1)位置, 因此使用Dijkstra算法, 需要注意的是, 我们无法在一个格子中等待一段时间后再前进, 因此存在几种情况:</p>
+<ul>
+<li>从起始点(0,0)出发, 但(0,1)和(1,0)上的时间要求都大于1, 无法继续前进, 返回-1</li>
+<li>从非(0,0)位置出发, 但目的位置要求的时间大于当前时间, 需要先回到之前的节点, 并返回该节点, 让时间+2. 若当前时间为$t_i$, 要求时间为$t_q$, 存在以下情况:<ul>
+<li>$t_i$和$t_q$同为奇数或偶数: $t_i$可增长到$t_q$</li>
+<li>$t_i$和$t_q$互为奇偶数: $t_i$可增长到$t_q + 1$</li>
+</ul>
+</li>
+<li>若不满足上述条件, 且未抵达目的点(m-1, n-1), 则当前时间+1</li>
+<li>抵达(m-1, n-1), 返回当前时间</li>
+</ul>
+<p>算法的时间复杂度为<code>$O(mn\log&#123;mn&#125;)$</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">minimumTime</span><span class="params">(<span class="type">int</span>[][] grid)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (grid[<span class="number">1</span>][<span class="number">0</span>] &gt; <span class="number">1</span> &amp;&amp; grid[<span class="number">0</span>][<span class="number">1</span>] &gt; <span class="number">1</span>) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        PriorityQueue&lt;<span class="type">int</span>[]&gt; pq = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;&gt;((a,b)-&gt;(a[<span class="number">2</span>]-b[<span class="number">2</span>]));</span><br><span class="line">        pq.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>&#125;);</span><br><span class="line">        <span class="type">int</span> <span class="variable">m</span> <span class="operator">=</span> grid.length, n = grid[<span class="number">0</span>].length;</span><br><span class="line">        <span class="type">boolean</span>[][] visited = <span class="keyword">new</span> <span class="title class_">boolean</span>[m][n];</span><br><span class="line">        <span class="type">int</span>[][] dirs = &#123;&#123;<span class="number">0</span>,<span class="number">1</span>&#125;, &#123;<span class="number">1</span>,<span class="number">0</span>&#125;, &#123;<span class="number">0</span>,-<span class="number">1</span>&#125;, &#123;-<span class="number">1</span>,<span class="number">0</span>&#125;&#125;;</span><br><span class="line">        <span class="keyword">while</span> (!pq.isEmpty()) &#123;</span><br><span class="line">            <span class="type">int</span>[] p = pq.poll();</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> p[<span class="number">0</span>], j = p[<span class="number">1</span>], t = p[<span class="number">2</span>] + <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span> (i == m-<span class="number">1</span> &amp;&amp; j == n-<span class="number">1</span>) <span class="keyword">return</span> p[<span class="number">2</span>];</span><br><span class="line">            <span class="keyword">if</span> (visited[i][j]) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span>[] dir: dirs) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> i + dir[<span class="number">0</span>], y = j + dir[<span class="number">1</span>];</span><br><span class="line">                <span class="keyword">if</span> (x &lt; <span class="number">0</span> || x &gt;= m || y &lt; <span class="number">0</span> || y &gt;= n) <span class="keyword">continue</span>;</span><br><span class="line">                <span class="keyword">if</span> (t &lt; grid[x][y]) &#123;</span><br><span class="line">                    <span class="type">boolean</span> <span class="variable">isOdd1</span> <span class="operator">=</span> (grid[x][y] &amp; <span class="number">0x1</span>) == <span class="number">1</span>, isOdd2 = (t &amp; <span class="number">0x1</span>) == <span class="number">1</span>;</span><br><span class="line">                    pq.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;x, y, grid[x][y] + ((isOdd1 ^ isOdd2) ? <span class="number">1</span> : <span class="number">0</span>)&#125;);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    pq.offer(<span class="keyword">new</span> <span class="title class_">int</span>[]&#123;x, y, t&#125;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            visited[i][j] = <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2699-Modify-Graph-Edge-Weights"><a href="#2699-Modify-Graph-Edge-Weights" class="headerlink" title="2699. Modify Graph Edge Weights"></a>2699. Modify Graph Edge Weights</h2><p>You are given an <strong>undirected weighted connected</strong> graph containing <code>n</code> nodes labeled from <code>0</code> to <code>n - 1</code>, and an integer array <code>edges</code> where <code>$\text&#123;edges&#125;[i] = [a_i, b_i, w_i]$</code> indicates that there is an edge between nodes <code>$a_i$</code> and <code>$b_i$</code> with weight <code>$w_i$</code>.</p>
+<p>Some edges have a weight of <code>-1</code> (<code>$w_i = -1$</code>), while others have a <strong>positive</strong> weight (<code>$w_i &gt; 0$</code>).</p>
+<p>Your task is to modify <strong>all edges</strong> with a weight of -1 by assigning them <strong>positive integer values</strong> in the range <code>$[1, 2 * &#123;10&#125;^9]$</code> so that the <strong>shortest distance</strong> between the nodes <code>source</code> and <code>destination</code> becomes equal to an integer <code>target</code>. If there are <strong>multiple modifications</strong> that make the shortest distance between <code>source</code> and <code>destination</code> equal to <code>target</code>, any of them will be considered correct.</p>
+<p>Return an array containing all edges (even unmodified ones) in any order if it is possible to make the shortest distance from <code>source</code> to <code>destination</code> equal to <code>target</code>, or an <strong>empty array</strong> if it&#39;s impossible.</p>
+<h3 id="Binary-Search-Dijkstra"><a href="#Binary-Search-Dijkstra" class="headerlink" title="Binary Search + Dijkstra"></a>Binary Search + Dijkstra</h3><p>假设图中节点i到j的最短路径为<code>D(i,j)</code>, 若图中任意一条边的权重加一, 则<code>D(i,j)</code>存在两种情况:</p>
+<ul>
+<li><code>D(i,j)</code>不变: 添加权重的边并不组成i到j的最短路径</li>
+<li><code>D(i,j)</code>加一: 添加权重的边为i到j的最短路径</li>
+</ul>
+<p>反之, 若图中任意一条边的权重减一, 则<code>D(i,j)</code>要么不变, 要么减一, 因此<code>D(i,j)</code>保持着单调性. 对于题目中所有权重为-1的边, 其权重值的范围为$[1, \text{target}]$, 假设存在k条权重为-1的边, 则存在$k * (target - 1)$种权重情况, 如:<br>$$<br>[1,1,1, \ldots, 1] \\<br>[2,1,1, \ldots, 1] \\<br>[3,1,1, \ldots, 1] \\<br>\ldots \\<br>[target, 1, 1, \ldots, 1] \\<br>[target, 2, 1, \ldots, 1] \\<br>\ldots \\<br>[target, target, target, \ldots, target]<br>$$</p>
+<p>假设source到destination的最短路径为D, 算法步骤如下:</p>
+<ol>
+<li>计算权重为$[1,1,1,\ldots,1]$时的最短路径D, 若大于target, 则无解</li>
+<li>计算权重为$[target, target, target, \ldots, target]$时的最短路径D, 若小于target, 则无解</li>
+<li>若不满足第一种和第二种情况, 说明存在解, 采用二分搜索查找符合条件的权重组合</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span>[][] modifiedGraphEdges(<span class="type">int</span> n, <span class="type">int</span>[][] edges, <span class="type">int</span> source, <span class="type">int</span> destination, <span class="type">int</span> target) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">k</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] edge: edges) &#123;</span><br><span class="line">            <span class="keyword">if</span> (edge[<span class="number">2</span>] == -<span class="number">1</span>) ++k;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">long</span> <span class="variable">l</span> <span class="operator">=</span> <span class="number">0</span>, r = (target - <span class="number">1</span>) * (<span class="type">long</span>)k;</span><br><span class="line">        <span class="keyword">if</span> (shortestPath(n, construct(n, edges, l, target), source, destination) &gt; target</span><br><span class="line">            || shortestPath(n, construct(n, edges, r, target), source, destination) &lt; target) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">0</span>][<span class="number">0</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (l &lt;= r) &#123;</span><br><span class="line">            <span class="type">long</span> <span class="variable">m</span> <span class="operator">=</span> l + (r - l) / <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">if</span> (shortestPath(n, construct(n, edges, m, target), source, destination) &gt; target) &#123;</span><br><span class="line">                r = m - <span class="number">1</span>;  </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                l = m + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] edge: edges) &#123;</span><br><span class="line">            <span class="keyword">if</span> (edge[<span class="number">2</span>] != -<span class="number">1</span>) <span class="keyword">continue</span>;</span><br><span class="line">            <span class="keyword">if</span> (r &gt;= target - <span class="number">1</span>) &#123;</span><br><span class="line">                edge[<span class="number">2</span>] = target;</span><br><span class="line">                r -= target - <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                edge[<span class="number">2</span>] = (<span class="type">int</span>)r + <span class="number">1</span>;</span><br><span class="line">                r = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> edges;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> <span class="title function_">shortestPath</span><span class="params">(<span class="type">int</span> n, <span class="type">long</span>[][] edges, <span class="type">int</span> src, <span class="type">int</span> dest)</span> &#123;</span><br><span class="line">        <span class="type">boolean</span>[] used = <span class="keyword">new</span> <span class="title class_">boolean</span>[n];</span><br><span class="line">        <span class="type">long</span>[] dist = <span class="keyword">new</span> <span class="title class_">long</span>[n];</span><br><span class="line">        Arrays.fill(dist, Integer.MAX_VALUE);</span><br><span class="line">        dist[src] = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">cnt</span> <span class="operator">=</span> <span class="number">0</span>; cnt &lt; n; cnt++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> -<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!used[j] &amp;&amp; (i == -<span class="number">1</span> || dist[j] &lt; dist[i])) &#123;</span><br><span class="line">                    i = j;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            used[i] = <span class="literal">true</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (used[j]) <span class="keyword">continue</span>;</span><br><span class="line">                dist[j] = Math.min(dist[j], dist[i] + edges[i][j]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> (<span class="type">int</span>)dist[dest];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">long</span>[][] construct(<span class="type">int</span> n, <span class="type">int</span>[][] edges, <span class="type">long</span> index, <span class="type">int</span> target) &#123;</span><br><span class="line">        <span class="type">long</span>[][] res = <span class="keyword">new</span> <span class="title class_">long</span>[n][n];</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            Arrays.fill(res[i], Integer.MAX_VALUE);</span><br><span class="line">            res[i][i] = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span>[] edge: edges) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> edge[<span class="number">0</span>], b = edge[<span class="number">1</span>], d = edge[<span class="number">2</span>];</span><br><span class="line">            <span class="keyword">if</span> (d == -<span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (index &gt;= target - <span class="number">1</span>) &#123;</span><br><span class="line">                    res[a][b] = res[b][a] = target;</span><br><span class="line">                    index -= target - <span class="number">1</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    res[a][b] = res[b][a] = index + <span class="number">1</span>;</span><br><span class="line">                    index = <span class="number">0</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                res[a][b] = res[b][a] = d;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Algorithm/">Algorithm</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/285f.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Topological Sort</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/afab.html">
+        <span class="next-text nav-default">MST (Minimum Spanning Tree)</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/c8ae.html';
+  var disqus_title = "Shortest Path in Graph";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="HDFS Recovery Process"/>
+
+
+
+
+  <meta name="keywords" content="Distributed System," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/245f.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/245f.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/245f.html"/>
+
+
+<meta name="description" content="HDFS最重要的设计目的之一是容错性. HDFS应保证, 无论出现节点故障还是网络故障, 写入都能正确执行. HDFS为此设计了一系列方案: lease恢复, block恢复, pipeline恢复. 1. Background在HDFS中, 文件被拆分为多个block, 遵循单写入, 多读取语义. 为了容错性, block需备份到多个datanode上. block的副本数称为replicati">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HDFS Recovery Process">
+<meta property="og:url" content="https://zaf1ro.github.io/p/245f.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="HDFS最重要的设计目的之一是容错性. HDFS应保证, 无论出现节点故障还是网络故障, 写入都能正确执行. HDFS为此设计了一系列方案: lease恢复, block恢复, pipeline恢复. 1. Background在HDFS中, 文件被拆分为多个block, 遵循单写入, 多读取语义. 为了容错性, block需备份到多个datanode上. block的副本数称为replicati">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/HDFS/2-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/HDFS/2-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/HDFS/2-3.png">
+<meta property="article:published_time" content="2022-04-14T12:19:03.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.039Z">
+<meta property="article:tag" content="Distributed System">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/HDFS/2-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+HDFS Recovery Process - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Background"><span class="toc-text">1. Background</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Failures-in-HDFS"><span class="toc-text">2. Failures in HDFS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Generation-Stamp"><span class="toc-text">3. Generation Stamp</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Blocks-Replicas-and-Their-States"><span class="toc-text">4. Blocks, Replicas, and Their States</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Replica-States"><span class="toc-text">4.1 Replica States</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Block-States"><span class="toc-text">4.2 Block States</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Lease-Recovery-and-Block-Recovery"><span class="toc-text">5. Lease Recovery and Block Recovery</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Lease-Manager"><span class="toc-text">5.1 Lease Manager</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Lease-Recovery-Process"><span class="toc-text">5.2 Lease Recovery Process</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Pipeline-Recovery"><span class="toc-text">6. Pipeline Recovery</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-The-Write-Pipeline"><span class="toc-text">6.1 The Write Pipeline</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Pipeline-Recovery-process"><span class="toc-text">6.2 Pipeline Recovery process</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-DataNode-Replacement-Policy-upon-Failure"><span class="toc-text">6.3 DataNode Replacement Policy upon Failure</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          HDFS Recovery Process
+        
+      </h1>
+      <time class="post-time">
+          04/14/22
+      </time>
+    </header>
+
+    <div class="post-content">
+      <p>HDFS最重要的设计目的之一是<strong>容错性</strong>. HDFS应保证, 无论出现节点故障还是网络故障, 写入都能正确执行. HDFS为此设计了一系列方案: lease恢复, block恢复, pipeline恢复.</p>
+<h2 id="1-Background"><a href="#1-Background" class="headerlink" title="1. Background"></a>1. Background</h2><p>在HDFS中, 文件被拆分为多个block, 遵循单写入, 多读取语义. 为了容错性, block需备份到多个datanode上. block的副本数称为<strong>replication factor</strong>(复制因子). 当创建文件, 或追加文件时, HDFS会在多个datanode间创建<strong>pipeline</strong>, 上游datanode将block传递给下游datanode, 复制因子决定了pipeline的数量. 每个datatnode会周期性(默认一小时)向namenode汇报自己拥有的block, 并定时向namenode发送心跳(默认3秒)来证明自身存活, namenode超过一段时间(默认10分钟)收不到心跳, 则认为datanode死亡, 不会将请求交给该datanode.<br>心跳除了证明datanode存活, namenode还会通过心跳将命令传回给datanode, 因此心跳的间隔比较短.<br><img src="/images/System-Design/HDFS/2-1.png" alt="HDFS Write Pipeline"></p>
+<h2 id="2-Failures-in-HDFS"><a href="#2-Failures-in-HDFS" class="headerlink" title="2. Failures in HDFS"></a>2. Failures in HDFS</h2><p>HDFS在写入过程中会遇到以下三种故障:</p>
+<ul>
+<li>写入时, 客户端发生故障</li>
+<li>写入时, datanode发生故障</li>
+<li>写入时, namenode发生故障</li>
+</ul>
+<p>为此HDFS也有三种恢复方案:</p>
+<ul>
+<li>Lease recovery: 客户端写入文件前, 必须先获得一个<strong>lease</strong>. lease可看作一个锁, 确保当前只有一个客户端写入. 客户端必须在lease过期前续约. 当client发生故障后, lease会在一段时间后过期, HDFS会关闭文件并释放该lease, 允许其他客户端写入.</li>
+<li>Block recovery: 当客户端发生故障时, 写入的最后一个block很可能没有写完, 为保证该block的每个replica都有相同的长度, 需在lease recovery完成后进行block recovery, 来确保所有replica一致.</li>
+<li>pipeline recovery: 若datanode发生故障, HDFS会尝试修复该错误: 将该datanode从集群中剔除, 并将数据写入其他datanode, 这一过程称为pipeline recovery. 如果其他datanode也写入失败, 则本地写入失败.</li>
+</ul>
+<p>若namenode发生故障, 并不会影响客户端向datanode写数据, 因为namenode已经完成了datanode的分配, 且之后都无法写入. 当datanode向定期namenode汇报其状态, 但如果namenode不回复, datanode也会继续工作; 但客户端向namenode请求关闭文件时会报错, 需要人工介入恢复</p>
+<h2 id="3-Generation-Stamp"><a href="#3-Generation-Stamp" class="headerlink" title="3. Generation Stamp"></a>3. Generation Stamp</h2><p><strong>Generation Stamp</strong>(简称为GS)是一个8字节长的数字, namenode会为每个replica维护一个GS, GS主要有两个设计目的:</p>
+<ul>
+<li>检测陈旧的replica: 同一个block中, 某个replica没有执行追加操作, 该replica的GS会小于其他replica</li>
+<li>检测过期的replica: datanode重启后加入集群</li>
+</ul>
+<p>发生以下情况时, 会创建新的GS:</p>
+<ul>
+<li>创建新文件</li>
+<li>对文件进行追加或截断</li>
+<li>客户端写入数据时遇到错误</li>
+<li>NameNode为某个文件启动lease recovery</li>
+</ul>
+<h2 id="4-Blocks-Replicas-and-Their-States"><a href="#4-Blocks-Replicas-and-Their-States" class="headerlink" title="4. Blocks, Replicas, and Their States"></a>4. Blocks, Replicas, and Their States</h2><p>为区分namenode中的block和datanode中的block, 我们将前者称为<strong>block</strong>, 后者称为<strong>replica</strong>.</p>
+<h3 id="4-1-Replica-States"><a href="#4-1-Replica-States" class="headerlink" title="4.1 Replica States"></a>4.1 Replica States</h3><p>Datanode将replica的状态保存在磁盘中, replica的所有状态如下:</p>
+<ul>
+<li>FINALIZED: 表示replica已经完成写入, 不会再做任何修改(本次写入中), 且与同一block的其他replica拥有相同数据(校验)和GS. </li>
+<li>RBW(Replica Being Written): 表示replica正在被写入(创建&#x2F;追加文件). 该replica一定是文件的最后一个block; 该replica可被读取; 发生故障时, datanode会尽量保留该replica中的数据.</li>
+<li>RWR(Replica Waiting to be Recovered): 当datanode发生故障并重启后, 所有RBW replica都会变为该状态. 该状态的replica要么因为过期而被抛弃, 要么进行lease recovery.</li>
+<li>TEMPORARY: 表示replica是因集群平衡而创建的. 由于文件被不断添加和删除, 集群中每个datanode拥有的数据会愈发失衡. 该状态的replica不会被读取; datanode崩溃并恢复后, 该replica会被直接删除, 不会进行任何修复.</li>
+<li>RUR(Replica Under Recovery): 表示replica正处于恢复过程.</li>
+</ul>
+<p><img src="/images/System-Design/HDFS/2-2.png" alt="Replica States"></p>
+<p>以下为replica的状态变换路线:</p>
+<ol>
+<li>新建replica:<ul>
+<li>由客户端请求, 新建的replica用于保存文件, 状态变为<code>RBW</code></li>
+<li>由namenode请求, 新建的replica用于<strong>集群平衡</strong>或<strong>备份复制</strong>, 状态改为<code>TEMPORARY</code></li>
+</ul>
+</li>
+<li>从RBW出发:<ul>
+<li>客户端收到datanode的确认, 所有block都传输完毕, 发送close请求. Datanode收到后改为<code>FINALIZED</code></li>
+<li>replica所在的datanode重启, 切换到<code>RWR</code></li>
+<li>replica进行block recovery, 切换到<code>RUR</code></li>
+</ul>
+</li>
+<li>从TEMPORARY出发:<ul>
+<li>复制或集群平衡成功, 切换到<code>FINALIZED</code></li>
+<li>复制或集群平衡失败, 或datanode重启, 删除该replica</li>
+</ul>
+</li>
+<li>从RWR出发:<ul>
+<li>datanode重启, 状态不变</li>
+<li>replica进行block recovery, 切换到<code>RUR</code></li>
+</ul>
+</li>
+<li>从RUR出发:<ul>
+<li>datanode重启, 切换到<code>RWR</code></li>
+<li>恢复完成, 切换到<code>FINALIZED</code></li>
+</ul>
+</li>
+<li>从FINALIZED出发:<ul>
+<li>文件被打开追加写入, 文件最后一个block的所有replica切换到<code>RBW</code></li>
+<li>replica进行block recovery, 切换到<code>RUR</code></li>
+</ul>
+</li>
+</ol>
+<h3 id="4-2-Block-States"><a href="#4-2-Block-States" class="headerlink" title="4.2 Block States"></a>4.2 Block States</h3><p>Namenode将block的状态放在内存中. 当namenode重启时, 会将所有未关闭文件的最后一个block状态改为<code>UNDER_CONSTRUCTION</code>, 其他block设置为<code>COMPLETE</code>. Block的所有状态如下:</p>
+<ul>
+<li>UNDER_CONSTRUCTION: 表示block正在被写入. 该block一定是文件的最后一个正在写入的block. 其长度和GS都是可变的, 且可被读取. 该block会跟踪<code>RBW replica</code>和<code>RWR replica</code>的位置.</li>
+<li>UNDER_RECOVERY: 当客户端的lease过期时, 文件的最后一个block(处于UNDER_CONSTRUCTION状态)将在block recovery进行时切换为该状态.</li>
+<li>COMMITTED: block不再修改(数据和GS都不能修改), 但<code>FINALIZED replica</code>少于最小副本数. 为处理读请求, 该block必须跟踪<code>RBW replica</code>的位置, 以及<code>FINALIZED replica</code>的长度和GS. 当client向namenode请求添加新的block, 或关闭文件时, UNDER_CONSTRUCTION会变为此状态.</li>
+<li>COMPLETE: 当<code>FINALIZED replica</code>满足最小副本数时, 会切换为此状态. 只有文件中所有block都处于此状态时才能关闭文件.</li>
+</ul>
+<p><img src="/images/System-Design/HDFS/2-3.png" alt="Block States"></p>
+<p>以下为block的状态变换路线:</p>
+<ol>
+<li>新建文件, 或追加文件, 切换为<code>UNDER_CONSTRUCTION</code></li>
+<li>从UNDER_CONSTRUCTION出发:<ul>
+<li>若客户端请求添加新的block, 或关闭文件, 且<code>FINALIZED replica</code>少于最小副本数, 则切换到<code>COMMITTED</code></li>
+<li>若客户端请求添加新的block, 或关闭文件, 且<code>FINALIZED replica</code>达到最小副本数, 则切换到<code>COMPLETE</code></li>
+<li>若进行block recovery, 则切换到<code>UNDER_RECOVERY</code></li>
+</ul>
+</li>
+<li>从UNDER_RECOVERY出发:<ul>
+<li>删除0字节长度的replica</li>
+<li>恢复成功, 切换到<code>COMPLETE</code></li>
+<li>NameNode重启, 所有打开文件的最后一个block切换为<code>UNDER_CONSTRUCTION</code></li>
+</ul>
+</li>
+<li>从COMMITTED出发:<ul>
+<li><code>FINALIZED replica</code>达到最小副本数, 或文件被强制关闭, 或NameNode重启且不是最后一个block, 切换为<code>COMPLETE</code></li>
+<li>NameNode重启, 且是文件的最后一个block, 切换为<code>UNDER_CONSTRUCTION</code></li>
+</ul>
+</li>
+<li>从COMPLETE出发: NameNode重启, 且是文件的最后一个block, 则切换为<code>UNDER_CONSTRUCTION</code>. 这时若客户端存活, 则由客户端关闭文件, 否则由lease recovery恢复</li>
+</ol>
+<h2 id="5-Lease-Recovery-and-Block-Recovery"><a href="#5-Lease-Recovery-and-Block-Recovery" class="headerlink" title="5. Lease Recovery and Block Recovery"></a>5. Lease Recovery and Block Recovery</h2><ul>
+<li>Lease Recovery: 当前客户端发生故障后, 回收lease以允许其他客户端写入</li>
+<li>Block Recovery: 确保写入的block的所有replica一致</li>
+</ul>
+<h3 id="5-1-Lease-Manager"><a href="#5-1-Lease-Manager" class="headerlink" title="5.1 Lease Manager"></a>5.1 Lease Manager</h3><p>NameNode中有一个lease manager, 其负责管理lease. NameNode会跟踪客户端写入的文件, 因此客户端不需要续约时上报所有自己打开的文件, 只需周期性续约(RPC调用namenode的<code>renewLease()</code>), namenode会为其打开的所有文件续约.<br>Lease manager有两个超时时间: soft limit(1分钟), hard limit(1小时), 且不可修改. 客户端在达到soft limit前拥有<strong>独占写入权限</strong>; 若达到soft limit, 且另一个客户端请求写入, 则由另一个客户端接管lease. 若检测到超时时间达到hard limit, namenode会强制关闭文件, 并撤销lease.<br>Lease包含三个部分:</p>
+<ul>
+<li>lease的持有者(String)</li>
+<li>上次续约时间(long)</li>
+<li>打开的文件集合(HashSet)</li>
+</ul>
+<p>Lease manager包含两个数据结构:</p>
+<ul>
+<li><strong>lease持有者</strong>到<strong>lease</strong>的映射: <code>HashMap&lt;String, Lease&gt; leases</code>: </li>
+<li><strong>INode</strong>到<strong>lease</strong>的映射: <code>TreeMap&lt;Long, Lease&gt; leasesById</code></li>
+</ul>
+<p>客户端, lease, 和文件的关系如下:</p>
+<ul>
+<li>一个客户端只能有一个lease</li>
+<li>一个客户端可打开多个文件</li>
+<li>一个lease可包含多个文件, 但只能有一个持有者(客户端)</li>
+</ul>
+<p>以下是lease manager支持的操作:</p>
+<ul>
+<li>为某个路径添加一个lease: 若发出请求的客户端已拥有lease, 则将路径添加到该lease(并续约); 否则, 为该客户端创建新的lease, 并将路径添加到该lease</li>
+<li>删除某个路径的lease: 若该路径是客户端的最后一个路径, 则删除该lease</li>
+<li>检查超时时间是否达到soft limit和hard limit</li>
+<li>为某个客户端续约</li>
+</ul>
+<p>Lease manager有一个monitor线程, 每2秒检查是否存在lease达到hard limit, 并触发lease recovery.<br>客户端有一个<code>LeaseRenewer</code>线程, 每30秒让namenode为该客户端(所有打开的文件)续约: namenode端的<code>NameNodeRpcServer</code>接受RPC远程调用, 调用<code>FSNamesystem</code>的<code>LeaseManager</code>为客户端续约.</p>
+<h3 id="5-2-Lease-Recovery-Process"><a href="#5-2-Lease-Recovery-Process" class="headerlink" title="5.2 Lease Recovery Process"></a>5.2 Lease Recovery Process</h3><p>Lease recovery会在以下两种情况下触发:</p>
+<ul>
+<li>NameNode的monitor线程检测到某个客户端的超时时间达到hard limit</li>
+<li>当前客户端想要写文件或追加文件, 发现上一任客户端的超时时间达到soft limit</li>
+</ul>
+<p>Lease recovery会回收lease并关闭文件, 但在关闭文件前, 需确保文件block的replica一致. 由于block是一个个写入, 只有文件的最后一个block存在不一致风险, </p>
+<p>假设某个客户端超时时间达到hard limit, 其打开的文件为<code>f</code>, 以下是block recovery的算法流程:</p>
+<ol>
+<li>获得文件<code>f</code>中最后一个block所对应的datanode</li>
+<li>指定其中一个datanode作为<strong>primary datanode</strong>(主导恢复的节点), 假设为<code>p</code></li>
+<li><code>p</code>从namenode获得一个GS</li>
+<li><code>p</code>从其他datanode获得其block信息</li>
+<li><code>p</code>计算最小block长度</li>
+<li><code>p</code>向其他节点发起更新, 将所有replica更新为最小长度, 并使用新的GS</li>
+<li><code>p</code>向namenode报告最终结果</li>
+<li>NameNode更新BlockInfo</li>
+<li>NameNode移除<code>f</code>的lease</li>
+<li>NameNode将修改提交到edits</li>
+</ol>
+<h2 id="6-Pipeline-Recovery"><a href="#6-Pipeline-Recovery" class="headerlink" title="6. Pipeline Recovery"></a>6. Pipeline Recovery</h2><h3 id="6-1-The-Write-Pipeline"><a href="#6-1-The-Write-Pipeline" class="headerlink" title="6.1 The Write Pipeline"></a>6.1 The Write Pipeline</h3><p>当客户端写入文件时, 文件会被拆分为多个block, 每个block又被拆分为多个packet, packet通过pipeline传递给datanode. 以下是写入pipeline的过程(假设客户端已从namenode拿到datanode列表):</p>
+<ol>
+<li>Pipeline setup: 客户端调用<code>createBlockOutputStream()</code>, 与第一个datanode建立pipeline(操作码为<code>WRITE_BLOCK</code>). 假设datanode列表为: A, B, C, 客户端与A建立pipeline, A会尝试与B建立pipeline(<code>writeBlock()</code>), B会尝试和C建立pipeline: <code>client -&gt; A -&gt; B -&gt; C</code>. </li>
+<li>Data streaming: 数据通过pipeline以packet的形式传输. 客户端会缓存数据, 直到数据填满一个packet, 之后将packet发送到pipeline. 若客户端调用<code>hflush()</code>, 即使packet没有填满, 也会发送到pipeline; 只有前一个packet被确认, 客户端才会传输下一个packet.</li>
+<li>Close(完成replica并关闭pipeline): 所有packet都被确认后, 客户端会发送close请求. 所有datanode将相应的replica改为<code>FINALIZED</code>, 并上报给namenode. 如果<code>FINALIZED replica</code>数量满足最小副本数, namenode会将block的状态改为<code>COMPLETE</code>.</li>
+</ol>
+<h3 id="6-2-Pipeline-Recovery-process"><a href="#6-2-Pipeline-Recovery-process" class="headerlink" title="6.2 Pipeline Recovery process"></a>6.2 Pipeline Recovery process</h3><p>当一个或多个datanode在上述任何一个阶段出现故障, 都会启动pipeline recovery.</p>
+<ol>
+<li>Recovery from Pipeline Setup Failure<ol>
+<li>若pipeline是为了添加新文件, 则客户端会重新申请新的block和datanode列表</li>
+<li>若pipeline是为了追加文件, 则客户端会使用剩余可用的datanode重新建立pipeline, 并增加block的GS</li>
+</ol>
+</li>
+<li>Recovery from Data Streaming Failure<ol>
+<li>若pipeline中的datanode检测到错误(如校验错误或写入磁盘失败), 该datanode会关闭所有TCP连接, 以此关闭pipeline</li>
+<li>若client检测到错误, 其会停止向pipeline发送数据, 并为剩余可用的datanode创建新的pipeline, 所有该block的replica都会使用新的GS</li>
+<li>客户端使用新的GS发送packet. 若datanode之前收到过, 会忽略该packet并传给下游</li>
+</ol>
+</li>
+<li>Recovery from Close Failure<ol>
+<li>若客户端在close状态下检测到错误, 会使用剩余可用的datanode创建pipeline. 若replica处于<code>RBW</code>, 则使用新的GS并切换为<code>FINALIZED</code></li>
+</ol>
+</li>
+</ol>
+<h3 id="6-3-DataNode-Replacement-Policy-upon-Failure"><a href="#6-3-DataNode-Replacement-Policy-upon-Failure" class="headerlink" title="6.3 DataNode Replacement Policy upon Failure"></a>6.3 DataNode Replacement Policy upon Failure</h3><p>当datanode出现故障, 客户端需根据<strong>datanode replacement policy</strong>(datanode替换策略)来决定是否使用剩下可用的datanode创建新的pipeline. HDFS中有两个配置选项可以设置替换策略:</p>
+<ul>
+<li><p><code>dfs.client.block.write.replace-datanode-on-failure.enable</code>: 默认为true, 若设置为false, 则不替换datanode并抛出错误</p>
+</li>
+<li><p><code>dfs.client.block.write.replace-datanode-on-failure.policy</code>: 默认为<strong>DEFAULT</strong>, 假设<code>r</code>为复制数, <code>n</code>为现有的replica数量, 若$r \geq 3$, 且满足以下任意一条, 则添加新的datanode:</p>
+<ul>
+<li>$floor(r&#x2F;2) \geq n$</li>
+<li>$r &gt; n$且block被hflush&#x2F;append</li>
+</ul>
+<p>  除了DEFAULT, 还有另外两种选项:</p>
+<ul>
+<li>NEVER: 不替换datanode(与enable&#x3D;false相同)</li>
+<li>ALWAYS: 当datanode发生故障时, 总会替换新的datanode</li>
+</ul>
+</li>
+<li><p><code>dfs.client.block.write.replace-datanode-on-failure.best-effort</code>: 默认为false, 替换失败时抛出错误. 若设置为true, 意味着客户端会尝试替换datanode, 若替换失败, 客户端仍会使用剩余可用的datanode继续写入. 该选项增强了可用性, 但增加了数据丢失的可能.</p>
+</li>
+<li><p><code>dfs.client.block.write.replace-datanode-on-failure.min-replication</code>: 默认为0, 表示替换失败时抛出错误. 若大于0, 则在替换失败时, 判断剩余可用datanode数量是否满足该选项: 满足则继续写入, 否则抛出错误.</p>
+</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Distributed-System/">Distributed System</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/ae87.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">ZooKeeper Overview</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/fa37.html">
+        <span class="next-text nav-default">HDFS Overview</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/245f.html';
+  var disqus_title = "HDFS Recovery Process";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>

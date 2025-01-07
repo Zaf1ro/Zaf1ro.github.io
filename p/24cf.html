@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="C++ Basic (1)"/>
+
+
+
+
+  <meta name="keywords" content="Programming Language," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/24cf.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/24cf.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/24cf.html"/>
+
+
+<meta name="description" content="1. pointer to array &#x2F; array of pointers由于[]的优先级比*高, 若想表达一个指向数组的指针, 必须对指针加括号 int *arr[8];    &#x2F;&#x2F; an array of int pointersint (*arr)[8];  &#x2F;&#x2F; a pointer to an int array   2. array and pointer对于数组:  当使">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ Basic (1)">
+<meta property="og:url" content="https://zaf1ro.github.io/p/24cf.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. pointer to array &#x2F; array of pointers由于[]的优先级比*高, 若想表达一个指向数组的指针, 必须对指针加括号 int *arr[8];    &#x2F;&#x2F; an array of int pointersint (*arr)[8];  &#x2F;&#x2F; a pointer to an int array   2. array and pointer对于数组:  当使">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/C/Basic/c-cpp-1-1.jpg">
+<meta property="article:published_time" content="2017-09-04T20:21:38.000Z">
+<meta property="article:modified_time" content="2024-08-20T16:43:04.047Z">
+<meta property="article:tag" content="Programming Language">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/C/Basic/c-cpp-1-1.jpg">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+C++ Basic (1) - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-pointer-to-array-array-of-pointers"><span class="toc-text">1. pointer to array &#x2F; array of pointers</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-array-and-pointer"><span class="toc-text">2. array and pointer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-judege-the-type-of-variable"><span class="toc-text">3. judege the type of variable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-sizeof"><span class="toc-text">4. sizeof()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-default-parameter"><span class="toc-text">5. default parameter</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Memory-layout"><span class="toc-text">6. Memory layout</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Flexible-array"><span class="toc-text">7. Flexible array</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Three-keywords-which-can-be-used-on-variable-and-function"><span class="toc-text">8. Three keywords which can be used on variable and function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Location-of-main-Method"><span class="toc-text">9. Location of main Method</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Operator-Precedence"><span class="toc-text">10. Operator Precedence</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-Compare-Floating-Point-Number-to-Zero"><span class="toc-text">11. Compare Floating Point Number to Zero</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-Inline-Method"><span class="toc-text">12. Inline Method</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-const-Variable"><span class="toc-text">13. const Variable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-sizeof-class-instance"><span class="toc-text">14. sizeof(class instance):</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-kernel-mode-and-user-mode"><span class="toc-text">15. kernel mode and user mode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-named-return-value-NRV"><span class="toc-text">16. named return value(NRV)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-const-and-pointer"><span class="toc-text">17. const and pointer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#18-cin"><span class="toc-text">18. cin&gt;&gt;</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#19-Address-of-Base-Class"><span class="toc-text">19. Address of Base Class</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#20-overload-override-hide"><span class="toc-text">20. overload, override, hide</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#21-Abstract-Class"><span class="toc-text">21. Abstract Class</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-Order-of-Execution-in-Initializer-List"><span class="toc-text">22. Order of Execution in Initializer List</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-typedef-in-C-C"><span class="toc-text">23. typedef in C&#x2F;C++</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#24-sizeof-in-Base-Class"><span class="toc-text">24. sizeof() in Base Class</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#25-Uninitialized-Value-in-Array"><span class="toc-text">25. Uninitialized Value in Array</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#26-pragma-pack-n"><span class="toc-text">26. #pragma pack(n)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#27-Order-of-Execution-of-Initialization"><span class="toc-text">27. Order of Execution of Initialization</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#28-Operator-Overloading-With-Friend-Function"><span class="toc-text">28. Operator Overloading With Friend Function</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#29-Catalan-Number"><span class="toc-text">29. Catalan Number</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#30-unsigned-int-int"><span class="toc-text">30. unsigned int + int</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#31-fseek-and-rewind"><span class="toc-text">31. fseek and rewind</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-Koenig-Lookup"><span class="toc-text">32. Koenig Lookup</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-Derived-Class-and-Based-Class"><span class="toc-text">33. Derived Class and Based Class</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-Default-Value-of-Static-Variable"><span class="toc-text">34. Default Value of Static Variable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#35-Class-Scope-typedef"><span class="toc-text">35. Class Scope typedef</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          C++ Basic (1)
+        
+      </h1>
+      <time class="post-time">
+          09/04/17
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-pointer-to-array-array-of-pointers"><a href="#1-pointer-to-array-array-of-pointers" class="headerlink" title="1. pointer to array &#x2F; array of pointers"></a>1. pointer to array &#x2F; array of pointers</h2><p>由于<code>[]</code>的优先级比<code>*</code>高, 若想表达一个指向数组的指针, 必须对指针加括号</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> *arr[<span class="number">8</span>];    <span class="comment">// an array of int pointers</span></span><br><span class="line"><span class="built_in">int</span> (*arr)[<span class="number">8</span>];  <span class="comment">// a pointer to an int array</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-array-and-pointer"><a href="#2-array-and-pointer" class="headerlink" title="2. array and pointer"></a>2. array and pointer</h2><p>对于数组:</p>
+<ul>
+<li>当使用<code>sizeof</code>或者单目操作符<code>&amp;</code>时, 数组作为一个整体</li>
+<li>其他情况下, 数组会被转化为对应的指针类型, 指向数组的首地址</li>
+</ul>
+<p>例如:</p>
+<ol>
+<li>name of array represents the whole array<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> arr[<span class="number">5</span>];</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, <span class="built_in">sizeof</span>(arr));  <span class="comment">// 20</span></span><br></pre></td></tr></table></figure></li>
+<li>pointer to array<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> arr[<span class="number">5</span>] = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line"><span class="type">int</span> *p = arr;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, *(p + <span class="number">1</span>));     <span class="comment">// 2</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, <span class="built_in">sizeof</span>(p));    <span class="comment">// 4</span></span><br></pre></td></tr></table></figure></li>
+<li>2d array and pointer<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a[<span class="number">2</span>][<span class="number">3</span>] = &#123;&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;, &#123;<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>&#125;&#125;;</span><br><span class="line"><span class="type">int</span> *p1 = (<span class="type">int</span>*)(&amp;a + <span class="number">1</span>);         <span class="comment">// p1为整个数组后的指针(int**)</span></span><br><span class="line"><span class="built_in">int</span> (*p2)[<span class="number">3</span>] = a + <span class="number">1</span>;             <span class="comment">// p2的类型为(int*)[], 指向&#123;4,5,6&#125;</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, *(p1 - <span class="number">2</span>));        <span class="comment">// p1指向6后面的地址, p1-2指向5</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, *((*p2) + <span class="number">1</span>));     <span class="comment">// p2指向&#123;4,5,6&#125;, (*p2)+1指向5</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, *(a[<span class="number">1</span>] + <span class="number">1</span>));      <span class="comment">// a[1]的类型为int[3], 一个长度为3的数组, 第二个元素为5</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, *(*(a + <span class="number">1</span>) + <span class="number">1</span>));  <span class="comment">// *(a+1)等同于a[1], 5</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, *(&amp;a[<span class="number">0</span>][<span class="number">0</span>] + <span class="number">4</span>));  <span class="comment">// a[0][0]的类型为int, &amp;a[0][0]的类型为int*</span></span><br></pre></td></tr></table></figure></li>
+<li>函数参数<br>形参为数组类型, 则传过去的实参为数组的第一个元素的指针</li>
+</ol>
+<h2 id="3-judege-the-type-of-variable"><a href="#3-judege-the-type-of-variable" class="headerlink" title="3. judege the type of variable"></a>3. judege the type of variable</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">char</span> (*(*x[<span class="number">3</span>])())[<span class="number">5</span>]</span><br></pre></td></tr></table></figure>
+<ol>
+<li><code>x[3]</code> is an array.</li>
+<li><code>*x[3]</code> is an array of pointers.</li>
+<li><code>*(*x[3])()</code> is an array of pointers, each pointer is a pointer of function with no parameter.</li>
+<li><code>char (*(*x[3])())[5]</code> is an array of pointers, each pointer is a pointer of function with no parameter, and the return of the function is a char array of 5 elements.</li>
+</ol>
+<h2 id="4-sizeof"><a href="#4-sizeof" class="headerlink" title="4. sizeof()"></a>4. sizeof()</h2><p>对于结构体的存储, 编译器遵循两条原则:</p>
+<ul>
+<li>成员的偏移量必须是该成员大小的整数倍(0被认为是任何数的整数倍)</li>
+<li>结构体大小必须是所有成员大小的整数倍</li>
+</ul>
+<p>以下是两个例子:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">s1</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i;    <span class="comment">// 偏移量为0, 长度为4, OK</span></span><br><span class="line">  <span class="type">char</span> c;   <span class="comment">// 偏移量为4, 长度为1, OK</span></span><br><span class="line">  <span class="type">int</span> j;    <span class="comment">// 偏移量为5, 长度为4, 需要填充3字节</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">s2</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> k;    <span class="comment">// 偏移量为0, 长度为4, OK</span></span><br><span class="line">  <span class="type">short</span> t;  <span class="comment">// 偏移量为4, 长度为2, OK</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* 但由于总长度为6, 不符合4的倍数,</span></span><br><span class="line"><span class="comment"> * 所以填充2字节, 长度为8</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="5-default-parameter"><a href="#5-default-parameter" class="headerlink" title="5. default parameter"></a>5. default parameter</h2><p>一旦某个形参被赋予了默认值,它后面的所有形参都必须有默认值</p>
+<h2 id="6-Memory-layout"><a href="#6-Memory-layout" class="headerlink" title="6. Memory layout"></a>6. Memory layout</h2><p><img src="/images/C/Basic/c-cpp-1-1.jpg" alt="Memory layout"></p>
+<ul>
+<li>Stack: 该区域包含program stack, 遵循LIFO. 从低地址开始向高地址扩展, stack pointer始终跟踪stack的顶端, 当添加或弹出数据时, stack pointer的地址改变. 由编译器自动分配释放, 每次调用函数时都会在stack创建一个新的stack frame, 里面存储着函数运行所需要的所有信息.</li>
+<li>Heap: 动态内存申请的区域. 从BBS区域开始向高地址方向扩展. 程序员可通过调用malloc, realloc和free来申请和释放该区域的内存.</li>
+<li>Initialized Data Segment: 包含global, static, constant variable</li>
+<li>Text Segment: 包含代码和可执行指令.</li>
+<li>Uninitialized Data Segment: 未初始化的global和static变量, 将会被内核自动初始化为0和NULL</li>
+</ul>
+<h2 id="7-Flexible-array"><a href="#7-Flexible-array" class="headerlink" title="7. Flexible array"></a>7. Flexible array</h2><p>作为struct中的一个成员, 用一个无参数的数组来表示, 必须作为struct中的最后一个成员. 通过为该struct申请多余空间作为变长数组的空间. 如下:</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">vectord</span> &#123;</span><br><span class="line">  <span class="type">size_t</span> len;</span><br><span class="line">  <span class="type">double</span> arr[]; <span class="comment">// the last member </span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">size = <span class="built_in">offsetof</span>(<span class="keyword">struct</span> vectord, arr) + nr_entries * <span class="built_in">sizeof</span>(<span class="type">double</span>);</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="8-Three-keywords-which-can-be-used-on-variable-and-function"><a href="#8-Three-keywords-which-can-be-used-on-variable-and-function" class="headerlink" title="8. Three keywords which can be used on variable and function"></a>8. Three keywords which can be used on variable and function</h2><ul>
+<li>static: 静态变量和静态函数都可以在类外访问</li>
+<li>extern: 声明该函数或全局变量的作用范围为本模块和其他模块</li>
+<li>const:<ul>
+<li>const变量变为常数, 初始化后不可变</li>
+<li>const函数只能用在成员函数上, 表示不可修改成员变量</li>
+<li>const类对象只能调用const成员函数</li>
+</ul>
+</li>
+</ul>
+<h2 id="9-Location-of-main-Method"><a href="#9-Location-of-main-Method" class="headerlink" title="9. Location of main Method"></a>9. Location of main Method</h2><p>但建议main函数放在最下面, 因为在main函数下面的函数必须在main之前声明</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">test</span><span class="params">()</span></span>;    <span class="comment">// 必须声明, 否则不能使用</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="built_in">test</span>();</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="10-Operator-Precedence"><a href="#10-Operator-Precedence" class="headerlink" title="10. Operator Precedence"></a>10. Operator Precedence</h2><p>优先级从高到低依次如下: </p>
+<table>
+<thead>
+<tr>
+<th>Precedence</th>
+<th>Operator</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>::</td>
+</tr>
+<tr>
+<td>2</td>
+<td>a++  a--  type()  type{}  a()  a[]  .  -&gt;</td>
+</tr>
+<tr>
+<td>3</td>
+<td>++a  --a  +a  -a  !  ~  (type)  *a  &amp;a  sizeof  new  new[]  delete  delete[]</td>
+</tr>
+<tr>
+<td>4</td>
+<td>.*  -&gt;*</td>
+</tr>
+<tr>
+<td>5</td>
+<td>a*b  a&#x2F;b  a%b</td>
+</tr>
+<tr>
+<td>6</td>
+<td>a+b   a-b</td>
+</tr>
+<tr>
+<td>7</td>
+<td>&lt;&lt;  &gt;&gt;</td>
+</tr>
+<tr>
+<td>8</td>
+<td>&lt;&#x3D;&gt;</td>
+</tr>
+<tr>
+<td>9</td>
+<td>&lt;  &lt;&#x3D;  &gt;  &gt;&#x3D;</td>
+</tr>
+<tr>
+<td>10</td>
+<td>&#x3D;&#x3D;  !&#x3D;</td>
+</tr>
+<tr>
+<td>11</td>
+<td>&amp;</td>
+</tr>
+<tr>
+<td>12</td>
+<td>^</td>
+</tr>
+<tr>
+<td>13</td>
+<td>&#x007C;</td>
+</tr>
+<tr>
+<td>14</td>
+<td>&amp;&amp;</td>
+</tr>
+<tr>
+<td>15</td>
+<td>&#x007C;&#x007C;</td>
+</tr>
+<tr>
+<td>16</td>
+<td>a?b:c  throw  &#x3D;  +&#x3D;  -&#x3D; *&#x3D;  &#x2F;&#x3D;  %&#x3D;   &lt;&lt;&#x3D;  &gt;&gt;&#x3D;  &amp;&#x3D;  ^&#x3D;  &#x007C;&#x3D;</td>
+</tr>
+<tr>
+<td>17</td>
+<td>,</td>
+</tr>
+</tbody></table>
+<h2 id="11-Compare-Floating-Point-Number-to-Zero"><a href="#11-Compare-Floating-Point-Number-to-Zero" class="headerlink" title="11. Compare Floating Point Number to Zero"></a>11. Compare Floating Point Number to Zero</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>( <span class="built_in">abs</span>(f) &lt;= <span class="number">1e-15</span> );  <span class="comment">// double</span></span><br><span class="line"><span class="keyword">if</span>( <span class="built_in">abs</span>(f) &lt;= <span class="number">1e-6</span> );   <span class="comment">// float</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="12-Inline-Method"><a href="#12-Inline-Method" class="headerlink" title="12. Inline Method"></a>12. Inline Method</h2><p>由于函数的调用代价很大, 所以为了提高函数效率, 通常在函数定义时使用inline关键字. inline的实现和宏定义相似, 只是将代码在编译时展开到调用处. 但inline只能用于代码行数少于10的函数, 如果代码过长, 反而会影响效率(代码过长)<br>内联函数只是向编译器发出的一个请求, 编译器可以选择忽略这个请求. 内联函数中不允许出现的内容如下:</p>
+<ol>
+<li>循环语句(for, while)和switch</li>
+<li>异常声明</li>
+<li>递归函数</li>
+</ol>
+<h2 id="13-const-Variable"><a href="#13-const-Variable" class="headerlink" title="13. const Variable"></a>13. const Variable</h2><p>const修饰的变量理论上不能被修改, 但可通过强制类型转换来改变内存内容. 但这是undefined behavior(未定义行为), 不能保证每个编译器的结果一致.</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">int</span> a = <span class="number">10</span>;</span><br><span class="line"><span class="type">int</span> *b = (<span class="type">int</span>*)&amp;a;</span><br><span class="line">*b = <span class="number">9</span>;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%p %p\n&quot;</span>, &amp;a, b);   <span class="comment">// 0069FF08 0069FF08</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;%d %d\n&quot;</span>, a, *b);   <span class="comment">// 10, 9</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="14-sizeof-class-instance"><a href="#14-sizeof-class-instance" class="headerlink" title="14. sizeof(class instance):"></a>14. sizeof(class instance):</h2><ol>
+<li>virtual函数: 存在虚函数的话需建立虚函数表, 虚函数表的指针占4字节</li>
+<li>static成员变量属于类域, 不算入对象大小</li>
+<li>若类为空: 占1字节</li>
+<li>普通成员函数不算入字节里面</li>
+<li>对齐法则</li>
+</ol>
+<h2 id="15-kernel-mode-and-user-mode"><a href="#15-kernel-mode-and-user-mode" class="headerlink" title="15. kernel mode and user mode"></a>15. kernel mode and user mode</h2><p>CPU将特权级分为0到3, 一共四个等级. 0为最高级, 3为最低级. 硬件上在执行每条指令时都会对指令所具有的特权级做相应的检查. Linux只是用了0级和3级, 作为内核态和用户态的特权级. 以下是用户态到内核态的三种方式</p>
+<ol>
+<li>系统调用</li>
+<li>异常</li>
+<li>外围设备的中断</li>
+</ol>
+<h2 id="16-named-return-value-NRV"><a href="#16-named-return-value-NRV" class="headerlink" title="16. named return value(NRV)"></a>16. named return value(NRV)</h2><p>当函数返回一个局部对象时, 需要调用一次构造函数, 一次拷贝构造函数和一次析构函数. 而如果使用NRV优化, 则只需要调用一次构造函数</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">A <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  A a;      <span class="comment">// 代价: 构造函数</span></span><br><span class="line">  <span class="keyword">return</span> a; <span class="comment">// 代价: 拷贝构造函数和析构函数</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  A b = <span class="built_in">test</span>(); <span class="comment">// 优化: 用b代替a, 只运行一次构造函数</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="17-const-and-pointer"><a href="#17-const-and-pointer" class="headerlink" title="17. const and pointer"></a>17. const and pointer</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">const</span> <span class="type">char</span> *p1 = <span class="string">&quot;hello&quot;</span>; <span class="comment">// const使得字符串变为常量</span></span><br><span class="line"><span class="type">char</span> *<span class="type">const</span> p2 = <span class="string">&quot;world&quot;</span>; <span class="comment">// const使得指针变为常量</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="18-cin"><a href="#18-cin" class="headerlink" title="18. cin&gt;&gt;"></a>18. cin&gt;&gt;</h2><p>该操作符是根据后面变量的类型读取数据</p>
+<ul>
+<li>输入结束条件: Enter, Space, Tab</li>
+<li>对结束符的处理: 丢弃缓冲区中的结束符(Enter, Space, Tab)</li>
+<li>若需要输入带有空格的字符串, 可用<code>getline()</code></li>
+</ul>
+<h2 id="19-Address-of-Base-Class"><a href="#19-Address-of-Base-Class" class="headerlink" title="19. Address of Base Class"></a>19. Address of Base Class</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C1</span> &#123; <span class="type">int</span> a; &#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C2</span>: <span class="keyword">public</span> C1 &#123; <span class="type">int</span> b; &#125;;   <span class="comment">// C2中的首地址指向C1</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C3</span> &#123; <span class="type">int</span> c; &#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C</span>: <span class="keyword">public</span> C2, <span class="keyword">public</span> C3 &#123;&#125;; <span class="comment">// 由于C2先声明, 所以C的首地址指向C2</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  C1 *pC1;</span><br><span class="line">  C2 *pC2;</span><br><span class="line">  C3 *pC3;</span><br><span class="line">  C c;      <span class="comment">/* address of c:   0x69fed8 */</span></span><br><span class="line">  pC1 = &amp;c; <span class="comment">/* address of pC1: 0x69fed8 */</span></span><br><span class="line">  pC2 = &amp;c; <span class="comment">/* address of pC2: 0x69fed8 */</span></span><br><span class="line">  pC3 = &amp;c; <span class="comment">/* address of pC3: 0x69fee0 */</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="20-overload-override-hide"><a href="#20-overload-override-hide" class="headerlink" title="20. overload, override, hide"></a>20. overload, override, hide</h2><ol>
+<li>overload(重载):<ul>
+<li>相同的范围(在同一个类中)</li>
+<li>函数名字相同</li>
+<li>参数不同(数量和类型不同)</li>
+<li>const成员函数也可构成重载</li>
+<li>virtual关键字不影响重载</li>
+</ul>
+</li>
+<li>override(覆盖):<ul>
+<li>不同的范围(分别位于派生类与基类)</li>
+<li>函数名字相同</li>
+<li>参数相同</li>
+<li>基类成员函数必须带有virtual</li>
+</ul>
+</li>
+<li>hide: 派生类的函数屏蔽了同名的基类函数<ul>
+<li>派生类与基类的函数同名, 参数不同: 无论有无virtual, 都隐藏基类函数</li>
+<li>派生类与基类的函数同名, 参数相同: 若基类没有virtual函数, 则隐藏基类函数</li>
+</ul>
+</li>
+</ol>
+<h2 id="21-Abstract-Class"><a href="#21-Abstract-Class" class="headerlink" title="21. Abstract Class"></a>21. Abstract Class</h2><p>含有纯虚函数(Pure Virtual Function)的类都叫做抽象类(Abstract Class), 抽象类有以下几个特征: </p>
+<ol>
+<li>抽象类无法实例化. 但可以定义指向抽象类的指针和引用, 用于指向派生类(<code>A* b = new B();</code>)</li>
+<li>如果继承类没有定义, 那么继承类也变为抽象类</li>
+<li>抽象类不能作为参数类型, 函数返回类型和显式转换类型</li>
+<li>虚函数不代表该函数不被实现, 只是表示基类函数都调用子类函数. 纯虚函数才表示不被实现</li>
+<li>纯虚函数的意义在于提供接口, 用于提供一个缺省接口</li>
+</ol>
+<h2 id="22-Order-of-Execution-in-Initializer-List"><a href="#22-Order-of-Execution-in-Initializer-List" class="headerlink" title="22. Order of Execution in Initializer List"></a>22. Order of Execution in Initializer List</h2><p>类初始化的顺序并不是按照初始化列表的顺序, 而是按照类成员声明的顺序</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C1</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="built_in">C1</span>(<span class="type">int</span> v): <span class="built_in">b</span>(v), <span class="built_in">a</span>(b) &#123;&#125; <span class="comment">// 先初始化a, 再初始化b</span></span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">print</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    cout &lt;&lt; a &lt;&lt; <span class="string">&quot; &quot;</span> &lt;&lt; b &lt;&lt; endl;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="type">int</span> a;</span><br><span class="line">  <span class="type">int</span> b;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="function">C1 <span class="title">c</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">  c.<span class="built_in">print</span>();  <span class="comment">// 32765 1</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="23-typedef-in-C-C"><a href="#23-typedef-in-C-C" class="headerlink" title="23. typedef in C&#x2F;C++"></a>23. typedef in C&#x2F;C++</h2><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tagMystruct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  <span class="type">int</span> inum;</span><br><span class="line">  <span class="type">long</span> lLength;</span><br><span class="line">&#125; Mystruct;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>C语言中, tagMystruct只是一个tag, 与&quot;struct&quot;关键字一起使用才能作为一个结构体类型. <code>Mystruct</code>可作为一个结构体类型<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">tagMystruct m1;     <span class="comment">// 报错</span></span><br><span class="line">Mystruct m2;        <span class="comment">// 正常编译</span></span><br></pre></td></tr></table></figure></li>
+<li>C++中, <code>tagMystruct</code>和<code>Mystruct</code>都可作为结构体类型使用<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">tagMystruct m1;     <span class="comment">// 正常编译</span></span><br><span class="line">Mystruct m2;        <span class="comment">// 正常编译</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="24-sizeof-in-Base-Class"><a href="#24-sizeof-in-Base-Class" class="headerlink" title="24. sizeof() in Base Class"></a>24. sizeof() in Base Class</h2><p>由于基类需要在子类中保持完整性, 因此基类的padding不会被消除.</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* C1总共占 4 + 1 + 3 = 8字节 */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C1</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="type">int</span> a;    <span class="comment">// 占4bytes</span></span><br><span class="line">  <span class="type">char</span> b;   <span class="comment">// 占1byte, 并填充3bytes的padding</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 总共占: 8 + 1 + 3 = 12字节 */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C2</span>: <span class="keyword">public</span> C1 &#123; <span class="comment">// 由于要保持base class的完整性, 所以要占8bytes</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">char</span> d; <span class="comment">// 占1byte, 并填充3bytes的padding</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="25-Uninitialized-Value-in-Array"><a href="#25-Uninitialized-Value-in-Array" class="headerlink" title="25. Uninitialized Value in Array"></a>25. Uninitialized Value in Array</h2><p>数组未定义的部分默认为0, 例如: </p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> a[<span class="number">2</span>][<span class="number">3</span>]=&#123;&#123;<span class="number">1</span>, <span class="number">2</span>&#125;, &#123;<span class="number">3</span>, <span class="number">4</span>&#125;&#125;;</span><br></pre></td></tr></table></figure>
+<p>a为二维数组, 包含两个长度为3的一维数组, 分别为</p>
+<ul>
+<li><code>a[0]</code>: 1 2 0</li>
+<li><code>a[1]</code>: 3 4 0</li>
+</ul>
+<h2 id="26-pragma-pack-n"><a href="#26-pragma-pack-n" class="headerlink" title="26. #pragma pack(n)"></a>26. #pragma pack(n)</h2><p><code>#pragma pack(n)</code>以n字节对齐方式, 变量起始地址的偏移有两种情况:</p>
+<ul>
+<li>若n大于等于该变量的字节数, 则偏移量遵循默认的对齐方式</li>
+<li>若n小于该变量的字节数, 则偏移量为n的倍数, 不用满足默认的对齐方式</li>
+</ul>
+<p>最后, 结构的总大小必须为占用空间最大的变量占用的空间数的倍数</p>
+<h2 id="27-Order-of-Execution-of-Initialization"><a href="#27-Order-of-Execution-of-Initialization" class="headerlink" title="27. Order of Execution of Initialization"></a>27. Order of Execution of Initialization</h2><p>构造函数的调用顺序:</p>
+<ol>
+<li>基类构造函数:<ul>
+<li>多继承中, 构造函数的调用顺序根据继承的顺序决定<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 构造顺序: A -&gt; C -&gt; B */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span>: <span class="keyword">public</span> A, <span class="keyword">public</span> C</span><br></pre></td></tr></table></figure></li>
+<li>若使用列表初始化(C++11), 则根据声明顺序决定构造顺序<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C</span> &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 构造顺序: C-&gt;A-&gt;B */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line"><span class="built_in">B</span>(): <span class="built_in">a</span>(<span class="built_in">A</span>()), <span class="built_in">c</span>(<span class="built_in">C</span>()) &#123;&#125;</span><br><span class="line">~<span class="built_in">B</span>() &#123;&#125;</span><br><span class="line">C c;  <span class="comment">// C类第一个声明</span></span><br><span class="line">A a;  <span class="comment">// A类第二个声明</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>类成员对象构造函数: 若有多个成员类对象, 则根据对象声明的顺序决定构造函数的调用顺序</li>
+<li>派生类构造函数: 类的指针数组并不会调用构造函数<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  A *a[<span class="number">3</span>];  <span class="comment">// 没有调用构造函数</span></span><br><span class="line">  A b[<span class="number">3</span>];   <span class="comment">// 调用三次构造函数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="28-Operator-Overloading-With-Friend-Function"><a href="#28-Operator-Overloading-With-Friend-Function" class="headerlink" title="28. Operator Overloading With Friend Function"></a>28. Operator Overloading With Friend Function</h2><ul>
+<li>友元函数重载时, 若参数列表长度为1, 则说明是一元操作符</li>
+<li>成员函数重载时, 若参数列表为空, 则说明是一元操作符(this作为参数)</li>
+</ul>
+<h2 id="29-Catalan-Number"><a href="#29-Catalan-Number" class="headerlink" title="29. Catalan Number"></a>29. Catalan Number</h2><p>$ h(n) &#x3D; C^{n}_{2n} - C^{n + 1}_{2n} &#x3D; C^{n}_{2n} &#x2F; (n + 1) $, 适用于出栈情况求和</p>
+<h2 id="30-unsigned-int-int"><a href="#30-unsigned-int-int" class="headerlink" title="30. unsigned int + int"></a>30. unsigned int + int</h2><p>有符号整数转化为无符号整数, 负数将变为大数</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">unsigned</span> <span class="type">int</span> i = <span class="number">1</span>;</span><br><span class="line"><span class="type">signed</span> <span class="type">int</span> b = <span class="number">-3</span>;</span><br><span class="line"><span class="keyword">if</span> ((i + b) &gt; <span class="number">0</span>) &#123;  <span class="comment">// success</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;converted to unsigned&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="31-fseek-and-rewind"><a href="#31-fseek-and-rewind" class="headerlink" title="31. fseek and rewind"></a>31. fseek and rewind</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">  FILE* fp;</span><br><span class="line">  <span class="type">int</span> i, a[<span class="number">6</span>] = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>&#125;, k;</span><br><span class="line">  fp = <span class="built_in">fopen</span>(<span class="string">&quot;data.dat&quot;</span>, <span class="string">&quot;w+b&quot;</span>);</span><br><span class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123; </span><br><span class="line">    <span class="built_in">fseek</span>(fp, <span class="number">0L</span>, <span class="number">0</span>); <span class="comment">/* 每次都将文件指针指向文件开头 */</span></span><br><span class="line">    <span class="built_in">fwrite</span>(&amp;a[<span class="number">5</span>—i], <span class="built_in">sizeof</span>(<span class="type">int</span>), <span class="number">1</span>, fp);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">rewind</span>(fp);     <span class="comment">// 直接指向开头</span></span><br><span class="line">  <span class="built_in">fread</span>(&amp;k, <span class="built_in">sizeof</span>(<span class="type">int</span>), <span class="number">1</span>, fp);</span><br><span class="line">  <span class="built_in">fclose</span>(fp);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>, k);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="32-Koenig-Lookup"><a href="#32-Koenig-Lookup" class="headerlink" title="32. Koenig Lookup"></a>32. Koenig Lookup</h2><p>如果你提供给一个函数的参数一个类型(例如: <code>A::X</code>), 那么编译器就会到相应的命名空间(这里是A)中去查找匹配的函数</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">namespace</span> A</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">X</span>&#123;&#125;;;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(<span class="type">int</span>)</span></span>;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">g</span><span class="params">(X)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> B</span><br><span class="line">&#123;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(<span class="type">int</span> i)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="built_in">f</span>(i);       <span class="comment">// call itself</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">g</span><span class="params">(A::X x)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="built_in">g</span>(x); <span class="comment">// error: call of overloaded &#x27;g(A::X&amp;)&#x27; is ambiguous</span></span><br><span class="line">          <span class="comment">// 由于参数为A::X, namespace跳转到A, 所以产生了混淆</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面的例子也发生了函数调用混淆， 因为全局f和namespace A下的f冲突</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">namespace</span> A</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">T</span>&#123;&#125;;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(T)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(A::T)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  A::T param;</span><br><span class="line">  <span class="built_in">f</span>(param);       <span class="comment">// 发生混淆, 全局函数f和namespace下的f冲突</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然而以下代码就不存在混淆问题, 因为类成员函数的优先级高于其他namespace中同名函数</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">namespace</span> A</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">class</span> <span class="title class_">X</span>&#123;&#125;;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(X)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(A::X)</span></span>;</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">g</span><span class="params">(A::X param)</span></span></span><br><span class="line"><span class="function">  </span>&#123;</span><br><span class="line">    <span class="built_in">f</span>(param);       <span class="comment">// 调用类中的成员函数f</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="33-Derived-Class-and-Based-Class"><a href="#33-Derived-Class-and-Based-Class" class="headerlink" title="33. Derived Class and Based Class"></a>33. Derived Class and Based Class</h2><p>指向子类的基本指针只能作用到子类的virtual函数, 不能作用到子类的non-virtual成员</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">func</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="number">1</span>; &#125;</span><br><span class="line">  <span class="type">int</span> a=<span class="number">1</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>: <span class="keyword">public</span> Base &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="type">int</span> <span class="title">func</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="number">2</span>; &#125;</span><br><span class="line">  <span class="type">int</span> b = <span class="number">2</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Derived d;</span><br><span class="line">  Base* b = &amp;d;</span><br><span class="line">  cout &lt;&lt; b-&gt;<span class="built_in">func</span>() &lt;&lt; endl;  <span class="comment">// 2</span></span><br><span class="line">  cout &lt;&lt; b-&gt;a &lt;&lt; endl;       <span class="comment">// 1</span></span><br><span class="line">  <span class="comment">// cout &lt;&lt; b-&gt;b &lt;&lt; endl;    // error</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="34-Default-Value-of-Static-Variable"><a href="#34-Default-Value-of-Static-Variable" class="headerlink" title="34. Default Value of Static Variable"></a>34. Default Value of Static Variable</h2><p>全局对象会被初始化为0, 局部变量会被赋予随机值</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">C1</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="type">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="type">static</span> C1 c1;</span><br><span class="line">  cout &lt;&lt; c<span class="number">1.</span>a &lt;&lt; endl; <span class="comment">// 0</span></span><br><span class="line">  C1 c2;</span><br><span class="line">  cout &lt;&lt; c<span class="number">2.</span>a &lt;&lt; endl; <span class="comment">// random number</span></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="35-Class-Scope-typedef"><a href="#35-Class-Scope-typedef" class="headerlink" title="35. Class Scope typedef"></a>35. Class Scope typedef</h2><p>一般提前声明nested type name, 防止extern type name的覆盖</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> type1;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">typedef</span> <span class="type">float</span> type1;</span><br><span class="line">  type1 x;  <span class="comment">// x的类型为float</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">print</span><span class="params">(type1 x)</span> </span>&#123;  <span class="comment">// 形参x的类型为float</span></span><br><span class="line">    cout&lt;&lt;x;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  C c;</span><br><span class="line">  c.<span class="built_in">print</span>(<span class="number">7.7</span>); <span class="comment">// 7.7</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但如果nested type name放在函数定义的后面, 编译器则会由于类内部类型的变动而报错(函数参数类型或参数数据的选择不会受到影响, 编译器会适当的决策)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> type1;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">print</span><span class="params">(type1 x)</span> </span>&#123; <span class="comment">// 编译器会对函数参数的类型做适当决策, 形参x的类型为全局int</span></span><br><span class="line">    cout &lt;&lt; x;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">typedef</span> <span class="type">float</span> type1;</span><br><span class="line">  type1 x;  <span class="comment">// x的类型为float</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  C c;      </span><br><span class="line">  c.<span class="built_in">print</span>(<span class="number">7.7</span>); <span class="comment">// 7</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是报错代码</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> type1;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">C</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function">type1 <span class="title">print</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x;</span><br><span class="line">  &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">typedef</span> <span class="type">float</span> type1; <span class="comment">// error: C::type1会试图修改全局type1</span></span><br><span class="line">                       <span class="comment">// 而编译器对print()的返回值类型并不会做判断, 所以报错</span></span><br><span class="line">  type1 x = <span class="number">7.7</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  C c;</span><br><span class="line">  cout&lt;&lt;c.<span class="built_in">print</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Programming-Language/">Programming Language</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+      <a class="prev" href="/p/d4cf.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">C++ Basic (2)</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
+    
+    
+      <a class="next" href="/p/aa5d.html">
+        <span class="next-text nav-default">limits.h</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/24cf.html';
+  var disqus_title = "C++ Basic (1)";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>
