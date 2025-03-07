@@ -37,26 +37,27 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/95.html"/>
 
 
-<meta name="description" content="1. IntroductionContainer技术(例如Docker)提供了三种简易方式来为运行在container中的应用提供configuration:  为container传递command-line arguments 为container设置不同的environment variables 将configuration file以Volume的形式挂在container上  Kube">
+<meta name="description" content="1. Introduction配置信息的存储是所有应用开发都无法回避的一个环节, 在K8s还未推广的日子里, 被放入container的应用代码有以下几种方式获取其配置信息:  将配置信息放置在某个文件中, 该文件称为config file(配置文件): 在image中写入密钥等配置信息, 所有可以访问image的人都可以获取密钥 在environment variable(环境变量)中添加配置信">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ConfigMap and Secret">
 <meta property="og:url" content="https://zaf1ro.github.io/p/95.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="1. IntroductionContainer技术(例如Docker)提供了三种简易方式来为运行在container中的应用提供configuration:  为container传递command-line arguments 为container设置不同的environment variables 将configuration file以Volume的形式挂在container上  Kube">
+<meta property="og:description" content="1. Introduction配置信息的存储是所有应用开发都无法回避的一个环节, 在K8s还未推广的日子里, 被放入container的应用代码有以下几种方式获取其配置信息:  将配置信息放置在某个文件中, 该文件称为config file(配置文件): 在image中写入密钥等配置信息, 所有可以访问image的人都可以获取密钥 在environment variable(环境变量)中添加配置信">
 <meta property="og:locale">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-1.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-2.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-3.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-4.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-5.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-6.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-7.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-8.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-3-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-4-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-4-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-4-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-4-4.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-4-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-4-6.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-5-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/config-5-2.png">
 <meta property="article:published_time" content="2019-10-31T12:19:52.000Z">
-<meta property="article:modified_time" content="2024-08-20T16:43:04.029Z">
+<meta property="article:modified_time" content="2025-03-07T03:15:48.871Z">
 <meta property="article:tag" content="K8s">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/config-1.png">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/config-3-1.png">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -83,7 +84,7 @@ ConfigMap and Secret - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Pass-Command-line-Arguments-to-Containers"><span class="toc-text">2. Pass Command-line Arguments to Containers</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Define-the-Command-and-Arguments-in-Docker"><span class="toc-text">2.1 Define the Command and Arguments in Docker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Override-the-Command-and-Arguments-in-Kubernetes"><span class="toc-text">2.2 Override the Command and Arguments in Kubernetes</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Set-Environment-Variables-for-a-Container"><span class="toc-text">3. Set Environment Variables for a Container</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-ConfigMap"><span class="toc-text">4. ConfigMap</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Create-a-ConfigMap"><span class="toc-text">4.1 Create a ConfigMap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Pass-a-ConfigMap-Entry-to-a-Container-as-an-Environment-Variable"><span class="toc-text">4.2 Pass a ConfigMap Entry to a Container as an Environment Variable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Pass-all-Entries-of-a-ConfigMap-as-Environment-Variable"><span class="toc-text">4.3 Pass all Entries of a ConfigMap as Environment Variable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Pass-a-ConfigMap-Entry-as-a-Command-line-Argument"><span class="toc-text">4.4 Pass a ConfigMap Entry as a Command-line Argument</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Use-a-ConfigMap-Volume-to-Expose-ConfigMap-Entries-as-Files"><span class="toc-text">4.5 Use a ConfigMap Volume to Expose ConfigMap Entries as Files</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-Update-Config-without-Restarting-the-App"><span class="toc-text">4.6 Update Config without Restarting the App</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Screts"><span class="toc-text">5. Screts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-default-token-Secret"><span class="toc-text">5.1 default token Secret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Create-a-Secret"><span class="toc-text">5.2 Create a Secret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Compare-ConfigMap-and-Secret"><span class="toc-text">5.3 Compare ConfigMap and Secret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Use-the-Secret-in-a-Pod"><span class="toc-text">5.4 Use the Secret in a Pod</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Pass-Command-line-Arguments-to-Containers"><span class="toc-text">2. Pass Command-line Arguments to Containers</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Define-the-Command-and-Arguments-in-Docker"><span class="toc-text">2.1 Define the Command and Arguments in Docker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Override-the-Command-and-Arguments-in-Kubernetes"><span class="toc-text">2.2 Override the Command and Arguments in Kubernetes</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Set-Environment-Variables-for-a-Container"><span class="toc-text">3. Set Environment Variables for a Container</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-ConfigMap"><span class="toc-text">4. ConfigMap</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Create-a-ConfigMap"><span class="toc-text">4.1 Create a ConfigMap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Pass-a-ConfigMap-Entry-to-a-Container-as-an-Environment-Variable"><span class="toc-text">4.2 Pass a ConfigMap Entry to a Container as an Environment Variable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Pass-all-Entries-of-a-ConfigMap-as-Environment-Variable"><span class="toc-text">4.3 Pass all Entries of a ConfigMap as Environment Variable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Pass-a-ConfigMap-Entry-as-a-Command-line-Argument"><span class="toc-text">4.4 Pass a ConfigMap Entry as a Command-line Argument</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-Use-a-ConfigMap-Volume-to-Expose-ConfigMap-Entries-as-Files"><span class="toc-text">4.5 Use a ConfigMap Volume to Expose ConfigMap Entries as Files</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-Update-Config-without-Restarting-the-App"><span class="toc-text">4.6 Update Config without Restarting the App</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Screts"><span class="toc-text">5. Screts</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-default-token-Secret"><span class="toc-text">5.1 default token Secret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Create-a-Secret"><span class="toc-text">5.2 Create a Secret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Compare-ConfigMap-and-Secret"><span class="toc-text">5.3 Compare ConfigMap and Secret</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Using-the-Secret-in-a-Pod"><span class="toc-text">5.4 Using the Secret in a Pod</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Understanding-image-pull-Secrets"><span class="toc-text">6. Understanding image pull Secrets</span></a></li></ol>
   </div>
 
     </div>
@@ -138,125 +139,183 @@ ConfigMap and Secret - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>Container技术(例如Docker)提供了三种简易方式来为运行在container中的应用提供configuration:</p>
-<ol>
-<li>为container传递command-line arguments</li>
-<li>为container设置不同的environment variables</li>
-<li>将configuration file以Volume的形式挂在container上</li>
-</ol>
-<p>Kubernetes也提供了两种Resources为container提供configuration:</p>
-<ol>
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>配置信息的存储是所有应用开发都无法回避的一个环节, 在K8s还未推广的日子里, 被放入container的应用代码有以下几种方式获取其配置信息:</p>
+<ul>
+<li>将配置信息放置在某个文件中, 该文件称为config file(配置文件): 在image中写入密钥等配置信息, 所有可以访问image的人都可以获取密钥</li>
+<li>在environment variable(环境变量)中添加配置信息: <code>docker run -e “password=abc”</code></li>
+<li>使用docker secret: 必须在Docker Compose中使用, </li>
+<li>将配置文件以volume的形式挂载在container的某个目录上</li>
+</ul>
+<h2 id="2-Pass-Command-line-Arguments-to-Containers"><a href="#2-Pass-Command-line-Arguments-to-Containers" class="headerlink" title="2. Pass Command-line Arguments to Containers"></a>2. Pass Command-line Arguments to Containers</h2><p>K8s可以向pod中的container传递一个自定义命令行参数, 以下是两种实现方式:</p>
+<h3 id="2-1-Define-the-Command-and-Arguments-in-Docker"><a href="#2-1-Define-the-Command-and-Arguments-in-Docker" class="headerlink" title="2.1 Define the Command and Arguments in Docker"></a>2.1 Define the Command and Arguments in Docker</h3><p>Dockerfile中提供了两个instructions(指令):</p>
+<ul>
+<li>ENTRYPOINT: 指定container启动时运行的command, 不可被<code>docker run</code>的参数覆盖</li>
+<li>CMD: 若dockerfile中未定义ENTRYPOINT, 则作为container启动时运行的command; 否则为ENTRYPOINT提供参数. 可被<code>docker run</code>的参数覆盖</li>
+</ul>
+<p>总结一下, Dockerfile中存在三种情况:</p>
+<ul>
+<li>只定义CMD: container启动时执行CMD中的命令, <code>docker run</code>的参数会替代CMD的参数</li>
+<li>只定义ENTRYPOINT: container启动时执行ENTRYOPOINT的命令, <code>docker run</code>的参数会附加到ENTRYPOINT上</li>
+<li>包含ENTRYPOINT和CMD: container启动时执行ENTRYPOINT的命令, 并将CMD的参数附加到ENTRYPOINT上, <code>docker run</code>的参数会替代CMD</li>
+</ul>
+<p>因此, 通常将container执行的命令放在ENTRYPOINT中, 将默认参数放在CMD中, <code>docker run</code>的参数用于重载CMD的参数.</p>
+<p>ENTRYPOINT和CMD执行命令时存在两种形式:</p>
+<ul>
+<li>exec: <code>ENTRYPOINT [&quot;executable&quot;, &quot;arg1&quot;, &quot;arg2&quot;]</code></li>
+<li>shell: <code>ENTRYPOINT command arg1 arg2</code></li>
+</ul>
+<p>exec和shell的区别如下:</p>
+<ul>
+<li>exec直接执行可执行文件, 无需调用shell; shell在shell中执行命令, 如<code>/bin/sh -c</code></li>
+<li>由于shell不会将收到signal发给其子进程, 当shell收到<code>SIGTERM</code>时, exec执行的进程不会收到任何信号; shell执行的程序可捕捉到该信号并进行处理</li>
+<li>由于exec不在shell中执行, 因此exec中的程序无法获取shell的环境变量, 如<code>$HOME</code>; shell执行的程序可继承shell的所有环境变量</li>
+</ul>
+<p>因此, 通常<code>ENTRYPOINT</code>和<code>CMD</code>使用exec形式, <code>RUN</code>使用shell形式.</p>
+<h3 id="2-2-Override-the-Command-and-Arguments-in-Kubernetes"><a href="#2-2-Override-the-Command-and-Arguments-in-Kubernetes" class="headerlink" title="2.2 Override the Command and Arguments in Kubernetes"></a>2.2 Override the Command and Arguments in Kubernetes</h3><p>K8s可重写contianer的<code>ENTRYPOINT</code>和<code>CMD</code>:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">some/image</span></span><br><span class="line">    <span class="attr">command:</span> [<span class="string">&quot;/bin/command&quot;</span>]</span><br><span class="line">    <span class="attr">args:</span> [<span class="string">&quot;arg1&quot;</span>, <span class="string">&quot;arg2&quot;</span>, <span class="string">&quot;arg3&quot;</span>]</span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="center">Docker</th>
+<th align="center">Kubernetes</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">ENTRYPOINT</td>
+<td align="center">command</td>
+<td align="center">The executable that&#39;s executed inside the container</td>
+</tr>
+<tr>
+<td align="center">CMD</td>
+<td align="center">args</td>
+<td align="center">The arguments passed to the executable</td>
+</tr>
+</tbody></table>
+<p>通常不需要重写<code>ENTRYPOINT</code>, 除了一些不包含<code>ENTRYPOINT</code>的image, 如busybox.<br>需要注意的是, args中的数字必须用double quote(双引号)包裹, 字符串则不必.</p>
+<h2 id="3-Set-Environment-Variables-for-a-Container"><a href="#3-Set-Environment-Variables-for-a-Container" class="headerlink" title="3. Set Environment Variables for a Container"></a>3. Set Environment Variables for a Container</h2><p>K8s可为pod中的每个container分配各自的environment variables, 但k8s不支持在pod层面上设置并让所有container共享environment variable:<br><img src="/images/Kubernetes/config-3-1.png" alt="Environment variables can be set per container"></p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">luksa/fortune:env</span></span><br><span class="line">    <span class="attr">env:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">INTERVAL</span></span><br><span class="line">      <span class="attr">value:</span> <span class="string">&quot;30&quot;</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">html-generator</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+<p>K8s还支持在YAML中使用已设置的变量(包括环境变量): 使用<code>$(VAR)</code>即可调用之前定义的变量:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">env:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">FIRST_VAR</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;foo&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SECOND_VAR</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;$(FIRST_VAR)bar&quot;</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+<p>上述例子中, <code>FIRST_VAR</code>为<code>foo</code>, <code>SECOND_VAR</code>为<code>foobar</code>. 将配置信息放置在环境变量会导致一个问题: 不同环境(dev或prod)需要不同的pod定义文件. 因此需要将配置信息与pod定义分离, k8s提供了两种方式:</p>
+<ul>
 <li>ConfigMap: 用于存储配置信息</li>
 <li>Secret: 用于存储敏感信息</li>
-</ol>
-<h2 id="2-Pass-Command-line-Arguments-to-Containers"><a href="#2-Pass-Command-line-Arguments-to-Containers" class="headerlink" title="2. Pass Command-line Arguments to Containers"></a>2. Pass Command-line Arguments to Containers</h2><p>Kubernetes允许传递给Pod中的container一些command-line arguments.</p>
-<h3 id="2-1-Define-the-Command-and-Arguments-in-Docker"><a href="#2-1-Define-the-Command-and-Arguments-in-Docker" class="headerlink" title="2.1 Define the Command and Arguments in Docker"></a>2.1 Define the Command and Arguments in Docker</h3><p>Dockerfile提供了两个instructions:</p>
-<ol>
-<li>ENTRYPOINT: 当container启动时运行的command</li>
-<li>CMD: 主要为ENTRYPOINT提供参数, 也可执行command</li>
-</ol>
-<p>当运行**docker run &lt;image&gt;<strong>时会自动调用ENTRYPOINT和CMD, 也可以使用</strong>docker run &lt;image&gt; &lt;arguments&gt;**来覆盖CMD中的参数.</p>
-<ul>
-<li>ENTRYPOINT存在两种形式: <ol>
-<li>exec: [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot;]</li>
-<li>shell: command param1 param2</li>
-</ol>
-</li>
-<li>CMD存在三种形式:<ol>
-<li>exec: [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot;]</li>
-<li>shell: command param1 param2</li>
-<li>parameters to ENTRYPOINT: [&quot;param1&quot;, &quot;param2&quot;]</li>
-</ol>
-</li>
 </ul>
-<p>exec形式会直接开启一个进程来执行command, shell形式会先开启一个shell进程, 再在shell进程中执行command. 一般情况下使用exec形式即可.</p>
-<h3 id="2-2-Override-the-Command-and-Arguments-in-Kubernetes"><a href="#2-2-Override-the-Command-and-Arguments-in-Kubernetes" class="headerlink" title="2.2 Override the Command and Arguments in Kubernetes"></a>2.2 Override the Command and Arguments in Kubernetes</h3><p>Kubernetes提供了command和args来覆盖image中的ENTRYPOINT和CMD:</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">some/image</span></span><br><span class="line">    <span class="attr">command:</span> [<span class="string">&quot;/bin/command&quot;</span>]</span><br><span class="line">    <span class="attr">args:</span> [<span class="string">&quot;arg1&quot;</span>, <span class="string">&quot;arg2&quot;</span>, <span class="string">&quot;arg3&quot;</span>]</span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
-<p>所以一般不用定义ENTRYPOINT和CMD, 直接在Pod中定义即可. 注意: args中的数字必须用double quote(双引号)包裹, 字符串则不必.</p>
-<h2 id="3-Set-Environment-Variables-for-a-Container"><a href="#3-Set-Environment-Variables-for-a-Container" class="headerlink" title="3. Set Environment Variables for a Container"></a>3. Set Environment Variables for a Container</h2><p>Kubernetes允许为Pod中的每个container定制不同的environment variables, 如下图:<br><img src="/images/Kubernetes/config-1.png" alt="Environment variables can be set per container"></p>
-<p>Environment variables之所以能作为配置参数, 因为所有脚本和语言都可以获取系统的environment variables; 但与command-line argument相同, 一旦container被启动, 则很难修改.</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">luksa/fortune:env</span></span><br><span class="line">    <span class="attr">env:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">INTERVAL</span></span><br><span class="line">      <span class="attr">value:</span> <span class="string">&quot;30&quot;</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">html-generator</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
-<p>Kubernetes还支持在YAML中使用之前设置的environment variables: 使用**$(VAR)**语法即可调用之前定义的environment variables:</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">env:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">FIRST_VAR</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;foo&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SECOND_VAR</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;$(FIRST_VAR)bar&quot;</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
-<p>上述例子中, FIRST_VAR为foo, SECOND_VAR为foobar. 由于environment variable无法随时修改, 所以不同需求的Pod需要多个的YAML文件来标注不同的environment variables.</p>
-<h2 id="4-ConfigMap"><a href="#4-ConfigMap" class="headerlink" title="4. ConfigMap"></a>4. ConfigMap</h2><p>ConfigMap作为Kubernetes的resource之一, 可将configuration中的内容与Pod定义分离, 以key&#x2F;value的map形式作为configuration的格式. Container并不会直接读取ConfigMap中的配置信息, 而是通过environment variables或volume形式来读取配置信息, 如下图:<br><img src="/images/Kubernetes/config-2.png" alt="Pods use ConfigMaps through environment variables and configMap volumes"></p>
-<p>ConfigMap不与某个Pod绑定, 只与namespace绑定, 所以同一namespace下的Pod共享ConfigMap.</p>
-<h3 id="4-1-Create-a-ConfigMap"><a href="#4-1-Create-a-ConfigMap" class="headerlink" title="4.1 Create a ConfigMap"></a>4.1 Create a ConfigMap</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create configmap fortune-config --from-literal=sleep-interval=25</span><br><span class="line">configmap <span class="string">&quot;fortune-config&quot;</span> created</span><br></pre></td></tr></table></figure>
-<p>通过<strong>kubectl create configmap</strong> command可直接创建ConfigMap, 上述指令创造了一个名为fortune-config的ConfigMap, 包含一个entry, 其中key为sleep-interval, value为25. 也可在ConfigMap中创建多个entries:</p>
+<h2 id="4-ConfigMap"><a href="#4-ConfigMap" class="headerlink" title="4. ConfigMap"></a>4. ConfigMap</h2><p>ConfigMap作为K8s的resource之一, 其目的是将配置信息从程序代码, 部署更新, 和运行环境中分离出来. ConfigMap可看作一个map, 其中包含一个或多个键值对(key&#x2F;value pair). Container中运行的程序不会直接读取ConfigMap中的键值对, 而是通过environment variables或volume的形式将配置信息加载到container上:<br><img src="/images/Kubernetes/config-4-1.png" alt="Pods use ConfigMaps through environment variables and configMap volumes"></p>
+<p>ConfigMap不与pod绑定, 只与namespace绑定, 因此:</p>
+<ul>
+<li>同一namespace下的pod共享所有ConfigMap</li>
+<li>不同namespace下的ConfigMap可拥有相同name</li>
+</ul>
+<h3 id="4-1-Create-a-ConfigMap"><a href="#4-1-Create-a-ConfigMap" class="headerlink" title="4.1 Create a ConfigMap"></a>4.1 Create a ConfigMap</h3><p>两种方式创建ConfigMap:</p>
+<ul>
+<li>使用kubectl命令: <code>kubectl create configmap</code></li>
+<li>使用YAML文件: <code>kubectl create -f</code></li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create configmap fortune-config --from-literal=sleep-interval=25</span><br><span class="line">configmap <span class="string">&quot;fortune-config&quot;</span> created</span><br></pre></td></tr></table></figure>
+<p>上述指令创造了一个名为<code>fortune-config</code>的ConfigMap, 包含一个键值对, key为<code>sleep-interval</code>, value为<code>25</code>. 也可在一个ConfigMap中创建多个键值对:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create configmap myconfigmap --from-literal=foo=bar \</span><br><span class="line">--from-literal=bar=baz --from-literal=one=two</span><br></pre></td></tr></table></figure>
 
-<p>调用<strong>kubectl get configmap</strong> command可查看当前ConfigMap</p>
+<p>执行<code>kubectl get configmap</code>命令可查看当前ConfigMap</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get configmap fortune-config -o yaml</span><br><span class="line">apiVersion: v1</span><br><span class="line">data:</span><br><span class="line">  sleep-interval: <span class="string">&quot;25&quot;</span></span><br><span class="line">kind: ConfigMap</span><br><span class="line">metadata:</span><br><span class="line">  creationTimestamp: 2016-08-11T20:31:08Z</span><br><span class="line">  name: fortune-config</span><br><span class="line">  namespace: default</span><br><span class="line">  resourceVersion: <span class="string">&quot;910025&quot;</span></span><br><span class="line">  selfLink: /api/v1/namespaces/default/configmaps/fortune-config</span><br><span class="line">  uid: 88c4167e-6002-11e6-a50d-42010af00237</span><br></pre></td></tr></table></figure>
 
-<p><strong>--from-literal</strong>表示直接写入Entry的key和value. 还可使用**--from-file**从文件中导入entry, 例如:</p>
+<p><code>--from-literal</code>后跟键值对. <code>--from-file</code>后跟文件名或文件目录, 例如:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create configmap my-config --from-file=config-file.conf</span><br></pre></td></tr></table></figure>
-<p>上述新建的ConfigMap名为<strong>my-config</strong>, 包含一条entry, 其中key为<strong>config-file.conf</strong>(也就是文件名), value为config-file.conf文件里的内容. 还可从directory中将所有文件加入到ConfigMap中:</p>
+<p>上述新建的ConfigMap名为<code>my-config</code>, 包含一个键值对, key为文件名(<code>config-file.conf</code>), value为该文件的内容.</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create configmap my-config --from-file=/path/to/dir</span><br></pre></td></tr></table></figure>
-<p>所有目录下的文件都会加入到ConfigMap中, 其中key为文件名, value为文件内容. ConfigMap也支持这几种方式的混合使用, 如下:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create configmap my-config \</span><br><span class="line">--from-file=foo.json --from-file=bar=foobar.conf \</span><br><span class="line">--from-file=config-opts/ --from-literal=some=thing</span><br></pre></td></tr></table></figure>
-<p>结果如下图:<br><img src="/images/Kubernetes/config-3.png" alt="Create a ConfigMap from individual files, a directory, and a literal value"></p>
-<h3 id="4-2-Pass-a-ConfigMap-Entry-to-a-Container-as-an-Environment-Variable"><a href="#4-2-Pass-a-ConfigMap-Entry-to-a-Container-as-an-Environment-Variable" class="headerlink" title="4.2 Pass a ConfigMap Entry to a Container as an Environment Variable"></a>4.2 Pass a ConfigMap Entry to a Container as an Environment Variable</h3><p>在Pod中将ConfigMap中的entry传给container的environment variable是container读取ConfigMap的最简单方式:</p>
+<p>指定目录下的文件都会作为键值对放入ConfigMap中. ConfigMap也支持混合使用上述几种方式, 如下:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create configmap my-config \</span><br><span class="line">  --from-file=foo.json  \</span><br><span class="line">  --from-file=bar=foobar.conf \</span><br><span class="line">  --from-file=config-opts \</span><br><span class="line">  --from-literal=some=thing</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/Kubernetes/config-4-2.png" alt="Create a ConfigMap from individual files, a directory, and a literal value"></p>
+<h3 id="4-2-Pass-a-ConfigMap-Entry-to-a-Container-as-an-Environment-Variable"><a href="#4-2-Pass-a-ConfigMap-Entry-to-a-Container-as-an-Environment-Variable" class="headerlink" title="4.2 Pass a ConfigMap Entry to a Container as an Environment Variable"></a>4.2 Pass a ConfigMap Entry to a Container as an Environment Variable</h3><p>K8s支持将ConfigMap的键值对以环境变量的形式导入到pod的container中:</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">fortune-env-from-configmap</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">luksa/fortune:env</span></span><br><span class="line">    <span class="attr">env:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">INTERVAL</span></span><br><span class="line">      <span class="attr">valueFrom:</span></span><br><span class="line">        <span class="attr">configMapKeyRef:</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">fortune-config</span></span><br><span class="line">          <span class="attr">key:</span> <span class="string">sleep-interval</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
-<p>上述例子中, container中设置environment variable的key为<strong>INTERVAL</strong>, value从名为<strong>fortune-config</strong>的ConfigMap中获取key为<strong>sleep-interval</strong>的value值. 若YAML文件中标注的ConfigMap不存在, 则该container不会被启动, 但Pod中的其他container照常运行; 当缺失的ConfigMap被创建后, container也会自动启动. 若在YAML中设置<strong>configMapKeyRef.optional: true</strong>, 即使ConfigMap不存在, container依然会启动.</p>
-<h3 id="4-3-Pass-all-Entries-of-a-ConfigMap-as-Environment-Variable"><a href="#4-3-Pass-all-Entries-of-a-ConfigMap-as-Environment-Variable" class="headerlink" title="4.3 Pass all Entries of a ConfigMap as Environment Variable"></a>4.3 Pass all Entries of a ConfigMap as Environment Variable</h3><p>Kubernetes 1.6提供了一种可以将ConfigMap中所有entries导入到Container的environment variable的方法:</p>
+<p>上述例子中, container中设置了一个环境变量, 其key为<code>INTERVAL</code>, value为ConfigMap(<code>fortune-config</code>)中key(<code>sleep-interval</code>)对应的value值. 若ConfigMap不存在, 则不会启动该container, 且依旧运行pod的其他container; 创建缺失的ConfigMap会自动启动该container. 若设置<code>configMapKeyRef.optional: true</code>, 则即使ConfigMap不存在也会启动container.</p>
+<h3 id="4-3-Pass-all-Entries-of-a-ConfigMap-as-Environment-Variable"><a href="#4-3-Pass-all-Entries-of-a-ConfigMap-as-Environment-Variable" class="headerlink" title="4.3 Pass all Entries of a ConfigMap as Environment Variable"></a>4.3 Pass all Entries of a ConfigMap as Environment Variable</h3><p>K8s 1.6提供了一种将ConfigMap中的所有键值对导入环境变量的方法:</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">some-image</span></span><br><span class="line">    <span class="attr">envFrom:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">prefix:</span> <span class="string">CONFIG_</span></span><br><span class="line">      <span class="attr">configMapRef:</span></span><br><span class="line">        <span class="attr">name:</span> <span class="string">my-config-map</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
-<p>注意, environment variable不支持一些特殊符号. 若ConfigMap中entry的key或value含有不合规的符号(例如: foo-bar), 则该entry不被导入environment variable.</p>
-<h3 id="4-4-Pass-a-ConfigMap-Entry-as-a-Command-line-Argument"><a href="#4-4-Pass-a-ConfigMap-Entry-as-a-Command-line-Argument" class="headerlink" title="4.4 Pass a ConfigMap Entry as a Command-line Argument"></a>4.4 Pass a ConfigMap Entry as a Command-line Argument</h3><p>ConfigMap中的entry也可作为参数传入container:</p>
+<p>上述所有环境变量都以<code>CONFIG_</code>开始. 需要注意的是, 环境变量不支持一些特殊符号. 若ConfigMap中的key或value包含不合规符号(如foo-bar), 则该键值对不会导入环境变量.</p>
+<h3 id="4-4-Pass-a-ConfigMap-Entry-as-a-Command-line-Argument"><a href="#4-4-Pass-a-ConfigMap-Entry-as-a-Command-line-Argument" class="headerlink" title="4.4 Pass a ConfigMap Entry as a Command-line Argument"></a>4.4 Pass a ConfigMap Entry as a Command-line Argument</h3><p>ConfigMap中的键值对也可借助环境变量作为命令行参数传入container:</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">fortune-args-from-configmap</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">luksa/fortune:args</span></span><br><span class="line">    <span class="attr">env:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">INTERVAL</span></span><br><span class="line">      <span class="attr">valueFrom:</span></span><br><span class="line">        <span class="attr">configMapKeyRef:</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">fortune-config</span></span><br><span class="line">          <span class="attr">key:</span> <span class="string">sleep-interval</span></span><br><span class="line">    <span class="attr">args:</span> [<span class="string">&quot;$(INTERVAL)&quot;</span>]</span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
-<p>结果如下图:<br><img src="/images/Kubernetes/config-4.png" alt="Pass a ConfigMap entry as a command-line argument"></p>
-<h3 id="4-5-Use-a-ConfigMap-Volume-to-Expose-ConfigMap-Entries-as-Files"><a href="#4-5-Use-a-ConfigMap-Volume-to-Expose-ConfigMap-Entries-as-Files" class="headerlink" title="4.5 Use a ConfigMap Volume to Expose ConfigMap Entries as Files"></a>4.5 Use a ConfigMap Volume to Expose ConfigMap Entries as Files</h3><p>将ConfigMap挂载为volume只需要将volume的类型设置为configMap即可. 假设现在给Nginx添加配置文件<strong>my-nginx-config.conf</strong>, 文件内容如下:</p>
+<p>结果如下图:<br><img src="/images/Kubernetes/config-4-3.png" alt="Pass a ConfigMap entry as a command-line argument"></p>
+<h3 id="4-5-Use-a-ConfigMap-Volume-to-Expose-ConfigMap-Entries-as-Files"><a href="#4-5-Use-a-ConfigMap-Volume-to-Expose-ConfigMap-Entries-as-Files" class="headerlink" title="4.5 Use a ConfigMap Volume to Expose ConfigMap Entries as Files"></a>4.5 Use a ConfigMap Volume to Expose ConfigMap Entries as Files</h3><p>将ConfigMap中的键值对导入到环境变量中有以下缺陷:</p>
+<ul>
+<li>若配置信息过大, 可能超过环境变量的存储上限</li>
+<li>若配置信息包含特殊字符, 则无法导入环境变量</li>
+</ul>
+<p>K8s支持将ConfigMap挂载为volume, 只需要将volume的类型设置为ConfigMap即可. 假设我们需要将nginx的配置文件(文件名为<code>my-nginx-config.conf</code>)保存到ConfigMap中. 文件内容如下:</p>
 <figure class="highlight text"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">  listen      80;</span><br><span class="line">  server_name www.kubia-example.com;</span><br><span class="line">  gzip        on;</span><br><span class="line">  gzip_types text/plain application/xml;</span><br><span class="line">  location &#123;</span><br><span class="line">    root  /usr/share/nginx/html;</span><br><span class="line">    index index.html index.htm;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>将该文件和名为<strong>sleep-interval</strong>的文件放入同一文件夹中, 如下图:<br><img src="/images/Kubernetes/config-5.png" alt="The contents of the configmap-files directory and its files"></p>
-<p>调用<strong>kubectl create configmmap</strong>创建新的ConfigMap:</p>
+<p>可将该文件和另一个文件(文件名为<code>sleep-interval</code>)放在同一目录下:<br><img src="/images/Kubernetes/config-4-4.png" alt="The contents of the configmap-files directory and its files"></p>
+<p>并执行<code>kubectl create configmmap</code>创建一个ConfigMap:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create configmap fortune-config --from-file=configmap-files</span><br><span class="line">configmap <span class="string">&quot;fortune-config&quot;</span> created</span><br></pre></td></tr></table></figure>
 
-<p>Nginx从**&#x2F;etc&#x2F;nginx&#x2F;nginx.conf**路径中读取文件并添加到配置, 因此需要将ConfigMap挂在该路径上:</p>
+<p>当nginx需要从<code>/etc/nginx/nginx.conf</code>路径中加载配置时, 只需将ConfigMap挂载到指定路径上:</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">fortune-configmap-volume</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">nginx:alpine</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">web-server</span></span><br><span class="line">    <span class="attr">volumeMounts:</span></span><br><span class="line">    <span class="string">...</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">/etc/nginx/conf.d</span></span><br><span class="line">      <span class="attr">readOnly:</span> <span class="literal">true</span></span><br><span class="line">    <span class="string">...</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">  <span class="string">...</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">    <span class="attr">configMap:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">fortune-config</span></span><br><span class="line"> <span class="string">...</span></span><br></pre></td></tr></table></figure>
-<p>结果如下:<br><img src="/images/Kubernetes/config-6.png" alt="Pass ConfigMap entries to a pod as files in a volume"></p>
-<p>也可以指定ConfigMap中的某一个或几个entry挂在volume上:</p>
+<p>结果如下:<br><img src="/images/Kubernetes/config-4-5.png" alt="Pass ConfigMap entries to a pod as files in a volume"></p>
+<p>也可指定ConfigMap的某个或某几个键值对挂载到volume中:</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">volumes:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">  <span class="attr">configMap:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">fortune-config</span></span><br><span class="line">    <span class="attr">items:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">my-nginx-config.conf</span></span><br><span class="line">      <span class="attr">path:</span> <span class="string">gzip.conf</span> </span><br></pre></td></tr></table></figure>
-<p>需要注意的是, 上述使用ConfigMap作为volume会覆盖挂载路径中的所有文件. 若**&#x2F;etc&#x2F;nginx&#x2F;conf.d<strong>中原本有其他文件, 则会因为fortune-config的挂载而消失. 为了保证不覆盖原本路径中的文件, 需在YAML中添加</strong>subPath**属性:</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">some/image</span></span><br><span class="line">    <span class="attr">volumeMounts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">myvolume</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">/etc/someconfig.conf</span></span><br><span class="line">      <span class="attr">subPath:</span> <span class="string">myconfig.conf</span> </span><br></pre></td></tr></table></figure>
-<p>这样就可以保证ConfigMap Volume只有myconfig.conf被挂载到container的&#x2F;etc&#x2F;someconfig.conf路径中, 如下图:<br><img src="/images/Kubernetes/config-7.png" alt="Mount a single file from a volume"></p>
-<p>也可以在YAML中设置ConfigMap Volume中文件的权限:</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">  <span class="attr">configMap:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">fortune-config</span></span><br><span class="line">    <span class="attr">defaultMode:</span> <span class="string">&quot;6600&quot;</span> </span><br></pre></td></tr></table></figure>
+<p>需要注意的是, 将ConfigMap作为volume挂载到container时, 挂载路径上的所有文件都会被覆盖: 若<code>/etc/nginx/conf.d</code>存在其他文件, 则会因挂载而消失. 若不想覆盖挂载路径上的文件, 可添加<strong>subPath</strong>属性:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">some/image</span></span><br><span class="line">    <span class="attr">volumeMounts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">myvolume</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">/etc/someconfig.conf</span></span><br><span class="line">      <span class="attr">subPath:</span> <span class="string">myconfig.conf</span></span><br></pre></td></tr></table></figure>
+<p>这样可保证<code>myconfig.conf</code>挂载到container的<code>/etc/someconfig.conf</code>路径上, 且不会隐藏任何container已存在的文件, 如下图:<br><img src="/images/Kubernetes/config-4-6.png" alt="Mount a single file from a volume"></p>
+<p>K8s还支持设置ConfigMap volume的文件权限:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">  <span class="attr">configMap:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">fortune-config</span></span><br><span class="line">    <span class="attr">defaultMode:</span> <span class="string">&quot;6600&quot;</span>   </span><br></pre></td></tr></table></figure>
 
-<h3 id="4-6-Update-Config-without-Restarting-the-App"><a href="#4-6-Update-Config-without-Restarting-the-App" class="headerlink" title="4.6 Update Config without Restarting the App"></a>4.6 Update Config without Restarting the App</h3><p>Environment variable和command-line argument的缺陷在于无法及时更新, 一旦Pod运行则无法修改. ConfigMap Volume则可无需container重启的同时更新配置信息. 调用<strong>kubectl edit</strong>可修改ConfigMap:</p>
+<h3 id="4-6-Update-Config-without-Restarting-the-App"><a href="#4-6-Update-Config-without-Restarting-the-App" class="headerlink" title="4.6 Update Config without Restarting the App"></a>4.6 Update Config without Restarting the App</h3><p>环境变量和命令行参数的缺陷在于无法在pod运行时修改配置信息. ConfigMap volume则可以随时更新配置信息. 调用<code>kubectl edit</code>可修改ConfigMap:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl edit configmap fortune-config</span><br></pre></td></tr></table></figure>
-<p>由于Nginx不会主动查看配置文件是否更新, 所以需要向Nginx发送信号来重新加载:</p>
+<p>由于nginx不会主动查看配置文件是否更新, 所以需要手动重启nginx:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl <span class="built_in">exec</span> fortune-configmap-volume -c web-server -- nginx -s reload</span><br></pre></td></tr></table></figure>
-<p>ConfigMap的修改和读取都是原子性的, 所以不必担心container会读取修改中的配置文件. Kubernetes会等待ConfigMap修改完毕后将新的文件写入新的文件夹中, 并relink到新的文件夹中. 注意: 如果在container中使用<strong>subPath</strong>而不是mount整个volume, 则文件无法随着ConfigMap的修改而刷新.<br>若Pod中的container不支持自动检查ConfigMap是否被修改, 则不建议修改当前ConfigMap. 因为Pod随时可能被重新启动, 重启后的container会使用新的配置信息, 而旧的container还会使用旧的配置信息.</p>
-<h2 id="5-Screts"><a href="#5-Screts" class="headerlink" title="5. Screts"></a>5. Screts</h2><p>ConfigMap已经为container提供了完整的配置获取方案, 但有时需要存储一些敏感信息, 如: 秘钥, 证书. 为此Kubernetes提供Secrets, 可通过两种方式来获取信息:</p>
-<ol>
-<li>将Secret entry作为environment variables传入container</li>
-<li>将Secret entry作为volume挂在Pod上</li>
-</ol>
-<h3 id="5-1-default-token-Secret"><a href="#5-1-default-token-Secret" class="headerlink" title="5.1 default token Secret"></a>5.1 default token Secret</h3><p>为保证Secret的安全性, Secret永远不会写入物理存储设备, 只会保留在内存中. 每个Pod都会自带一些Secret, 可通过调用<strong>kubectl describe pod</strong> command来查看Pod绑定了哪些Secret:</p>
+<p>ConfigMap volume的修改是原子性的, 也就是说, 即使volume中包含多个文件, container也不会读取到部分修改的文件; container要么读取到更新前的文件, 要么读取到更新后的文件. K8s通过<strong>symbolic link</strong>(软链接)实现更新操作的原子性, 如果查看volume可观察到:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl <span class="built_in">exec</span> fortune-configmap-volume -c web-server -- <span class="built_in">ls</span> -lA /etc/nginx/conf.d</span><br><span class="line">total 4</span><br><span class="line">drwxr-xr-x ... 12:15 ..4984_09_04_12_15_06.865837643</span><br><span class="line">lrwxrwxrwx ... 12:15 ..data -&gt; ..4984_09_04_12_15_06.865837643</span><br><span class="line">lrwxrwxrwx ... 12:15 my-nginx-config.conf -&gt; ..data/my-nginx-config.conf</span><br><span class="line">lrwxrwxrwx ... 12:15 sleep-interval -&gt; ..data/sleep-interval</span><br></pre></td></tr></table></figure>
+<p>配置文件<code>sleep-interval</code>指向<code>data</code>文件夹中的<code>sleep-interval</code>, 而<code>data</code>作为一个软链接指向名为<code>4984_09_04_12_15_06.865837643</code>的文件夹, 因此k8s会先创建一个新的文件夹, 并让<code>data</code>指向新的文件夹.<br>需要注意的是, 若使用<code>subPath</code>将单个文件挂载到container中, 该文件不会随着ConfigMap更新而更新; 若需要将单个文件放置在指定路径下, 可将volume挂载到其他路径上, 并在目标路径下创建一个软链接, 其指向volume的挂载路径下的指定文件.<br>Container的性质之一就是不变性(immutability), 因此一个image生成的多个container没有任何不同. 但若修改ConfigMap会导致container行为不同, 则破坏了这种性质. 导致这种问题的原因: container无法得知ConfigMap是否更新, 需要在程序层面检测配置文件是否更新; 若没有检测机制, 则新创建的container可能读取到新的配置信息, 从而与之前的container行为不一致. 即使container可以检测配置变动, 由于ConfigMap无法同时在多个node上更新, 因此不同container加载新配置的时间可能不同. 总而言之, 修改ConfigMap并不是一个很好的选择, 在修改前应考虑container是否可以检测变动, 是否容许container在一定时间内存在不一致行为.</p>
+<h2 id="5-Screts"><a href="#5-Screts" class="headerlink" title="5. Screts"></a>5. Screts</h2><p>ConfigMap提供了一个完整的配置获取方案, 但有时配置信息中包含一些敏感信息, 如密码或私有密钥. 为此K8s提供<strong>Secrets</strong>, 与ConfigMap相同, Secret也是键值对形势存储信息, 且获取键值对的方式如下:</p>
+<ul>
+<li>将Secret的键值对作为环境变量传入container</li>
+<li>将Secret作为volume挂载到pod上</li>
+</ul>
+<p>K8s会将Secrets保存在master node上, 且不会加密(从Kubernetes 1.7后加密), 因此必须保证master node不会被管理员之外的人访问; K8s只会将Secrets发送给需要Secret的pod所在的node上, 且Secrets只会保留在内存中, 不会写入磁盘, 因此无需清理worker node的磁盘. 因此:</p>
+<ul>
+<li>对于不敏感的配置信息, 放置在ConfigMap中</li>
+<li>对于敏感信息, 保存在Secrets中</li>
+</ul>
+<h3 id="5-1-default-token-Secret"><a href="#5-1-default-token-Secret" class="headerlink" title="5.1 default token Secret"></a>5.1 default token Secret</h3><p>执行<code>kubectl describe pod</code>可查看pod绑定了哪些Secret:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl describe pod &lt;pod_name&gt;</span><br><span class="line">...</span><br><span class="line">Volumes:</span><br><span class="line">  default-token-t75t5:</span><br><span class="line">    Type:        Secret (a volume populated by a Secret)</span><br><span class="line">    SecretName:  default-token-t75t5</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>也可通过<strong>kubectl get secrets</strong> command来查看当前namespace下的所有secrets:</p>
+<p>每个pod都会自动挂载一个Secret volume, 可执行<code>kubectl get secrets</code>查看当前namespace下的所有Secrets:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get secrets</span><br><span class="line">NAME                TYPE                                DATA AGE</span><br><span class="line">default-token-t75t5 kubernetes.io/service-account-token 3    1d</span><br></pre></td></tr></table></figure>
-<p>若需要查看某个secret的具体信息, 可调用<strong>kubectl describe secret</strong>:</p>
+<p>执行<code>kubectl describe secret</code>可查看某个Secret的具体信息:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl describe secret default-token-t75t5</span><br><span class="line">Name:         default-token-t75t5</span><br><span class="line">Namespace:    default</span><br><span class="line">Labels:       &lt;none&gt;</span><br><span class="line">Annotations:  kubernetes.io/service-account.name: default</span><br><span class="line">              kubernetes.io/service-account.uid: 0e856e7b-dfa3-11e9-8f93-4a00e35c70a2</span><br><span class="line">Type:         kubernetes.io/service-account-token</span><br><span class="line"></span><br><span class="line">Data</span><br><span class="line">====</span><br><span class="line">ca.crt:       1873 bytes</span><br><span class="line">namespace:    7 bytes</span><br><span class="line">token:        eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9...</span><br></pre></td></tr></table></figure>
-<p>其中<strong>ca.crt</strong>和<strong>token</strong>是为了让Pod与Kubernetes API server进行安全通信. 该Secret作为volume会被挂靠在Pod的**&#x2F;var&#x2F;run&#x2F;secrets&#x2F;kubernetes.io&#x2F;serviceaccount**路径上.</p>
-<h3 id="5-2-Create-a-Secret"><a href="#5-2-Create-a-Secret" class="headerlink" title="5.2 Create a Secret"></a>5.2 Create a Secret</h3><p>以之前的Nginx container为例, 可通过Secret在container中配置certificate和private key来让Nginx支持HTTPS. 首先需要生成certificate和private key并将其放置文件之中:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ openssl genrsa -out https.key 2048</span><br><span class="line">$ openssl req -new -x509 -key https.key -out https.cert -days 3650 \ </span><br><span class="line">-subj CN=www.kubia-example.com</span><br></pre></td></tr></table></figure>
-<p>为更好的表现Secret的性质, 再添加另外一个文件:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> bar &gt; foo</span><br></pre></td></tr></table></figure>
-<p>最后通过<strong>kubectl create secret</strong> command来创建一个Secret:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create secret generic fortune-https --from-file=https.key \</span><br><span class="line">--from-file=https.cert --from-file=foo</span><br><span class="line">secret <span class="string">&quot;fortune-https&quot;</span> created</span><br></pre></td></tr></table></figure>
+<p>可以看到, pod默认挂载的Secret包含<code>ca.crt</code>和<code>token</code>, 其用于保证pod与K8s API server之间安全通信. 执行<code>kubectl describe pod</code>可查看该secret的挂载位置:</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">Mounts:</span></span><br><span class="line"> <span class="string">/var/run/secrets/kubernetes.io/serviceaccount</span> <span class="string">from</span> <span class="string">default-token-cfee9</span></span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+<p>执行<code>kubectl exec</code>可查看挂载目录下的所有文件:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ kubectl exec mypod ls /var/run/secrets/kubernetes.io/serviceaccount/</span><br><span class="line">ca.crt</span><br><span class="line">namespace</span><br><span class="line">token</span><br></pre></td></tr></table></figure>
 
-<h3 id="5-3-Compare-ConfigMap-and-Secret"><a href="#5-3-Compare-ConfigMap-and-Secret" class="headerlink" title="5.3 Compare ConfigMap and Secret"></a>5.3 Compare ConfigMap and Secret</h3><p>虽然ConfigMap和Secret都是ky-value的map格式, 但其实存在很大差异:</p>
-<ol>
-<li>Secret entry中的key依然是明文形式, 但value使用Base43-encoded形式编码</li>
-<li>Secret支持二进制数据, 因为Base64可对二进制数据进行编码</li>
-<li>Secret支持stringData属性来放置该entry的value被Base64编码</li>
-<li>当Secret的entry被当做environment variable或volume时, entry会被自动解码, 因此container内的进程无需解码操作</li>
-</ol>
-<h3 id="5-4-Use-the-Secret-in-a-Pod"><a href="#5-4-Use-the-Secret-in-a-Pod" class="headerlink" title="5.4 Use the Secret in a Pod"></a>5.4 Use the Secret in a Pod</h3><p>为了让Nginx支持HTTPS, 需要将secret中的certificate和private key传给Nginx:</p>
+<p><img src="/images/Kubernetes/config-5-1.png" alt="The default-token Secret is created automatically and a corresponding volume is mounted in each pod automatically"></p>
+<h3 id="5-2-Create-a-Secret"><a href="#5-2-Create-a-Secret" class="headerlink" title="5.2 Create a Secret"></a>5.2 Create a Secret</h3><p>以nginx为例, 若想让nginx支持HTTPS, 需要添加一个certificate(证书)和一个private key(私有密钥), 由于我们不想让所有人都看到密钥, 因此需要将它们放入一个Secret中. 以下是生成证书和密钥的指令:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ openssl genrsa -out https.key 2048</span><br><span class="line">$ openssl req -new -x509 -key https.key -out https.cert -days 3650 \ </span><br><span class="line">-subj CN=www.kubia-example.com</span><br></pre></td></tr></table></figure>
+<p>再添加一个名为<code>foo</code>的文件, 其包含字符串<code>bar</code>:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> bar &gt; foo</span><br></pre></td></tr></table></figure>
+<p>最后执行<code>kubectl create secret</code>创建一个Secret:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create secret generic fortune-https --from-file=https.key \</span><br><span class="line">--from-file=https.cert --from-file=foo</span><br><span class="line">secret <span class="string">&quot;fortune-https&quot;</span> created</span><br></pre></td></tr></table></figure>
+<p>上述命令创建一个名为<code>fortune-https</code>的generic Secret, 其包含三个键值对: <code>foo</code>, <code>https.key</code>, 和<code>https.key</code>.</p>
+<h3 id="5-3-Compare-ConfigMap-and-Secret"><a href="#5-3-Compare-ConfigMap-and-Secret" class="headerlink" title="5.3 Compare ConfigMap and Secret"></a>5.3 Compare ConfigMap and Secret</h3><p>执行<code>kubectl hey secret</code>可获取secret:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get secret fortune-https -o yaml</span><br><span class="line">apiVersion: v1</span><br><span class="line">data:</span><br><span class="line">  foo: YmFyCg==</span><br><span class="line">  https.cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCekNDQ...</span><br><span class="line">  https.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcE...</span><br><span class="line">kind: Secret</span><br></pre></td></tr></table></figure>
+
+<p>尽管ConfigMap和Secret都是键值对形式, 但两者存在以下不同:</p>
+<ul>
+<li>Secret中的键值对的key为明文形式, 但value使用<strong>Base64</strong>编码</li>
+<li>Secret的value不光支持纯文本, 还支持二进制</li>
+<li>Secret的stringData属性可让键值对以明文形式展示, 但不会被pod读取到</li>
+<li>当Secret作为环境变量或volume时, container无需解码, 可直接使用键值对, 因为键值对会自动解码</li>
+</ul>
+<h3 id="5-4-Using-the-Secret-in-a-Pod"><a href="#5-4-Using-the-Secret-in-a-Pod" class="headerlink" title="5.4 Using the Secret in a Pod"></a>5.4 Using the Secret in a Pod</h3><p>为将证书和私钥传入container, 需将其挂载到container上.</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">fortune-https</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">luksa/fortune:env</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">html-generator</span></span><br><span class="line">    <span class="attr">env:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">INTERVAL</span></span><br><span class="line">      <span class="attr">valueFrom:</span></span><br><span class="line">        <span class="attr">configMapKeyRef:</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">fortune-config</span></span><br><span class="line">          <span class="attr">key:</span> <span class="string">sleep-interval</span></span><br><span class="line">    <span class="attr">volumeMounts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">html</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">/var/htdocs</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">nginx:alpine</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">web-server</span></span><br><span class="line">    <span class="attr">volumeMounts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">html</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">/usr/share/nginx/html</span></span><br><span class="line">      <span class="attr">readOnly:</span> <span class="literal">true</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">/etc/nginx/conf.d</span></span><br><span class="line">      <span class="attr">readOnly:</span> <span class="literal">true</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">certs</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">/etc/nginx/certs/</span></span><br><span class="line">      <span class="attr">readOnly:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">80</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">443</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">html</span></span><br><span class="line">    <span class="attr">emptyDir:</span> &#123;&#125;</span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">    <span class="attr">configMap:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">fortune-config</span></span><br><span class="line">      <span class="attr">items:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">my-nginx-config.conf</span></span><br><span class="line">        <span class="attr">path:</span> <span class="string">https.conf</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">certs</span></span><br><span class="line">    <span class="attr">secret:</span></span><br><span class="line">      <span class="attr">secretName:</span> <span class="string">fortune-https</span></span><br></pre></td></tr></table></figure>
-<p>结果如下:<br><img src="/images/Kubernetes/config-8.png" alt="Combine a ConfigMap and a Secret to run your fortune-https pod"></p>
-<p>也可以将Secret entry写入environment variable中:</p>
+<p>结果如下:<br><img src="/images/Kubernetes/config-5-2.png" alt="Combine a ConfigMap and a Secret to run your fortune-https pod"></p>
+<p>也可以将Secret导入环境变量:</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="string">...</span></span><br><span class="line"><span class="attr">env:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">FOO_SECRET</span></span><br><span class="line">    <span class="attr">valueFrom:</span></span><br><span class="line">      <span class="attr">secretKeyRef:</span></span><br><span class="line">        <span class="attr">name:</span> <span class="string">fortune-https</span></span><br><span class="line">        <span class="attr">key:</span> <span class="string">foo</span> </span><br><span class="line"><span class="string">...</span></span><br></pre></td></tr></table></figure>
+<p>但并不推荐将Secret导入环境变量中, 因为很多应用都会在程序报错时将环境变量写入日志中, 从而泄漏敏感信息; 另外, 由于子进程会继承父进程的所有环境变量, 若程序需要执行第三方的程序, 也可能泄漏敏感信息.</p>
+<h2 id="6-Understanding-image-pull-Secrets"><a href="#6-Understanding-image-pull-Secrets" class="headerlink" title="6. Understanding image pull Secrets"></a>6. Understanding image pull Secrets</h2><p>上述所有image都位于public image repository中, 若需要从private image repository获取image时, 需要配置密钥:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl create secret docker-registry mydockerhubsecret \</span><br><span class="line">  --docker-username=myusername --docker-password=mypassword \</span><br><span class="line">  --docker-email=my.email@provider.com</span><br></pre></td></tr></table></figure>
+<p>上述命令创建了一个名为<code>mydockerhubsecret</code>的docker-registry secret, 其会创建一个key为<code>.dockerconfig</code>的键值对, 用于<code>docker login</code>命令登陆Dockerhub.</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">private-pod</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">imagePullSecrets:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">mydockerhubsecret</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">image:</span> <span class="string">username/private:tag</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">main</span></span><br></pre></td></tr></table></figure>
     </div>
 
     <footer class="post-footer">
