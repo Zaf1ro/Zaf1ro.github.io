@@ -37,23 +37,24 @@
 <link rel="canonical" href="https://zaf1ro.github.io/p/a0f1.html"/>
 
 
-<meta name="description" content="1. Pass Metadata through the Downward APIKubernetes提供Downward API让container中的application获取Pod metadata. 当然, 用户也可以将这些信息写入ConfigMap或Secret Volume中, 但每次都创建一个ConfigMap或Secret并与Pod绑定. Downward API会自动包含所需要的">
+<meta name="description" content="1. Pass Metadata through the Downward API当container想要获取pod的metadata时, 可将metadata写入configMap&#x2F;secret中, 但这种方式存在很多问题:  修改pod配置时, 需同步更新configMap&#x2F;secret 某些metadata只有在pod创建时才能获取, 如pod的IP地址, pod何时被R">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Access Pod Metadata">
 <meta property="og:url" content="https://zaf1ro.github.io/p/a0f1.html">
 <meta property="og:site_name" content="Zaf1ro">
-<meta property="og:description" content="1. Pass Metadata through the Downward APIKubernetes提供Downward API让container中的application获取Pod metadata. 当然, 用户也可以将这些信息写入ConfigMap或Secret Volume中, 但每次都创建一个ConfigMap或Secret并与Pod绑定. Downward API会自动包含所需要的">
+<meta property="og:description" content="1. Pass Metadata through the Downward API当container想要获取pod的metadata时, 可将metadata写入configMap&#x2F;secret中, 但这种方式存在很多问题:  修改pod配置时, 需同步更新configMap&#x2F;secret 某些metadata只有在pod创建时才能获取, 如pod的IP地址, pod何时被R">
 <meta property="og:locale">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-1.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-2.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-3.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-4.png">
-<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-5.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-1-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-1-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-1-3.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-2-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-2-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-2-3.png">
 <meta property="article:published_time" content="2019-11-03T14:54:49.000Z">
-<meta property="article:modified_time" content="2024-08-20T16:43:04.030Z">
+<meta property="article:modified_time" content="2025-03-28T21:49:53.299Z">
 <meta property="article:tag" content="K8s">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-1.png">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/metadata-1-1.png">
 
 
 <link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
@@ -135,92 +136,137 @@ Access Pod Metadata - Zaf1ro
     </header>
 
     <div class="post-content">
-      <h2 id="1-Pass-Metadata-through-the-Downward-API"><a href="#1-Pass-Metadata-through-the-Downward-API" class="headerlink" title="1. Pass Metadata through the Downward API"></a>1. Pass Metadata through the Downward API</h2><p>Kubernetes提供Downward API让container中的application获取Pod metadata. 当然, 用户也可以将这些信息写入ConfigMap或Secret Volume中, 但每次都创建一个ConfigMap或Secret并与Pod绑定. Downward API会自动包含所需要的Pod metadata, 可直接从DownwardAPI volume或environment variables中获取, 如下图:<br><img src="/images/Kubernetes/metadata-1.png" alt="The Downward API exposes pod metadata through environment variables or files"></p>
-<p>Pod metadata包含以下几个部分:</p>
+      <h2 id="1-Pass-Metadata-through-the-Downward-API"><a href="#1-Pass-Metadata-through-the-Downward-API" class="headerlink" title="1. Pass Metadata through the Downward API"></a>1. Pass Metadata through the Downward API</h2><p>当container想要获取pod的metadata时, 可将metadata写入configMap&#x2F;secret中, 但这种方式存在很多问题:</p>
 <ul>
-<li>Pod的名字</li>
-<li>Pod的IP address</li>
-<li>Pod所属的namespace</li>
-<li>Pod所在的worker node名字</li>
-<li>Pod所属的service名字</li>
-<li>Container所需的CPU和memory</li>
-<li>Container的CPU和memory limit</li>
-<li>Pod的label</li>
-<li>Pod的annotation</li>
+<li>修改pod配置时, 需同步更新configMap&#x2F;secret</li>
+<li>某些metadata只有在pod创建时才能获取, 如pod的IP地址, pod何时被ReplicaSet创建, 但pod创建后无法修改configMap&#x2F;secret</li>
+<li>某些metadata已经存在于pod的资源清单(manifest file)中, 如label或annotation, 需将这些信息重新写入configMap&#x2F;secret中</li>
 </ul>
-<p>其中, label和annotation只能通过downwardAPI volume获取, 其他metadata无论environment variable或downwardAPI volume都可以获取.</p>
+<p>为解决上述问题, k8s提供<strong>Downward API</strong>让pod中的container可直接获取pod的metadata. Downward API并不是一个REST API, 它会将指定的metadata导入<strong>环境变量</strong>或<strong>volume</strong>中.<br><img src="/images/Kubernetes/metadata-1-1.png" alt="The Downward API exposes pod metadata through environment variables or files"></p>
+<p>以下是Downward API包含的pod metadata:</p>
+<ul>
+<li>pod的名字</li>
+<li>pod的IP地址</li>
+<li>pod所属的namespace</li>
+<li>pod所在的worker node名字</li>
+<li>pod所属的service名字</li>
+<li>每个container的requested CPU&#x2F;memory</li>
+<li>每个container的CPU&#x2F;memory limit</li>
+<li>pod的label</li>
+<li>pod的annotation</li>
+</ul>
+<p>以下是request CPU&#x2F;memory和CPU&#x2F;memory limit的区别:</p>
+<ul>
+<li>Requested CPU&#x2F;memory: 表示该container申请的资源数量, 但并不意味着container一定拥有这些资源. 例如, 一个container申请200mb内存, 但只使用100mb内存, 那么剩下的100mb会在其他container的需求超出其请求资源时借给其他container.</li>
+<li>CPU&#x2F;memory limit: 表示该container的资源上限, 当一个container获取的资源超出该值时, 会被强制终止</li>
+</ul>
+<p>总结一下, <strong>CPU&#x2F;memory limit</strong>等于<strong>requested CPU&#x2F;memory</strong>加上<strong>从其他container借来的CPU&#x2F;memory</strong>. requested CPU&#x2F;memory表示container通常情况下需要多少资源, CPU&#x2F;memory limit表示container可拥有的最大资源量.</p>
+<p>上述大部分metadata都可通过<strong>环境变量</strong>或<strong>volume</strong>获取, 但label和annotation只能通过<strong>volume</strong>获取, 因为:</p>
+<ul>
+<li>label或annotation通常包含一个或多个键值对, 无法放入单个环境变量</li>
+<li>label或annotation可在pod运行时被修改, 而环境变量一旦初始化则无法修改</li>
+</ul>
 <h3 id="1-1-Expose-Metadata-through-Environment-Variables"><a href="#1-1-Expose-Metadata-through-Environment-Variables" class="headerlink" title="1.1 Expose Metadata through Environment Variables"></a>1.1 Expose Metadata through Environment Variables</h3><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">downward</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">main</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">busybox</span></span><br><span class="line">    <span class="attr">command:</span> [<span class="string">&quot;sleep&quot;</span>, <span class="string">&quot;9999999&quot;</span>]</span><br><span class="line">    <span class="attr">resources:</span></span><br><span class="line">      <span class="attr">requests:</span></span><br><span class="line">        <span class="attr">cpu:</span> <span class="string">15m</span></span><br><span class="line">        <span class="attr">memory:</span> <span class="string">100Ki</span></span><br><span class="line">      <span class="attr">limits:</span></span><br><span class="line">        <span class="attr">cpu:</span> <span class="string">100m</span></span><br><span class="line">        <span class="attr">memory:</span> <span class="string">4Mi</span></span><br><span class="line">  <span class="attr">env:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">POD_NAME</span></span><br><span class="line">    <span class="attr">valueFrom:</span></span><br><span class="line">      <span class="attr">fieldRef:</span></span><br><span class="line">        <span class="attr">fieldPath:</span> <span class="string">metadata.name</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">POD_NAMESPACE</span></span><br><span class="line">    <span class="attr">valueFrom:</span></span><br><span class="line">      <span class="attr">fieldRef:</span></span><br><span class="line">        <span class="attr">fieldPath:</span> <span class="string">metadata.namespace</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">POD_IP</span></span><br><span class="line">    <span class="attr">valueFrom:</span></span><br><span class="line">      <span class="attr">fieldRef:</span></span><br><span class="line">        <span class="attr">fieldPath:</span> <span class="string">status.podIP</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">NODE_NAME</span></span><br><span class="line">    <span class="attr">valueFrom:</span></span><br><span class="line">      <span class="attr">fieldRef:</span></span><br><span class="line">        <span class="attr">fieldPath:</span> <span class="string">spec.nodeName</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SERVICE_ACCOUNT</span></span><br><span class="line">    <span class="attr">valueFrom:</span></span><br><span class="line">      <span class="attr">fieldRef:</span></span><br><span class="line">        <span class="attr">fieldPath:</span> <span class="string">spec.serviceAccountName</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">CONTAINER_CPU_REQUEST_MILLICORES</span></span><br><span class="line">    <span class="attr">valueFrom:</span></span><br><span class="line">      <span class="attr">resourceFieldRef:</span></span><br><span class="line">        <span class="attr">resource:</span> <span class="string">requests.cpu</span></span><br><span class="line">        <span class="attr">divisor:</span> <span class="string">1m</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">CONTAINER_MEMORY_LIMIT_KIBIBYTES</span></span><br><span class="line">    <span class="attr">valueFrom:</span></span><br><span class="line">      <span class="attr">resourceFieldRef:</span></span><br><span class="line">        <span class="attr">resource:</span> <span class="string">limits.memory</span></span><br><span class="line">        <span class="attr">divisor:</span> <span class="string">1Ki</span></span><br></pre></td></tr></table></figure>
-<p>上述YAML文件中将Pod metadata全部放入environment variable. 其中, CPU和memory的request或limit可标注divisor, divisor表示资源单位, 默认为1(byte): 本例中CPU request的divisor为1m(metabyte), 因此CONTAINER_CPU_REQUEST_MILLICORES为15; memory limit的divisor为1Ki(kibibyte), 因此CONTAINER_MEMORY_LIMIT_KIBIBYTES为4096. 如下图:<br><img src="/images/Kubernetes/metadata-2.png" alt="Pod metadata and attributes can be exposed to the pod through environment variables"></p>
-<p>可进入Pod查看environment variables:</p>
+
+<p><img src="/images/Kubernetes/metadata-1-2.png" alt="Pod metadata and attributes can be exposed to the pod through environment variables"></p>
+<p>上述YAML文件中将pod的metadata放入环境变量. 其中, requested CPU&#x2F;memory和CPU&#x2F;memory limit需标注一个额外参数<strong>divisor</strong>, 其表示资源单位:</p>
+<ul>
+<li>CPU的单位为<strong>millicore</strong>, 表示千分之一的CPU单元(CPU core). 本例中, divisor为1m, 环境变量中<code>CONTAINER_CPU_REQUEST_MILLICORES</code>为15, 表示该container请求了1.5%的CPU</li>
+<li>Memory的单位为<strong>Kibibtye</strong>, 表示一千字节. 本例中, divisor为1Ki, 环境变量中<code>CONTAINER_MEMORY_LIMIT_KIBIBYTES</code>为4096, 表示该container的内存上限为4Mi.</li>
+</ul>
+<p>进入pod可查看环境变量:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl <span class="built_in">exec</span> downward <span class="built_in">env</span></span><br><span class="line">PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin</span><br><span class="line">HOSTNAME=downward</span><br><span class="line">CONTAINER_MEMORY_LIMIT_KIBIBYTES=4096</span><br><span class="line">POD_NAME=downward</span><br><span class="line">POD_NAMESPACE=default</span><br><span class="line">POD_IP=10.0.0.10</span><br><span class="line">NODE_NAME=gke-kubia-default-pool-32a2cac8-sgl7</span><br><span class="line">SERVICE_ACCOUNT=default</span><br><span class="line">CONTAINER_CPU_REQUEST_MILLICORES=15</span><br><span class="line">KUBERNETES_SERVICE_HOST=10.3.240.1</span><br><span class="line">KUBERNETES_SERVICE_PORT=443</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-2-Pass-Metadata-through-Files-in-a-DownwardAPU-Volume"><a href="#1-2-Pass-Metadata-through-Files-in-a-DownwardAPU-Volume" class="headerlink" title="1.2 Pass Metadata through Files in a DownwardAPU Volume"></a>1.2 Pass Metadata through Files in a DownwardAPU Volume</h3><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">downward</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">foo:</span> <span class="string">bar</span></span><br><span class="line">  <span class="attr">annotations:</span></span><br><span class="line">    <span class="attr">key1:</span> <span class="string">value1</span></span><br><span class="line">    <span class="attr">key2:</span> <span class="string">|</span></span><br><span class="line"><span class="string">      multi</span></span><br><span class="line"><span class="string">      line</span></span><br><span class="line"><span class="string">      value</span></span><br><span class="line"><span class="string"></span><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">main</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">busybox</span></span><br><span class="line">    <span class="attr">command:</span> [<span class="string">&quot;sleep&quot;</span>, <span class="string">&quot;9999999&quot;</span>]</span><br><span class="line">    <span class="attr">resources:</span></span><br><span class="line">      <span class="attr">requests:</span></span><br><span class="line">        <span class="attr">cpu:</span> <span class="string">15m</span></span><br><span class="line">        <span class="attr">memory:</span> <span class="string">100Ki</span></span><br><span class="line">      <span class="attr">limits:</span></span><br><span class="line">        <span class="attr">cpu:</span> <span class="string">100m</span></span><br><span class="line">        <span class="attr">memory:</span> <span class="string">4Mi</span></span><br><span class="line">    <span class="attr">volumeMounts:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">downward</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">/etc/downward</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">downward</span></span><br><span class="line">    <span class="attr">downwardAPI:</span></span><br><span class="line">      <span class="attr">items:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">&quot;podName&quot;</span></span><br><span class="line">        <span class="attr">fieldRef:</span></span><br><span class="line">          <span class="attr">fieldPath:</span> <span class="string">metadata.name</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">&quot;podNamespace&quot;</span></span><br><span class="line">        <span class="attr">fieldRef:</span></span><br><span class="line">          <span class="attr">fieldPath:</span> <span class="string">metadata.namespace</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">&quot;labels&quot;</span></span><br><span class="line">        <span class="attr">fieldRef:</span></span><br><span class="line">          <span class="attr">fieldPath:</span> <span class="string">metadata.labels</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">&quot;annotations&quot;</span></span><br><span class="line">        <span class="attr">fieldRef:</span></span><br><span class="line">          <span class="attr">fieldPath:</span> <span class="string">metadata.annotations</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">&quot;containerCpuRequestMilliCores&quot;</span></span><br><span class="line">        <span class="attr">resourceFieldRef:</span></span><br><span class="line">          <span class="attr">containerName:</span> <span class="string">main</span></span><br><span class="line">          <span class="attr">resource:</span> <span class="string">requests.cpu</span></span><br><span class="line">          <span class="attr">divisor:</span> <span class="string">1m</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">path:</span> <span class="string">&quot;containerMemoryLimitBytes&quot;</span></span><br><span class="line">        <span class="attr">resourceFieldRef:</span></span><br><span class="line">          <span class="attr">containerName:</span> <span class="string">main</span></span><br><span class="line">          <span class="attr">resource:</span> <span class="string">limits.memory</span></span><br><span class="line">          <span class="attr">divisor:</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
-<p>上述YAML文件将metadata挂靠在**&#x2F;etc&#x2F;downward**下. 如下图:<br><img src="/images/Kubernetes/metadata-3.png" alt="Use a downwardAPI volume to pass metadata to the container"></p>
-<p>需要注意的是, 当在volume中使用CPU和memory的limit或request时, 必须标注container名字, 每个container有不同的request和limit. 之所以label和annotation不能直接放入environment variables, 因为label和annotation会被Pod运行时更改, 因此需要放在volume中保持更新. </p>
-<h2 id="2-Kubernetes-API-Server"><a href="#2-Kubernetes-API-Server" class="headerlink" title="2. Kubernetes API Server"></a>2. Kubernetes API Server</h2><p>Downward API虽然能为container提供Pod metadata, 但有时container需要除Pod之外的信息. Kubernetes为此提供了API Server.</p>
-<h3 id="2-1-Explore-the-Kubernetes-REST-API"><a href="#2-1-Explore-the-Kubernetes-REST-API" class="headerlink" title="2.1 Explore the Kubernetes REST API"></a>2.1 Explore the Kubernetes REST API</h3><p>在向kubernetes API发送请求前需要先了解这套API:</p>
+<p>上述YAML文件将metadata挂靠在<code>/etc/downward</code>下. 如下图:<br><img src="/images/Kubernetes/metadata-1-3.png" alt="Use a downwardAPI volume to pass metadata to the container"></p>
+<p>需要注意的是, 当在volume中使用requested CPU&#x2F;memory或CPU&#x2F;memory limit时, 需标注container名字, 因为每个container有不同的request和limit.</p>
+<h2 id="2-Kubernetes-API-Server"><a href="#2-Kubernetes-API-Server" class="headerlink" title="2. Kubernetes API Server"></a>2. Kubernetes API Server</h2><p>Downward API虽然能为container提供当前pod的metadata, 但若container需要访问pod之外的信息, 可通过环境变量获取service相关的信息, 但如果是其他信息, 则只能需要访问K8s API server.</p>
+<p><img src="/images/Kubernetes/metadata-2-1.png" alt="Talking to the API server from inside a pod to get information about other API objects"></p>
+<h3 id="2-1-Explore-the-Kubernetes-REST-API"><a href="#2-1-Explore-the-Kubernetes-REST-API" class="headerlink" title="2.1 Explore the Kubernetes REST API"></a>2.1 Explore the Kubernetes REST API</h3><p>向k8s API发送请求前需要先了解这套API:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl cluster-info</span><br><span class="line">Kubernetes master is running at https://192.168.99.100:8443</span><br></pre></td></tr></table></figure>
-<p>由于API server使用HTTPS, 所以在访问该IP address前需要确定准备HTTPS认证; 或使用<strong>kubectl proxy</strong>启动一个proxy server与API server进行HTTPS连接:</p>
+<p>由于API server使用<strong>HTTPS</strong>, 因此无法直接访问:</p>
+<ul>
+<li>访问前进行HTTPS认证</li>
+<li>使用kubectl proxy命令启动一个proxy server, 由于proxy server接受HTTP连接, 因此container可借助proxy server与API server通信</li>
+</ul>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl proxy</span><br><span class="line">Starting to serve on 127.0.0.1:8001</span><br></pre></td></tr></table></figure>
-<p>上述proxy会监听8001端口. Proxy不需要任何参数, 因为它会自动获取所需要的配置信息并自动连接到API Server.</p>
+<p>该命令会自动获取所有需要的信息(API server URL, authorization token等). Proxy server监听8001端口.</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ curl http://localhost:8001</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;paths&quot;</span>: [</span><br><span class="line">  <span class="string">&quot;/api&quot;</span>,</span><br><span class="line">  <span class="string">&quot;/api/v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;/apis&quot;</span>,</span><br><span class="line">  <span class="string">&quot;/apis/apps&quot;</span>,</span><br><span class="line">  <span class="string">&quot;/apis/apps/v1beta1&quot;</span>,</span><br><span class="line">  ...</span><br><span class="line">  <span class="string">&quot;/apis/batch&quot;</span>,</span><br><span class="line">  <span class="string">&quot;/apis/batch/v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;/apis/batch/v2alpha1&quot;</span>,</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
-<p>Kubernetes将所有API分为好几个API group, group分为以下两种:</p>
-<ol>
-<li>core group: REST路径为**&#x2F;api&#x2F;v1**或, <strong>apiVersion: v1</strong></li>
-<li>named groups: REST路径为**&#x2F;apis&#x2F;&lt;GROUP_NAME&gt;&#x2F;&lt;VERSION&gt;<strong>, 或</strong>apiVersion:  &lt;GROUP_NAME&gt;&#x2F;&lt;VERSION&gt;**, 例如: apiVersion: batch&#x2F;v1</li>
-</ol>
-<p>以Job为例, 其位于**&#x2F;api&#x2F;batch**的路径上:</p>
+<p>上述每一行都是一个<strong>API group</strong>, 每一个API Group关联一个或多个k8s resource. API group可分为以下两类:</p>
+<ul>
+<li>core group: 包含一些核心资源, 如pod, node, namespace, service, secret, volume, configMap等, URL路径为&#x2F;<code>api/v1</code>, 对应manifest中的<code>apiVersion: v1</code></li>
+<li>named groups: 包含一些K8s的拓展功能, URL路径为<code>/apis/&lt;GROUP_NAME\&gt;/&lt;VERSION&gt;</code>, :、对应manifest中的<code>apiVersion: GROUP_NAME/VERSION</code></li>
+</ul>
+<p>以下是named group的一些例子:</p>
+<ul>
+<li>&#x2F;apis&#x2F;apps: Deployment, ReplicaSet, StatefulSet, DaemonSet</li>
+<li>&#x2F;apis&#x2F;extensions: Ingress, NetworkPolicies, PodSecurityPolicies</li>
+<li>&#x2F;apis&#x2F;batch: Job, CronJob</li>
+<li>&#x2F;apis&#x2F;storage.k8s.io: StorageClass, VolumeAttachment</li>
+<li>&#x2F;apis&#x2F;policy: PodDisruptionBudget</li>
+</ul>
+<p>以Job为例, 其位于<code>/api/batch</code>的路径上:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ curl http://localhost:8001/apis/batch</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;APIGroup&quot;</span>,</span><br><span class="line">  <span class="string">&quot;apiVersion&quot;</span>: <span class="string">&quot;v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;name&quot;</span>: <span class="string">&quot;batch&quot;</span>,</span><br><span class="line">  <span class="string">&quot;versions&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;groupVersion&quot;</span>: <span class="string">&quot;batch/v1&quot;</span>,</span><br><span class="line">      <span class="string">&quot;version&quot;</span>: <span class="string">&quot;v1&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;groupVersion&quot;</span>: <span class="string">&quot;batch/v2alpha1&quot;</span>,</span><br><span class="line">      <span class="string">&quot;version&quot;</span>: <span class="string">&quot;v2alpha1&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;preferredVersion&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;groupVersion&quot;</span>: <span class="string">&quot;batch/v1&quot;</span>,</span><br><span class="line">    <span class="string">&quot;version&quot;</span>: <span class="string">&quot;v1&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;serverAddressByClientCIDRs&quot;</span>: null</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上述为batch API group的描述, 包括version和其他信息. 以下是**&#x2F;api&#x2F;batch&#x2F;v1**的路径访问结果:</p>
+<p>上述为batch API group的描述, 包括version和其他信息. 以下是&#x2F;api&#x2F;batch&#x2F;v1的路径访问结果:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ curl http://localhost:8001/apis/batch/v1</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;APIResourceList&quot;</span>,</span><br><span class="line">  <span class="string">&quot;apiVersion&quot;</span>: <span class="string">&quot;v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;groupVersion&quot;</span>: <span class="string">&quot;batch/v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;resources&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;name&quot;</span>: <span class="string">&quot;jobs&quot;</span>,</span><br><span class="line">      <span class="string">&quot;namespaced&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">      <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;Job&quot;</span>,</span><br><span class="line">      <span class="string">&quot;verbs&quot;</span>: [</span><br><span class="line">        <span class="string">&quot;create&quot;</span>,</span><br><span class="line">        <span class="string">&quot;delete&quot;</span>,</span><br><span class="line">        <span class="string">&quot;deletecollection&quot;</span>,</span><br><span class="line">        <span class="string">&quot;get&quot;</span>,</span><br><span class="line">        <span class="string">&quot;list&quot;</span>,</span><br><span class="line">        <span class="string">&quot;patch&quot;</span>,</span><br><span class="line">        <span class="string">&quot;update&quot;</span>,</span><br><span class="line">        <span class="string">&quot;watch&quot;</span></span><br><span class="line">      ]</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;name&quot;</span>: <span class="string">&quot;jobs/status&quot;</span>,</span><br><span class="line">      <span class="string">&quot;namespaced&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">      <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;Job&quot;</span>,</span><br><span class="line">      <span class="string">&quot;verbs&quot;</span>:</span><br><span class="line">        <span class="string">&quot;get&quot;</span>,</span><br><span class="line">        <span class="string">&quot;patch&quot;</span>,</span><br><span class="line">        <span class="string">&quot;update&quot;</span></span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>其中<strong>name</strong>表示可访问的路径, <strong>kind</strong>表示所属的resource类型, namespaced表示是否属于某个namespace, verbs表示可进行的操作, 主要操作形式包括以下几种:</p>
-<ol>
-<li>Create: 创建resource</li>
-<li>Update: 有两种形式:</li>
-<li>Replace: 替代当前resource object中已存在的field</li>
-<li>Patch: 修改特定field</li>
-<li>Read: 有三种形式:</li>
-<li>Get: 通过名字获得特定resource object</li>
-<li>List: 获得所有符合selector规则的resource object</li>
-<li>Watch: 获得resource object被更新后的结果</li>
-<li>Delete: 删除一个resource object</li>
-<li>其他操作, 包含以下三种:</li>
-<li>Rollback: 回滚PodTemplate至上一个版本</li>
-<li>Read&#x2F;Write Scale: 读取或更新replica数量</li>
-<li>Read&#x2F;Write Status: 读取或更新resource object的状态</li>
-</ol>
-<p>向**&#x2F;apis&#x2F;batch&#x2F;v1&#x2F;jobs**路径发送GET请求可获得cluster中的所有Job, 如下:</p>
+<p><code>name</code>表示可访问的路径, <code>kind</code>表示所属resource类型, <code>namespaced</code>表示该资源为全局资源或仅限于某个namespace, <code>verbs</code>表示可进行的操作类别, 以下是所有操作类别与其对应的HTTP方法:</p>
+<ul>
+<li>create: 创建一个resource object, 如<code>POST /resourceURL</code></li>
+<li>update: 更新已有resource object, 如<code>PUT /resourceURL/name</code></li>
+<li>patch: 部分更新已有resource object, 如<code>PATCH /resourceURL/name</code></li>
+<li>get: 获取特定resource object, 如<code>GET /resourceURL/name</code></li>
+<li>list: 获得所有符合selector规则的resource object集合, 如G<code>ET /resourceURL</code></li>
+<li>watch: 监视某个resource object或某个resource object集合, 如G<code>ET /resourceURL?watch=true</code></li>
+<li>delete: 删除某个resource object, 如<code>DELETE /resourceURL/name</code></li>
+<li>deletecollection: 删除某个resource object集合, 如<code>DELETE /resourceURL</code></li>
+</ul>
+<p>向&#x2F;apis&#x2F;batch&#x2F;v1&#x2F;jobs发送GET请求可获得当前cluster中所有job:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ curl http://localhost:8001/apis/batch/v1/jobs</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;JobList&quot;</span>,</span><br><span class="line">  <span class="string">&quot;apiVersion&quot;</span>: <span class="string">&quot;batch/v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;metadata&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;selfLink&quot;</span>: <span class="string">&quot;/apis/batch/v1/jobs&quot;</span>,</span><br><span class="line">    <span class="string">&quot;resourceVersion&quot;</span>: <span class="string">&quot;225162&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;items&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;metadata&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;my-job&quot;</span>,</span><br><span class="line">        <span class="string">&quot;namespace&quot;</span>: <span class="string">&quot;default&quot;</span>,</span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
-<p>也可通过Job名字来访问该Job的配置细节:</p>
+<p>也可通过namespace和job名称获取该job的详细信息:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ curl http://localhost:8001/apis/batch/v1/namespaces/default/jobs/my-job</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;Job&quot;</span>,</span><br><span class="line">  <span class="string">&quot;apiVersion&quot;</span>: <span class="string">&quot;batch/v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;metadata&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>: <span class="string">&quot;my-job&quot;</span>,</span><br><span class="line">    <span class="string">&quot;namespace&quot;</span>: <span class="string">&quot;default&quot;</span>,</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
-
-<h3 id="2-2-Access-the-APi-Server-from-within-a-Pod"><a href="#2-2-Access-the-APi-Server-from-within-a-Pod" class="headerlink" title="2.2 Access the APi Server from within a Pod"></a>2.2 Access the APi Server from within a Pod</h3><p>上述所使用的方式仅限与local machine, 在container中则无法调用kubectl.  因此如果需要在Pod中与API server通讯, 则需要满足以下三个条件:</p>
-<ol>
-<li>找到API server的IP address</li>
-<li>保证对方是API server而不是其他人</li>
-<li>认证server</li>
-</ol>
+<p>可以发现, 上述输出与执行kubectl get job my-job -o json的结果相同.</p>
+<h3 id="2-2-Access-the-APi-Server-from-within-a-Pod"><a href="#2-2-Access-the-APi-Server-from-within-a-Pod" class="headerlink" title="2.2 Access the APi Server from within a Pod"></a>2.2 Access the APi Server from within a Pod</h3><p>上述与API server沟通的方式仅限于node中, 由于container中无法调用kubectl, 因此无法创建proxy server.  若想要在container中与API server通讯, 需满足以下三个条件:</p>
+<ul>
+<li>获取API server的IP address</li>
+<li>保证对方为API server, 而不是其他人</li>
+<li>与API server进行身份验证, 否则API server不会处理任何请求</li>
+</ul>
+<p>为展示整个流程, 我们可运行一个不执行任何操作的pod, 其已包含curl程序, 以下是该pod的manifest:</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">curl</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">main</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">tutum/curl</span></span><br><span class="line">    <span class="attr">command:</span> [<span class="string">&quot;sleep&quot;</span>, <span class="string">&quot;9999999&quot;</span>]</span><br></pre></td></tr></table></figure>
-<p>以上YAML文件创建了一个Pod, 其中container包含curl程序用于向API server发送请求. 然后需要获取Kubernetes API server的IP address和Port: Kubernetes提供了名为<strong>kubernetes</strong>的service作为API server的entry point, 可直接向<strong><a target="_blank" rel="noopener external nofollow noreferrer" href="https://kubernetes/">https://kubernetes</a></strong>发送请求:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl <span class="built_in">exec</span> -it curl bash</span><br><span class="line">root@curl:/# curl https://kubernetes</span><br><span class="line">curl: (60) SSL certificate problem: unable to get <span class="built_in">local</span> issuer certificate</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>由于还未配置HTTPS的certificates和private key, 所以暂时无法连接至API server. Kubernetes为Pod提供的默认Secret volume中含有HTTPS所需的certificate, 位置在**&#x2F;var&#x2F;run&#x2F;secrets&#x2F;kubernetes.io&#x2F;serviceaccount&#x2F;**:</p>
+<p>执行<code>kubectl exec -it curl bash</code>可在container中执行一个bash shell. 首先我们需要获取API server的IP地址, k8s会在<code>default</code>的namespace中自动启动一个service, 名为<strong>kubernetes</strong>, 其包含API server的IP地址和端口号:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get svc</span><br><span class="line">NAME        CLUSTER-IP  EXTERNAL-IP PORT(S) AGE</span><br><span class="line">kubernetes  10.0.0.1    &lt;none&gt;      443/TCP 46d</span><br></pre></td></tr></table></figure>
+
+<p>container的环境变量也包含API server的IP地址和端口号:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# <span class="built_in">env</span> | grep KUBERNETES_SERVICE</span><br><span class="line">KUBERNETES_SERVICE_PORT=443</span><br><span class="line">KUBERNETES_SERVICE_HOST=10.0.0.1</span><br><span class="line">KUBERNETES_SERVICE_PORT_HTTPS=443</span><br></pre></td></tr></table></figure>
+
+<p>实际上我们不需要知道API server的IP地址和端口号, 直接访问<code>https://kubernetes</code>即可:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# curl https://kubernetes</span><br><span class="line">curl: (60) SSL certificate problem: unable to get <span class="built_in">local</span> issuer certificate</span><br><span class="line">...</span><br><span class="line">If you<span class="string">&#x27;d like to turn off curl&#x27;</span>s verification of the certificate, use</span><br><span class="line"> the -k (or --insecure) option.</span><br></pre></td></tr></table></figure>
+
+<p>接下来需要验证API server身份: k8s集群中每个container都默认挂载一个secret, 挂载在<code>/var/run/secrets/kubernetes.io/serviceaccount/</code>:</p>
 <figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# <span class="built_in">ls</span> /var/run/secrets/kubernetes.io/serviceaccount/</span><br><span class="line">ca.crt namespace token</span><br></pre></td></tr></table></figure>
-<p>其中, <strong>ca.crt</strong>为certificate. 使用certificate后尝试连接API server:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# curl --cacert /var/run/secrets/kubernetes.io/serviceaccount \</span><br><span class="line">/ca.crt https://kubernetes</span><br><span class="line">Unauthorized</span><br></pre></td></tr></table></figure>
-<p>虽然连接中使用了证书, 但API server需要认证连接的请求来自所管理的Pod, 而不是其他client, 因此需要在请求时加入token实现认证:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# TOKEN=$(<span class="built_in">cat</span> /var/run/secrets/kubernetes.io/ serviceaccount/token)</span><br><span class="line">root@curl:/# curl -H <span class="string">&quot;Authorization: Bearer <span class="variable">$TOKEN</span>&quot;</span> https://kubernetes</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;paths&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;/api&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/api/v1&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/apis&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/apis/apps&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/apis/apps/v1beta1&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/apis/authorization.k8s.io&quot;</span>,</span><br><span class="line">    ...</span><br><span class="line">    <span class="string">&quot;/ui/&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/version&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>自此Pod内container与API server的连接建立完毕, container可向API server发送请求来获取或修改cluster中的数据. Secret volume中还包含一个名为<strong>namespace</strong>的文件, 其中包含Pod所处的namespace名称, 可用于向API server发送请求:</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# NS=$(<span class="built_in">cat</span> /var/run/secrets/kubernetes.io/  serviceaccount/namespace)</span><br><span class="line">root@curl:/# curl -H <span class="string">&quot;Authorization: Bearer <span class="variable">$TOKEN</span>&quot;</span> https://kubernetes/api/v1/namespaces/<span class="variable">$NS</span>/pods</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;PodList&quot;</span>,</span><br><span class="line">  <span class="string">&quot;apiVersion&quot;</span>: <span class="string">&quot;v1&quot;</span>,</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
-<p>整个流程如下图:<br><img src="/images/Kubernetes/metadata-4.png" alt="Use the files from the default-token Secret to talk to the API server"></p>
-<h3 id="2-3-Simplify-API-Server-Communication-with-Ambassador-Container"><a href="#2-3-Simplify-API-Server-Communication-with-Ambassador-Container" class="headerlink" title="2.3 Simplify API Server Communication with Ambassador Container"></a>2.3 Simplify API Server Communication with Ambassador Container</h3><p>上述步骤虽然可以实现Pod中的container与API server通信, 但操作过于复杂, 这时可使用Sidecar Pattern: 运行一个ambassador container作为代理, 帮助Pod中的其他container与API server建立连接.</p>
+
+<ul>
+<li>ca.crt: CA证书, 用于验证其他证书</li>
+<li>namespace: 当前pod所在的namespace名称</li>
+<li>token: 用于向API server进行身份验证</li>
+</ul>
+<p>使用ca.crt连接API server:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# curl --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt https://kubernetes</span><br><span class="line">Unauthorized</span><br></pre></td></tr></table></figure>
+<p>curl成功验证了API server的身份, 但curl并没有向API server进行身份验证, 因此需要在请求加入token:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# TOKEN=$(<span class="built_in">cat</span> /var/run/secrets/kubernetes.io/serviceaccount/token)</span><br><span class="line">root@curl:/# curl -H <span class="string">&quot;Authorization: Bearer <span class="variable">$TOKEN</span>&quot;</span> https://kubernetes</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;paths&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;/api&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/api/v1&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/apis&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/apis/apps&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/apis/apps/v1beta1&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/apis/authorization.k8s.io&quot;</span>,</span><br><span class="line">    ...</span><br><span class="line">    <span class="string">&quot;/ui/&quot;</span>,</span><br><span class="line">    <span class="string">&quot;/version&quot;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>自此container与API server成功建立连接, 当container向API server查询或修改某个资源时, 需要标注namespace, 因此可将secret volume中<strong>namespace</strong>文件导入到环境变量中:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">root@curl:/# NS=$(<span class="built_in">cat</span> /var/run/secrets/kubernetes.io/serviceaccount/namespace)</span><br><span class="line">root@curl:/# curl -H <span class="string">&quot;Authorization: Bearer <span class="variable">$TOKEN</span>&quot;</span> https://kubernetes/api/v1/namespaces/<span class="variable">$NS</span>/pods</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;PodList&quot;</span>,</span><br><span class="line">  <span class="string">&quot;apiVersion&quot;</span>: <span class="string">&quot;v1&quot;</span>,</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+<p>整个流程如下图:<br><img src="/images/Kubernetes/metadata-2-2.png" alt="Use the files from the default-token Secret to talk to the API server"></p>
+<h3 id="2-3-Simplify-API-Server-Communication-with-Ambassador-Container"><a href="#2-3-Simplify-API-Server-Communication-with-Ambassador-Container" class="headerlink" title="2.3 Simplify API Server Communication with Ambassador Container"></a>2.3 Simplify API Server Communication with Ambassador Container</h3><p>上述步骤虽然实现了container与API server通信, 但操作过于复杂, 因此可使用Sidecar Pattern: 运行一个<strong>ambassador container</strong>作为代理, 作为container与API server的中间代理.</p>
 <figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Pod</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">curl-with-ambassador</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">main</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">tutum/curl</span></span><br><span class="line">    <span class="attr">command:</span> [<span class="string">&quot;sleep&quot;</span>, <span class="string">&quot;9999999&quot;</span>]</span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">ambassador</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">luksa/kubectl-proxy:1.6.2</span> </span><br></pre></td></tr></table></figure>
-<p>上述YAML文件创建了一个Pod, 其中包含主程序main和代理程序ambassador. Ambassador会开放8001端口来接收请求并转发给API server, 这样main不需要配置任何certificate和token:<br><img src="/images/Kubernetes/metadata-5.png" alt="Offload encryption, authentication, and server verification in an ambassador container"></p>
-<h3 id="2-4-Use-Client-Libraries-to-Talk-to-the-API-Server"><a href="#2-4-Use-Client-Libraries-to-Talk-to-the-API-Server" class="headerlink" title="2.4 Use Client Libraries to Talk to the API Server"></a>2.4 Use Client Libraries to Talk to the API Server</h3><p>除了ambassador, Kubernetes官方还为以下两个语言提供了API Client Libraries:</p>
+<p>上述YAML文件创建了一个pod, 其包含两个container: 主程序main和代理程序ambassador. Ambassador接收请求并转发给API server, 这样main不需要配置任何certificate和token.</p>
+<p><img src="/images/Kubernetes/metadata-2-3.png" alt="Offload encryption, authentication, and server verification in an ambassador container"></p>
+<h3 id="2-4-Use-Client-Libraries-to-Talk-to-the-API-Server"><a href="#2-4-Use-Client-Libraries-to-Talk-to-the-API-Server" class="headerlink" title="2.4 Use Client Libraries to Talk to the API Server"></a>2.4 Use Client Libraries to Talk to the API Server</h3><p>除了ambassador, K8s官方还为以下两种语言提供了API Client Libraries:</p>
 <ul>
 <li>Golang client—<a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/kubernetes/client-go">https://github.com/kubernetes/client-go</a></li>
 <li>Python—<a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/kubernetes-incubator/client-python">https://github.com/kubernetes-incubator/client-python</a></li>
 </ul>
-<p>其他语言也可支持API Client Libraries:</p>
+<p>以下为其他语言的API Client Libraries:</p>
 <ul>
 <li>Java client by Fabric8—<a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/fabric8io/kubernetes-client">https://github.com/fabric8io/kubernetes-client</a></li>
 <li>Node.js client by tenxcloud—<a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/tenxcloud/node-kubernetes-client">https://github.com/tenxcloud/node-kubernetes-client</a></li>
