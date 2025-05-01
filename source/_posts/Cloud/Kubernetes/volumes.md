@@ -11,33 +11,44 @@ description:
 ---
 
 ## 1. Introduction
-Volume并不是Kubernetes的一种resource, 而是作为Pod specification中的一个组成部分. Volume无法用单独的YAML创建, 且只有volume被mount到特定的container上才可以被其访问.
-例如: Pod中有三个container, 分别为:
-1. WebServer: 利用**/var/htdocs/**下的HTML文件生成网页, 将log放入**/var/logs/**中
-2. ContentAgent: 生成HTML文件并保存到**/var/html/**中
-3. LogRotator: 处理**/var/logs/**下的日志文件
+由于每个container都有独立的filesystem, 会带来两个问题:
+* 即使两个container位于同一pod, 它们也无法获取彼此的文件
+* 当container重启时, 重启后的container无法获取之前的无法
 
-若不使用volume, 则每个container所拥有的filesystem各自独立, 如下:
-![Three containers of the same pod without shared storage](/images/Kubernetes/vol-1.png)
+因此我们需要一种方法来让两个container(同一pod的两个container, 或重启前与重启后的container)共享文件: volume并不是k8s的一种resource, 而是作为pod的一个组成部分. Volume具有以下属性:
+* 无法通过YAML创建一个单独的volume
+* Pod创建时会自动生成volume, pod被销毁时也会自动删除volume
+* 若pod内有多个container, 则这些container共享该volume
+* 由于volume的生存周期与volume绑定, 因此重启container不影响volume, 且重启后的container依然可看到重启前container写入的文件
 
-但当使用volume后, container可以通过volume互通filesystem, 如下:
-![Three containers sharing two volumes mounted at various mount paths](/images/Kubernetes/vol-2.png)
+需要注意的是, 只有volume被mount到container上时, container才能访问volume. 假设一个pod中有三个container, 分别为:
+* web server: 负责从`/var/htdocs/`路径中读取HTML文件, 并将日志存入`/var/logs/`路径中
+* content agent: 负责生成HTML文件并保存到`/var/html/`路径中
+* log rotator: 负责处理`/var/logs/`路径中的日志文件
 
-Kubernetes提供了多种volume类型, 以下是所有可用的volume类型:
-* emptyDir: 生成一个空文件夹用于存放临时数据
-* hostPath: mount到Pod所处的worker node的filesystem上
-* gitRepo: 利用Git repository初始化volume
-* nfs: mount到一个NFS(Network File System)上
-* gcePersistentDisk, awsElasticBlockStore, azureDisk: mount到云服务提供商特定的存储服务
-* cinder, cephfs, iscsi, flocker, glusterfs, quobyte, rbd, flexVolume, vsphereVolume, photonPersistentDisk, scaleIO: mount到其他类型的网络存储服务
-* configMap, secret, downwardAPI: 特殊类型的volume, 用于提供Kubernetes和cluster所拥有的的信息
-* persistentVolumeClaim: 使用pre-provisioned或dynamically provisioned persistent stroage
+由于每个container各自拥有独立的filesystem, 因此web server生成的日志无法被log rotator获取, content agent生成的HTML也无法被web server获取:
+![Three containers of the same pod without shared storage](/images/Kubernetes/vol-1-1.png)
 
+添加两个volume后, container就可以通过volume共享文件:
+![Three containers sharing two volumes mounted at various mount paths](/images/Kubernetes/vol-1-2.png)
+
+K8s提供了多种volume类型:
+* emptyDir: 生成一个空文件夹, 用于存放临时数据
+* hostPath: 将node上的文件系统mount到pod中
+* gitRepo: volume中的内容由git repository初始化
+* nfs: 将NFS mount到pod中
+* gcePersistentDisk, awsElasticBlockStore, azureDisk: 将云服务提供商的存储服务mount到pod中
+* cinder, cephfs, iscsi, flocker, glusterfs, quobyte, rbd, flexVolume, vsphereVolume, photonPersistentDisk, scaleIO: 将不同类型的网络存储服务mount到pod中
+* configMap, secret, downwardAPI: 将k8s资源和cluster信息mount到pod中
+* persistentVolumeClaim: 将persistent volume(PV)中的文件mount到pod中, 
+
+一个pod中可使用多个不同类型的volume, pod中的container需mount每一个需要使用的volume.
 
 
 ## 2. Use Volumes to Share Data between Containers
 ### 2.1 emptyDir Volume
-emptyDir是最简单的volume类型, container可通过emptyDir来共享文件. 但缺陷也很多: emptyDir生存周期与Pod相同, Pod被删除后emptyDir也会消失. 以下是emptyDir的例子, mountPath为container需要mount的文件目录:
+`emptyDir`是最简单的volume类型, 其会提供一个空文件夹, container可向volume中写入或读取文件, 也可实现不同container共享文件. 但缺陷也明显: 由于emptyDir的生存周期与pod绑定, 因此pod删除后emptyDir也会消失.
+假设在一个pod中运行两个container, 一个由Nginx运行的web server, 一个fortune命令(定期将一个随机字段写入文件中)执行的content agent. Pod的YAML文件如下:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -61,13 +72,13 @@ spec:
       protocol: TCP
   volumes:
   - name: html
-    emptyDir: {} 
+    emptyDir: {}
 ```
-上述YAML文件创建了一个Pod, 共包含:
-* 两个container: html-generator用于创建HTML文件并保存到**/var/htdocs**, web-server用于从**/usr/share/nginx/html**目录中读取HTML文件并生成网页.
-* 一个volume: 名为html, 用于连接html-generator的**/var/htdocs**与web-server的**/usr/share/nginx/html**
+上述pod中存在两个container:
+* Nginx默认读取`/usr/share/nginx/html`目录中的HTML文件, 因此将volume挂载到该路径上
+* fortune脚本会每隔10秒向`/var/htdocs/index.html`文件中写入随机字段, 因此将volume挂载到`/var/htdocs`上
 
-emptyDir默认将数据保存在worker node的filesystem, Kubernetes让用户可以修改emptyDir的存储媒介:
+这样nginx就可从HTML文件中读取到fortune写入的数据, nginx再将更新后的数据发送给用户. emptyDir默认将数据保存在node的磁盘上, 因此文件读写速度与node上的磁盘类型相关. K8s支持修改emptyDir的存储媒介, 如内存:
 ```yaml
 volumes:
 - name: html
@@ -76,10 +87,11 @@ volumes:
 ```
 
 ### 2.2 gitRepo Volume
-gitRepo作为emptyDir的增强版, 会先创建一个空volume, 则从Git repository复制数据, 整个流程如下:
-![A gitRepo volume is an emptyDir volume initially populated with the contents of a Git repository](/images/Kubernetes/vol-3.png)
+gitRepo作为emptyDir的增强版, 会先创建一个空的volume, 再从git repository复制数据到volume中, 流程如下:
+![A gitRepo volume is an emptyDir volume initially populated with the contents of a Git repository](/images/Kubernetes/vol-2-1.png)
 
-gitRepo volume被创建后, volume会断开与Git repository的同步. 即使远程Git repository被修改, volume中的数据也不会修改. 以下gitRepo volume的例子:
+需要注意的是, gitRepo被创建后, 若其他开发者向该仓库push commit, volume中的数据不会同步更新; 但若pod由ReplicationController管理, 则pod被删除后, 新产生的pod会拥有最新的commit数据.
+假设一个git repo中存有HTML文件, web server会从该repo中读取HTML, pod的YAML文件如下:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -103,20 +115,16 @@ spec:
       revision: master
       directory: . 
 ```
-上述YAML文件创建了一个Pod, 共包含:
-* 一个container: web-server用于从**/usr/share/nginx/html**中读取HTML文件并生成网页
-* 一个volume: 名为html的gitRepo volume用于从Git repository复制数据
-
-虽然gitRepo volume不提供同步功能, 但Docker Hub上有很多container image来实现该功能. 这种container也被称为sidecar container, 虽然与web-server container处于同一Pod, 但却为辅助web-server运行而存在.
-gitRepo还存在一个缺陷: 不支持从private Git repository中复制数据, 因为private Git repository需要SSH protocol和其他配置文件. 如果需要从private Gitrepository复制数据, 还需要其他sidebar container的帮助. 生存周期方面, gitRepo与emptyDir, 都无法实现数据持久化.
-
+当创建该pod时, k8s会先创建一个空的文件夹, 并将git repo中的数据clone到volume中. 若未将`directory`设置为`.`, 则会将repo中的数据clone到`kubia-website-example`文件夹中.
+虽然gitRepo不提供同步功能, 但Docker Hub上有很多container image实现该功能, 这类container被称为**sidecar container**. sidecar container 虽然与web-server container处于同一Pod, 但却为辅助web-server运行而存在.
+gitRepo还存在一个缺陷: 不支持从private git repo中复制数据, 因为gitRepo不支持SSH协议; 若需要从private git repo复制数据, 还需要其他sidebar container的帮助. 需要注意的是, gitRepo与emptyDir的生存周期相同, 都会在pod被删除后一并删除.
 
 
 ## 3. Access Files on the Worker Node's Filesystem
-大部分Pod游离在多个worker node中运行, 所以将Pod的数据不应保存在worker node的file system上. 但有些Pod(例如: DaemonSet)会绑定在worker node上, 因此可以将数据保存在worker node的file system. Kubernetes提供了hostPath volume将container的文件目录mount到worker node上的filesystem, 如下:
-![A hostPath volume mounts a file or directory on the worker node into the container’s filesystem](/images/Kubernetes/vol-4.png)
+一般情况下, pod无需关心在哪个node上运行; 但有些pod(如DaemonSet管理的pod)需要读取node上的文件, 或使用node的文件系统访问node的设备. K8s提供了**hostPath**将node上的某个路径mount到container的指定路径:
+![A hostPath volume mounts a file or directory on the worker node into the container’s filesystem](/images/Kubernetes/vol-3-1.png)
 
-下面YAML文件创造了一个Pod, 其中test-container会将**/test-pd** mount到worker node的**/data**文件夹. 添加修改或删除container中**/test-pd**内文件都会同步到worker node上的**/data**, 反之同理.
+下面YAML文件创造了一个pod, 将node的`/data`文件夹mount到`test-container`的`/test-pd`. 添加修改或删除container中`/test-pd`内文件都会同步到node上的`/data`, 反之同理.
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -135,27 +143,26 @@ spec:
       path: /data
       type: Directory
 ```
-hostPath相对于emptyDir和gitRepo提供了persistent storage. 当Pod被移除后数据不会消失, 只要Pod再次被部署到该worker node, 就可以恢复数据. 缺陷也很明显, Pod一旦被重新部署到其他worker node, 则数据全部丢失.
-
-
+相对于emptyDir和gitRepo, hostPath提供了persistent storage(可持续存储), 意味着pod被删除后volume中的数据不会消失, 只要pod被部署到相同node上, 就可以重新访问该数据. 该volume的缺陷也很明显: 一旦将pod重新部署到其他node, 则无法访问数据, 因此不推荐将hostPath作为一个数据库应用的存储方式, 只有需要访问node的系统文件时再使用hostPath.
+ 
 
 ## 4. Persistent Storage
-若Pod需要persistent data, 但又随时会被重新分配到不同的worker node上, 则以上所有Volume都不可用. . 不同的cloud infrastructure platform提供了不同的NAS(network-attached sotrage)方法来解决该问题. 以下会在GCP(Google Cloud Platform)和AWS(Amazon Web Services)上分别部署mongoDB.
+若pod需要将数据存储到磁盘上, 且被重新部署到其他node上时仍需访问该数据, 则上述volume皆无法实现, 因为volume的生存周期不能与pod绑定, volume的存储位置不能与node绑定. 不同的云服务提供商提供了不同的NAS(network-attached storage)来解决该问题. 以下会以GCP(Google Cloud Platform)和AWS(Amazon Web Services)为例, 部署包含MongoDB的pod.
 
 ### 4.1 GCP Persistent Disk
-GCP提供自家的persistent disk. NAS不属于某个namespace, 也不与cluster绑定, 只属于某个zone. cluster与NAS必须处于某个zone, 可运行gcloud命令来查看当前所有cluster所在的zone:
+GCP提供自家的persistent disk. 该persistent disk不属于任何namespace或cluster, 只与zone绑定, 因此cluster必须与persistent disk处于同一zone. 运行gcloud命令可查看当前所有cluster所在的zone:
 ```sh
 $ gcloud container clusters list
 NAME  ZONE           MASTER_VERSION MASTER_IP ...
 kubia europe-west1-b 1.2.5          104.155.84.137 ...
 ```
-从上述命令可知, kubia位于europe-west1-b:
+可以发现kubia位于`europe-west1-b`, 因此我们需要在该zone创建GCE persistent disk.
 ```sh
 $ gcloud compute disks create --size=1GiB --zone=europe-west1-b mongodb
 NAME    ZONE           SIZE_GB TYPE        STATUS
 mongodb europe-west1-b 1       pd-standard READY
 ```
-上述命令在europe-west1-b zone创造了一个1Gb空间的NAS, 现在可创造Pod来使用该NAS:
+上述命令在`europe-west1-b`创造了一个1Gb大小的persistent disk, 现在可创造pod并使用该persistent disk:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -177,11 +184,11 @@ spec:
     - containerPort: 27017
       protocol: TCP
 ```
-通过在volumes中标注gcePersistentDisk可将该Pod与GCP persistent disk绑定, 即使该Pod被移除或重新分配到其他worker node, 其数据也会被保留下来. 如下图:
-![A pod with a single container running MongoDB, which mounts a volume referencing an external GCE Persistent Disk](/images/Kubernetes/vol-5.png)
+通过标注gcePersistentDisk可将GCE persistent disk添加到pod中, 即使该pod被移除, persistent disk中的数据也不会受影响:
+![A pod with a single container running MongoDB, which mounts a volume referencing an external GCE Persistent Disk](/images/Kubernetes/vol-4-1.png)
 
 ### 4.2 AWS Persistent Data
-AWS和Azure也提供了相同的NAS, 步骤与GCP的NAS相同: 在cluster所在的zone中创建volume, 再在Pod的YAML文件中使用该volume:
+AWS和Azure也提供了persistent disk, 步骤与GCP的NAS相同: 在cluster所在的zone中创建volume, 再在pod中声明该volume:
 ```sh
 aws ec2 create-volume --size 1 --availability-zone us-east-1a
 {
@@ -213,7 +220,7 @@ spec:
 ```
 
 ### 4.3 NFS Volume
-除了使用cloud infrastructure platform提供了NAS之外, 还可以自己搭建NFS server来提供NAS, 只需要标记NFS server的IP地址和暴露的路径即可:
+如果选择自己搭建k8s cluster, 也可以自己配置persistent storage. 例如, 自己搭建一个NFS服务器, 并将NFS服务器上的某个文件夹mount到pod中:
 ```yaml
 ...
 spec:
@@ -223,16 +230,27 @@ spec:
         server: 1.2.3.4
         path: /some/path 
 ```
-
+除此之外, k8s还支持其他persistent storage:
+* iscsi: ISCSI disk
+* glusterfs: GlusterFS Mount
+* rbd: RADOS Block Device
+* flexVolume: 自定义驱动的存储
+* cinder: Cinder block storage device
+* cephfs: Ceph File System
+* flocker: Flocker container data management platform
+* fc: Fibre Channel storage device
 
 
 ## 5. Decouple Pods from the Underlying Storage Technology
-上述Volume虽然解决了大部分persistent data问题, 但需要developer在部署应用到cloud的同时了解Kubernetes提供的底层volume知识. 但理想状态下, developer并不需要知道这些volume的配置与区别, 这些volume的配置应由cluster administrator来管理. Kubernetes为此提供PV(PersistentVolume)和PVC(PersistentVolumeClaim)来方便Volume的配置与管理.
-简单来说, PV是对Kubernetes存储资源的一种抽象, 可手动或由Kubernetes自动创建; PVC则是需要存储资源的User(如Pod)对存储资源的请求声明. 这样存储资源被分割为两部分: cluster administrator使用PV预先分配存储资源; developer根据应用所需存储资源大小来决定使用哪个PVC, PVC会绑定最合适的PV从而获取存储资源, 如下图:
-![PersistentVolumes are provisioned by cluster admins and consumed by pods through PersistentVolumeClaims](/images/Kubernetes/vol-6.png)
+上述所有volume都解决了persistent storage问题, 但每一个volume都与平台或底层技术绑定. 以GCE persistent disk为例, 若开发者决定将k8s cluster从GCP迁移到AWS, 则需重写每一个pod. 因此需要一种方法, 既提供persistent storage, 又不绑定某个云服务提供商或存储技术. 理想状态下, 开发者不需要了解每个volume的底层配置, 所有volume的配置应由cluster管理员负责. K8s为此提供PV(**PersistentVolume**)和PVC(**PersistentVolumeClaim**)来方便volume的配置与管理.
+简单来说, PV是对存储资源的一种抽象, 通常由cluster管理员手动或自动创建; PVC则是pod对存储资源的请求声明, 从而分离存储资源的申请和使用: 
+* cluster将存储资源包装成一个PV
+* 开发者在PVC中说明所需的存储大小和访问模式, k8s会找到最合适的PV并将绑定给该PVC
+
+![PersistentVolumes are provisioned by cluster admins and consumed by pods through PersistentVolumeClaims](/images/Kubernetes/vol-5-1.png)
 
 ### 5.1 Claim a PersistentVolume
-以GCP Persistent Disk为例, cluster administrator需要为developer提供PV:
+以GCP为例, cluster管理员需要创建一个PV, 其存储依赖于GCE persistent disk:
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -249,17 +267,21 @@ spec:
     pdName: mongodb
     fsType: ext4 
 ```
-以上PV以GCP的Persistent Disk作为存储资源提供者, 每次绑定PV都会获得1Gb的存储资源, 将persistentVolumeReclaimPolicy设置为**Retain**可保证PV被解绑后也会保留数据. 可调用**kubectl get pv**来获取所有PV:
+该PV的配置如下:
+* PV的存储空间为1Gb
+* 由于`persistentVolumeReclaimPolicy`为`Retain`, 因此即便PVC解绑该PV, 该PV也不会被删除
+* `gcePersistentDisk`的配置与之前相同
+
 ```sh
 $ kubectl get pv
 NAME       CAPACITY RECLAIMPOLICY ACCESSMODES STATUS    CLAIM
 mongodb-pv 1Gi      Retain        RWO,ROX     Available 
 ```
-由于还未创建PVC, 所以mongodb-pv为**Available**而不是**
-Bound**. PV不属于某个namespace, 只与cluster绑定; 但PVC有特定的namespace范围. 
+由于新创建的PV还未与任何PVC绑定, 因此`mongodb-pv`的状态为`Available`, 而不是`Bound`. PV不属于某个namespace, 只与cluster绑定, 但PVC必须属于某个namespace, 只有pod与PVC处于同一namespace时才能在pod中使用PVC.
+![PV doesn’t belong to any namespace, unlike pods and PVC](/images/Kubernetes/vol-5-2.png)
 
-### 5.2 Claim a PersistentVolumeClaim
-以下PVC会去寻找存储空间至少为1Gb的PV并与其绑定, 其PV必须支持ReadWriteOnce的访问模式:
+### 5.2 Claiming a PersistentVolume by creating a PersistentVolumeClaim
+假设开发者需要一个1Gb大小的persistent storage, 可创建一个PVC资源:
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -273,18 +295,22 @@ spec:
   - ReadWriteOnce
   storageClassName: ""
 ```
-通过以下命令可显示所有cluster的PVC:
+K8s会为该PVC寻找一个合适的PV:
+* PV的存储大小必须大于PVC的存储需求
+* PV的访问模式必须满足PVC的访问需求
+
+通过以下命令可显示所有PVC:
 ```sh
 $ kubectl get pvc
 NAME        STATUS VOLUME     CAPACITY ACCESSMODES AGE
 mongodb-pvc Bound  mongodb-pv 1Gi      RWO,ROX     3s
 ```
-Kubernetes为存储空间提供了三种访问模式:
-1. RWO(ReadWriteOnce): 只有一个node可读取或写入该存储资源
-2. ROX(ReadOnlyMany): 可有多个node读取该存储资源
-3. RWX(ReadWriteMany): 可有多个node读取或写入该存储资源
+K8s为存储空间提供了三种访问模式:
+1. RWO(ReadWriteOnce): 只允许一个node读取或写入该存储资源
+2. ROX(ReadOnlyMany): 允许多个node读取该存储资源
+3. RWX(ReadWriteMany): 允许多个node读取或写入该存储资源
 
-PVC被创建后会自动寻找符合条件的PV, 以下是mongodb-pv的最新状态:
+需要注意的是, 上述访问模式与node的数量有关, 不与pod数量相关. 以下是`mongodb-pv`与PVC绑定后的状态:
 ```sh
 $ kubectl get pv
 NAME       CAPACITY ACCESSMODES STATUS CLAIM               AGE
@@ -292,7 +318,7 @@ mongodb-pv 1Gi      RWO,ROX     Bound  default/mongodb-pvc 1m
 ```
 
 ### 5.3 Use a PersistentVolumeClaim
-创建完毕PVC后就可以在Pod中使用PVC来获取存储资源:
+PVC与PV绑定后就可以在pod中使用PVC:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -313,11 +339,11 @@ spec:
     persistentVolumeClaim:
     claimName: mongodb-pvc 
 ```
-整个使用的流程如下图:
-![PV doesn’t belong to any namespace, unlike PVC](/images/Kubernetes/vol-7.png)
+虽然需要一些额外步骤来使用PVC和PV, 但开发者从此不必知道volume的底层技术和存储位置, 管理员将volume转移到其他平台或使用其他技术时也不必通知开发者.
+![PV doesn’t belong to any namespace, unlike pods and PVC](/images/Kubernetes/vol-5-3.png)
 
 ### 5.4 Recycle PersistentVolume
-当PV所绑定的PVC和Pod被删除后, PV的状态会从**Bound**切换为**Released**, 而不是**Available**, 此时的PV不能被新的PVC所绑定. Kubernetes之所以不允许立刻绑定新的PVC, 是为了保证PV中的数据得到合适的处理(清理或再利用):
+删除PVC后, PV的状态会从`Bound`变为`Released`, 而不是`Available`. 若新的PVC尝试绑定该PV, 该PVC的状态会一直为`Pending`. K8s之所以不允许PV重新绑定, 是为了保证PV中的数据得到合适的处理(清理或再利用):
 ```sh
 $ kubectl delete pod mongodb
 pod "mongodb" deleted
@@ -328,18 +354,16 @@ $ kubectl get pv
 NAME       CAPACITY ACCESSMODES STATUS   CLAIM               REASON AGE
 mongodb-pv 1Gi      RWO,ROX     Released default/mongodb-pvc        5m
 ```
-有两种回收PV的方式:
-1. 手动回收: 将persistentVolumeReclaimPolicy设为Retain后, PV只能被删除后重新创建才能与新的PVC绑定
-2. 自动回收: 将persistentVolumeReclaimPolicy设为Recycle或Delete后, PV在与PVC解绑后会自动变为**Available**状态. Recycle表示PV保留原有数据; Delete表示PV所有数据会被删除.
-
+两种回收PV的方式:
+* 手动回收: 将`persistentVolumeReclaimPolicy`设为`Retain`后, PV只能被删除后重新创建才能与新的PVC绑定
+* 自动回收: 将`persistentVolumeReclaimPolicy`设为`Recycle`或`Delete`, PV与PVC解绑后自动变为`Available`状态. `Recycle`表示PV将保留数据, `Delete`表示PV将删除所有数据.
+  ![PV doesn’t belong to any namespace, unlike pods and PVC](/images/Kubernetes/vol-5-4.png)
 
 
 ## 6. Dynamic Provisioning of PersistentVolume
-PV和PVC让存储资源的获取步骤分离. developer只需创建PVC即可获取存储资源, 而不需了解存储资源的细节. 但cluster administrator面临一个难题: 随着cluster中Pod越来越多, 申请存储资源的PVC也越来越多时, 需要创建更多PV来满足请求, 这使得cluster administrator的工作量增大. Kubernetes为此提供了StorageClass来实现对PV的动态供给.
-StorageClass会根据PVC的请求不断创建PV, 因此无需再创建任何PV. StorageClass与PV相同, 都不与namespace绑定, 只属于单个cluster. 
+PV和PVC让存储资源的申请和获取分离. 开发者只需在PVC中说明所需存储空间和访问模式即可获取存储资源; 但cluster管理员面临一个难题: 随着cluster中的pod数量不断增加, 其申请的存储资源也越来越多, 需要cluster管理员不断创建PV. K8s为此提供了**StorageClass**来实现对PV的动态供给. StorageClass会根据不同的PVC创建对应的PV, 因此cluster管理员不必手动创建每个PV. StorageClass与PV相同, 都不属于某个namespace, 只属于cluster.
 
 ### 6.1 Define a StorageClass
-以GCP为例, 可创建StorageClass并使用GCP Persistent Disk作为底层存储资源自动为PVC创建相应PV:
 ```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -350,6 +374,7 @@ parameters:
   type: pd-ssd
   zone: europe-west1-b 
 ```
+上述YAML文件创建了一个StorageClass, 其包含一个provisioner, 负责生成PV. K8s内置了绝大多数云服务提供商的provisioner, cluster管理员也可以自定义provisioner. 本例中使用GCE的persistent disk provisioner, 每当PVC需要PV时, provisioner会创建一个符合要求的PV.
 
 ### 6.2 Request the StorageClass in a PersistentVolumeClaim
 ```yaml
@@ -365,7 +390,7 @@ spec:
   accessModes:
   - ReadWriteOnce
 ```
-当运行kubectl get pvc时可看到PVC已自动绑定StorageClass且StorageClass为PVC创建了临时PV:
+运行`kubectl get pvc`时可看到, StorageClass自动创建了一个名为`pvc-1e6bc048`的PV, 且PVC成功与该PV绑定:
 ```sh
 $ kubectl get pvc mongodb-pvc
 NAME        STATUS VOLUME       CAPACITY ACCESSMODES STORAGECLASS
@@ -375,16 +400,27 @@ $ kubectl get pv
 NAME         CAPACITY ACCESSMODES RECLAIMPOLICY STATUS  STORAGECLASS
 pvc-1e6bc048 1Gi      RWO         Delete        Bound   fast
 ```
+StorageClass不仅自动生成了PV, 还在GCP中自动申请persistent disk.
+```sh
+$ gcloud compute disks list
+NAME                        ZONE           SIZE_GB TYPE        STATUS
+gke-kubia-dyn-pvc-1e6bc048  europe-west1-d 1       pd-ssd      READY
+gke-kubia-default-pool-71df europe-west1-d 100     pd-standard READY
+gke-kubia-default-pool-79cd europe-west1-d 100     pd-standard READY
+gke-kubia-default-pool-blc4 europe-west1-d 100     pd-standard READY
+mongodb                     europe-west1-d 1       pd-standard READY
+```
+除了帮助cluster管理员摆脱重复创建PV的繁琐工作, StorageClass还可以实现PVC的跨cluster: 只要所有cluser上都部署相同的StorageClass, 那么就可以在所有cluster中使用相同PVC.
 
 ### 6.3 Dynamic provisioning without specifying a StorageClass
-对于大多数cloud infrastructure platform来说, 其Kubernetes都自带provisioner. 通过调用**kubectl get sc**可获取所有的StorageClass:
+除了自定义的StorageClass, GKE还提供了默认StorageClass:
 ```sh
 $ kubectl get sc
 NAME               TYPE
 fast               kubernetes.io/gce-pd
 standard (default) kubernetes.io/gce-pd
 ```
-GCP提供一个默认StorageClass名为**standard**, 当PVC没有指定任何StorageClass时, 将会使用其作为StorageClass. 
+GKE中, 默认StorageClass名为`standard`. 若PVC没有指定任何StorageClass, 将会使用该StorageClass. 
 ```sh
 $ kubectl get sc standard -o yaml
 apiVersion: storage.k8s.io/v1
@@ -404,7 +440,13 @@ parameters:
   type: pd-standard
 provisioner: kubernetes.io/gce-pd 
 ```
-**storageclass.beta.kubernetes.io/is-default-class**表示该StorageClass是否为默认选项. 若不想使用任何StorageClass, 则在PVC YAML文件中标注StorageClass为空:
+需要注意的是, 不同云计算平台上的默认StorageClass可能拥有不同的provisioner, GKE使用`kubernetes.io/gce-pd`.
+
+总结一下, PV/PVC模式下的volume分为两种:
+* pre-provisioned PV: cluster管理员创建PV, k8s根据PVC的存储需求匹配一个合适的PV
+* dynamic provisioning PV: cluster管理员创建StorageClass, StorageClass根据PVC的存储需求创建一个合适的PV
+
+使用pre-provisioned PV时, 需要在PVC中标注`storageClassName: ""`, 这样k8s就不会使用StorageClass, 而去寻找合适的PV.
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -413,5 +455,6 @@ spec:
   ...
   storageClassName: ""
 ```
-以下是整个Dynamically Provisoned PersistentVolume的使用步骤:
-![The complete picture of dynamic provisioning of PersistentVolumes](/images/Kubernetes/vol-8.png)
+
+以下为dynamically provisoneing PV的流程图:
+![The complete picture of dynamic provisioning of PersistentVolumes](/images/Kubernetes/vol-6-1.png)

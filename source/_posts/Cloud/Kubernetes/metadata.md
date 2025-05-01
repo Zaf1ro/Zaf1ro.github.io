@@ -11,21 +11,34 @@ description:
 ---
 
 ## 1. Pass Metadata through the Downward API
-Kubernetes提供Downward API让container中的application获取Pod metadata. 当然, 用户也可以将这些信息写入ConfigMap或Secret Volume中, 但每次都创建一个ConfigMap或Secret并与Pod绑定. Downward API会自动包含所需要的Pod metadata, 可直接从DownwardAPI volume或environment variables中获取, 如下图:
-![The Downward API exposes pod metadata through environment variables or files](/images/Kubernetes/metadata-1.png)
+当container想要获取pod的metadata时, 可将metadata写入configMap/secret中, 但这种方式存在很多问题:
+* 修改pod配置时, 需同步更新configMap/secret
+* 某些metadata只有在pod创建时才能获取, 如pod的IP地址, pod何时被ReplicaSet创建, 但pod创建后无法修改configMap/secret
+* 某些metadata已经存在于pod的资源清单(manifest file)中, 如label或annotation, 需将这些信息重新写入configMap/secret中
 
-Pod metadata包含以下几个部分:
-* Pod的名字
-* Pod的IP address
-* Pod所属的namespace
-* Pod所在的worker node名字
-* Pod所属的service名字
-* Container所需的CPU和memory
-* Container的CPU和memory limit
-* Pod的label
-* Pod的annotation
+为解决上述问题, k8s提供**Downward API**让pod中的container可直接获取pod的metadata. Downward API并不是一个REST API, 它会将指定的metadata导入**环境变量**或**volume**中.  
+![The Downward API exposes pod metadata through environment variables or files](/images/Kubernetes/metadata-1-1.png)
 
-其中, label和annotation只能通过downwardAPI volume获取, 其他metadata无论environment variable或downwardAPI volume都可以获取.
+以下是Downward API包含的pod metadata:
+* pod的名字
+* pod的IP地址
+* pod所属的namespace
+* pod所在的worker node名字
+* pod所属的service名字
+* 每个container的requested CPU/memory
+* 每个container的CPU/memory limit
+* pod的label
+* pod的annotation
+
+以下是request CPU/memory和CPU/memory limit的区别:
+* Requested CPU/memory: 表示该container申请的资源数量, 但并不意味着container一定拥有这些资源. 例如, 一个container申请200mb内存, 但只使用100mb内存, 那么剩下的100mb会在其他container的需求超出其请求资源时借给其他container.
+* CPU/memory limit: 表示该container的资源上限, 当一个container获取的资源超出该值时, 会被强制终止
+
+总结一下, **CPU/memory limit**等于**requested CPU/memory**加上**从其他container借来的CPU/memory**. requested CPU/memory表示container通常情况下需要多少资源, CPU/memory limit表示container可拥有的最大资源量.
+
+上述大部分metadata都可通过**环境变量**或**volume**获取, 但label和annotation只能通过**volume**获取, 因为:
+* label或annotation通常包含一个或多个键值对, 无法放入单个环境变量
+* label或annotation可在pod运行时被修改, 而环境变量一旦初始化则无法修改
 
 ### 1.1 Expose Metadata through Environment Variables
 ```yaml
@@ -77,10 +90,14 @@ spec:
         resource: limits.memory
         divisor: 1Ki
 ```
-上述YAML文件中将Pod metadata全部放入environment variable. 其中, CPU和memory的request或limit可标注divisor, divisor表示资源单位, 默认为1(byte): 本例中CPU request的divisor为1m(metabyte), 因此CONTAINER_CPU_REQUEST_MILLICORES为15; memory limit的divisor为1Ki(kibibyte), 因此CONTAINER_MEMORY_LIMIT_KIBIBYTES为4096. 如下图:
-![Pod metadata and attributes can be exposed to the pod through environment variables](/images/Kubernetes/metadata-2.png)
 
-可进入Pod查看environment variables:
+![Pod metadata and attributes can be exposed to the pod through environment variables](/images/Kubernetes/metadata-1-2.png)
+
+上述YAML文件中将pod的metadata放入环境变量. 其中, requested CPU/memory和CPU/memory limit需标注一个额外参数**divisor**, 其表示资源单位:
+* CPU的单位为**millicore**, 表示千分之一的CPU单元(CPU core). 本例中, divisor为1m, 环境变量中`CONTAINER_CPU_REQUEST_MILLICORES`为15, 表示该container请求了1.5%的CPU
+* Memory的单位为**Kibibtye**, 表示一千字节. 本例中, divisor为1Ki, 环境变量中`CONTAINER_MEMORY_LIMIT_KIBIBYTES`为4096, 表示该container的内存上限为4Mi.
+
+进入pod可查看环境变量:
 ```sh
 $ kubectl exec downward env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -153,28 +170,32 @@ spec:
           resource: limits.memory
           divisor: 1
 ```
-上述YAML文件将metadata挂靠在**/etc/downward**下. 如下图:
-![Use a downwardAPI volume to pass metadata to the container](/images/Kubernetes/metadata-3.png)
+上述YAML文件将metadata挂靠在`/etc/downward`下. 如下图:
+![Use a downwardAPI volume to pass metadata to the container](/images/Kubernetes/metadata-1-3.png)
 
-需要注意的是, 当在volume中使用CPU和memory的limit或request时, 必须标注container名字, 每个container有不同的request和limit. 之所以label和annotation不能直接放入environment variables, 因为label和annotation会被Pod运行时更改, 因此需要放在volume中保持更新. 
-
+需要注意的是, 当在volume中使用requested CPU/memory或CPU/memory limit时, 需标注container名字, 因为每个container有不同的request和limit.
 
 
 ## 2. Kubernetes API Server
-Downward API虽然能为container提供Pod metadata, 但有时container需要除Pod之外的信息. Kubernetes为此提供了API Server.
+Downward API虽然能为container提供当前pod的metadata, 但若container需要访问pod之外的信息, 可通过环境变量获取service相关的信息, 但如果是其他信息, 则只能需要访问K8s API server.
+
+![Talking to the API server from inside a pod to get information about other API objects](/images/Kubernetes/metadata-2-1.png)
 
 ### 2.1 Explore the Kubernetes REST API
-在向kubernetes API发送请求前需要先了解这套API:
+向k8s API发送请求前需要先了解这套API:
 ```sh
 $ kubectl cluster-info
 Kubernetes master is running at https://192.168.99.100:8443
 ```
-由于API server使用HTTPS, 所以在访问该IP address前需要确定准备HTTPS认证; 或使用**kubectl proxy**启动一个proxy server与API server进行HTTPS连接:
+由于API server使用**HTTPS**, 因此无法直接访问:
+* 访问前进行HTTPS认证
+* 使用kubectl proxy命令启动一个proxy server, 由于proxy server接受HTTP连接, 因此container可借助proxy server与API server通信
+
 ```sh
 $ kubectl proxy
 Starting to serve on 127.0.0.1:8001
 ```
-上述proxy会监听8001端口. Proxy不需要任何参数, 因为它会自动获取所需要的配置信息并自动连接到API Server.
+该命令会自动获取所有需要的信息(API server URL, authorization token等). Proxy server监听8001端口.
 ```sh
 $ curl http://localhost:8001
 {
@@ -190,11 +211,18 @@ $ curl http://localhost:8001
   "/apis/batch/v2alpha1",
   ...
 ```
-Kubernetes将所有API分为好几个API group, group分为以下两种:
-1. core group: REST路径为**/api/v1**或, **apiVersion: v1**
-2. named groups: REST路径为**/apis/\<GROUP_NAME\>/\<VERSION\>**, 或**apiVersion:  \<GROUP_NAME\>/\<VERSION\>**, 例如: apiVersion: batch/v1
+上述每一行都是一个**API group**, 每一个API Group关联一个或多个k8s resource. API group可分为以下两类:
+* core group: 包含一些核心资源, 如pod, node, namespace, service, secret, volume, configMap等, URL路径为/`api/v1`, 对应manifest中的`apiVersion: v1`
+* named groups: 包含一些K8s的拓展功能, URL路径为`/apis/<GROUP_NAME\>/<VERSION>`, :、对应manifest中的`apiVersion: GROUP_NAME/VERSION`
 
-以Job为例, 其位于**/api/batch**的路径上:
+以下是named group的一些例子:
+* /apis/apps: Deployment, ReplicaSet, StatefulSet, DaemonSet
+* /apis/extensions: Ingress, NetworkPolicies, PodSecurityPolicies
+* /apis/batch: Job, CronJob
+* /apis/storage.k8s.io: StorageClass, VolumeAttachment
+* /apis/policy: PodDisruptionBudget
+
+以Job为例, 其位于`/api/batch`的路径上:
 ```sh
 $ curl http://localhost:8001/apis/batch
 {
@@ -218,7 +246,7 @@ $ curl http://localhost:8001/apis/batch
   "serverAddressByClientCIDRs": null
 }
 ```
-上述为batch API group的描述, 包括version和其他信息. 以下是**/api/batch/v1**的路径访问结果:
+上述为batch API group的描述, 包括version和其他信息. 以下是/api/batch/v1的路径访问结果:
 ```sh
 $ curl http://localhost:8001/apis/batch/v1
 {
@@ -254,22 +282,18 @@ $ curl http://localhost:8001/apis/batch/v1
   ]
 }
 ```
-其中**name**表示可访问的路径, **kind**表示所属的resource类型, namespaced表示是否属于某个namespace, verbs表示可进行的操作, 主要操作形式包括以下几种:
-1. Create: 创建resource
-2. Update: 有两种形式:
-  1. Replace: 替代当前resource object中已存在的field
-  2. Patch: 修改特定field
-3. Read: 有三种形式:
-  1. Get: 通过名字获得特定resource object
-  2. List: 获得所有符合selector规则的resource object
-  3. Watch: 获得resource object被更新后的结果
-4. Delete: 删除一个resource object
-5. 其他操作, 包含以下三种:
-  1. Rollback: 回滚PodTemplate至上一个版本
-  2. Read/Write Scale: 读取或更新replica数量
-  3. Read/Write Status: 读取或更新resource object的状态
+`name`表示可访问的路径, `kind`表示所属resource类型, `namespaced`表示该资源为全局资源或仅限于某个namespace, `verbs`表示可进行的操作类别, 以下是所有操作类别与其对应的HTTP方法:
+* create: 创建一个resource object, 如`POST /resourceURL`
+* update: 更新已有resource object, 如`PUT /resourceURL/name`
+* patch: 部分更新已有resource object, 如`PATCH /resourceURL/name`
+* get: 获取特定resource object, 如`GET /resourceURL/name`
+* list: 获得所有符合selector规则的resource object集合, 如G`ET /resourceURL`
+* watch: 监视某个resource object或某个resource object集合, 如G`ET /resourceURL?watch=true`
+* delete: 删除某个resource object, 如`DELETE /resourceURL/name`
+* deletecollection: 删除某个resource object集合, 如`DELETE /resourceURL`
 
-向**/apis/batch/v1/jobs**路径发送GET请求可获得cluster中的所有Job, 如下:
+
+向/apis/batch/v1/jobs发送GET请求可获得当前cluster中所有job:
 ```sh
 $ curl http://localhost:8001/apis/batch/v1/jobs
 {
@@ -286,7 +310,7 @@ $ curl http://localhost:8001/apis/batch/v1/jobs
         "namespace": "default",
         ...
 ```
-也可通过Job名字来访问该Job的配置细节:
+也可通过namespace和job名称获取该job的详细信息:
 ```sh
 $ curl http://localhost:8001/apis/batch/v1/namespaces/default/jobs/my-job
 {
@@ -297,13 +321,15 @@ $ curl http://localhost:8001/apis/batch/v1/namespaces/default/jobs/my-job
     "namespace": "default",
     ...
 ```
+可以发现, 上述输出与执行kubectl get job my-job -o json的结果相同.
 
 ### 2.2 Access the APi Server from within a Pod
-上述所使用的方式仅限与local machine, 在container中则无法调用kubectl.  因此如果需要在Pod中与API server通讯, 则需要满足以下三个条件:
-1. 找到API server的IP address
-2. 保证对方是API server而不是其他人
-3. 认证server
+上述与API server沟通的方式仅限于node中, 由于container中无法调用kubectl, 因此无法创建proxy server.  若想要在container中与API server通讯, 需满足以下三个条件:
+* 获取API server的IP address
+* 保证对方为API server, 而不是其他人
+* 与API server进行身份验证, 否则API server不会处理任何请求
 
+为展示整个流程, 我们可运行一个不执行任何操作的pod, 其已包含curl程序, 以下是该pod的manifest:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -315,27 +341,48 @@ spec:
     image: tutum/curl
     command: ["sleep", "9999999"]
 ```
-以上YAML文件创建了一个Pod, 其中container包含curl程序用于向API server发送请求. 然后需要获取Kubernetes API server的IP address和Port: Kubernetes提供了名为**kubernetes**的service作为API server的entry point, 可直接向**https://kubernetes**发送请求:
+执行`kubectl exec -it curl bash`可在container中执行一个bash shell. 首先我们需要获取API server的IP地址, k8s会在`default`的namespace中自动启动一个service, 名为**kubernetes**, 其包含API server的IP地址和端口号:
 ```sh
-$ kubectl exec -it curl bash
+$ kubectl get svc
+NAME        CLUSTER-IP  EXTERNAL-IP PORT(S) AGE
+kubernetes  10.0.0.1    <none>      443/TCP 46d
+```
+
+container的环境变量也包含API server的IP地址和端口号:
+```sh
+root@curl:/# env | grep KUBERNETES_SERVICE
+KUBERNETES_SERVICE_PORT=443
+KUBERNETES_SERVICE_HOST=10.0.0.1
+KUBERNETES_SERVICE_PORT_HTTPS=443
+```
+
+实际上我们不需要知道API server的IP地址和端口号, 直接访问`https://kubernetes`即可:
+```sh
 root@curl:/# curl https://kubernetes
 curl: (60) SSL certificate problem: unable to get local issuer certificate
 ...
+If you'd like to turn off curl's verification of the certificate, use
+ the -k (or --insecure) option.
 ```
-由于还未配置HTTPS的certificates和private key, 所以暂时无法连接至API server. Kubernetes为Pod提供的默认Secret volume中含有HTTPS所需的certificate, 位置在**/var/run/secrets/kubernetes.io/serviceaccount/**:
+
+接下来需要验证API server身份: k8s集群中每个container都默认挂载一个secret, 挂载在`/var/run/secrets/kubernetes.io/serviceaccount/`:
 ```sh
 root@curl:/# ls /var/run/secrets/kubernetes.io/serviceaccount/
 ca.crt namespace token
 ```
-其中, **ca.crt**为certificate. 使用certificate后尝试连接API server:
+
+* ca.crt: CA证书, 用于验证其他证书
+* namespace: 当前pod所在的namespace名称
+* token: 用于向API server进行身份验证
+
+使用ca.crt连接API server:
 ```sh
-root@curl:/# curl --cacert /var/run/secrets/kubernetes.io/serviceaccount \
-/ca.crt https://kubernetes
+root@curl:/# curl --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt https://kubernetes
 Unauthorized
 ```
-虽然连接中使用了证书, 但API server需要认证连接的请求来自所管理的Pod, 而不是其他client, 因此需要在请求时加入token实现认证:
+curl成功验证了API server的身份, 但curl并没有向API server进行身份验证, 因此需要在请求加入token:
 ```sh
-root@curl:/# TOKEN=$(cat /var/run/secrets/kubernetes.io/ serviceaccount/token)
+root@curl:/# TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
 root@curl:/# curl -H "Authorization: Bearer $TOKEN" https://kubernetes
 {
   "paths": [
@@ -351,9 +398,9 @@ root@curl:/# curl -H "Authorization: Bearer $TOKEN" https://kubernetes
   ]
 }
 ```
-自此Pod内container与API server的连接建立完毕, container可向API server发送请求来获取或修改cluster中的数据. Secret volume中还包含一个名为**namespace**的文件, 其中包含Pod所处的namespace名称, 可用于向API server发送请求:
+自此container与API server成功建立连接, 当container向API server查询或修改某个资源时, 需要标注namespace, 因此可将secret volume中**namespace**文件导入到环境变量中:
 ```sh
-root@curl:/# NS=$(cat /var/run/secrets/kubernetes.io/  serviceaccount/namespace)
+root@curl:/# NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
 root@curl:/# curl -H "Authorization: Bearer $TOKEN" https://kubernetes/api/v1/namespaces/$NS/pods
 {
   "kind": "PodList",
@@ -361,10 +408,10 @@ root@curl:/# curl -H "Authorization: Bearer $TOKEN" https://kubernetes/api/v1/na
   ...
 ```
 整个流程如下图:
-![Use the files from the default-token Secret to talk to the API server](/images/Kubernetes/metadata-4.png)
+![Use the files from the default-token Secret to talk to the API server](/images/Kubernetes/metadata-2-2.png)
 
 ### 2.3 Simplify API Server Communication with Ambassador Container
-上述步骤虽然可以实现Pod中的container与API server通信, 但操作过于复杂, 这时可使用Sidecar Pattern: 运行一个ambassador container作为代理, 帮助Pod中的其他container与API server建立连接.
+上述步骤虽然实现了container与API server通信, 但操作过于复杂, 因此可使用Sidecar Pattern: 运行一个**ambassador container**作为代理, 作为container与API server的中间代理.
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -378,15 +425,16 @@ spec:
   - name: ambassador
     image: luksa/kubectl-proxy:1.6.2 
 ```
-上述YAML文件创建了一个Pod, 其中包含主程序main和代理程序ambassador. Ambassador会开放8001端口来接收请求并转发给API server, 这样main不需要配置任何certificate和token:
-![Offload encryption, authentication, and server verification in an ambassador container](/images/Kubernetes/metadata-5.png)
+上述YAML文件创建了一个pod, 其包含两个container: 主程序main和代理程序ambassador. Ambassador接收请求并转发给API server, 这样main不需要配置任何certificate和token.
+
+![Offload encryption, authentication, and server verification in an ambassador container](/images/Kubernetes/metadata-2-3.png)
 
 ### 2.4 Use Client Libraries to Talk to the API Server
-除了ambassador, Kubernetes官方还为以下两个语言提供了API Client Libraries:
+除了ambassador, K8s官方还为以下两种语言提供了API Client Libraries:
 * Golang client—https://github.com/kubernetes/client-go
 * Python—https://github.com/kubernetes-incubator/client-python
 
-其他语言也可支持API Client Libraries:
+以下为其他语言的API Client Libraries:
 * Java client by Fabric8—https://github.com/fabric8io/kubernetes-client
 * Node.js client by tenxcloud—https://github.com/tenxcloud/node-kubernetes-client
 * PHP—https://github.com/devstub/kubernetes-api-php-client
@@ -394,4 +442,3 @@ spec:
 * Clojure—https://github.com/yanatan16/clj-kubernetes-api
 * Scala—https://github.com/doriordan/skuber
 * Perl—https://metacpan.org/pod/Net::Kubernetes
-

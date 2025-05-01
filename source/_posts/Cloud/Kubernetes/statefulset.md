@@ -10,60 +10,74 @@ keywords:
 description:
 ---
 
-## 1. Replicate Stateful Pods
-ReplicaSet可创建并管理多个Pod, 但所有Pod都共享同一PersistentVolumeClaim, 并与同一PersistentVolume绑定, 这种设计模式无法实现分布式数据存储:
-![All pods from the same ReplicaSet always use the same PersistentVolumeClaim and PersistentVolume](/images/Kubernetes/statefulset-1.png)
+## Introduction
+无论是ReplicaSet或Deployment, 其只能创建和管理stateless pod, 以下是stateless pod和stateful pod的区别:
+
+Feature | Stateless Pod | Stateful Pod
+----|----|----
+State Management | 不创建或依赖任何persistent state | 每个pod都有自己的persistent state
+Interchangeability | pod间可互相替换 | pod无法互相替换
+Deployment Controller | Deployment或ReplicaSet | StatefulSet
+Storage | 所有pod共享同一PV | 每个pod拥有自己的PV
+Scalability | 可任意水平拓展 | 无法随意水平拓展
+Fault Tolerance | 损失一个pod不会影响其他pod | 随时任意pod都会影响数据完整性
+
+对于计算密集型事务, 由于单个node/pod无法处理所有请求, 可借助stateless pod的水平拓展能力解决计算瓶颈; 但对于数据密集型事务, 由于数据量巨大而无法将所有数据放入一个pod/node中, 需将全部数据分散到多个node/pod中, 例如:
+* Database: MySQL, Oracle, PostgreSQL, Cassandra, Elasticsearch等
+* Distributed File System: GlusterFS, Ceph等
+* Message Broker: Kafka, RabbitMQ
+* Session data store: 很多应用依赖session追踪用户
+* IoT system: 负责存储手机IoT设备获取的数据
+
+
+## 1. Replicating Stateful Pods
+ReplicaSet会从一个pod template创建多个pod, 若pod template中包含一个PVC, 则所有pod都共享该PVC对应的PV:
+![All pods from the same ReplicaSet always use the same PersistentVolumeClaim and PersistentVolume](/images/Kubernetes/statefulset-1-1.png)
 
 ### 1.1 Run Multiple Replicas with Separate Storage
-为了让每个Pod使用各自的volume, 可采取以下方式:
-1. Create Pods Manually
-手动创建多个Pod并使用不同的PersistentVolumeClaim. 由于没有使用ReplicaSet, 所以需要手动管理Pod: Pod或Pod所在的worker node不可用时需手动删除或重建Pod.
-2. Use One ReplicaSet per Pod Instance
-创造多个ReplicaSet, 每个ReplicaSet管理一个Pod并使用不同的PersistentVolumeClaim. 虽然不用监控Pod状态, 但无法随意修改Pod数量: 当修改Pod数量时, 需手动创建新的ReplicaSet或删除已有ReplicaSet:
-![Using one ReplicaSet for each pod instance](/images/Kubernetes/statefulset-2.png)
-3. Use Multiple Directories in the Same Volume
-使用单个ReplicaSet管理多个Pod, 但每个Pod绑定Volume中不同的文件目录, 从而实现分布式数据. 此方法存在一个缺陷: 由于Pod无法指定Volume的某个文件目录, Pod会自动绑定某个未被使用的目录, 这需要Pod之间的合作:
-![Working around the shared storage problem by having the app in each pod use a different file directory](/images/Kubernetes/statefulset-3.png)
+如果想让每个pod使用各自volume, 可采取以下方式:
+* 手动创建pod: 手动创建多个pod, 并让每个pod使用不同的PVC. 由于未使用ReplicaSet, 需要手动管理pod: pod不可用时需手动删除并重新创建pod.
+* 一个pod对应一个ReplicaSet: 创造多个ReplicaSet, 每个ReplicaSet只管理一个pod, 并使用不同PVC. 虽然ReplicaSet会自动管理pod, 但需要额外创建多个ReplicaSet; 且无法随意修改pod数量: 增加或减少pod数量时, 需手动创建或删除ReplicaSet.
+  ![Using one ReplicaSet for each pod instance](/images/Kubernetes/statefulset-1-2.png)
+* 在同一volume中使用不同文件路径: 一个ReplicaSet管理多个pod, 但每个pod访问不同文件目录, 从而实现数据分布式. 但由于无法给每个pod指定不同的文件目录, 需要pod自己检查文件目录是否被其他pod使用, 因此需要某种pod间的合作机制:
+  ![Working around the shared storage problem by having the app in each pod use a different file directory](/images/Kubernetes/statefulset-1-3.png)
 
 ### 1.2 Provide a Stable Identity for Each Pod
-ReplicaSet适合管理non-stateful application(所有Pod采用相同配置, 使用同一个Volume数据); 对于stateful application, 由于每个Pod拥有不同数据, 因此其他服务需要与cluster中的某个Pod通信, 这就需要Pod拥有不同且稳定的接口: 对于ReplicaSet所管理的Pod集群, 虽然每个Pod有hostname, 但当Pod被reschedule时, hostname会重新分配; 对于指向ReplicaSet的Service, 其他服务访问Service时会被随机分配到某个Pod, 也无法提供一个稳定的Pod接口. 
-过时的解决方案: 因为Service拥有稳定的地址, 所以为每个ReplicaSet的Pod分配一个Service; 但操作复杂, 增加Pod时需要为新建的Pod手动绑定Service:
-![Using one Service and ReplicaSet per pod to provide a stable network address](/images/Kubernetes/statefulset-4.png)
-
+当pod不可用时, ReplicaSet会替换新的pod, 这就导致一个问题: 由于每个pod拥有各自数据, 其他pod无法提供不可用pod的数据, 当新的pod替换不可用pod时, 我们无法获知新pod的地址, 因此需要让每个pod都有一个稳定的**网络身份**(固定IP地址或域名). 这与ReplicaSet为新创建pod随机分配一个hostname或IP地址相冲突, 最容易想到的解决方案: 为每个pod创建对应的service.
+![Using one Service and ReplicaSet per pod to provide a stable network address](/images/Kubernetes/statefulset-1-4.png)
 
 
 ## 2. StatefulSet
-StatefulSet作为Kubernetes的一种Resource, 提供了一种全方面的解决方案来管理stateful application. StatefulSet和ReplicaSet或ReplicationController主要有以下几点不同:
-1. Goals: ReplicaSet目的在于管理non-stateful application; StatefulSet负责管理stateful application. 
-2. Identity: ReplicaSet在reschedule时会更改Pod名字和hostname; StatefulSet在reschedule时保留Pod名字和hostname
-3. Volume: 一个ReplicaSet只能绑定一个Volume; StatefulSet可绑定多个Volume
+StatefulSet作为k8s的一种资源, 提供了一种管理stateful pod的解决方案. 以下是StatefulSet和ReplicaSet/Deployment的区别:
+* Goals: ReplicaSet负责管理non-stateful application; StatefulSet负责管理stateful application 
+* Identity: ReplicaSet为pod随机分配名字和hostname; StatefulSet按顺序为pod分配名字和hostname
+* Volume: ReplicaSet中的所有pod绑定PVC对应的PV; StatefulSet中的pod拥有各自PV
 
 ### 2.1 Provide a Stable Network Identity
-StatefulSet中所有Pod的名字都会以递增整数作为结尾(以0为起点), 因此Pod域名变得容易访问; ReplicaSet则随机生成Pod名字:
-![Pods created by a StatefulSet have predictable hostnames](/images/Kubernetes/statefulset-5.png)
+StatefulSet中所有pod名字都会以递增整数作为结尾(以0为起点), 因此pod的域名可预测; ReplicaSet则会为pod添加随机后缀:
+![Pods created by a StatefulSet have predictable hostnames](/images/Kubernetes/statefulset-2-1.png)
 
-为StatefulSet创建Headless Service后, 其他服务可通过该Service获取每个Pod的DNS entry. 以**A-0** Pod为例, 访问**a-0.foo.default.svc.cluster.local**即可与该Pod通信. 也可通过SRV record获取pod的名字.
-当Pod所在的worker node不可用时, Stateful会在其他worker node上创建该Pod, 且保持该Pod的名字和hostname不变; ReplicaSet则会重新分配Pod的名字和hostname:
-![StatefulSet replaces a lost pod with a new one with the same identity](/images/Kubernetes/statefulset-6.png)
+StatefulSet需要**headless service**, 从而让每个pod都有自己的DNS记录, 其他服务可通过DNS记录访问对应pod. 假设`default` namespace中的service名为`foo`, 第一个pod的名字为`A-0`, 则该pod的域名为`a-0.foo.default.svc.cluster.local`; 除此之外, 还可通过SRV记录访问所有pod, 其域名为`foo.default.svc.cluster.local`.
+当pod所在的node不可用时, StatefulSet会在其他node上创建该pod, 且保证新创建的pod的名字和hostname与之前pod相同; ReplicaSet则会重新分配pod的名字和hostname:
+![StatefulSet replaces a lost pod with a new one with the same identity](/images/Kubernetes/statefulset-2-2.png)
 
-当减小StatefulSet的replica count时, 会按照Pod的名字倒序移除Pod, 一次只能移除一个Pod, 序号最大的先被移除; ReplicaSet则会随机移除一个Pod:
-![Scaling down a StatefulSet always removes the pod with the highest ordinal index first](/images/Kubernetes/statefulset-7.png)
+增加StatefulSet的replica count时, StatefulSet会创建一个新的pod, 其名字为下一个未使用的索引; 减小StatefulSet的replica count时, 会按照索引大小倒序移除pod, 且一次只移除一个pod:
+![Scaling down a StatefulSet always removes the pod with the highest ordinal index first](/images/Kubernetes/statefulset-2-3.png)
 
 ### 2.2 Provide Stable Dedicated Storage
-由于reschedule时必须保证新建的Pod依然绑定原版的Volume, StatefulSet需要维持Pod与PersistentVolumeClaim之间的对应关系, PVC不再需要用户管理:
-![A StatefulSet creates both pods and PersistentVolumeClaims](/images/Kubernetes/statefulset-8.png)
+当一个pod因不可用而创建新的pod时, StatefulSet需保证新创建的pod依然绑定之前pod对应的volume, 由于PVC与PV一一对应, 因此StatefulSet只需保证pod与PVC一一对应即可, PVC负责管理对应的PV:
+![A StatefulSet creates both pods and PersistentVolumeClaims](/images/Kubernetes/statefulset-2-4.png)
 
-由Replica count缩小导致的Pod被移除不会删除对应的PersistentVolumeClaim, 因为一旦PVC被删除, 绑定的PV也会被回收. 为了防止数据丢失, 必须保留PVC的存在. 如果需要回收PV, 可手动删除PVC. 而当replica count恢复到之前数量后, 新建的Pod会自动绑定到之前的PVC:
-![StatefulSets preserve the PersistentVolumeClaims when scaling down](/images/Kubernetes/statefulset-9.png)
+因此, 增加replica count时, StatefulSet会创建两个API对象: pod与对应的PVC; 减小replica count时, StatefulSet只会移除pod, 不会删除对应的PVC, 因为一旦删除PVC, 其对应的PV也会被回收, 为了防止数据丢失需保留PVC; 也可手动删除PVC来回收PV; 当replica count恢复到之前数量时, 新创建的pod会绑定原有PVC:
+![StatefulSets preserve the PersistentVolumeClaims when scaling down](/images/Kubernetes/statefulset-2-5.png)
 
 ### 2.3 StatefulSet's At-Most-One Semantics
-由于StatefulSet支持新建Pod重用之前Pod的identity(名字, hostname和绑定的PV), 因此必须保证创建Pod时不存在同名Pod. 这就导致StatefulSet对worker node不可用时采用的策略与ReplicaSet不同.
-
+由于StatefulSet支持新建pod复用不可用pod的identity(pod名字, hostname和PVC), 需保证只有pod不可用时才创建新的pod, 为此StatefulSet使用**at-most-one**语义来确保同一时间最多只有一个pod使用使用该身份, StatefulSet会尽最大努力确认pod是否不可用.
 
 
 ## 3. Use a StatefulSet
 ### 3.1 Create the App and Container image
-为展示StatefulSet的特性, 需要创建一个app可写入和读取Volume数据, 并与其他服务通信:
+为了更好地展示StatefulSet, 需创建一个应用, 其可写入和读取volume中的数据, 并可以与其他服务通信:
 ```js
 ...
 const dataFile = "/var/data/kubia.txt";
@@ -89,19 +103,24 @@ var handler = function(request, response) {
 var www = http.createServer(handler);
 www.listen(8080);
 ```
-上述NodeJS App会监听8080端口, 当收到POST请求时, 将请求数据写入**kubia.txt**; 当收到GET请求时, 从**kubia.txt**中读取数据并回复.
+上述Node.js程序监听8080端口: 收到POST请求时将请求数据写入`/var/data/kubia.txt`; 收到GET请求时从该文件中读取数据并回复.
 
 ### 3.2 Deploy the App through a StatefulSet
-为使用StatefulSet部署Application, 需要以下三种resource: PersistentVolume, Service和StatefulSet. StatefulSet会自动创建PersistentVolumeClaim, 所以并不需手动创建PVC. 以下步骤在GCP中运行:
+部署应用时需创建三种资源:
+* PV: 负责存储数据(k8s cluster不支持动态创建PV时需手动创建PV)
+* Service: 负责网路通信
+* StatefulSet
+
+StatefulSet会自动创建PersistentVolumeClaim, 所以并不需手动创建PVC.
 
 #### 3.2.1 Create the Persistent Volume
-创建三个GCE Persistent Disk:
+使用Google Kunernetets Engine时, 需先创建三个GCE Persistent Disk:
 ```sh
 $ gcloud compute disks create --size=1GiB --zone=us-east1-b pv-a
 $ gcloud compute disks create --size=1GiB --zone=us-east1-b pv-b
 $ gcloud compute disks create --size=1GiB --zone=us-east1-b pv-c
 ```
-创建三个PV使用GCE Persistent Disk:
+以下是使用GCE persistent disk的PV, 一共有三个PV(pv-a, pv-b和pv-c), 每个PV有1Mb空间.
 ```yaml
 kind: List
 apiVersion: v1
@@ -126,8 +145,8 @@ items:
   ...
 ```
 
-#### 3.2.2 Create the Governing Service
-创建Headless Service为stateful Pods提供network identity:
+#### 3.2.2 Creating the Governing Service
+`clusterIP: None`表示这是一个headless service, 负责为stateful的每个pod提供网络身份.
 ```yaml
 apiVersion: v1
 kind: Service
@@ -142,8 +161,8 @@ spec:
     port: 80
 ```
 
-#### 3.2.3 Create the StatefulSet Manifest
-除了**volumeClaimTemplates**外, 其他配置与ReplicaSet相同. **volumeClaimTemplates**指定StatefulSet创建何种规格的PVC. 
+#### 3.2.3 Creating the StatefulSet Manifest
+`volumeClaimTemplates`指定StatefulSet创建何种规格的PVC. 
 ```yaml
 apiVersion: apps/v1beta1
 kind: StatefulSet
@@ -176,20 +195,22 @@ spec:
       accessModes:
       - ReadWriteOnce
 ```
+可以发现, 除了`volumeClaimTemplates`外, StatefulSet的配置与ReplicaSet基本相同. 上述StatefulSet包含2个pod, 每个pod包含`app: kubia`的label, pod会将`/var/data`路径挂载到名为`data`的volume上. `volumeClaimTemplates`则定义了一个PVC的模板, 会为每个pod生成对应的PVC.
 
 #### 3.2.4 Create the StatefulSet
-调用**kubectl apply**可使用YAML文件创建StatefulSet:
 ```sh
 $ kubectl create -f kubia-statefulset.yaml
 statefulset "kubia" created
-
-$ kubectl get pods
+```
+创建StatefulSet立刻查看pod:
+```sh
+$ kubectl get po
 NAME    READY STATUS            RESTARTS AGE
 kubia-0 0/1   ContainerCreating 0        1s
 ```
-由于StatefulSet会在完成第一个Pod启动后再启动第二个, 所以一开始会显示第一个Pod的状态:
+不同于ReplicaSet, StatefulSet不会立即创建所有pod, 而是先创建第一个pod, 直到该pod处于运行状态时才创建下一个pod:
 ```sh
-$ kubectl get pods
+$ kubectl get po
 NAME    READY STATUS            RESTARTS AGE
 kubia-0 1/1   Running           0        8s
 kubia-1 0/1   ContainerCreating 0        2s
@@ -209,9 +230,6 @@ spec:
     volumeMounts:
     - mountPath: /var/data
       name: data
-    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-      name: default-token-r2m41
-      readOnly: true
   ...
   volumes:
   - name: data
@@ -219,7 +237,7 @@ spec:
       claimName: data-kubia-0
   ...
 ```
-可以看到, StatefulSet会为kubia-0自动创造一个名为**data-kubia-0**的PVC, 并与container绑定:
+可以看到, StatefulSet会为名为`kubia-0`的pod创造一个名为`data-kubia-0`的PVC, 也就是volumeClaimTemplates的名字加上pod的名字, 并其挂载到container的`/var/data`路径上:
 ```sh
 $ kubectl get pvc
 NAME         STATUS VOLUME CAPACITY ACCESSMODES AGE
@@ -228,11 +246,11 @@ data-kubia-1 Bound  pv-a   0                    37s
 ```
 
 ### 3.3 Communicate with Your Pods
-由于StatefulSet使用的是Headless Service, 因此只能直接与Pod通信, 而不能通过Service通信. 为实现与特定Pod通信, 可向API server发送HTTP请求, 将其作为proxy, 访问路径如下:
+假设外部服务想要访问名为`kubia-0`的pod, 可将API server作为中间代理,  则访问路径如下:
 ```text
 <apiServerHost>:<port>/api/v1/namespaces/default/pods/kubia-0/proxy/<path>
 ```
-为保证避免配置SSL certificate, 可使用**kubectl proxy**来生成proxy与API server通信:
+为避免配置SSL certificate, 可使用`kubectl proxy`简化与API server的通信:
 ```sh
 $ kubectl proxy
 Starting to serve on 127.0.0.1:8001
@@ -241,10 +259,10 @@ $ curl localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/
 You've hit kubia-0
 Data stored on this pod: No data posted yet
 ```
-GTE请求的通信流程如下:
-![Connect to a pod through both the kubectl proxy and API server proxy](/images/Kubernetes/statefulset-10.png)
+整个GET请求的流程如下:
+![Connect to a pod through both the kubectl proxy and API server proxy](/images/Kubernetes/statefulset-3-1.png)
 
-也可以向Pod发送POST请求:
+也可通过API server向pod发送POST请求:
 ```sh
 $ curl -X POST -d "Hey there!" localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/
 Data stored on pod kubia-0
@@ -252,24 +270,23 @@ Data stored on pod kubia-0
 $ curl localhost:8001/api/v1/namespaces/default/pods/kubia-0/proxy/
 You've hit kubia-0
 Data stored on this pod: Hey there!
+
+$ curl localhost:8001/api/v1/namespaces/default/pods/kubia-1/proxy/
+You've hit kubia-1
+Data stored on this pod: No data posted yet
 ```
 
-删除Pod后, StatefulSet会像ReplicaSet一样重建新的Pod, 并使用之前的名字, hostname和Volume:
-![A stateful pod may be rescheduled to a different node, but it retains the name, hostname, and storage](/images/Kubernetes/statefulset-11.png)
+删除pod后, StatefulSet会像ReplicaSet一样创建新的pod, 新创建的pod会使用被删除pod的名字, hostname和volume:
+![A stateful pod may be rescheduled to a different node, but it retains the name, hostname, and storage](/images/Kubernetes/statefulset-3-2.png)
 
-当减小replica count时, StatefulSet会从序号最大Pod开始关闭运行, 同一时间只会有一个Pod处于terminating状态.
+减小replica count时, StatefulSet按照序号从大到小关闭pod, 同一时间只会有一个pod处于`terminating`状态. 
 
 
-
-## 4. Discover peers in a StatefulSet
-StatefulSet必须保证cluster中的每个成员都可以访问到其管理的Pod, 虽然通过API server可以实现与Pod直连, 但client端需要设置好配置才能连接至API server. 为此可使用SRV records解决该问题. 
-SRC records可指明某个特定service下的hostname和port. 首先运行**tutum/dnsutils**来允许用户在container中执行**dig**和**nslookup**命令:
+## 4. Discovering peers in a StatefulSet
+虽然外部服务可通过API server与pod沟通, 但我们需要一种不依赖于k8s的方式与pod直接通信: **SRV record**. SRV记录用于表示一组拥有相同服务的服务器的hostname和port. 为获取StatefulSet的SRV记录, 可执行`dig`命令(在临时运行的pod中):
 ```sh
-$ kubectl run -it srvlookup --image=tutum/dnsutils --rm \
-  --restart=Never -- dig SRV kubia.default.svc.cluster.local
+$ kubectl run -it srvlookup --image=tutum/dnsutils --rm --restart=Never -- dig SRV kubia.default.svc.cluster.local
 
-
-$ dig SRV kubia.default.svc.cluster.local
 ...
 ;; ANSWER SECTION:
 kubia.default.svc.cluster.local. 30 IN SRV 10 33 0 kubia-0.kubia.default.svc.cluster.local.
@@ -279,12 +296,14 @@ kubia-0.kubia.default.svc.cluster.local. 30 IN A 172.17.0.4
 kubia-1.kubia.default.svc.cluster.local. 30 IN A 172.17.0.6
 ...
 ```
-可以看到, SRV record中kubia-0和kubia-1都指向headless service. 在程序中执行**SRV DNS lookup**可获取该service下所有Pod的hostname:
+`ANSWER SECTION`中有两条SRV记录, 分别表示`kubia-0`和`kubia-1`. 若想在运行时获取所有SRV记录, 可在程序中执行**SRV DNS lookup**获取StatefulSet的所有SRV记录:
 ```js
-dns.resolveSrv("kubia.default.svc.cluster.local", callBackFunction);
+dns.resolveSrv("kubia.default.svc.cluster.local", callBackFunction); // service name
 ```
+需要注意的是, SRV记录没有前后顺序, 因此SRV记录的显示顺序不表示pod的创建顺序.
 
 ### 4.1 Implement peer discovery through DNS
+由于StatefulSet中的pod各自拥有不同的数据, 当外部服务想要获取StatefulSet的所有数据时, 需要外部服务查找SRV记录, 并逐个获取每个pod的数据; 为方便获取全部数据, 可让pod接收外部服务的请求时从其他pod中收集数据, 并将全部数据回复给外部服务.
 ```js
 ...
 const dns = require('dns');
@@ -336,15 +355,15 @@ var handler = function(request, response) {
 };
 ...
 ```
-经过上述修改后, StatefulSet中的任何一个Po收到GET请求都会想通过SRV lookup获取所有Pod hostname, 再向所有Pod hostname的**/data**发送GET请求来获取数据, 流程如下:
-![The operation of your simplistic distributed data store](/images/Kubernetes/statefulset-12.png)
+经过上述修改后, 外部服务可向StatefulSet的任意一个pod发送GET请求, 收到请求的pod会通过SRV DNS lookup获取StatefulSet中所有pod的hostname, 并向所有hostname的`/data`路径发送GET请求获取数据, 最后组合数据并返回给外部服务, 整个流程如下:
+![The operation of your simplistic distributed data store](/images/Kubernetes/statefulset-4-1.png)
 
 ### 4.2 Update a StatefulSet
-当StatefulSet的YAML文件被修改后, 原先创建的Pod不会有任何更新, 只有新建的Pod会采用新的manifest. 如果想更新之前的Pod, 只能删除并重建:
+更新StatefulSet时, 可使用`kubectl edit`命令修改StatefulSet的YAML文件. 需要注意的是, 修改StatefulSet的YAML文件后, StatefulSet不会替换已有的pod, 只有新创建的pod使用新的manifest. 若需替换旧的pod, 则需删除已有pod:
 ```sh
 $ kubectl edit statefulset kubia
 ```
-用editor打开StatefulSet definition, 将spec-relicas从2改为3, 并将spec.template.spec.containers.image从**luksa/kubiapet**改为**luksa/kubia-pet-peers**, 保存并退出文件:
+例如, 将`spec.relicas`从2改为3, 并将`spec.template.spec.containers.image`从`luksa/kubiapet`改为`luksa/kubia-pet-peers`:
 ```sh
 $ kubectl get pods
 NAME    READY STATUS            RESTARTS AGE
@@ -352,42 +371,64 @@ kubia-0 1/1   Running           0        25m
 kubia-1 1/1   Running           0        26m
 kubia-2 0/1   ContainerCreating 0        4s
 ```
-**kubia-0**和**kubia-1**没有任何更新, **kubia-2**则采用新的image.
-
+`kubia-0`和`kubia-1`没有任何更新, `kubia-2`则使用新的image.
 
 
 ## 5. Understand How StatefulSets Deal with Node Failures
-当某个worker node不可用时, Kubernetes无法获知其中Pod的运行状况. 由于StatefulSet需要保证同一时间不能存在两个相同的Pod运行, 只有确定Pod不可运行时才会创建新的Pod. 
+由于每个pod都是唯一的, StatefulSet需保证同一时间不能存在两个相同的pod同时运行, 只有确认pod没有在运行时才会创建新的pod.
 
 ### 5.1 Simulate a Node's Disconnection From the Network
-假设StatefulSet运行在GCP上, 管理3个Pod: **kubia-0**, **kubia-1**和**kubia-2**, 分别运行在不同的worker node上. 为测试StatefulSet针对worker node不可用时的应对策略, 需要先断开一个worker node的网络接口:
+假设k8s clsuter中一个StatefulSet管理3个pod, 分别名为`kubia-0`, `kubia-1`和`kubia-2`, 分别运行在不同的worker node上. 为测试node不可用时StatefulSet的应对策略, 需先断开其中一个worker node的网络接口:
 ```sh
 $ gcloud compute ssh gke-kubia-m0g1
 $ sudo ifconfig eth0 down
 ```
-查看worker nodes状态. 由于**gke-kubia-m0g1**的Kubelet无法连接至Kubernetes API server, 一段时间后该worker node将被标记为**NotReady**:
+断开连接后, node上的kubelet无法与k8s API server通信, 因此k8s API server无法得知node和其pod的状态:
 ```sh
 $ kubectl get node
 NAME           STATUS   AGE VERSION
 gke-kubia-596v Ready    16m v1.6.2
 gke-kubia-m0g1 NotReady 16m v1.6.2
 gke-kubia-sgl7 Ready    16m v1.6.2
-```
-查看pods状态. 由于control plane无法获取worker node上Pod的状态更新, 所以Pod状态被修改为**Unknown**:
-```sh
+
 $ kubectl get pods
 NAME    READY STATUS  RESTARTS AGE
 kubia-0 1/1   Unknown 0        15m
 kubia-1 1/1   Running 0        14m
 kubia-2 1/1   Running 0        13m
 ```
-如果worker node重新上线, 则Pod回归**Running**状态. Kubernetes 1.5或更高版本后, 如果Pod一直维持**Unknown**状态超过一定时间, Kubernetes control plane会试图将Pod移除, 将Pod状态改为**Terminating**; 但由于worker node断开连接, kubelet无法回应master的删除请求, 所以Pod会一直处于**Terminating**. 只有以下三种情况下, Kubernetes会从API server上删除Pod的信息:
-1. 删除worker node
-2. worker node重新连接, kubelet响应了删除Pod的请求
-3. 强制删除Pod
+Control plane将该node的状态标记为`NotReady`, 并将pod状态标记为`Unknown`. 可以发现, StatefulSet并没有创建新的pod来替换该pod, 因为StatefulSet无法确定该pod的状态.
+若node重新上线, 该pod会回到`Running`状态; 但若pod的`Unknown`状态超过一定时间, control plane会试图将该pod移除, 并将pod状态改为`Terminating`; 但由于node断开连接, kubelet无法回应master的删除请求, 所以pod会一直处于`Terminating`状态.
+```sh
+$ kubectl describe po kubia-0
+Name: kubia-0
+Namespace: default
+Node: gke-kubia-default-pool-32a2cac8-m0g1/10.132.0.2
+...
+Status: Terminating (expires Tue, 23 May 2017 15:06:09 +0200)
+Reason: NodeLost
+Message: Node gke-kubia-default-pool-32a2cac8-m0g1 which was
+ running pod kubia-0 is unresponsive
+```
+
+以下三种情况会让k8s会从API server上删除该pod的信息:
+* 删除worker node
+* worker node重新连接, kubelet响应删除请求
+* 强制删除Pod
 
 ### 5.2 Delete the Pod Forcibly
-强制删除不会等待kubelet的确认. 无论Pod是否被终止, API server上的Pod信息都会被删除, StatefulSet也会创建新的Pod来替代被删除的Pod:
+```sh
+$ kubectl delete po kubia-0
+pod "kubia-0" deleted
+
+$ kubectl get po
+NAME READY STATUS RESTARTS AGE
+kubia-0 1/1 Unknown 0 15m
+kubia-1 1/1 Running 0 14m
+kubia-2 1/1 Running 0 13m
+```
+删除pod操作并不会真正移除pod, 这是因为control plane只会在kubelet确认删除请求后才会移除该pod, 由于node断开连接, kubelet也就无法回应API server的删除请求.
+强制删除则不会等待kubelet的确认: 无论pod是否被终止, API server都会删除该pod的信息, StatefulSet也会创建新的pod来替代被删除的pod:
 ```sh
 $ kubectl delete pod kubia-0 --grace-period=0 --force
 pod "kubia-0" deleted
@@ -398,4 +439,4 @@ kubia-0 0/1 ContainerCreating 0 8s
 kubia-1 1/1 Running 0 20m
 kubia-2 1/1 Running 0 19m
 ```
-强制删除可能违背StatefulSet的At-Most-One原则, 必须保证worker node不再上线时才能强制删除Pod; 若worker node重新上线, 两个同名Pod可能会导致数据丢失.
+强制删除可能违背StatefulSet的**at-most-one**原则, 因此执行强制删除前需保证node不可用; 若node重新上线, 两个相同pod可能会导致数据丢失.
