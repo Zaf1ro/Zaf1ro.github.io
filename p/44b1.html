@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Understand Kubernetes Internals"/>
+
+
+
+
+  <meta name="keywords" content="K8s," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/44b1.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/44b1.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/44b1.html"/>
+
+
+<meta name="description" content="1. Understanding the architecture总体来说, 一个k8s cluster可分为两部分: k8s control plane和worker node. 若继续拆分, 可分为以下三个部分:  control plane: etcd: 分布式的key-value数据存储系统 API server: 用户和其他组件管理k8s cluster的唯一途径 scheduler:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Understand Kubernetes Internals">
+<meta property="og:url" content="https://zaf1ro.github.io/p/44b1.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Understanding the architecture总体来说, 一个k8s cluster可分为两部分: k8s control plane和worker node. 若继续拆分, 可分为以下三个部分:  control plane: etcd: 分布式的key-value数据存储系统 API server: 用户和其他组件管理k8s cluster的唯一途径 scheduler:">
+<meta property="og:locale">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/internal-1-1.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/internal-1-2.png">
+<meta property="article:published_time" content="2025-05-16T05:41:12.000Z">
+<meta property="article:modified_time" content="2025-06-25T21:05:37.807Z">
+<meta property="article:tag" content="K8s">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/internal-1-1.png">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Understand Kubernetes Internals - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understanding-the-architecture"><span class="toc-text">1. Understanding the architecture</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-The-distributed-nature-of-Kubernetes-components"><span class="toc-text">1.1 The distributed nature of Kubernetes components</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-How-Kubernetes-uses-etcd"><span class="toc-text">1.2 How Kubernetes uses etcd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-What-the-API-server-does"><span class="toc-text">1.3 What the API server does</span></a></li></ol></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Understand Kubernetes Internals
+        
+      </h1>
+      <time class="post-time">
+          05/16/25
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Understanding-the-architecture"><a href="#1-Understanding-the-architecture" class="headerlink" title="1. Understanding the architecture"></a>1. Understanding the architecture</h2><p>总体来说, 一个k8s cluster可分为两部分: k8s control plane和worker node. 若继续拆分, 可分为以下三个部分:</p>
+<ul>
+<li>control plane:<ul>
+<li>etcd: 分布式的key-value数据存储系统</li>
+<li>API server: 用户和其他组件管理k8s cluster的唯一途径</li>
+<li>scheduler: 将未分配的pod分配到合适的node</li>
+<li>controller manager: 监控k8s cluster的状态, 检测其与期望状态的差异, 并纠正差异</li>
+</ul>
+</li>
+<li>worker node:<ul>
+<li>kubelet: 接收API server指令, 创建并监控pod, 并向API server回报pod状态</li>
+<li>kube-proxy: 实现Service的功能, 确保本机pod发出的数据正确地发送到指定pod</li>
+<li>container runtime (Docker, rkt等): 执行并管理container</li>
+</ul>
+</li>
+<li>add-on component:<ul>
+<li>k8s DNS server: 为k8s cluster内提供DNS服务, 允许pod使用hostname向其他pod发送数据</li>
+<li>dashboard: 方便管理员查看和管理k8s cluster的可视化工具</li>
+<li>ingress controller: 一个具有负载均衡的反向代理, 接收k8s cluster外部流量并根据规则将其发送给对应service</li>
+<li>heapster: k8s cluster的监控和指标收集工具</li>
+<li>CNI(container network interface)和CNI plugin: k8s为pod配置网络信息的一套标准接口</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-1-The-distributed-nature-of-Kubernetes-components"><a href="#1-1-The-distributed-nature-of-Kubernetes-components" class="headerlink" title="1.1 The distributed nature of Kubernetes components"></a>1.1 The distributed nature of Kubernetes components</h3><p>上述提到的所有组件都是独立运行的, 组件间的关系如下图:<br><img src="/images/Kubernetes/internal-1-1.png" alt="Kubernetes components of the Control Plane and the worker nodes"></p>
+<p>为启动k8s cluster的所有功能, 需运行所有组件; 有些组件不依赖其他组件, 而有些组件需要与其他组件合作. 若想查看control plane所有组件的状态, 可执行</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get componentstatuses</span><br><span class="line">NAME               STATUS   MESSAGE            ERROR</span><br><span class="line">scheduler          Healthy  ok</span><br><span class="line">controller-manager Healthy  ok</span><br><span class="line">etcd-0             Healthy  &#123;<span class="string">&quot;health&quot;</span>: <span class="string">&quot;true&quot;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>若想查询或写入etcd, 必须向API server发送信息, 因为API server是唯一与etcd沟通的组件, 这也是为什么其他组件都要与API server通信的原因. 大部分情况下是由其他组件向API server发起连接请求, 但若执行<code>kubectl attach</code>或<code>kubectl port-forward</code>时, API server会主动连接kubelet.<br>虽然一个worker node上的组件(kublet, kube-proxy, container runtime)只能运行一个实例, 但control plane的大部分组件可以运行多个实例, 以确保组件的可用性:</p>
+<ul>
+<li>可运行多个实例的组件: etcd, API server</li>
+<li>只能运行一个实例的组件: scheduler, controller manager(同一时间可存在多个实例, 但只有一个实例工作)</li>
+</ul>
+<p>Control plane的组件和kube-proxy可直接在本机系统上运行, 也可在pod中运行; kubelet则只能在本机系统上运行, 因为其负责创建和监控pod. 若想让control plane的组件在pod中运行, 可在master node上运行kubelet. 以下是kube-system namespace下所有pod:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ kubectl get po -o custom-columns=POD:metadata.name,NODE:spec.nodeName --sort-by spec.nodeName -n kube-system</span><br><span class="line">POD                            NODE</span><br><span class="line">kube-controller-manager-master master</span><br><span class="line">kube-dns-2334855451-37d9k      master</span><br><span class="line">etcd-master                    master</span><br><span class="line">kube-apiserver-master          master</span><br><span class="line">kube-scheduler-master          master</span><br><span class="line">kube-flannel-ds-tgj9k          node1</span><br><span class="line">kube-proxy-ny3xm               node1</span><br><span class="line">kube-flannel-ds-0eek8          node2</span><br><span class="line">kube-proxy-sp362               node2</span><br><span class="line">kube-flannel-ds-r5yf4          node3</span><br><span class="line">kube-proxy-og9ac               node3</span><br></pre></td></tr></table></figure>
+<p>可以看到, etcd, API server, scheduler, controller manager和DNS server运行在master node上; kube-proxy和Flannel运行在worker node上, 且所有组件都以pod的形式运行. </p>
+<h3 id="1-2-How-Kubernetes-uses-etcd"><a href="#1-2-How-Kubernetes-uses-etcd" class="headerlink" title="1.2 How Kubernetes uses etcd"></a>1.2 How Kubernetes uses etcd</h3><p>K8s中的所有资源以<strong>manifest</strong>的形式表示, 为防止API server崩溃重启时丢失manifest, k8s选择<strong>etcd</strong>作为其存储工具. etcd是一个快速响应, 分布式, 一致的键值存储工具:</p>
+<ul>
+<li>分布式意味着一个etcd服务可运行多个实例, 即使其中一个实例的网络断开或崩溃也不会影响整个服务的读写</li>
+<li>API server是唯一与etcd通信的组件, 其他组件都需通过API server读取或写入数据</li>
+<li>将API server作为etcd的唯一入口可更好地实现optimistic locking(乐观锁): 当k8s更新某个资源(deployment, Service等)时, manifest会包含一个名为<code>resourceVersion</code>的版本号. API server会借助etcd的CAS操作对比版本号: 若版本号一致, 则更新并增加版本号; 若不一致, 则拒绝更新请求.</li>
+</ul>
+<p>由于etcd的key可包含<code>/</code>(slash), 因此存储结构类似于文件系统: k8s将所有数据存放在<code>/registry</code>路径下, 不同路径对应不同资源类别:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ etcdctl get /registry --prefix=<span class="literal">true</span></span><br><span class="line">/registry/configmaps</span><br><span class="line">/registry/daemonsets</span><br><span class="line">/registry/deployments</span><br><span class="line">/registry/events</span><br><span class="line">/registry/namespaces</span><br><span class="line">/registry/pods</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>由于一个pod只能属于一个namespace, 因此<code>/registry/pods</code>路径下的不同路径对应不同namespace:</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ etcdctl <span class="built_in">ls</span> /registry/pods</span><br><span class="line">/registry/pods/default</span><br><span class="line">/registry/pods/kube-system</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line">$ etcdctl get /registry/pods/default/kubia-159041347-wt6ga</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;kind&quot;</span>:<span class="string">&quot;Pod&quot;</span>,</span><br><span class="line">  <span class="string">&quot;apiVersion&quot;</span>:<span class="string">&quot;v1&quot;</span>,</span><br><span class="line">  <span class="string">&quot;metadata&quot;</span>:&#123;</span><br><span class="line">    <span class="string">&quot;name&quot;</span>:<span class="string">&quot;kubia-159041347-wt6ga&quot;</span>,</span><br><span class="line">    <span class="string">&quot;generateName&quot;</span>:<span class="string">&quot;kubia-159041347-&quot;</span>,</span><br><span class="line">    <span class="string">&quot;namespace&quot;</span>:<span class="string">&quot;default&quot;</span>,</span><br><span class="line">    <span class="string">&quot;selfLink&quot;</span>:...</span><br></pre></td></tr></table></figure>
+<p>API server将manifest以JSON形式存放在etcd中, etcd的每个文件路径都对应一个JSON文件, 且支持通过路径前缀查询该路径下的所有子路径.<br>由于k8s cluster中的所有数据都存放在一个etcd服务中, 任何k8s的请求都需要通过API server访问etcd. 为保证etcd高可用性, 一般会在一个etcd服务中运行多个etcd实例, 这样即使某个etcd实例崩溃也不会影响服务继续运行; 但多个实例会引入数据不一致性: 若API server分别向两个etcd实例写入同一资源的不同配置, 会导致两个etcd实例的数据不一致, 为此etcd使用<strong>RAFT</strong>共识算法保证任意时刻下都存在超半数的etcd实例拥有最新数据, 这样即使某个etcd实例崩溃或网络断开也不会影响整个etcd服务.<br>由于RAFT要求超过半数节点达成共识, 以下是节点数为偶数或奇数时的最大不可用节点数:</p>
+<ul>
+<li>所有节点的数量为<code>2n</code>: 最大不可用节点数为<code>n-1</code></li>
+<li>所有节点的数量为<code>2n-1</code>: 最大不可用节点数仍为<code>n-1</code></li>
+</ul>
+<p>可以发现, 当最大不可用节点数相同时, 奇数需要的节点数更好, 因此etcd服务中通常配置奇数个etcd实例. 通常情况下, 一个大型k8s cluster需要5到7个etcd实例, 小型k8s cluster只需3个etcd实例.</p>
+<h3 id="1-3-What-the-API-server-does"><a href="#1-3-What-the-API-server-does" class="headerlink" title="1.3 What the API server does"></a>1.3 What the API server does</h3><p>K8s API server可被其他所有component或client使用, 其提供CRUD接口用于查询和修改k8s cluster状态, 并负责将状态保存到etcd中. 除此之外, API server还负责验证client上传的manifest是否正确, 并使用乐观锁确保同一资源不会被同时更新.</p>
+<p><img src="/images/Kubernetes/internal-1-2.png" alt="The operation of the API server"></p>
+<ul>
+<li>首先, API server需要认证发送请求的client, API server支持多种身份认证插件, 其会调用每一个插件, 直到某个插件成功验证请求</li>
+<li>当请求需要创建, 修改或删除某个资源时, 请求会被发送到Admission Control插件, 有些插件为请求的资源添加一些默认值, 还有一些插件会因某些原因修改资源配置, 以下是一些常见的Admission Control插件:<ul>
+<li>AlwaysPullImages: 将pod的imagePullPolicy重写为Always, 每次部署pod都需要重新下载image</li>
+<li>ServiceAccount: 为pod添加请求未添加的默认值</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/K8s/">K8s</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/p/2a4c.html">
+        <span class="next-text nav-default">DP - Interval</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/44b1.html';
+  var disqus_title = "Understand Kubernetes Internals";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>
