@@ -46,8 +46,9 @@
 <meta property="og:locale">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/internal-1-1.png">
 <meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/internal-1-2.png">
+<meta property="og:image" content="https://zaf1ro.github.io/images/Kubernetes/internal-1-3.png">
 <meta property="article:published_time" content="2025-05-16T05:41:12.000Z">
-<meta property="article:modified_time" content="2025-06-25T21:05:37.807Z">
+<meta property="article:modified_time" content="2025-07-10T19:42:26.216Z">
 <meta property="article:tag" content="K8s">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/Kubernetes/internal-1-1.png">
@@ -77,7 +78,7 @@ Understand Kubernetes Internals - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understanding-the-architecture"><span class="toc-text">1. Understanding the architecture</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-The-distributed-nature-of-Kubernetes-components"><span class="toc-text">1.1 The distributed nature of Kubernetes components</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-How-Kubernetes-uses-etcd"><span class="toc-text">1.2 How Kubernetes uses etcd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-What-the-API-server-does"><span class="toc-text">1.3 What the API server does</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Understanding-the-architecture"><span class="toc-text">1. Understanding the architecture</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-The-distributed-nature-of-Kubernetes-components"><span class="toc-text">1.1 The distributed nature of Kubernetes components</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-How-Kubernetes-uses-etcd"><span class="toc-text">1.2 How Kubernetes uses etcd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-What-the-API-server-does"><span class="toc-text">1.3 What the API server does</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-Understanding-how-the-API-server-notifies-clients-of-resource-changes"><span class="toc-text">1.4 Understanding how the API server notifies clients of resource changes</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -188,14 +189,22 @@ Understand Kubernetes Internals - Zaf1ro
 <p>可以发现, 当最大不可用节点数相同时, 奇数需要的节点数更好, 因此etcd服务中通常配置奇数个etcd实例. 通常情况下, 一个大型k8s cluster需要5到7个etcd实例, 小型k8s cluster只需3个etcd实例.</p>
 <h3 id="1-3-What-the-API-server-does"><a href="#1-3-What-the-API-server-does" class="headerlink" title="1.3 What the API server does"></a>1.3 What the API server does</h3><p>K8s API server可被其他所有component或client使用, 其提供CRUD接口用于查询和修改k8s cluster状态, 并负责将状态保存到etcd中. 除此之外, API server还负责验证client上传的manifest是否正确, 并使用乐观锁确保同一资源不会被同时更新.</p>
 <p><img src="/images/Kubernetes/internal-1-2.png" alt="The operation of the API server"></p>
+<ol>
+<li>首先, API server需要认证发送请求的client, API server支持一个或多个身份认证插件(authentication plugin), 其会调用每一个插件, 直到某个插件成功验证请求. 不同的身份验证插件有不同验证方式, 如读取HTTP header的Authorization字段.</li>
+<li>API server还支持一个或多个授权插件(authorization plugin), 其决定用户可以进行哪些操作, 例如, 当请求想要创建pod时, API server需要依次查询授权插件来决定请求是否允许在指定namespace中创建pod, 只要其中一个授权插件允许即可进行下一步.</li>
+<li>当请求需要创建, 修改或删除某个资源时, 请求会被发送到准入控制(Admission Control)插件, 其会因各种原因修改, 例如, 为缺失的字段添加默认值, 或覆盖某个字段值, 以下是一些常见的准入控制插件:</li>
+</ol>
 <ul>
-<li>首先, API server需要认证发送请求的client, API server支持多种身份认证插件, 其会调用每一个插件, 直到某个插件成功验证请求</li>
-<li>当请求需要创建, 修改或删除某个资源时, 请求会被发送到Admission Control插件, 有些插件为请求的资源添加一些默认值, 还有一些插件会因某些原因修改资源配置, 以下是一些常见的Admission Control插件:<ul>
-<li>AlwaysPullImages: 将pod的imagePullPolicy重写为Always, 每次部署pod都需要重新下载image</li>
-<li>ServiceAccount: 为pod添加请求未添加的默认值</li>
+<li>AlwaysPullImages: 将pod的<code>imagePullPolicy</code>重写为<code>Always</code>, 该字段保证每次部署pod时, 即使主机上存在image缓存也会重新下载image.</li>
+<li>ServiceAccount: 若资源未指明service account, 则为pod添加默认值</li>
+<li>NamespaceLifecycle: 防止pod被删除时创建新的pod, 防止在不存在的namespace中创建pod</li>
+<li>ResourceQuota: 确保分配给pod的CPU或内存不会超过namespace的配额</li>
 </ul>
-</li>
-</ul>
+<ol start="4">
+<li>API server验证资源, 将其存入etcd, 并回应client</li>
+</ol>
+<h3 id="1-4-Understanding-how-the-API-server-notifies-clients-of-resource-changes"><a href="#1-4-Understanding-how-the-API-server-notifies-clients-of-resource-changes" class="headerlink" title="1.4 Understanding how the API server notifies clients of resource changes"></a>1.4 Understanding how the API server notifies clients of resource changes</h3><p>API server不会创建pod, Replicaset或endpoint, controller manager负责创建资源. Controller会向API server请求监视某些资源的状态, 一旦API server收到创建, 修改或删除某个资源的请求时, 其会将其写入etcd并通知对应的controller.</p>
+<p><img src="/images/Kubernetes/internal-1-3.png" alt="The operation of the API server"></p>
 
     </div>
 
@@ -211,6 +220,12 @@ Understand Kubernetes Internals - Zaf1ro
       
       
   <nav class="post-nav">
+    
+      <a class="prev" href="/p/4553.html">
+        <i class="icon-left"></i>
+        <span class="prev-text nav-default">Kerberos</span>
+        <span class="prev-text nav-mobile">Prev</span>
+      </a>
     
     
       <a class="next" href="/p/2a4c.html">

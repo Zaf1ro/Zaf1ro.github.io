@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+
+
+
+  <meta name="description" content="Kerberos"/>
+
+
+
+
+  <meta name="keywords" content="Network," />
+
+
+<meta name="google-site-verification" content="qy4gf0StWj627u-7aIP3WDCLBi3jPYXhm57UC7TUcok" />
+<meta name="baidu-site-verification" content="XJoPG7ad2Z" />
+
+<link rel="alternate" hreflang="x-default" href="https://zaf1ro.github.io/p/4553.html" />
+<link rel="alternate" hreflang="zh" href="https://zaf1ro.github.io/p/4553.html" />
+
+
+
+
+  <link rel="alternate" href="/default" title="Zaf1ro" >
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.jpeg?v=1.1" />
+
+
+
+<link rel="canonical" href="https://zaf1ro.github.io/p/4553.html"/>
+
+
+<meta name="description" content="1. Introduction当一个client需要从一个service端获取数据的情况, 难免需要通过网络传输数据, 以下是会遇到的问题:  网络上传送的数据可能被他人窃听和篡改 service如何认定发送端是否为可信的client service如何判断client是否有权限访问数据  最简单的解决方式是, service端保存所有client的用户名, 密钥, 以及对应的权限, client">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kerberos">
+<meta property="og:url" content="https://zaf1ro.github.io/p/4553.html">
+<meta property="og:site_name" content="Zaf1ro">
+<meta property="og:description" content="1. Introduction当一个client需要从一个service端获取数据的情况, 难免需要通过网络传输数据, 以下是会遇到的问题:  网络上传送的数据可能被他人窃听和篡改 service如何认定发送端是否为可信的client service如何判断client是否有权限访问数据  最简单的解决方式是, service端保存所有client的用户名, 密钥, 以及对应的权限, client">
+<meta property="og:locale">
+<meta property="article:published_time" content="2026-01-02T20:31:34.000Z">
+<meta property="article:modified_time" content="2026-01-03T22:18:50.648Z">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=1.1" />
+
+
+
+
+    <title>
+Kerberos - Zaf1ro
+</title>
+  <meta name="generator" content="Hexo 6.3.0"></head>
+
+  <body>
+  <nav id="sidebar" class="active on-post">
+    <div id="third">
+      <div id="sidebar-title">
+        <h1 id="sidebar-title-text">
+            <a href="/." class="logo">Home</a>
+        </h1>
+      </div>
+      <div id="google-search">
+  <script async src="https://cse.google.com/cse.js?cx=009060789867951546370:v3hkcobeuh9"></script>
+  <div class="gcse-search"></div>
+</div>
+      
+  <div id="toc">
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Core-Component-of-Kerberos"><span class="toc-text">2. Core Component of Kerberos</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Key-Distribution-Center"><span class="toc-text">2.1 Key Distribution Center</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Ticket-Granting-Ticket"><span class="toc-text">2.2 Ticket-Granting Ticket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Authentication-Server"><span class="toc-text">2.3 Authentication Server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Ticket-Granting-Service"><span class="toc-text">2.4 Ticket Granting Service</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Workflow"><span class="toc-text">3. Workflow</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Login"><span class="toc-text">3.1 Login</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Client-Requests-TGT-from-AS"><span class="toc-text">3.2 Client Requests TGT from AS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Client-Requests-Service-Ticket-from-TGS"><span class="toc-text">3.3 Client Requests Service Ticket from TGS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Client-Contacts-the-Service"><span class="toc-text">3.4 Client Contacts the Service</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Session-keys-and-secret-keys"><span class="toc-text">4. Session keys and secret keys</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Is-Kerberos-hackable"><span class="toc-text">5. Is Kerberos hackable?</span></a></li></ol>
+  </div>
+
+    </div>
+  </nav>
+
+    <div id="page">
+      <header id="masthead"><div class="site-header-inner">
+  
+  <button class="nav-mobile-button on-post" id="sidebarCollapse">
+  
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M24 6h-24v-4h24v4zm0 4h-24v4h24v-4zm0 8h-24v4h24v-4z"/></svg>
+  </button>
+  
+  
+
+
+  <nav id="nav-top">
+    
+      
+      <ul id="menu-top" class="nav-top-items on-post">
+      
+        
+          <li class="menu-item">
+            <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Zaf1ro">
+              
+              
+                Github
+              
+            </a>
+          </li>
+        
+      </ul>
+    
+  </nav>
+</div>
+
+      </header>
+      <div id="content">
+        
+  <div class="primary">
+    
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">
+        
+          Kerberos
+        
+      </h1>
+      <time class="post-time">
+          01/02/26
+      </time>
+    </header>
+
+    <div class="post-content">
+      <h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>当一个client需要从一个service端获取数据的情况, 难免需要通过网络传输数据, 以下是会遇到的问题:</p>
+<ul>
+<li>网络上传送的数据可能被他人窃听和篡改</li>
+<li>service如何认定发送端是否为可信的client</li>
+<li>service如何判断client是否有权限访问数据</li>
+</ul>
+<p>最简单的解决方式是, service端保存所有client的用户名, 密钥, 以及对应的权限, client与service之间建立加密连接(如SSL). 问题在于, 一个复杂系统内一个client需要与多个service通信, 导致每个service都需要保留该client的用户名, 密钥及其权限; 一旦某个service数据泄露, 所有client的敏感信息都将泄漏. </p>
+<p>Kerberos是一种网络身份验证协议, 旨在简化身份验证和授权. 以下是该协议的优点:</p>
+<ul>
+<li>Security: Kerberos不会传输明文信息, 且通过有时效性的加密信息来验证用户身份, 即使信息被截获并破译也毫无意义.</li>
+<li>Single Sign-On: Kerberos只要求验证client端身份时输入密码, 之后在一个realm中访问任何服务都无需密码. 这种单点登录的设计可简化流程.</li>
+<li>Trusted third-party: Kerberos依赖一个名为KDC(Key Distribution Center, 密钥分发中心)的集中式身份验证服务器. 网络中所有设备都默认信任该服务器, 且所有身份验证信息都发往该服务器, 这样方式确保敏感信息无需存储到client或service中.</li>
+<li>Mutual authentication: 在Kerberos中, client和service都必须通过身份验证, 这种双向认证大大降低了中间者攻击的概率.</li>
+</ul>
+<h2 id="2-Core-Component-of-Kerberos"><a href="#2-Core-Component-of-Kerberos" class="headerlink" title="2. Core Component of Kerberos"></a>2. Core Component of Kerberos</h2><h3 id="2-1-Key-Distribution-Center"><a href="#2-1-Key-Distribution-Center" class="headerlink" title="2.1 Key Distribution Center"></a>2.1 Key Distribution Center</h3><p>KDC是Kerberos的核心, 其包含AS(Authentication Server)和TGS(Ticket Granting Service). 其主要功能为: 转发AS的消息, 授予client一个TGT(Ticket-Granting Ticket), 并将TGT交由TGS进行加密.</p>
+<h3 id="2-2-Ticket-Granting-Ticket"><a href="#2-2-Ticket-Granting-Ticket" class="headerlink" title="2.2 Ticket-Granting Ticket"></a>2.2 Ticket-Granting Ticket</h3><p>Client通过身份验证后, KDC会授予client一个TGT. TGT包含client可访问的service列表, 访问有效期, 以及用于与client通信的session key(对称加密密钥).</p>
+<h3 id="2-3-Authentication-Server"><a href="#2-3-Authentication-Server" class="headerlink" title="2.3 Authentication Server"></a>2.3 Authentication Server</h3><p>AS是Kerberos进行身份验证的第一步, client使用用户名和密码登录到AS进行身份验证. 完成验证后, AS会将用户名转发给KDC并授予TGT. 若无法验证身份, 则client无法与Kerberos中的其他服务进行交互.</p>
+<h3 id="2-4-Ticket-Granting-Service"><a href="#2-4-Ticket-Granting-Service" class="headerlink" title="2.4 Ticket Granting Service"></a>2.4 Ticket Granting Service</h3><p>TGS作为client与service的中介, 当client想要访问某个service时, client必须向TGS提交其TGT. TGS会对TGT进行验证, 并创建client与service共享的session key. 若TGS确认client的TGT包含对所需service的访问权限, 则授予client请求该service的权限.</p>
+<h2 id="3-Workflow"><a href="#3-Workflow" class="headerlink" title="3. Workflow"></a>3. Workflow</h2><h3 id="3-1-Login"><a href="#3-1-Login" class="headerlink" title="3.1 Login"></a>3.1 Login</h3><p>用户使用用户名和密码登录Kerberos客户端, Kerberos客户端会将密码转换为一个secret key(称为client secret key)用于加密或解密信息.</p>
+<h3 id="3-2-Client-Requests-TGT-from-AS"><a href="#3-2-Client-Requests-TGT-from-AS" class="headerlink" title="3.2 Client Requests TGT from AS"></a>3.2 Client Requests TGT from AS</h3><p>Client向AS发送一个非加密文本, 其中包含:</p>
+<ul>
+<li>client的用户名</li>
+<li>所需的service名称</li>
+<li>client的IP地址</li>
+<li>TGT有效期</li>
+</ul>
+<p>AS通过数据库(通常是Active Directory)验证用户名是否存在. 若存在, 则返回以下两部分信息:</p>
+<ul>
+<li>第一部分信息由client secret key加密:<ul>
+<li>TGS名称或ID</li>
+<li>消息生成时间</li>
+<li>TGT有效期</li>
+<li>TGS session key(随机生成的临时对等密钥)</li>
+</ul>
+</li>
+<li>第二部分为TGT, 由TGS secret key加密<ul>
+<li>用户名或ID</li>
+<li>TGS名称或ID</li>
+<li>消息生成时间</li>
+<li>client的IP地址</li>
+<li>TGS session key(与上一信息中的TGS session key相同)</li>
+</ul>
+</li>
+</ul>
+<p>需要注意的是, client secret key通常由用户名, client secret key, realm(域)构成的字符串通过哈希函数生成. 由于AS生成的client secret key与client自身持有的client secret key相同, 因此client可解码AS传回的第一部分信息; 但由于client不拥有TGS secret key, 因此无法解码第二部分信息. 该步骤可在不传输任何敏感信息的前提下验证用户名与密码, 并让client获得TGS session key.</p>
+<h3 id="3-3-Client-Requests-Service-Ticket-from-TGS"><a href="#3-3-Client-Requests-Service-Ticket-from-TGS" class="headerlink" title="3.3 Client Requests Service Ticket from TGS"></a>3.3 Client Requests Service Ticket from TGS</h3><p>身份验证完成后, client会向TGS发送请求, 其中包含以下三个部分信息:</p>
+<ul>
+<li>TGT, 由TGS secret key加密</li>
+<li>User Authenticator, 由TGS session key加密, 包含以下内容:<ul>
+<li>用户名</li>
+<li>信息生成时间</li>
+</ul>
+</li>
+<li>第三部分是非加密文本, 包含以下信息:<ul>
+<li>Service名称或ID</li>
+<li>TGT有效期</li>
+</ul>
+</li>
+</ul>
+<p>由于TGS拥有TGS secret key, 因此可以解码TGT, 从而获取TGS session key; TGS再使用TGS session key解码user authenticator, 从而获取所有client传来的信息. 之后TGS会做以下验证:</p>
+<ul>
+<li>验证service是否存在</li>
+<li>验证TGT中的用户名与user authenticator中的用户名是否一致</li>
+<li>验证TGT中的消息生成时间与user authenticator中的消息生成时间是否在一定范围内</li>
+<li>验证当前消息的IP地址与TGT中的IP地址是否一致</li>
+<li>验证TGT是否过期</li>
+</ul>
+<p>验证完毕后, TGS会向client回复以下两部分信息:</p>
+<ul>
+<li>第一部分信息由TGS session key加密:<ul>
+<li>Service的名字或ID</li>
+<li>消息生成时间</li>
+<li>TGT有效期</li>
+<li>Service session key(随机生成的临时对等密钥)</li>
+</ul>
+</li>
+<li>第二部分称为ST(service ticket), 由service secret key加密<ul>
+<li>用户名或ID</li>
+<li>Service的名字或ID</li>
+<li>消息生成时间</li>
+<li>client的IP地址</li>
+<li>ST有效期</li>
+<li>Service session key(与上一消息中的service session key相同)</li>
+</ul>
+</li>
+</ul>
+<p>Client收到TGS的回复后, 由于其拥有TGS session key, 因此可解码第一部分信息, 从而获取service session key. 该步骤让client成功从TGS端获取ST.</p>
+<h3 id="3-4-Client-Contacts-the-Service"><a href="#3-4-Client-Contacts-the-Service" class="headerlink" title="3.4 Client Contacts the Service"></a>3.4 Client Contacts the Service</h3><p>client获取ST后, 会向service发送两部分信息:</p>
+<ul>
+<li>ST: 由service secret key加密</li>
+<li>新的user authenticator, 由service session key加密:<ul>
+<li>用户名或ID</li>
+<li>消息生成时间</li>
+</ul>
+</li>
+</ul>
+<p>service收到消息后, 会使用service secret key解码ST, 并获取service session key, 从而解码user authenticator. 之后进行一系列验证:</p>
+<ul>
+<li>验证ST中的用户名与user authenticator中的用户名是否一致</li>
+<li>验证ST中的消息生成时间与user authenticator中的消息生成时间是否在一定范围内</li>
+<li>验证client的IP地址与ST中的IP地址是否一致</li>
+<li>验证ST是否有效</li>
+</ul>
+<p>验证完毕后, service会向client回复信息, 该信息称为SA(servicee authenticator), 由service session key加密, 包含以下信息:</p>
+<ul>
+<li>service名称或ID</li>
+<li>消息创建时间</li>
+</ul>
+<p>client使用service session key解码后会验证service名称是否正确, 并确保消息生成时间在一定时间范围内. 至此, client与service完成了双向身份认证, 可进行后续通信.</p>
+<h2 id="4-Session-keys-and-secret-keys"><a href="#4-Session-keys-and-secret-keys" class="headerlink" title="4. Session keys and secret keys"></a>4. Session keys and secret keys</h2><p>以下是Kerberos出现的所有secret key:</p>
+<ul>
+<li>client secret key: 用于加密TGS session key. client可生成该secret key, AS也会维护一个表格, 其包含每个用户名及其对应的secret key.</li>
+<li>TGS secret key: 用于加密TGT. AS和TGS共享该secret key.</li>
+<li>service secret key: 用于加密ST. TGS维护一个表格, 其包含每个service名称及其对应的secret key, 每个serice也会有各自的secret key.</li>
+</ul>
+<p>以下是Kerberos出现的所有session key:</p>
+<ul>
+<li>TGS session key: 由AS生成, client和TGS共享该session key, 用于加密client与TGS之间的信息</li>
+<li>service session key: 由TGS生成, client和service共享该session key, 用于加密client与service之间的信息</li>
+</ul>
+<h2 id="5-Is-Kerberos-hackable"><a href="#5-Is-Kerberos-hackable" class="headerlink" title="5. Is Kerberos hackable?"></a>5. Is Kerberos hackable?</h2><p>尽管Kerberos是一种十分安全的协议, 但并不是不可破解的. 以下是五种攻击Kerberos系统的方法:</p>
+<ul>
+<li>Pass-the-ticket: 黑客从client端窃取合法的TGT, 使用该TGT绕过身份验证, 冒充合法用户</li>
+<li>Golden Ticket: 黑客攻击AS, 并向AS植入一个假用户, 之后使用假用户身份访问service</li>
+<li>Silver Ticket: 黑客攻击service, 并获取其service secret key, 之后可使用伪造的ST绕过TGS直接与service通信</li>
+<li>Brute force: 使用自动密码猜测器暴力查询某个用户的密码, 直到通过身份验证</li>
+</ul>
+
+    </div>
+
+    <footer class="post-footer">
+      
+      <div class="post-tags">
+        
+          <a href="/tags/Network/">Network</a>
+        
+      </div>
+      
+
+      
+      
+  <nav class="post-nav">
+    
+    
+      <a class="next" href="/p/44b1.html">
+        <span class="next-text nav-default">Understand Kubernetes Internals</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="icon-right"></i>
+      </a>
+    
+  </nav>
+
+      
+    </footer>
+  </article>
+
+  </div>
+  
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: true,
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: false,
+        skipTags: ["script","noscript","style","textarea"]
+    },
+    TeX: {
+        Macros:{
+            Arr: ["\\{ #1 \\}", 1],
+            fi: "{f\\,\\!_i}",
+            SS: ["{#1\\:\\!_#2}",2],
+            SUBx: ["{\\:\\!_#1}",1],
+            EXPx: ["{\\;\\!^#1}",1],
+            Ss: ["{#1\\,\\!_#2}",2],
+            subx: ["{\\,\\!_#1}",1]
+        }
+    }
+});
+</script>
+
+
+      </div>
+    </div>
+
+    
+<script type="text/javascript">
+  var disqus_shortname = 'zaf1ro';
+  var disqus_identifier = 'p/4553.html';
+  var disqus_title = "Kerberos";
+
+  var disqus = {
+    load : function disqus(){
+        if(typeof DISQUS !== 'object') {
+          (function () {
+          var s = document.createElement('script'); s.async = true;
+          s.type = 'text/javascript';
+          s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+          }());
+          $('#load-disqus').remove(); ///加载后移除按钮
+        }
+    }
+  }
+
+  
+    var disqus_config = function () {
+        this.page.url = disqus_url;
+        this.page.identifier = disqus_identifier;
+        this.page.title = disqus_title;
+    };
+  
+
+</script>
+
+
+
+    
+
+
+
+
+  
+    <script type="text/javascript" src="/lib/jquery/jquery-3.6.0.min.js"></script>
+  
+
+  
+
+    
+    <script type="text/javascript">
+(function(){"use strict";var Theme={};Theme.backToTop={register:function(){var $backToTop=$('#back-to-top');$(window).scroll(function(){if($(window).scrollTop()>100){$backToTop.fadeIn(1000)}else{$backToTop.fadeOut(1000)}});$backToTop.click(function(){$('body').animate({scrollTop:0})})}};Theme.fancybox={register:function(){if($.fancybox){$('.post').each(function(){$(this).find('img').each(function(){$(this).wrap('<a class="fancybox" href="'+this.src+'" title="'+this.alt+'"></a>')})});$('.fancybox').fancybox({openEffect:'elastic',closeEffect:'elastic'})}}};this.Theme=Theme}.call(this));
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){if(themeConfig.fancybox.enable){Theme.fancybox.register()}Theme.backToTop.register()});
+</script>
+    
+<script type="text/javascript">
+var themeConfig = {
+  fancybox: {
+    enable: false
+  },
+};
+</script>
+
+    <script>
+    $('table').wrap('<div style="overflow-x: auto;"></div>');
+</script>
+    
+    <script>
+$(document).ready(function () {
+    $('#sidebarCollapse').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+
+    $('#toc ol li a').on('click', function(){
+        $('#sidebar').toggleClass('active');
+    });
+});
+</script>
+  </body>
+</html>
