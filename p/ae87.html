@@ -8,7 +8,7 @@
 
 
 
-  <meta name="description" content="ZooKeeper Overview"/>
+  <meta name="description" content="ZooKeeper"/>
 
 
 
@@ -39,7 +39,7 @@
 
 <meta name="description" content="1. IntroductionZooKeeper是一个分布式开源协调服务(coordination service), 服务于各种分布式应用(Distributed Application). 这里存在两个关键点:  分布式应用 协调服务  明白上述两个关键点, 也就明白ZooKeeper的设计目的, 优缺点, 以及应用场景. 1.1 Distributed Application分布式系统的定义">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ZooKeeper Overview">
+<meta property="og:title" content="ZooKeeper">
 <meta property="og:url" content="https://zaf1ro.github.io/p/ae87.html">
 <meta property="og:site_name" content="Zaf1ro">
 <meta property="og:description" content="1. IntroductionZooKeeper是一个分布式开源协调服务(coordination service), 服务于各种分布式应用(Distributed Application). 这里存在两个关键点:  分布式应用 协调服务  明白上述两个关键点, 也就明白ZooKeeper的设计目的, 优缺点, 以及应用场景. 1.1 Distributed Application分布式系统的定义">
@@ -47,7 +47,7 @@
 <meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/ZooKeeper/1-1.jpeg">
 <meta property="og:image" content="https://zaf1ro.github.io/images/System-Design/ZooKeeper/1-2.jpeg">
 <meta property="article:published_time" content="2022-04-18T19:28:29.000Z">
-<meta property="article:modified_time" content="2024-08-20T16:43:04.040Z">
+<meta property="article:modified_time" content="2026-02-05T23:21:18.101Z">
 <meta property="article:tag" content="Distributed System">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://zaf1ro.github.io/images/System-Design/ZooKeeper/1-1.jpeg">
@@ -59,7 +59,7 @@
 
 
     <title>
-ZooKeeper Overview - Zaf1ro
+ZooKeeper - Zaf1ro
 </title>
   <meta name="generator" content="Hexo 6.3.0"></head>
 
@@ -77,7 +77,7 @@ ZooKeeper Overview - Zaf1ro
 </div>
       
   <div id="toc">
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Distributed-Application"><span class="toc-text">1.1 Distributed Application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Coordination-Service"><span class="toc-text">1.2 Coordination Service</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Design-Goals-and-Guarantees"><span class="toc-text">2. Design Goals and Guarantees</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Consistency"><span class="toc-text">3. Consistency</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-What-is-Consistency"><span class="toc-text">3.1 What is Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-What-is-Consistency-Model"><span class="toc-text">3.2 What is Consistency Model</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Consistency-Models"><span class="toc-text">4. Consistency Models</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Strict-Consistency"><span class="toc-text">4.1 Strict Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Linearizability"><span class="toc-text">4.2 Linearizability</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Sequential-Consistency"><span class="toc-text">4.3 Sequential Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Causal-Consistency"><span class="toc-text">4.4 Causal Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-FIFO-Consistency"><span class="toc-text">4.5 FIFO Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-Eventual-Consistency"><span class="toc-text">4.6 Eventual Consistency</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Data-model-and-the-hierarchical-namespace"><span class="toc-text">5. Data model and the hierarchical namespace</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Nodes-and-ephemeral-nodes"><span class="toc-text">5.1 Nodes and ephemeral nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Znode"><span class="toc-text">5.2 Znode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Data-Access"><span class="toc-text">5.3 Data Access</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Ephemeral-Nodes"><span class="toc-text">5.4 Ephemeral Nodes</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Time-in-ZooKeeper"><span class="toc-text">6. Time in ZooKeeper</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-ZooKeeper-Stat-Structure"><span class="toc-text">7. ZooKeeper Stat Structure</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-ZooKeeper-Sessions"><span class="toc-text">8. ZooKeeper Sessions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-ZooKeeper-Watches"><span class="toc-text">9. ZooKeeper Watches</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-text">1. Introduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Distributed-Application"><span class="toc-text">1.1 Distributed Application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Coordination-Service"><span class="toc-text">1.2 Coordination Service</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Design-Goals-and-Guarantees"><span class="toc-text">2. Design Goals and Guarantees</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Consistency"><span class="toc-text">3. Consistency</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-What-is-Consistency"><span class="toc-text">3.1 What is Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-What-is-Consistency-Model"><span class="toc-text">3.2 What is Consistency Model</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Consistency-Models"><span class="toc-text">4. Consistency Models</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Strict-Consistency"><span class="toc-text">4.1 Strict Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Linearizability"><span class="toc-text">4.2 Linearizability</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Sequential-Consistency"><span class="toc-text">4.3 Sequential Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-Causal-Consistency"><span class="toc-text">4.4 Causal Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-FIFO-Consistency"><span class="toc-text">4.5 FIFO Consistency</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-Eventual-Consistency"><span class="toc-text">4.6 Eventual Consistency</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Data-model-and-the-hierarchical-namespace"><span class="toc-text">5. Data model and the hierarchical namespace</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-Nodes-and-ephemeral-nodes"><span class="toc-text">5.1 Nodes and ephemeral nodes</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-Znode"><span class="toc-text">5.2 Znode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Data-Access"><span class="toc-text">5.3 Data Access</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-Ephemeral-Nodes"><span class="toc-text">5.4 Ephemeral Nodes</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Time-in-ZooKeeper"><span class="toc-text">6. Time in ZooKeeper</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-ZooKeeper-Stat-Structure"><span class="toc-text">7. ZooKeeper Stat Structure</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-ZooKeeper-Sessions"><span class="toc-text">8. ZooKeeper Sessions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-ZooKeeper-Watches"><span class="toc-text">9. ZooKeeper Watches</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-Details-of-Design"><span class="toc-text">10. Details of Design</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-Zookeeper-session"><span class="toc-text">10.1 Zookeeper session</span></a></li></ol></li></ol>
   </div>
 
     </div>
@@ -123,7 +123,7 @@ ZooKeeper Overview - Zaf1ro
     <header class="post-header">
       <h1 class="post-title">
         
-          ZooKeeper Overview
+          ZooKeeper
         
       </h1>
       <time class="post-time">
@@ -227,8 +227,13 @@ ZooKeeper Overview - Zaf1ro
 <li>dataLength: 该znode的数据长度</li>
 <li>numChildren: 该znode的子节点数量</li>
 </ul>
-<h2 id="8-ZooKeeper-Sessions"><a href="#8-ZooKeeper-Sessions" class="headerlink" title="8. ZooKeeper Sessions"></a>8. ZooKeeper Sessions</h2><p>ZooKeeper客户端通过创建一个handle来与ZooKeeper service建立session. 成功创建handle后, 其状态会切换到<strong>CONNECTING</strong>; 客户端会尝试连接其中一个server, 并切换到<strong>CONNECTED</strong>状态; 若中途发生错误, 如session过期, 身份验证失败, 或应用程序关闭客户端, session会切换到<strong>CLOSED</strong>状态. 以下是客户端的状态变换图:<br><img src="/images/System-Design/ZooKeeper/1-2.jpeg" alt="State Transitions of a ZooKeeper Client"></p>
-<p>为创建session, 应用程序必须提供一个字符串, 以逗号分割, 包含多个pair(<code>host:port</code>), 每个pair对应一个ZooKeeper服务器. 客户端会随机挑选一个服务器并尝试连接, 若连接失败或断开连接, 客户端会自动尝试其他服务器.<br>当客户端获得ZooKeeper service的handle, ZooKeeper会创建一个session(一个64位数字), 并将其分配给客户端. 若客户端连接到其他server, 其会将sesion id作为握手的一部分一并发送. 处于安全考虑, server会为session创建一个密码, 每当客户端与server创建session, 都需要上传自己的session id和密码.<br>客户端可以为session请求一个超时时间, server会回复一个可用的超时时间, 最小超时时间为2倍的<code>tickTime</code>, 最大超时时间为20倍<code>tickTime</code>.<br>当客户端与server断开连接时, 其会自动搜索session创建期间指定的server列表. 当客户端最终与某个server重新连接时, 有两种可能:</p>
+<h2 id="8-ZooKeeper-Sessions"><a href="#8-ZooKeeper-Sessions" class="headerlink" title="8. ZooKeeper Sessions"></a>8. ZooKeeper Sessions</h2><p>Client通过创建一个<strong>Zookeeper handle</strong>来与server建立session. Handle是一个client-side的zookeeper应用, 负责创建并维护session, 管理session状态, 向server发送请求, 与从server获取数据等操作. 用户创建handle时提供一个字符串, 以逗号分割, 每个子字符串以<code>host:port</code>的形式表示一个ZooKeeper server. 成功创建handle后, 其状态会切换到<strong>CONNECTING</strong>; client会尝试与server列表中其中一个server建立TCP连接, 建立完毕后client与server开始交换数据:</p>
+<ul>
+<li>client向server发送一个请求, 其中包含session的超时时长; 若client想恢复之前的session, 则还会包含session ID和密码</li>
+<li>server回复client最终协商的超时时长, 如果是新的session, 还会包含一个64-bits的session ID, 以及session密码</li>
+</ul>
+<p>client收到回复后将其状态切换到<strong>CONNECTED</strong>; 若中途发生错误, 如session超时, 身份验证失败, 或client被关闭, 会切换到<strong>CLOSED</strong>状态. 每当client需要与server重新创建session时, 都需要上传自己的session id和密码. 以下是客户端的状态变换图:<br><img src="/images/System-Design/ZooKeeper/1-2.jpeg" alt="State Transitions of a ZooKeeper Client"></p>
+<p>当client与server断开连接时, 其会自动搜索session创建期间指定的server列表. 当客户端最终与某个server重新连接时, 有两种可能:</p>
 <ul>
 <li>session重新回到<strong>CONNECTED</strong>状态</li>
 <li>session超时, 切换到<strong>EXPIRED</strong>状态</li>
@@ -241,10 +246,16 @@ ZooKeeper Overview - Zaf1ro
 <li>客户端最终重连到集群</li>
 <li>客户端收到&quot;session expired&quot;通知</li>
 </ol>
-<p>ZooKeeper客户端创建session时会有一个参数: <strong>watcher</strong>. 客户端的任何状态变更(event)都会通知watcher. 例如, 当客户端与服务器断开连接时, watcher会收到通知; session过期时, watcher也会收到通知. watcher会将初始状态设为disconnected. 当创建新连接时, watcher收到的第一个event通常是session connection.<br>若session空闲一段时间, 客户端会发送与一个PING请求来维持session存活. PING请求不仅让server知道客户端仍然存活, 也让客户端知道server处于活跃状态.<br>一旦成功与server建立连接, 客户端会在以下两种情况下生成<strong>connectionloss</strong>(C语言中返回结果码, Java抛出异常):</p>
+<p>Client的任何状态变更以event的形式通知注册的<strong>watcher</strong>:</p>
+<ul>
+<li>client与server之间出现网络波动时, watcher会收到<code>DISCONNECTED</code> event</li>
+<li>若client与server失去通信超过一段时间, watcher会收到<code>Expired</code> event.</li>
+<li>当创建新连接时, watcher收到的第一个event通常是<code>SyncConnected</code>.</li>
+</ul>
+<p>若client和server之间没有数据传输, client会向server发送与一个PING请求来维持session存活. PING请求不仅让server知道client仍然存活, 也让client知道server处于活跃状态.  一旦成功与server建立连接, client会在以下两种情况下抛出<strong>ConnectionLossException</strong>(C语言中返回结果码, Java抛出异常):</p>
 <ul>
 <li>应用程序在<strong>死亡&#x2F;无效</strong>的session上进行操作</li>
-<li>当服务器有挂起的操作时, 客户端与服务器断开连接</li>
+<li>当server有挂起的操作时, 客户端与服务器断开连接</li>
 </ul>
 <h2 id="9-ZooKeeper-Watches"><a href="#9-ZooKeeper-Watches" class="headerlink" title="9. ZooKeeper Watches"></a>9. ZooKeeper Watches</h2><p>ZooKeeper客户端可通过watch机制来订阅服务器中某个节点的数据变化或状态变化, 并在变化时收到响应通知.</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">ZooKeeper</span>(String connectString, <span class="type">int</span> sessionTimeout, Watcher watcher);</span><br></pre></td></tr></table></figure>
@@ -277,6 +288,26 @@ ZooKeeper Overview - Zaf1ro
 <li>服务器的watch通知发送后不会缓存, 也不能确保一定抵达客户端</li>
 <li>某种特殊情况下watch可能会丢失: 对于未创建的znode的exist watch, 若客户端断开连接期间创建了该节点, 且在重新连接前被删除, 该watch事件会丢失</li>
 <li>一个watch对象只会被通知一次: 例如, 某个watch对象在<code>exists()</code>和<code>getData()</code>中对同一文件监视, 之后该文件被删除, watch对象只会收到一次文件被删除的通知。</li>
+</ul>
+<h2 id="10-Details-of-Design"><a href="#10-Details-of-Design" class="headerlink" title="10. Details of Design"></a>10. Details of Design</h2><h3 id="10-1-Zookeeper-session"><a href="#10-1-Zookeeper-session" class="headerlink" title="10.1 Zookeeper session"></a>10.1 Zookeeper session</h3><p>Zookeeper其中一个设计重点是如何维护client与zookeeper集群之间持久且容错的连接, 这就涉及到以下问题:</p>
+<ul>
+<li>client如何判断与集群的连接是否已断开</li>
+<li>client与集群的连接断开后, 集群如何处理ephemeral node</li>
+<li>如何保持server顺序执行client发送的请求</li>
+</ul>
+<p>Zookeeper的解决方案是在TCP session的基础上额外维护一个session, 以下是Zookeeper session和TCP session的区别:</p>
+<ul>
+<li>Network level: TCP在传输层; Zookeeper session在应用层</li>
+<li>Scope: TCP session只覆盖client与当前server的连接; Zookeeper session维护client与整个Zookeeper集群的连接</li>
+<li>Resilience: TCP session会在当前server连接中断时终止; Zookeeper session会在client与当前server断开连接后尝试与其他server创建连接</li>
+<li>Timeout: TCP session的超时由TCP&#x2F;IP栈配置决定; Zookeeper session的超时则是由application和server协商所得</li>
+</ul>
+<p>Zookeeper session解决了以下问题:</p>
+<ul>
+<li>当TCP连接断开时, zookeeper session仍会保持active状态. Client会自动尝试与集群中的其他server建立连接, 只要在超时前与其他server成功创建连接, 则session不会终止.</li>
+<li>Zookeeper session是ephemeral node的管理者, 只有当session超时失效时才会删除ephemeral node</li>
+<li>尽管TCP自带心跳机制, 但Zookeeper session仍然设计了自己的心跳机制: 从client的角度来说, 与当前server断开连接并不意味着与整个集群断开连接, server会在session超时前尝试与其他server建立连接; 从zookeeper cluster的角度出发, 每当一个server收到心跳包后会将其加入到<code>expiry queue</code>中, session超时失效后移除ephemeral node</li>
+<li>TCP连接只能保证client与当前server的数据包传输顺序一致; 由于一个session中client可能会与多个server创建连接, 因此zookeeper session需保证session的所有请求都遵循FIFO顺序</li>
 </ul>
 
     </div>
@@ -348,7 +379,7 @@ MathJax.Hub.Config({
 <script type="text/javascript">
   var disqus_shortname = 'zaf1ro';
   var disqus_identifier = 'p/ae87.html';
-  var disqus_title = "ZooKeeper Overview";
+  var disqus_title = "ZooKeeper";
 
   var disqus = {
     load : function disqus(){
